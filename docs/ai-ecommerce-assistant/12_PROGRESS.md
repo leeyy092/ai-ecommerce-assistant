@@ -6,6 +6,16 @@
 
 两份审查的 P0 取舍已形成 FINAL_DECISIONS.md，并写入 v1.1 规格与交接入口。2026-09-12 收到 DEVELOPMENT_HANDOFF v1.1 作为开发指令，TASK-001（可启动的应用与验证环境）与 TASK-002（P0数据库与约束迁移）已完成并通过其全部指定检查；TASK-003 进行中被中断，恢复后维持 IN_PROGRESS。**2026-09-12 晚间发生 iCloud「桌面与文档」同步事故，工作区文件被大规模驱逐并最终整目录失联；已从 ZCode/Codex 会话转录与数据库 dump 完成重建（见下方事故记录），typecheck/unit 7/7/integration 13/13 在重建后全部通过。**未上传客户业务文件，未调用真实企业数据或收费模型。
 
+## 仓库与远程状态（2026-09-12）
+
+- Remote：https://github.com/leeyy092/ai-ecommerce-assistant.git（Private；实际推送通道为 SSH `git@github.com:leeyy092/ai-ecommerce-assistant.git`，因本机钥匙串无 HTTPS PAT）
+- Remote Status：CONNECTED
+- GitHub Backup：ENABLED（main 已推送并跟踪 origin/main，本地 HEAD 与 origin/main 一致于 2a983cc）
+- Current Branch：phase/01-foundation（自 main 2a983cc 创建，已推送并跟踪 origin/phase/01-foundation）
+- Phase：Phase 1（foundation）。Phase 开发一律在 phase/01-foundation 进行；main 仅接受通过 Codex Review 后的合并推送
+- 当前 TASK：TASK-003（登录、初始Owner与受控邀请）IN_PROGRESS；GitHub 连接未重置 TASK-001/002 的 DONE 状态
+- Codex Review Checkpoint：NO（未到达 CODEX_REVIEW_GATE_01）
+
 ## 状态定义
 
 - TODO：尚未开始。
