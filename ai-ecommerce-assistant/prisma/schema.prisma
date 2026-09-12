@@ -6,19 +6,78 @@
 // T 组：store_id（+INDEX(org_id,store_id)）。F 组：source_namespace/source_updated_at/import_task_id/row_hash。
 // 认证四表由 Better Auth 官方 CLI 生成（1.4.21，核心表结构与 1.7.4 运行时一致），
 // Prisma 模型重命名为 AuthUser 等让出领域 User 名称，表名保持 user/session/account/verification。
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
-
 datasource db {
   provider = "postgresql"
 }
-
 // ============================================================
 // Better Auth 官方认证表（CLI 生成，字段保持官方原样）
 // ============================================================
+// ============================================================
+// 枚举（存储值与 04_DATA_MODEL 一致）
+// ============================================================
+// ============================================================
+// 10.2 身份与设置
+// ============================================================
+/// 领域用户（全局身份，不继承B）；auth_user_id 映射 Better Auth user.id
+/// 组织（租户根，不继承B）
+/// 组织成员（继承B）；单 Owner 由部分唯一索引保证（SQL migration）
+/// 受控邀请（继承B）
+/// 店铺（继承B+T）；快照三元组的“同时为空或同时有效”由 SQL CHECK 保证
+/// 数据来源（继承B+T）
+/// 规则配置（继承B+T）；UNIQUE(org,store,ruleset_version,rule_id,rule_version) 为复合引用锚
+// ============================================================
+// 10.3 商品、交易与广告事实（继承B+T+F）
+// ============================================================
+/// 来源别名（继承B+T）
+/// 售后 case（继承B+T+F；仅 case 行）
+/// 独立退款到账事件（继承B+T+F；仅 refund 行）
+/// 广告日事实（继承B+T+F）；K1 唯一键见下
+// ============================================================
+// 10.4 客服、指标与AI快照
+// ============================================================
+/// 指标快照行（继承B+T）；K2 唯一键见下；SKU 指标冻结产品归属
+/// VOC 固定日桶（继承B+T）；K3 唯一键见下；桶内条件字段由 SQL CHECK 区分
+/// 规则评估结果（继承B+T）；K6 唯一键见下；suppressed 必填 reason 由 SQL CHECK 保证
+/// 告警（继承B+T）；K4 唯一键见下；状态保守延续由应用层按 07 执行并记 carried_from_alert_id
+/// AI 建议（继承B+T）
+/// 本人行动状态（继承B+T；专用 version 与 B.row_version 并存）
+/// 日报（继承B+T）
+/// AI 运行（继承B+T）
+// ============================================================
+// 10.5 导入、覆盖与执行记录
+// ============================================================
+/// 导入任务（继承B+T）；committed 三元组随导入 Outbox 冻结
+/// 来源覆盖声明（继承B+T）；K5 唯一键见下
+/// 后台任务（继承B+T）；recompute 目标部分唯一由 SQL migration 保证
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
+/// 审计日志（继承B；store_id 可空；只存脱敏摘要）
 
 model AuthUser {
   id            String         @id
@@ -82,10 +141,6 @@ model AuthVerification {
   @@index([identifier])
   @@map("verification")
 }
-
-// ============================================================
-// 枚举（存储值与 04_DATA_MODEL 一致）
-// ============================================================
 
 enum UserStatus {
   active
@@ -338,11 +393,6 @@ enum ActionStateStatus {
   dismissed
 }
 
-// ============================================================
-// 10.2 身份与设置
-// ============================================================
-
-/// 领域用户（全局身份，不继承B）；auth_user_id 映射 Better Auth user.id
 model User {
   id          String     @id @default(uuid())
   authUserId  String     @unique @map("auth_user_id")
@@ -366,7 +416,6 @@ model User {
   @@map("domain_user")
 }
 
-/// 组织（租户根，不继承B）
 model Organization {
   id                String    @id @default(uuid())
   name              String    @db.VarChar(100)
@@ -393,7 +442,6 @@ model Organization {
   @@map("organization")
 }
 
-/// 组织成员（继承B）；单 Owner 由部分唯一索引保证（SQL migration）
 model Membership {
   id         String       @id @default(uuid())
   orgId      String       @map("org_id")
@@ -413,7 +461,6 @@ model Membership {
   @@map("membership")
 }
 
-/// 受控邀请（继承B）
 model Invitation {
   id         String           @id @default(uuid())
   orgId      String           @map("org_id")
@@ -439,7 +486,6 @@ model Invitation {
   @@map("invitation")
 }
 
-/// 店铺（继承B+T）；快照三元组的“同时为空或同时有效”由 SQL CHECK 保证
 model Store {
   id                             String         @id @default(uuid())
   orgId                          String         @map("org_id")
@@ -498,7 +544,6 @@ model Store {
   @@map("store")
 }
 
-/// 数据来源（继承B+T）
 model DataSource {
   id              String           @id @default(uuid())
   orgId           String           @map("org_id")
@@ -523,7 +568,6 @@ model DataSource {
   @@map("data_source")
 }
 
-/// 规则配置（继承B+T）；UNIQUE(org,store,ruleset_version,rule_id,rule_version) 为复合引用锚
 model RuleConfig {
   id             String    @id @default(uuid())
   orgId          String    @map("org_id")
@@ -547,10 +591,6 @@ model RuleConfig {
   @@index([orgId, storeId, rulesetVersion])
   @@map("rule_config")
 }
-
-// ============================================================
-// 10.3 商品、交易与广告事实（继承B+T+F）
-// ============================================================
 
 model Product {
   id                String        @id @default(uuid())
@@ -616,7 +656,6 @@ model SKU {
   @@map("sku")
 }
 
-/// 来源别名（继承B+T）
 model SkuAlias {
   id              String   @id @default(uuid())
   orgId           String   @map("org_id")
@@ -707,7 +746,6 @@ model OrderItem {
   @@map("order_item")
 }
 
-/// 售后 case（继承B+T+F；仅 case 行）
 model AfterSaleRecord {
   id               String          @id @default(uuid())
   orgId            String          @map("org_id")
@@ -743,7 +781,6 @@ model AfterSaleRecord {
   @@map("after_sale_record")
 }
 
-/// 独立退款到账事件（继承B+T+F；仅 refund 行）
 model RefundEvent {
   id                         String         @id @default(uuid())
   orgId                      String         @map("org_id")
@@ -785,7 +822,6 @@ model RefundEvent {
   @@map("refund_event")
 }
 
-/// 广告日事实（继承B+T+F）；K1 唯一键见下
 model AdMetric {
   id                    String   @id @default(uuid())
   orgId                 String   @map("org_id")
@@ -816,10 +852,6 @@ model AdMetric {
   @@index([orgId, storeId, reportDate])
   @@map("ad_metric")
 }
-
-// ============================================================
-// 10.4 客服、指标与AI快照
-// ============================================================
 
 model CustomerMessage {
   id                     String                     @id @default(uuid())
@@ -867,7 +899,6 @@ model CustomerMessage {
   @@map("customer_message")
 }
 
-/// 指标快照行（继承B+T）；K2 唯一键见下；SKU 指标冻结产品归属
 model DailyMetric {
   id                  String         @id @default(uuid())
   orgId               String         @map("org_id")
@@ -904,7 +935,6 @@ model DailyMetric {
   @@map("daily_metric")
 }
 
-/// VOC 固定日桶（继承B+T）；K3 唯一键见下；桶内条件字段由 SQL CHECK 区分
 model VOCInsight {
   id                    String         @id @default(uuid())
   orgId                 String         @map("org_id")
@@ -944,7 +974,6 @@ model VOCInsight {
   @@map("voc_insight")
 }
 
-/// 规则评估结果（继承B+T）；K6 唯一键见下；suppressed 必填 reason 由 SQL CHECK 保证
 model RuleEvaluation {
   id             String          @id @default(uuid())
   orgId          String          @map("org_id")
@@ -977,7 +1006,6 @@ model RuleEvaluation {
   @@map("rule_evaluation")
 }
 
-/// 告警（继承B+T）；K4 唯一键见下；状态保守延续由应用层按 07 执行并记 carried_from_alert_id
 model Alert {
   id                  String         @id @default(uuid())
   orgId               String         @map("org_id")
@@ -1017,7 +1045,6 @@ model Alert {
   @@map("alert")
 }
 
-/// AI 建议（继承B+T）
 model AIInsight {
   id               String           @id @default(uuid())
   orgId            String           @map("org_id")
@@ -1055,7 +1082,6 @@ model AIInsight {
   @@map("ai_insight")
 }
 
-/// 本人行动状态（继承B+T；专用 version 与 B.row_version 并存）
 model ActionState {
   id          String            @id @default(uuid())
   orgId       String            @map("org_id")
@@ -1079,7 +1105,6 @@ model ActionState {
   @@map("action_state")
 }
 
-/// 日报（继承B+T）
 model AIReport {
   id               String           @id @default(uuid())
   orgId            String           @map("org_id")
@@ -1113,7 +1138,6 @@ model AIReport {
   @@map("ai_report")
 }
 
-/// AI 运行（继承B+T）
 model AIRun {
   id              String          @id @default(uuid())
   orgId           String          @map("org_id")
@@ -1156,11 +1180,6 @@ model AIRun {
   @@map("ai_run")
 }
 
-// ============================================================
-// 10.5 导入、覆盖与执行记录
-// ============================================================
-
-/// 导入任务（继承B+T）；committed 三元组随导入 Outbox 冻结
 model ImportTask {
   id                      String           @id @default(uuid())
   orgId                   String           @map("org_id")
@@ -1221,7 +1240,6 @@ model ImportTask {
   @@map("import_task")
 }
 
-/// 来源覆盖声明（继承B+T）；K5 唯一键见下
 model DataCoverage {
   id             String           @id @default(uuid())
   orgId          String           @map("org_id")
@@ -1250,7 +1268,6 @@ model DataCoverage {
   @@map("data_coverage")
 }
 
-/// 后台任务（继承B+T）；recompute 目标部分唯一由 SQL migration 保证
 model JobRun {
   id             String          @id @default(uuid())
   orgId          String          @map("org_id")
@@ -1282,7 +1299,6 @@ model JobRun {
   @@map("job_run")
 }
 
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
 model AuthRateLimit {
   id        String   @id @default(uuid())
   key       String   @unique
@@ -1294,283 +1310,6 @@ model AuthRateLimit {
   @@map("auth_rate_limit")
 }
 
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 认证/邀请防爆破限流计数（TASK-003；无 Redis，按 08 §17.2 用数据库记录）
-model AuthRateLimit {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  count     Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([expiresAt])
-  @@map("auth_rate_limit")
-}
-
-/// 审计日志（继承B；store_id 可空；只存脱敏摘要）
 model AuditLog {
   id            String    @id @default(uuid())
   orgId         String    @map("org_id")

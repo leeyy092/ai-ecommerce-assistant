@@ -80,7 +80,7 @@ async function seedChain(p: PrismaClient, tag: string) {
       externalProductId: `P-${tag}`, name: "保温杯",
     },
   });
-  const sku = await p.sku.create({
+  const sku = await p.sKU.create({
     data: {
       orgId: org.id, storeId: store.id, sourceNamespace: `ns-${tag}`,
       sourceUpdatedAt: new Date(), importTaskId: importTask.id, rowHash: randomUUID(),
@@ -152,7 +152,7 @@ describe("TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL）", () => 
   it("重复自然键被阻断：同 (org,store,namespace,external_sku_id)", async () => {
     const a = await seedChain(prisma, "dup");
     await expect(
-      prisma.sku.create({
+      prisma.sKU.create({
         data: {
           orgId: a.org.id, storeId: a.store.id, sourceNamespace: "ns-dup",
           sourceUpdatedAt: new Date(), importTaskId: a.importTask.id, rowHash: randomUUID(),
