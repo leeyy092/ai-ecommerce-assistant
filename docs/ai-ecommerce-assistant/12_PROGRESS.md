@@ -9,8 +9,8 @@
 - Base Branch：`main`
 - Origin：`git@github.com:leeyy092/ai-ecommerce-assistant.git`（SSH）
 - 同步状态：与 `origin/phase/01-foundation` 一致（随每次 commit 更新本段）
-- Current Phase：Phase 1（TASK-001 ✅ TASK-002 ✅ TASK-003 进行中 TASK-004 待）
-- Next Action：完成 TASK-003 → commit/push → TASK-004 → Gate 01（CODEX_REVIEW_REQUIRED）
+- Current Phase：Phase 1（TASK-001 ✅ TASK-002 ✅ TASK-003 ✅ TASK-004 待）
+- Next Action：完成 TASK-004（组织隔离与固定权限服务）→ Gate 01（CODEX_REVIEW_REQUIRED）
 - 规则要点：main 只接收通过 Review Gate 的 Phase 合并；禁止 main 上开发/force push/重写历史；每 TASK 独立 commit（含编号，测试通过后提交）；Gate 冻结=干净树+已推送+HANDOFF 更新。
 
 ## 当前结论
@@ -40,7 +40,7 @@
 |---|---|---|---|---|
 | TASK-001 | 可启动的应用与验证环境 | DONE | 无前置开发任务；2026-09-12 收到 v1.1 DEVELOPMENT_HANDOFF 作为开发指令后执行 | 全部指定检查通过（见下方 TASK-001 执行记录） |
 | TASK-002 | P0数据库与约束迁移 | DONE | TASK-001（DONE） | 全部指定检查通过（见 TASK-002 执行记录；迁移链已于事故后重建并复验） |
-| TASK-003 | 登录、初始Owner与受控邀请 | IN_PROGRESS | TASK-002（DONE） | 进行中；2026-09-12 晚被 iCloud 事故中断于 auth 迁移生成阶段，恢复后待续 |
+| TASK-003 | 登录、初始Owner与受控邀请 | DONE | TASK-002（DONE） | 全部指定检查通过（见下方 TASK-003 执行记录，2026-09-13） |
 | TASK-004 | 组织隔离与固定权限服务 | TODO | TASK-003 | 未执行 |
 | TASK-005 | 店铺与数据源配置 | TODO | TASK-004 | 未执行 |
 | TASK-006 | 统一Adapter与最小黄金样本 | TODO | TASK-005 | 未执行 |
@@ -120,6 +120,26 @@
 - 恢复损失清单（未找回）：① `图豆AI产品与增长调研报告.md`（40285 字节，早于全部会话转录；同名 .docx 同失）——建议登录 iCloud.com「最近删除」尝试找回，或从原始来源重新导出；② `DEVELOPMENT_HANDOFF.md` 恢复至 26628/31424 字节（约 85%，尾部章节缺失），缺失内容可由 12 份规格 + FINAL_DECISIONS.md 补足开发所需；③ `SHA256SUMS.txt` 按恢复后文件重新生成（旧校验和已无意义）；④ `src/app/favicon.ico`（二进制未恢复，不影响构建）；⑤ `.env` 按已知变量重建（仅 DATABASE_URL/LOG_LEVEL，无密钥）。原 p0_init/p0_auth_protections 迁移字节、原始 pnpm-lock.yaml 已等价重建。
 - 风险与建议：① 项目位于 iCloud 同步范围是事故根因，强烈建议把仓库迁出 `~/Documents`（如 `~/dev/`），或至少在系统设置中关闭「优化 Mac 存储」；② 已建立 git 基线提交，并将 `git bundle` 备份存放于 Documents 之外；③ 旧窗口（上下文将满的会话）请勿继续使用，避免双会话并发写同一仓库。
 - 执行人：Zcode（新会话）。
+
+## TASK-003 执行记录（2026-09-13）
+
+- 日期/执行人：2026-09-13 · Zcode（依据 09_TASKS TASK-003 合同、02_USER_ROLES v1.1、08_API_SPEC §17.2、DEVELOPMENT_HANDOFF §5.3/§5.4 与 F10 限流归属）。
+- 状态：DONE。
+- 完成行为：
+  - `src/lib/auth.ts`：Better Auth 1.7.4（emailAndPassword、数据库 session、无公开注册）；官方 prismaAdapter 1.7.4 无 modelMapping 选项，以委托门面（user→AuthUser 等）映射认证四表；trustedOrigins/baseURL 来自 BETTER_AUTH_URL。
+  - `/api/auth/[...all]`：库原生路由；sign-in/email 外包裹数据库持久限流（登录失败 10 次/IP/分钟 → 429 含等待秒数；成功清零），`src/lib/rateLimit.ts`（auth_rate_limit 固定窗口原子 upsert，等待秒数在 SQL 内计算）。
+  - `src/lib/session.ts` 会话上下文（Better Auth session → 领域 User + 活跃 Membership；禁用即时失权）；`src/lib/http.ts` 统一信封（data/meta.request_id、error.code、no-store）。
+  - 邀请服务 `src/services/invitations.ts`：单次使用、48h、只存 SHA256 token 哈希、按角色可邀请范围（O→A/P/C，A→P/C）、已是成员 409、过期实时 410 落库、撤销乐观锁、接受 CAS 原子消费（并发仅一次成功）、新用户经 signUpEmail 建身份（库哈希）后事务建领域身份+Membership+审计、失败回滚 token 消费、已登录邮箱不符 403。
+  - Owner 初始化 `src/services/ownerInit.ts` + `scripts/init-owner.ts`（密码仅 stdin/OWNER_PASSWORD_FILE 隐藏输入；幂等：重复执行返回既有身份不重设密码；不凭邮箱接管；DB 单 Owner 部分唯一双保险）；`scripts/reset-owner-password.ts` 一次性重置（better-auth/crypto hashPassword + 撤销全部会话 + 审计）。
+  - 业务路由：GET `/api/v1/me`（memberships/active_org/role/allowed_modules）、PUT `/api/v1/me/active-organization`（成员校验+HttpOnly Cookie）、POST/GET `/api/v1/invitations`（列表遮罩邮箱不回 token）、GET/DELETE `/api/v1/invitations/{idOrToken}`（公开 token 预览限流 60/IP/min）、POST `…/accept`（防爆破 20/IP/min；新用户接受后下发登录 Cookie）、GET `/api/v1/members`、PATCH `/api/v1/members/{id}`（角色/禁用；Admin 不能动 O/A；禁用删全部会话+领域禁用；最后 Owner 保护）。
+  - 页面：`/login`（表单+错误提示+无公开注册说明）、`/invite/[token]`（组织名/遮罩邮箱/到期时间；新用户建号 vs 已登录匹配/不符分流）。
+  - instrumentation 启用 auth 组件校验（缺 BETTER_AUTH_* 启动失败）；`.env.example` 既有条目不变，本地 `.env` 注入开发 secret。
+- 修改/新增路径：新增 src/lib/{auth,session,http,rateLimit,email}.ts、src/services/{audit,invitations,ownerInit}.ts、src/app/api/auth/[...all]/route.ts、src/app/api/v1/{me,me/active-organization,invitations,invitations/[idOrToken],invitations/[idOrToken]/accept,members,members/[id]}/route.ts、src/app/(auth)/{login,invite/[token]}/…、scripts/{init-owner,reset-owner-password}.ts、tests/integration/auth.test.ts、tests/e2e/{auth.spec.ts,auth.global-setup.ts}；修改 src/instrumentation-node.ts、playwright.config.ts（globalSetup）、README。
+- 数据库变化：无 schema 变更（auth_rate_limit 已在重建的 p0_init 内）。
+- API 变化：新增 /api/auth/*（库原生）与 08 §17.2 列明的 me/invitations/members 端点。
+- 实际测试命令及结果（2026-09-13 真实执行）：`pnpm typecheck` ✅ 0 错误；`pnpm vitest run tests/integration/auth.test.ts` ✅ 8/8（初始化+真实会话登录、幂等重跑不改密码、单 Owner 部分唯一、禁用失权、Operator 禁邀、token 只存哈希、已成员 409、并发双接受仅一成功+重放拒绝、过期 410/邮箱不符 403/撤销 409、限流 10 次窗口 429+重置）；`pnpm test` ✅ 7/7；`pnpm test:integration` ✅ 21/21（3 文件）；`pnpm build` ✅ 0 错误；`pnpm test:e2e` ✅ 6/6（登录页、错误密码、登录成功+页面内 fetch /api/v1/me=owner、未登录 401、健康检查、基础页）；init-owner 脚本真实运行含幂等重跑 ✅。
+- 已知限制：① E2E 密码默认值 e2e-owner-pass-123 仅用于本地演示库（aiea_dev），生产初始化必须用隐藏输入/受限文件；② Better Auth 1.7.4 prismaAdapter 无 modelMapping，采用委托门面——升级 better-auth 时需复核；③ C 角色登录默认入口的强制跳转在 TASK-004 权限服务落地后按 03 规则完善；④ 登录限流按 IP 计失败（成功清零），未区分共出口 NAT（08 已允许管理员调整）；⑤ 未提交 git commit——随后按 Git 规则以 feat(TASK-003) 提交。
+- 下一TASK：TASK-004（组织隔离与固定权限服务）。
 
 ## 每次TASK完成后追加的记录格式
 

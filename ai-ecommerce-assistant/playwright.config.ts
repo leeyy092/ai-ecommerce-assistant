@@ -6,6 +6,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: [["list"]],
+  globalSetup: "./tests/e2e/auth.global-setup.ts",
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000",
   },

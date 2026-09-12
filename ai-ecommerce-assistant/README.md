@@ -883,3 +883,32 @@ docker compose up -d --build
 
 - 本仓库不含任何业务实体、业务页面、模型调用或云部署（按 TASK-001 合同禁止）。
 - 下一任务：TASK-002（P0 数据库与约束迁移，Prisma + 迁移）。
+
+## TASK-003｜登录、初始Owner与受控邀请（2026-09-13）
+
+- 能力：Better Auth 邮箱密码 + 数据库 session（无公开注册）；受控邀请（单次/48h/只存哈希/并发原子消费）；Owner 初始化幂等；成员禁用即时撤会话；登录与邀请防爆破（数据库限流，重启有效）；/api/v1/me 系列端点；/login 与 /invite/[token] 页面。
+- 本地启用：`.env` 需 `BETTER_AUTH_SECRET`（随机 64 hex）与 `BETTER_AUTH_URL=http://127.0.0.1:3000`（缺失时 Web 启动明确失败）。
+
+### TASK-003 常用命令
+
+```bash
+# 初始化/幂等重跑 Owner（密码经 stdin 隐藏输入；或 OWNER_PASSWORD_FILE=受限文件）
+read -s -p "Owner 密码: " PW && echo "$PW" | \
+  pnpm exec tsx scripts/init-owner.ts --org "组织名" --email a@b.c --name 显示名 [--demo]
+
+# 一次性密码重置（撤销全部旧会话）
+read -s -p "新密码: " PW && echo "$PW" | \
+  pnpm exec tsx scripts/reset-owner-password.ts --email a@b.c
+
+pnpm vitest run tests/integration/auth.test.ts   # 认证/邀请集成测试
+```
+
+### TASK-003 实测结果（真实 PostgreSQL 17 + 真实会话）
+
+| 验收项 | 结果 |
+|---|---|
+| typecheck / build | ✅ 0 错误 |
+| 集成 auth.test.ts（8 例：初始化+登录、幂等、单Owner、禁用失权、邀请全生命周期、并发仅一次、限流） | ✅ 8/8 |
+| unit / integration 全量 | ✅ 7/7 · 21/21 |
+| E2E（登录页/错误密码/登录成功+me=owner/未登录 401/健康/基础页） | ✅ 6/6 |
+| init-owner 真实运行 + 幂等重跑（不重设密码） | ✅ |
