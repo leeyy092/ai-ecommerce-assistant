@@ -2,6 +2,17 @@
 
 版本：v1.1 · 2026-09-12（含当晚 iCloud 事故恢复记录）。本文是项目唯一进度真源，规则中提到的progress.md均指此文件。
 
+## Git 状态（由 Zcode 自动维护；2026-09-13 Owner 授权 Git 生命周期规则）
+
+- Project Status：IN_PROGRESS（Phase 1）
+- Current Branch：`phase/01-foundation`
+- Base Branch：`main`
+- Origin：`git@github.com:leeyy092/ai-ecommerce-assistant.git`（SSH）
+- 同步状态：与 `origin/phase/01-foundation` 一致（随每次 commit 更新本段）
+- Current Phase：Phase 1（TASK-001 ✅ TASK-002 ✅ TASK-003 进行中 TASK-004 待）
+- Next Action：完成 TASK-003 → commit/push → TASK-004 → Gate 01（CODEX_REVIEW_REQUIRED）
+- 规则要点：main 只接收通过 Review Gate 的 Phase 合并；禁止 main 上开发/force push/重写历史；每 TASK 独立 commit（含编号，测试通过后提交）；Gate 冻结=干净树+已推送+HANDOFF 更新。
+
 ## 当前结论
 
 两份审查的 P0 取舍已形成 FINAL_DECISIONS.md，并写入 v1.1 规格与交接入口。2026-09-12 收到 DEVELOPMENT_HANDOFF v1.1 作为开发指令，TASK-001（可启动的应用与验证环境）与 TASK-002（P0数据库与约束迁移）已完成并通过其全部指定检查；TASK-003 进行中被中断，恢复后维持 IN_PROGRESS。**2026-09-12 晚间发生 iCloud「桌面与文档」同步事故，工作区文件被大规模驱逐并最终整目录失联；已从 ZCode/Codex 会话转录与数据库 dump 完成重建（见下方事故记录），typecheck/unit 7/7/integration 13/13 在重建后全部通过。**未上传客户业务文件，未调用真实企业数据或收费模型。
