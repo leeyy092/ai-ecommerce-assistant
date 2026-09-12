@@ -9,8 +9,8 @@
 - Base Branch：`main`
 - Origin：`git@github.com:leeyy092/ai-ecommerce-assistant.git`（SSH）
 - 同步状态：与 `origin/phase/01-foundation` 一致（随每次 commit 更新本段）
-- Current Phase：Phase 1（TASK-001 ✅ TASK-002 ✅ TASK-003 ✅ TASK-004 待）
-- Next Action：完成 TASK-004（组织隔离与固定权限服务）→ Gate 01（CODEX_REVIEW_REQUIRED）
+- Current Phase：Phase 1（TASK-001 ✅ TASK-002 ✅ TASK-003 ✅ TASK-004 ✅）
+- Next Action：CODEX_REVIEW_GATE_01 冻结（CODEX_REVIEW_REQUIRED，等待 Codex Review 与 Owner 放行后合并 main）
 - 规则要点：main 只接收通过 Review Gate 的 Phase 合并；禁止 main 上开发/force push/重写历史；每 TASK 独立 commit（含编号，测试通过后提交）；Gate 冻结=干净树+已推送+HANDOFF 更新。
 
 ## 当前结论
@@ -41,7 +41,7 @@
 | TASK-001 | 可启动的应用与验证环境 | DONE | 无前置开发任务；2026-09-12 收到 v1.1 DEVELOPMENT_HANDOFF 作为开发指令后执行 | 全部指定检查通过（见下方 TASK-001 执行记录） |
 | TASK-002 | P0数据库与约束迁移 | DONE | TASK-001（DONE） | 全部指定检查通过（见 TASK-002 执行记录；迁移链已于事故后重建并复验） |
 | TASK-003 | 登录、初始Owner与受控邀请 | DONE | TASK-002（DONE） | 全部指定检查通过（见下方 TASK-003 执行记录，2026-09-13） |
-| TASK-004 | 组织隔离与固定权限服务 | TODO | TASK-003 | 未执行 |
+| TASK-004 | 组织隔离与固定权限服务 | DONE | TASK-003（DONE） | 全部指定检查通过（见下方 TASK-004 执行记录，2026-09-13） |
 | TASK-005 | 店铺与数据源配置 | TODO | TASK-004 | 未执行 |
 | TASK-006 | 统一Adapter与最小黄金样本 | TODO | TASK-005 | 未执行 |
 | TASK-007 | 文件上传、私有存储与ImportTask | TODO | TASK-006 | 未执行 |
@@ -140,6 +140,21 @@
 - 实际测试命令及结果（2026-09-13 真实执行）：`pnpm typecheck` ✅ 0 错误；`pnpm vitest run tests/integration/auth.test.ts` ✅ 8/8（初始化+真实会话登录、幂等重跑不改密码、单 Owner 部分唯一、禁用失权、Operator 禁邀、token 只存哈希、已成员 409、并发双接受仅一成功+重放拒绝、过期 410/邮箱不符 403/撤销 409、限流 10 次窗口 429+重置）；`pnpm test` ✅ 7/7；`pnpm test:integration` ✅ 21/21（3 文件）；`pnpm build` ✅ 0 错误；`pnpm test:e2e` ✅ 6/6（登录页、错误密码、登录成功+页面内 fetch /api/v1/me=owner、未登录 401、健康检查、基础页）；init-owner 脚本真实运行含幂等重跑 ✅。
 - 已知限制：① E2E 密码默认值 e2e-owner-pass-123 仅用于本地演示库（aiea_dev），生产初始化必须用隐藏输入/受限文件；② Better Auth 1.7.4 prismaAdapter 无 modelMapping，采用委托门面——升级 better-auth 时需复核；③ C 角色登录默认入口的强制跳转在 TASK-004 权限服务落地后按 03 规则完善；④ 登录限流按 IP 计失败（成功清零），未区分共出口 NAT（08 已允许管理员调整）；⑤ 未提交 git commit——随后按 Git 规则以 feat(TASK-003) 提交。
 - 下一TASK：TASK-004（组织隔离与固定权限服务）。
+
+## TASK-004 执行记录（2026-09-13）
+
+- 日期/执行人：2026-09-13 · Zcode（依据 09_TASKS TASK-004 合同与 02_USER_ROLES v1.1）。
+- 状态：DONE。
+- 完成行为：
+  - `src/services/access/permissions.ts`：固定四角色能力矩阵（viewBusinessData/viewProductData/manageSettings/manageOrgInfo/viewMembers/导入范围/邀请范围/Admin 可管理范围/canViewDashboard），纯函数无运行时依赖，可单测；客服告警白名单（F04：R08 两子通道+R09，R03/R10 拒绝）与 `projectForRole` 字段投影。
+  - `src/services/access/index.ts`：统一授权入口 `requirePermission`（session→活跃/指定组织成员→能力→可选店铺同域）；`requireStoreAccess`（店铺不存在或跨组织统一 404，不泄露存在性）；`assertMemberManageable`/`assertInvitable`；`AccessError`。
+  - 路由改造为单一授权入口：invitations POST/GET/DELETE、members GET/PATCH、新增 organization GET/PATCH（O/A 可见预算字段，P/C 不可见；改名乐观锁）。`src/lib/http.ts` 增加 `serviceFailure`（服务层 {status,code,message} → 错误信封）与 `ok(meta.status)` HTTP 状态支持（修复邀请创建应 201）。
+  - 已知边界：Dashboard/SKU/AI 端点属后续 TASK；本任务以能力矩阵 `canViewDashboard(C)=false`、店铺同域校验与 DB 复合键共同构成其前置防线，C 拒绝 Dashboard 将在 TASK-021/022/019 端点落地时直接复用 requirePermission。
+- 修改/新增路径：新增 src/services/access/{permissions.ts,index.ts}、src/app/api/v1/organization/route.ts、tests/unit/permissions.test.ts、tests/integration/permissions.test.ts；重写 invitations×2/members×2 路由与 http.ts。
+- 数据库变化：无。API 变化：新增 GET/PATCH /api/v1/organization。
+- 实际测试（2026-09-13 真实执行）：typecheck ✅ 0 错误；unit 14/14（能力矩阵 5 + 客服投影 2 + env 7）；integration 28/28（新增 permissions 7/7：O/A 可见预算字段而 P/C 不可见、P 改组织名 403/O 200 乐观锁、C/P 邀请 403、Admin 邀 admin 403/邀 operator 201、P 成员列表 403、跨组织改成员 404、禁用后旧 Cookie 401、跨组织店铺 404、两组织同名 SKU 复合键隔离+同域拒绝）；build ✅ 0 错误；e2e 6/6。
+- 已知限制：① 旧下载地址/旧 job 重放拒绝属 TASK-007/013 的文件与任务对象，本任务先行落地 Cookie 重放拒绝；② scoped repositories 完整形态随后续数据实体服务（005+）在 requireStoreAccess 之上生长，未提前建空壳。
+- 下一TASK：无——Phase 1 全部完成，进入 CODEX_REVIEW_GATE_01。
 
 ## 每次TASK完成后追加的记录格式
 

@@ -4,11 +4,10 @@
  * DELETE：O/A 在可管理范围内撤销（expected_version 乐观锁）。
  */
 import type { NextRequest } from "next/server";
-import { getSessionContext } from "@/lib/session";
-import { fail, ok, unauthorized } from "@/lib/http";
+import { CAPABILITIES, requirePermission } from "@/services/access";
+import { fail, ok, serviceFailure } from "@/lib/http";
 import { getPrismaClient } from "@/database/prisma";
 import {
-  InvitationError,
   previewInvitationByToken,
   revokeInvitation,
 } from "@/services/invitations";
@@ -47,9 +46,8 @@ export async function GET(
       role: preview.role,
     });
   } catch (error) {
-    if (error instanceof InvitationError) {
-      return fail(error.status, error.message, { code: error.code });
-    }
+    const mapped = serviceFailure(error);
+    if (mapped) return mapped;
     throw error;
   }
 }
@@ -58,35 +56,29 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ idOrToken: string }> },
 ) {
-  const ctx = await getSessionContext(req);
-  if (!ctx) return unauthorized();
-  const membership = ctx.memberships[0];
-  if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
-    return fail(403, "只有 Owner/Admin 可以撤销邀请");
-  }
-
-  let expectedVersion = Number(req.nextUrl.searchParams.get("expected_version"));
-  if (!Number.isFinite(expectedVersion) || expectedVersion < 1) {
-    return fail(422, "缺少合法的 expected_version");
-  }
-
-  const { idOrToken } = await params;
   try {
+    const ctx = await requirePermission(req, { capability: CAPABILITIES.viewMembers });
+
+    let expectedVersion = Number(req.nextUrl.searchParams.get("expected_version"));
+    if (!Number.isFinite(expectedVersion) || expectedVersion < 1) {
+      return fail(422, "缺少合法的 expected_version");
+    }
+
+    const { idOrToken } = await params;
     await revokeInvitation(
       {
         db: getPrismaClient(),
-        orgId: membership.orgId,
-        userId: ctx.user.id,
-        role: membership.role,
+        orgId: ctx.orgId,
+        userId: ctx.userId,
+        role: ctx.role,
       },
       idOrToken,
       expectedVersion,
     );
     return ok({ status: "revoked" });
   } catch (error) {
-    if (error instanceof InvitationError) {
-      return fail(error.status, error.message, { code: error.code });
-    }
+    const mapped = serviceFailure(error);
+    if (mapped) return mapped;
     throw error;
   }
 }

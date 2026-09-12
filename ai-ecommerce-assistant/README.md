@@ -912,3 +912,18 @@ pnpm vitest run tests/integration/auth.test.ts   # 认证/邀请集成测试
 | unit / integration 全量 | ✅ 7/7 · 21/21 |
 | E2E（登录页/错误密码/登录成功+me=owner/未登录 401/健康/基础页） | ✅ 6/6 |
 | init-owner 真实运行 + 幂等重跑（不重设密码） | ✅ |
+
+## TASK-004｜组织隔离与固定权限服务（2026-09-13）
+
+- `src/services/access/permissions.ts`：固定四角色能力矩阵（含导入范围、邀请范围、Admin 可管理范围、Dashboard 类入口）；客服告警白名单（R08 两子通道+R09）；字段级客服投影 `projectForRole`。
+- `src/services/access/index.ts`：统一授权入口 `requirePermission`（路由/任务/文件/AI 证据共用）、`requireStoreAccess` 同域校验（跨组织统一 404）、成员管理与邀请范围断言。
+- 路由重构：invitations/members/organization 全部走 requirePermission；新增 GET/PATCH `/api/v1/organization`（预算字段仅 O/A 可见）。
+
+### TASK-004 实测结果
+
+| 验收项 | 结果 |
+|---|---|
+| typecheck / build | ✅ 0 错误 |
+| unit（能力矩阵+投影） | ✅ 14/14 |
+| integration（含新增 permissions 7/7：跨组织 404、C/P 403、禁用重放 401、双组织同名 SKU 隔离） | ✅ 28/28 |
+| e2e 回归 | ✅ 6/6 |

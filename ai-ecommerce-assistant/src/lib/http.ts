@@ -13,9 +13,11 @@ export function requestId(): string {
 const NO_STORE = { "Cache-Control": "private, no-store" } as const;
 
 export function ok<T>(data: T, meta: Record<string, unknown> = {}): NextResponse {
+  // meta.status 可选指定 HTTP 状态码（如 201），不进入响应体 meta
+  const { status, ...rest } = meta as { status?: number };
   return NextResponse.json(
-    { data, meta: { request_id: requestId(), ...meta } },
-    { headers: NO_STORE },
+    { data, meta: { request_id: requestId(), ...rest } },
+    { status: Number.isFinite(status) ? Number(status) : 200, headers: NO_STORE },
   );
 }
 
@@ -44,6 +46,23 @@ export function fail(status: number, message: string, options: ApiErrorOptions =
 export const unauthorized = () => fail(401, "未登录或会话已过期", { code: "UNAUTHENTICATED" });
 export const forbidden = (message = "没有访问权限") => fail(403, message, { code: "FORBIDDEN" });
 export const notFound = (message = "记录不存在") => fail(404, message, { code: "NOT_FOUND" });
+
+/**
+ * 服务层错误（AccessError/InvitationError/OwnerInitError 等 {status,code,message} 形态）
+ * 统一映射为 API 错误信封；不匹配返回 null 交由调用方继续抛出。
+ */
+export function serviceFailure(error: unknown): NextResponse | null {
+  if (
+    error instanceof Error &&
+    "status" in error &&
+    "code" in error &&
+    typeof (error as { status?: unknown }).status === "number"
+  ) {
+    const typed = error as { status: number; code: string; message: string };
+    return fail(typed.status, typed.message, { code: typed.code });
+  }
+  return null;
+}
 
 function defaultCode(status: number): string {
   switch (status) {

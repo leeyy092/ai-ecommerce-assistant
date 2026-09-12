@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "workspace": "/Users/yuyuyu/Documents/AI-Workspace",
+  "paths": {
+    "product": "docs/ai-ecommerce-assistant/01_PRODUCT_VISION.md",
+    "architecture": "docs/ai-ecommerce-assistant/11_DEVELOPMENT_RULES.md",
+    "handoff": "DEVELOPMENT_HANDOFF.md",
+    "tasks": "docs/ai-ecommerce-assistant/09_TASKS.md",
+    "progress": "docs/ai-ecommerce-assistant/12_PROGRESS.md",
+    "decisions": "FINAL_DECISIONS.md",
+    "acceptance": "docs/ai-ecommerce-assistant/10_ACCEPTANCE_CRITERIA.md",
+    "deployment": "docs/DEPLOYMENT_STATUS.md",
+    "phase_plan": "PHASE_PLAN.md",
+    "review_handoff": "CODEX_REVIEW_HANDOFF.md"
+  }
+}
