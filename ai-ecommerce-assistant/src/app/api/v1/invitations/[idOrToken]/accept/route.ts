@@ -1,7 +1,8 @@
 /**
- * POST /api/v1/invitations/{token}/accept（08 §17.2）
- * 新用户：name+password 建立 Auth 身份（库哈希）并接受邀请（返回登录态 Cookie）。
- * 已有用户：须已登录且邮箱与受邀邮箱一致；原子消费 token（并发仅一次成功）。
+ * POST /api/v1/invitations/{token}/accept（08 §17.2；Gate-01 H05/H06 修复版）
+ * 新用户：输入完整校验后创建 Auth 身份（库哈希）；登录态采用框架返回的完整
+ * Set-Cookie（签名/命名/安全属性由 Better Auth 决定），路由只转发，不手工伪造。
+ * 已有用户：须已登录且邮箱与受邀邮箱一致；token CAS 原子消费（并发仅一次成功）。
  */
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
@@ -43,8 +44,8 @@ export async function POST(
 
   const sessionCtx = await getSessionContext(req);
 
-  // 新用户接受成功后需携带登录态：记录 signUpEmail 返回的 token 并以 HttpOnly Cookie 下发
-  let sessionToken: string | null = null;
+  // H05：保留框架 signUpEmail 的完整 Set-Cookie（含签名/安全属性），原样转发
+  let frameworkCookies: string[] = [];
   try {
     await acceptInvitation(db, {
       token: idOrToken,
@@ -54,29 +55,61 @@ export async function POST(
         ? { id: sessionCtx.user.id, email: sessionCtx.user.email }
         : undefined,
       signUpNewUser: async (email, password, name) => {
-        const result = await auth.api.signUpEmail({
+        const response = await auth.api.signUpEmail({
           body: { email, password, name },
-          asResponse: false,
+          asResponse: true,
         });
-        sessionToken = result.token;
-        return { authUserId: result.user.id };
+        if (!response.ok) {
+          throw new InvitationError(
+            409,
+            "IMPORT_CONFLICT",
+            "该邮箱已存在账号，请直接登录后接受邀请",
+          );
+        }
+        const created = (await response.json()) as { user?: { id?: string } };
+        if (!created.user?.id) {
+          throw new InvitationError(502, "AI_UNAVAILABLE", "认证服务返回异常，请重试");
+        }
+        frameworkCookies = response.headers.getSetCookie();
+        return { authUserId: created.user.id };
       },
     });
   } catch (error) {
     if (error instanceof InvitationError) {
       return fail(error.status, error.message, { code: error.code });
     }
+    const mapped = serviceFailureOf(error);
+    if (mapped) return mapped;
     throw error;
   }
 
   const response = ok({ status: "accepted" });
-  if (sessionToken) {
-    response.cookies.set("better-auth.session_token", sessionToken, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-    });
+  for (const cookie of frameworkCookies) {
+    response.headers.append("set-cookie", cookie);
   }
   return response;
+}
+
+/** 服务层 {status,code,message} 错误 → API 信封（与 http.serviceFailure 同语义） */
+function serviceFailureOf(error: unknown): Response | null {
+  if (
+    error instanceof Error &&
+    "status" in error &&
+    "code" in error &&
+    typeof (error as { status?: unknown }).status === "number"
+  ) {
+    const typed = error as { status: number; code: string; message: string };
+    return Response.json(
+      {
+        error: {
+          code: typed.code,
+          message: typed.message,
+          retryable: false,
+          request_id: crypto.randomUUID(),
+        },
+      },
+      { status: typed.status },
+    );
+  }
+  return null;
 }

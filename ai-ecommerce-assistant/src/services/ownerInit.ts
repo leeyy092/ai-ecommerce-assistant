@@ -22,10 +22,17 @@ export interface InitOwnerInput {
   displayName: string;
   demoMode: boolean;
   password: string;
+  /** 仅测试用故障注入点：Auth 身份创建后、领域事务前抛错（H06 同型） */
+  testHookAfterAuth?: () => Promise<void>;
 }
 
 /** 桥接 better-auth 创建 Auth 身份（库负责密码哈希）；由脚本/路由层注入 */
 export type SignUpFn = (email: string, password: string, name: string) => Promise<{ authUserId: string }>;
+
+/** 删除孤儿认证身份（无领域 User）；Session/Account 经库级联清除 */
+async function purgeOrphanAuthIdentity(db: PrismaClient, authUserId: string): Promise<void> {
+  await db.authUser.delete({ where: { id: authUserId } }).catch(() => {});
+}
 
 export interface InitOwnerResult {
   orgId: string;
@@ -42,6 +49,12 @@ export async function initOwner(
   if (!input.orgName.trim()) throw new OwnerInitError(422, "VALIDATION_ERROR", "组织名不能为空");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new OwnerInitError(422, "VALIDATION_ERROR", "邮箱格式不正确");
+  }
+  if (!input.displayName?.trim() || input.displayName.trim().length > 80) {
+    throw new OwnerInitError(422, "VALIDATION_ERROR", "显示名长度须为 1–80 个字符");
+  }
+  if (!input.password || input.password.length < 8) {
+    throw new OwnerInitError(422, "VALIDATION_ERROR", "密码至少 8 位");
   }
 
   const existingDomainUser = await db.user.findUnique({ where: { email } });
@@ -64,49 +77,60 @@ export async function initOwner(
     );
   }
 
+  // H06：上次失败的孤儿 Auth 身份安全回收后重建（幂等恢复）
   const existingAuthUser = await db.authUser.findUnique({ where: { email } });
   if (existingAuthUser) {
-    throw new OwnerInitError(
-      409,
-      "IMPORT_CONFLICT",
-      "该邮箱已存在认证账号但无领域身份，需人工核验处理",
-    );
+    await purgeOrphanAuthIdentity(db, existingAuthUser.id);
   }
 
   const created = await signUp(email, input.password, input.displayName.trim());
 
-  const result = await db.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: {
-        id: crypto.randomUUID(),
-        authUserId: created.authUserId,
-        email,
-        displayName: input.displayName.trim(),
-      },
-    });
-    const org = await tx.organization.create({
-      data: {
-        id: crypto.randomUUID(),
-        name: input.orgName.trim(),
-        ownerUserId: user.id,
-        demoMode: input.demoMode,
-      },
-    });
-    await tx.membership.create({
-      data: { orgId: org.id, userId: user.id, role: "owner" },
-    });
-    await writeAudit(tx, {
-      orgId: org.id,
-      actorUserId: user.id,
-      action: "owner_init",
-      entityType: "organization",
-      entityId: org.id,
-      afterSummary: { demoMode: input.demoMode },
-    });
-    return { orgId: org.id, userId: user.id };
-  });
+  if (input.testHookAfterAuth) {
+    try {
+      await input.testHookAfterAuth();
+    } catch (hookError) {
+      await purgeOrphanAuthIdentity(db, created.authUserId).catch(() => {});
+      throw hookError;
+    }
+  }
 
-  return { ...result, alreadyInitialized: false };
+  try {
+    const result = await db.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          id: crypto.randomUUID(),
+          authUserId: created.authUserId,
+          email,
+          displayName: input.displayName.trim(),
+        },
+      });
+      const org = await tx.organization.create({
+        data: {
+          id: crypto.randomUUID(),
+          name: input.orgName.trim(),
+          ownerUserId: user.id,
+          demoMode: input.demoMode,
+        },
+      });
+      await tx.membership.create({
+        data: { orgId: org.id, userId: user.id, role: "owner" },
+      });
+      await writeAudit(tx, {
+        orgId: org.id,
+        actorUserId: user.id,
+        action: "owner_init",
+        entityType: "organization",
+        entityId: org.id,
+        afterSummary: { demoMode: input.demoMode },
+      });
+      return { orgId: org.id, userId: user.id };
+    });
+    return { ...result, alreadyInitialized: false };
+  } catch (error) {
+    // H06 补偿：领域事务失败 → 删除 Auth 身份，下次重跑干净恢复
+    await purgeOrphanAuthIdentity(db, created.authUserId).catch(() => {});
+    throw error;
+  }
 }
 
 /**

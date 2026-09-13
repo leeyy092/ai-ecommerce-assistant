@@ -1,7 +1,8 @@
 /**
  * Better Auth 原生路由（/api/auth/*，08 §17.2）。
- * 在登录端点外包裹数据库持久限流：登录失败 10 次/IP/分钟 → 429（含等待秒数）；
- * 登录成功清除失败计数。公开注册未启用（账号仅经初始化与受控邀请建立）。
+ * Gate-01 H04：公开注册关闭——HTTP 层直接拒绝匿名 sign-up；
+ * 受控创建路径（初始 Owner 脚本、邀请接受）走服务端 auth.api，不经本路由，不受影响。
+ * 登录防爆破：sign-in/email 外层数据库持久限流（失败 10 次/IP/分钟 → 429；成功清零）。
  */
 import { toNextJsHandler } from "better-auth/next-js";
 import type { NextRequest } from "next/server";
@@ -18,12 +19,29 @@ function clientIp(req: NextRequest): string {
   return req.headers.get("x-real-ip") ?? "127.0.0.1";
 }
 
+const PUBLIC_SIGNUP_BLOCKED = Response.json(
+  {
+    error: {
+      code: "PUBLIC_SIGNUP_DISABLED",
+      message: "系统不提供公开注册；账号由部署初始化与管理员邀请建立",
+      retryable: false,
+      request_id: crypto.randomUUID(),
+    },
+  },
+  { status: 403 },
+);
+
 async function withLoginRateLimit(
   handler: (req: NextRequest) => Promise<Response>,
   req: NextRequest,
 ): Promise<Response> {
-  const isSignIn = req.nextUrl.pathname.endsWith("/sign-in/email");
-  if (!isSignIn) return handler(req);
+  const path = req.nextUrl.pathname;
+  if (path.endsWith("/sign-up/email")) {
+    return PUBLIC_SIGNUP_BLOCKED;
+  }
+  if (!path.endsWith("/sign-in/email")) {
+    return handler(req);
+  }
 
   const db = getPrismaClient();
   const key = `login-fail:${clientIp(req)}`;

@@ -940,3 +940,11 @@ pnpm vitest run tests/integration/auth.test.ts   # 认证/邀请集成测试
 - 新迁移 `20260913044218_p0_audit_tenant_fk`：AuditLog 店铺同域校验以**数据库触发器**实现（同域/空 store 放行、异域异常；选触发器而非复合外键的原因见迁移注释——Prisma 混合可空性建模限制 + 零漂移）。
 - 升级路径：aiea_dev（现有数据）`migrate deploy` 应用成功且复查 `migrate dev` "Already in sync"；空库路径由测试套件覆盖。
 - 回归：`tests/integration/gate01.db.test.ts` 3/3（同域三例 + 类型断言 + UTC/+08 等值）。
+
+### Gate-01 H04–H07 修复（2026-09-13，TASK-003）
+
+- H04：`/api/auth/sign-up/email` HTTP 层 403 `PUBLIC_SIGNUP_DISABLED`；受控路径（初始化/邀请）走服务端 auth.api 不受影响。
+- H05：邀请接受后登录态转发 Better Auth 框架完整 Set-Cookie（签名/命名/安全属性由框架决定），不再手工伪造 Cookie。
+- H06：接受流程重写——输入先完整校验（422 零副作用）；孤儿 Auth 身份安全回收；单一事务内（PG 事务级咨询锁按邮箱+邀请串行）完成 token CAS+领域身份+成员+审计；Auth 创建失败/领域事务失败均补偿删除 Auth 身份，邀请回 pending 可重试。
+- H07：邀请创建/撤销/接受与 AuditLog 同事务（DB 级 NOT VALID 约束注入验证零部分提交）。
+- 回归：gate01.auth 集成 8/8（公开注册拒绝、框架会话、孤儿恢复、补偿重试、Owner 同型故障、审计原子）；E2E +2（邀请全流程双浏览器上下文、公开注册拒绝）；全套 39/39 + 8/8。
