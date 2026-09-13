@@ -2,26 +2,73 @@
 
 版本：v1.1 · 2026-09-12（含当晚 iCloud 事故恢复记录）。本文是项目唯一进度真源，规则中提到的progress.md均指此文件。
 
+## 当前导航（唯一进度的一部分）
+
+**Phase 1 项目地基 / CODEX_REVIEW_GATE_01 = BLOCKED / TASK-001–004 需修复重新验收 / 下一工具 ZCode。**
+Codex 已完成独立审查：10 HIGH、4 MEDIUM、无已确认 CRITICAL；现有测试通过不等于完整验收通过。先由 GPT/Owner 明确 D01 禁用范围，ZCode 按审查报告逐 TASK 修复后交 Codex 复审。Checkpoint=YES，禁止合并 main 或开始 TASK-005。
+
+<!-- PRODUCT_OS_STATE_BEGIN -->
+```json
+{
+  "schema_version": 1,
+  "project_name": "电商中台 · AI 电商运营助手",
+  "goal": "让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动",
+  "stage": "07 阶段审查 · Phase 1 项目地基",
+  "current_task": "TASK-004",
+  "status": "待修复",
+  "last_completed": "CODEX_REVIEW_GATE_01 独立审查完成；TASK-001–004 的完整验收均 FAIL，旧 DONE 保留为历史",
+  "next_action": "GPT/Owner 确认 D01 禁用范围；ZCode 按 H01–H10 在 Phase 1 逐 TASK 修复，之后 Codex 复审；禁止合并 main 和进入 TASK-005",
+  "next_owner": "ZCode",
+  "next_prompt": "prompts/P08_FIX.md",
+  "acceptance": "在冻结 c263610 基础上修复 H01–H10，落实 D01；真实 HTTP 多组织/角色/邀请与审计故障回归、迁移和容器检查通过；提交独立修复证据供 Codex 复审，不自行放行",
+  "blockers": "10 项 HIGH 未修复；D01 全局账号与组织成员禁用语义待 GPT/Owner 裁决；Docker 完整构建/启动未实测。无阶段通过或 Owner 放行。",
+  "checkpoint": "YES",
+  "review": "BLOCKED · CODEX_REVIEW_GATE_01 · 2026-09-13 · c263610；技术验收 FAIL，必须修复并复审",
+  "updated_at": "2026-09-13T01:28:09+08:00",
+  "updated_by": "Codex · Gate 01 独立技术审查",
+  "evidence": [
+    "docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md：正式 15 节审查报告，10 HIGH、4 MEDIUM，TASK-001–004 FAIL。",
+    "docs/reviews/GATE_01_EVIDENCE.json 与 gate-01-evidence/：真实隔离 PG17，unit 14/14、integration 28/28、e2e 6/6、typecheck/build PASS；额外 HTTP/数据库/故障注入复现阻断问题。",
+    "审查前后原 99 个已跟踪文件哈希未变，随后仅报告/进度/交接/提示词管理写回；应用代码未改。",
+    "基线 main=2a983cc，冻结 phase/01-foundation=c263610；TASK-001/002 已在恢复基线，按当前代码快照补验。",
+    "未提交/推送/合并/部署；之前 Product OS 接入证据仍见 docs/PRODUCT_OS_ADOPTION.md。"
+  ],
+  "github": {
+    "status": "已连接；此前核实 c263610 与远端一致；本次审查及管理文档未提交/推送（本轮未重查远端）",
+    "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
+    "verified_at": "2026-09-13T00:54:14+08:00",
+    "evidence": "实际 git ls-remote origin：phase/01-foundation 与本地 HEAD 均为 c263610541f8c8f7b41fd38c185f5feac94e8ee2；main 为 2a983cc55f136abbb49c5d02b55c1cb82b6547cc。仓库可见性 unknown。"
+  },
+  "deployment": {
+    "status": "unknown（未找到生产部署或线上可用证据）",
+    "url": "",
+    "verified_at": "2026-09-13T00:45:24+08:00",
+    "evidence": "已查 Dockerfile、compose.yaml、已跟踪部署配置与 README；只见本地 127.0.0.1:3000，不能当线上地址。本地 /api/health 请求连接重置；未运行部署或容器。"
+  }
+}
+```
+<!-- PRODUCT_OS_STATE_END -->
+
 ## Git 状态（由 Zcode 自动维护；2026-09-13 Owner 授权 Git 生命周期规则）
 
-- Project Status：**CODEX_REVIEW_REQUIRED**（CODEX_REVIEW_GATE_01 冻结，2026-09-13）
+- Project Status：**REVIEW_BLOCKED / 待修复**（CODEX_REVIEW_GATE_01，2026-09-13；正式结论 BLOCKED）
 - Current Branch：`phase/01-foundation`
 - Base Branch：`main`
 - Origin：`git@github.com:leeyy092/ai-ecommerce-assistant.git`（SSH）
-- 同步状态：与 `origin/phase/01-foundation` 一致；working tree clean
-- Review Commit（冻结点）：见 `git log -1`（本段提交后的最新 commit）
+- 同步状态：2026-09-13T00:54:14+08:00 已联网核实，已提交 HEAD 与远端一致于 c263610；本次后续管理接入改动尚未提交，当前工作区不再是 clean。
+- Review Commit（业务冻结点）：`c263610541f8c8f7b41fd38c185f5feac94e8ee2`；审查同时核对本次管理文档差异，不将“最新 HEAD”永久视为同一审查版本。
 - Previous Review Commit：无（首个 Gate）
 - Git Diff Range：`main..phase/01-foundation`
-- Completed Tasks（本 Phase）：TASK-001 ✅ TASK-002 ✅ TASK-003 ✅ TASK-004 ✅
+- TASK 验收（本 Phase）：TASK-001 FAIL、TASK-002 FAIL、TASK-003 FAIL、TASK-004 FAIL；ZCode 原完成记录保留为历史，当前需修复复审
 - Test Results（冻结时全量回归）：typecheck 0 错误；unit 14/14；integration 28/28；build 0 错误；e2e 6/6
-- Next Action：Owner 提交 Codex Review → 按 ACCEPT/DISCUSS/REJECT 处理 → 通过后合并 main 并创建 phase/02-data-ingestion
+- Next Action：GPT/Owner 确认 D01 → ZCode 按报告逐 TASK 修复 → Codex 复审 → Owner 最终放行；当前禁止合并或 TASK-005
 - 规则要点：main 只接收通过 Review Gate 的 Phase 合并；禁止 main 上开发/force push/重写历史；每 TASK 独立 commit（含编号，测试通过后提交）；Gate 冻结=干净树+已推送+HANDOFF 更新。
 
-## 当前结论
+## 历史结论（2026-09-12 恢复时，当前以状态块与任务表为准）
 
 两份审查的 P0 取舍已形成 FINAL_DECISIONS.md，并写入 v1.1 规格与交接入口。2026-09-12 收到 DEVELOPMENT_HANDOFF v1.1 作为开发指令，TASK-001（可启动的应用与验证环境）与 TASK-002（P0数据库与约束迁移）已完成并通过其全部指定检查；TASK-003 进行中被中断，恢复后维持 IN_PROGRESS。**2026-09-12 晚间发生 iCloud「桌面与文档」同步事故，工作区文件被大规模驱逐并最终整目录失联；已从 ZCode/Codex 会话转录与数据库 dump 完成重建（见下方事故记录），typecheck/unit 7/7/integration 13/13 在重建后全部通过。**未上传客户业务文件，未调用真实企业数据或收费模型。
 
-## 仓库与远程状态（2026-09-12）
+## 历史仓库与远程状态（2026-09-12，仅保留当时记录）
 
 - Remote：https://github.com/leeyy092/ai-ecommerce-assistant.git（Private；实际推送通道为 SSH `git@github.com:leeyy092/ai-ecommerce-assistant.git`，因本机钥匙串无 HTTPS PAT）
 - Remote Status：CONNECTED
@@ -42,10 +89,10 @@
 
 | TASK | 名称 | 状态 | 依赖 | 测试/证据 |
 |---|---|---|---|---|
-| TASK-001 | 可启动的应用与验证环境 | DONE | 无前置开发任务；2026-09-12 收到 v1.1 DEVELOPMENT_HANDOFF 作为开发指令后执行 | 全部指定检查通过（见下方 TASK-001 执行记录） |
-| TASK-002 | P0数据库与约束迁移 | DONE | TASK-001（DONE） | 全部指定检查通过（见 TASK-002 执行记录；迁移链已于事故后重建并复验） |
-| TASK-003 | 登录、初始Owner与受控邀请 | DONE | TASK-002（DONE） | 全部指定检查通过（见下方 TASK-003 执行记录，2026-09-13） |
-| TASK-004 | 组织隔离与固定权限服务 | DONE | TASK-003（DONE） | 全部指定检查通过（见下方 TASK-004 执行记录，2026-09-13） |
+| TASK-001 | 可启动的应用与验证环境 | BLOCKED | 无前置开发任务 | Gate 01 FAIL：H10 Docker/Compose；本地启动、build、Worker检查通过；原执行记录见下 |
+| TASK-002 | P0数据库与约束迁移 | BLOCKED | TASK-001 | Gate 01 FAIL：H08审计同域、H09时间语义；现有迁移及约束测试通过；需修复后复审 |
+| TASK-003 | 登录、初始Owner与受控邀请 | BLOCKED | TASK-002 | Gate 01 FAIL：H03–H07；公开注册、邀请会话/恢复、管理事务；原测试通过不等于验收 |
+| TASK-004 | 组织隔离与固定权限服务 | BLOCKED | TASK-003 | Gate 01 FAIL：H01–H03；组织上下文、角色提升、跨组织禁用；D01待产品裁决 |
 | TASK-005 | 店铺与数据源配置 | TODO | TASK-004 | 未执行 |
 | TASK-006 | 统一Adapter与最小黄金样本 | TODO | TASK-005 | 未执行 |
 | TASK-007 | 文件上传、私有存储与ImportTask | TODO | TASK-006 | 未执行 |
@@ -77,17 +124,17 @@
 
 | 项目 | 当前状态 | 达成时需要的证据 |
 |---|---|---|
-| 应用可启动 | TASK-001 已通过（2026-09-12；事故后未重新跑 build/e2e，typecheck/unit/integration 已复验） | 构建、启动与健康检查 |
+| 应用可启动 | 2026-09-13 Codex 本地启动/build/E2E/Worker通过；容器路径 H10 阻断，TASK-001 整体 FAIL | 修复 Docker/Compose 并真实容器验证 |
 | 六类CSV导入 | 未开发/未执行 | 全链路导入与错误/幂等验证 |
 | 指标与规则正确 | 未开发/未执行 | 黄金案例手算与实际PG结果一致 |
-| 角色隔离 | 未开发/未执行 | 两组织四角色API及文件测试 |
+| 角色隔离 | Phase 1 已实现并审查，但 H01–H03 失败；未来文件/AI对象尚未实测 | 修复后真实多组织角色/撤权回归及后续对象测试 |
 | AI联网质量 | 未执行 | 固定模型、脱敏测试集、分类与事实引用指标 |
 | 首页三分钟任务 | 未执行 | 目标角色观察记录，不能用截图替代 |
 | 性能/恢复 | 未执行 | 指定规模p95/p99、备份恢复记录 |
 | 真实企业试用 | 未验证 | 企业脱敏文件与实际使用记录 |
 | 再次使用/报价/付款 | 均未验证 | 分别提供使用、报价接受与付款证据 |
 
-## 下一步
+## 历史恢复下一步（2026-09-12，TASK-003 后续已完成）
 
 恢复 TASK-003（登录、初始Owner与受控邀请）：开始前阅读 02_USER_ROLES.md、08_API_SPEC.md §17.2 与 DEVELOPMENT_HANDOFF §5.3/§5.4（登录/邀请限流与 Owner 初始化要求）。TASK-003 中断时的在途改动已并入重建后的 schema（AuthRateLimit 模型 + auth_rate_limit 表），其结构已包含在重建的 p0_init 迁移中；继续 TASK-003 时直接在现有 schema 基础上开发。
 
@@ -163,3 +210,23 @@
 ## 每次TASK完成后追加的记录格式
 
 记录日期、TASK编号、执行人、状态、完成行为、修改路径、实际测试命令及结果、证据路径/commit、已知限制、下一TASK。未运行项目写“未执行”并写原因，不能写“应该通过”。遇到范围/技术栈变化，同时记录对应主文档的变更位置和依据。
+
+## 2026-09-13T00:54:14+08:00 · Product OS 接入（管理工作）
+
+原工程原地登记；补充规则、映射、协议、提示词与首页；保留原任务表和历史证据。重读 ZCode 新提交和最新 Gate 01 交接后，当前工具设为 Codex，状态待审查。本轮未改业务代码、未重跑业务测试、未提交/推送。备份与审计见 docs/PRODUCT_OS_ADOPTION.md、docs/DEPLOYMENT_STATUS.md。接入验证已完成，见下方记录。
+
+## 2026-09-13T01:01:42+08:00 · Product OS 接入验收
+
+实际刷新启动器成功（1 个真实项目，0 错误）；日常入口、总控、原项目首页、完整提示词复制路径通过本机临时预览验证。15 处本地链接有效，30 条任务行和四份执行证据保留；桌面与390px手机宽度显示正常，复制成功且无剪贴板API时可全选。业务代码未改、业务测试本轮未重跑；当前仍为 TASK-004 / Gate 01 待 Codex 审查，不进入 TASK-005。详细证据与原生 file 模式验证边界见 docs/PRODUCT_OS_ADOPTION.md。
+
+## 2026-09-13T01:28:09+08:00 · Codex 正式独立审查 CODEX_REVIEW_GATE_01
+
+范围：TASK-001–004；main `2a983cc`、冻结 `c263610541f8c8f7b41fd38c185f5feac94e8ee2`；分支差异 45 文件，TASK-001/002 补查恢复基线当前快照。结论 **BLOCKED**，四 TASK 均未满足完整验收：10 HIGH、4 MEDIUM、无已确认 CRITICAL。报告：`docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md`；证据：`docs/reviews/GATE_01_EVIDENCE.json`。
+
+实际检查：独立 PostgreSQL 17.11/55439（原5433不动）、Node24.21.0；`pnpm typecheck`、`pnpm test` 14/14、`pnpm test:integration` 28/28、`pnpm build` Web+Worker、`pnpm test:e2e` 6/6；空库两次迁移成功，重复 migrate deploy 无待应用迁移；Worker运行/停止/缺配置返回预期状态。HTTP反例和审计故障注入证明组织串域、Admin升权、跨组织失权、公开注册、邀请无效Cookie/孤立身份、审计非原子；SQL证明审计跨域引用与时间默认值风险；Docker依赖层等价布局postinstall失败。真正Docker/Compose未执行（无Docker），无部署/客户/AI实测。
+
+代码边界：原99个已跟踪文件在审查测试后与开始哈希一致；随后只新增报告/脱敏证据并更新本进度、CODEX_REVIEW_HANDOFF和P08_FIX；未改应用源码/Schema/Migration/现有测试，未Git提交/推送/合并。旧DONE和原始执行证据保留在历史章节，当前任务表与唯一状态块调整为待修复。
+
+交接：GPT/Owner明确D01禁用范围；下一工具ZCode，完整提示词`prompts/P08_FIX.md`；逐TASK修复H01–H10后回Codex复审，Checkpoint=YES。无Owner放行，禁止TASK-005。Product OS刷新与清理结果见本记录后续补充。
+
+收尾实测：停止隔离PG后，Web健康接口返回503 `{status:degraded}`；随后本次Web/Worker/PG全部停止，临时集群、脚本、随机口令与运行文件已删除，脱敏证据保留。最终99个原已跟踪文件比对：应用文件0改动，仅CODEX_REVIEW_HANDOFF、12_PROGRESS、P08_FIX为本轮跟踪文档变化。Product OS sync成功（1项目、0错误），首页与总控读回均为TASK-004/待修复/ZCode/Checkpoint YES，完整提示词指向P08_FIX；无自动开发或放行。

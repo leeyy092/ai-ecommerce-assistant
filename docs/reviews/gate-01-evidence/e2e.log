@@ -1,0 +1,29 @@
+
+> ai-ecommerce-assistant@0.1.0 test:e2e /Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant
+> playwright test
+
+[WebServer] (node:62555) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:62576) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:62615) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/auth.spec.ts:6:5 › 登录页可打开且不暴露内部信息 (460ms)
+  ✓  2 tests/e2e/auth.spec.ts:12:5 › 错误密码显示明确错误且不进入系统 (300ms)
+[WebServer] 2026-09-12T17:11:46.196Z ERROR [Better Auth]: Error Error: aborted
+[WebServer]     at ignore-listed frames {
+[WebServer]   code: 'ECONNRESET'
+[WebServer] }
+[WebServer] # SERVER_ERROR:  Error: aborted
+[WebServer]     at ignore-listed frames {
+[WebServer]   code: 'ECONNRESET'
+[WebServer] }
+  ✓  3 tests/e2e/auth.spec.ts:21:5 › 正确密码登录成功并携带会话访问 /api/v1/me (794ms)
+  ✓  4 tests/e2e/auth.spec.ts:41:5 › 未登录访问 /api/v1/me 返回 401 (39ms)
+  ✓  5 tests/e2e/smoke.spec.ts:3:5 › GET /api/health 返回 200 且 body 为 {status:'ok'}（数据库在线） (13ms)
+  ✓  6 tests/e2e/smoke.spec.ts:10:5 › 基础页可打开且无业务假数据 (142ms)
+
+  6 passed (8.5s)

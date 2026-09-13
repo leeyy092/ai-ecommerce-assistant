@@ -1,0 +1,64 @@
+
+> ai-ecommerce-assistant@0.1.0 test:integration /Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant
+> vitest run tests/integration
+
+
+ RUN  v3.2.7 /Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant
+
+ ✓ tests/integration/db.test.ts (4 tests) 230ms
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+stderr | tests/integration/auth.test.ts > TASK-003｜受控邀请 > 完整接受流程：新用户建 Auth+领域身份并入组织；并发两次接受仅一次成功
+2026-09-12T17:07:48.638Z ERROR [Better Auth]: Failed to create user PrismaClientKnownRequestError: 
+Invalid `prisma.authUser.create()` invocation:
+
+
+Unique constraint failed on the constraint: `user_email_key`
+    at vn.handleRequestError (/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:238:13)
+    at vn.handleAndLogRequestError (/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:184:12)
+    at vn.request (/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:153:12)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at a (/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/getPrismaClient.ts:1014:24)
+    at Object.create (file:///Users/yuyuyu/Documents/ChatGPT/%E4%BA%A7%E5%93%81-%E5%BC%80%E5%8F%91/ai-ecommerce-assistant/node_modules/.pnpm/@better-auth+prisma-adapter@1.7.4_@better-auth+core@1.7.4_@better-auth+utils@0.4.2_@bet_5f526f07b851101a67a3552c853c30b7/node_modules/@better-auth/prisma-adapter/dist/index.mjs:213:12)
+    at Object.create (file:///Users/yuyuyu/Documents/ChatGPT/%E4%BA%A7%E5%93%81-%E5%BC%80%E5%8F%91/ai-ecommerce-assistant/node_modules/.pnpm/@better-auth+core@1.7.4_@better-auth+utils@0.4.2_@better-fetch+fetch@1.3.1_better-call@_791b0c831d23c9c49029c13111eb1a7d/node_modules/@better-auth/core/dist/db/adapter/factory.mjs:445:16)
+    at createWithHooks (file:///Users/yuyuyu/Documents/ChatGPT/%E4%BA%A7%E5%93%81-%E5%BC%80%E5%8F%91/ai-ecommerce-assistant/node_modules/.pnpm/better-auth@1.7.4_@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+re_5a946ae246896e9079195c5d9a76d6cc/node_modules/better-auth/dist/db/with-hooks.mjs:26:66)
+    at Object.createUser (file:///Users/yuyuyu/Documents/ChatGPT/%E4%BA%A7%E5%93%81-%E5%BC%80%E5%8F%91/ai-ecommerce-assistant/node_modules/.pnpm/better-auth@1.7.4_@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+re_5a946ae246896e9079195c5d9a76d6cc/node_modules/better-auth/dist/db/internal-adapter.mjs:168:11)
+    at file:///Users/yuyuyu/Documents/ChatGPT/%E4%BA%A7%E5%93%81-%E5%BC%80%E5%8F%91/ai-ecommerce-assistant/node_modules/.pnpm/better-auth@1.7.4_@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+re_5a946ae246896e9079195c5d9a76d6cc/node_modules/better-auth/dist/api/routes/sign-up.mjs:224:18 {
+  code: 'P2002',
+  meta: {
+    driverAdapterError: DriverAdapterError: UniqueConstraintViolation
+        at PrismaPgAdapter.onError (file:///Users/yuyuyu/Documents/ChatGPT/%E4%BA%A7%E5%93%81-%E5%BC%80%E5%8F%91/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+adapter-pg@7.10.0/node_modules/@prisma/adapter-pg/dist/index.mjs:666:11)
+        at PrismaPgAdapter.performIO (file:///Users/yuyuyu/Documents/ChatGPT/%E4%BA%A7%E5%93%81-%E5%BC%80%E5%8F%91/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+adapter-pg@7.10.0/node_modules/@prisma/adapter-pg/dist/index.mjs:661:12)
+        at processTicksAndRejections (node:internal/process/task_queues:104:5)
+        at PrismaPgAdapter.queryRaw (file:///Users/yuyuyu/Documents/ChatGPT/%E4%BA%A7%E5%93%81-%E5%BC%80%E5%8F%91/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+adapter-pg@7.10.0/node_modules/@prisma/adapter-pg/dist/index.mjs:595:30)
+        at /Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:200:28
+        at e.run (/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:115:40)
+        at execute (/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/core/engines/client/LocalExecutor.ts:81:12)
+        at yr.request (/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/core/engines/client/ClientEngine.ts:510:22)
+        at Object.singleLoader (/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:113:26)
+        at vn.request (/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:150:14) {
+      cause: [Object]
+    },
+    modelName: 'AuthUser'
+  },
+  clientVersion: '7.10.0'
+}
+
+ ✓ tests/integration/permissions.test.ts (7 tests) 9407ms
+ ✓ tests/integration/auth.test.ts (8 tests) 9761ms
+   ✓ TASK-003｜初始 Owner 与登录 > 初始化创建 Auth+领域身份并可用真实会话登录；/api 层无公开注册入口依赖  496ms
+   ✓ TASK-003｜初始 Owner 与登录 > 重复初始化幂等：不重设密码、不建第二个 Owner、不接管邮箱  340ms
+   ✓ TASK-003｜初始 Owner 与登录 > 禁用即时失权：禁用后旧会话解析为未登录  357ms
+   ✓ TASK-003｜受控邀请 > 完整接受流程：新用户建 Auth+领域身份并入组织；并发两次接受仅一次成功  436ms
+ ✓ tests/integration/database.test.ts (9 tests) 9092ms
+   ✓ TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL） > 空库迁移部署成功，且重复部署幂等（从空库与上次迁移各验证一次）  2870ms
+
+ Test Files  4 passed (4)
+      Tests  28 passed (28)
+   Start at  01:07:36
+   Duration  12.55s (transform 1.19s, setup 0ms, collect 3.79s, tests 28.49s, environment 13ms, prepare 1.87s)
+

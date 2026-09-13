@@ -1,0 +1,240 @@
+{
+  "review_date": "2026-09-13",
+  "review_timezone": "Asia/Shanghai",
+  "review_result": "BLOCKED",
+  "base_commit": "2a983cc",
+  "review_commit": "c263610541f8c8f7b41fd38c185f5feac94e8ee2",
+  "scope": "Phase 1 TASK-001–004; TASK-001/002 current recovered baseline, TASK-003/004 branch diff",
+  "environment": {
+    "node": "24.21.0",
+    "postgresql": "17.11",
+    "isolated_pg_port": 55439,
+    "database": "aiea_review; suites create/drop own test databases within isolated cluster",
+    "original_development_pg_port_5433_used": false,
+    "docker_available": false,
+    "source_changed": false
+  },
+  "existing_suite_results": {
+    "typecheck": "PASS",
+    "unit": "14/14",
+    "integration": "28/28",
+    "build": "PASS web+worker",
+    "e2e": "6/6",
+    "migrations": "2 migrations applied to empty database; repeated deploy no pending migrations",
+    "logs": "gate-01-evidence"
+  },
+  "http_and_db_probes": [
+    {
+      "test": "public_signup",
+      "status": 200,
+      "authUserCreated": true,
+      "sessionCookieIssued": true,
+      "domainMeStatus": 401
+    },
+    {
+      "test": "basic_controls",
+      "ownerMe": 200,
+      "csMembers": 403,
+      "csBudgetAbsent": true,
+      "foreignMember": 404
+    },
+    {
+      "test": "admin_promotes_operator",
+      "status": 200,
+      "persistedRole": "admin"
+    },
+    {
+      "test": "cross_org_disable",
+      "status": 200,
+      "otherOrgOwnerStillActive": "active",
+      "globalStatus": "disabled",
+      "reloginStatus": 200,
+      "otherOrgMeAfterRelogin": 401
+    },
+    {
+      "test": "active_org_mismatch",
+      "switchStatus": 200,
+      "meShowsB": true,
+      "meRole": "customer_service",
+      "organizationReturnsA": true,
+      "budgetLeakedInBContext": true,
+      "mutationStatus": 200,
+      "orgAChanged": true
+    },
+    {
+      "test": "invitation_session",
+      "acceptStatus": 200,
+      "cookieNames": [
+        "better-auth.session_token"
+      ],
+      "meWithReturnedCookie": 401,
+      "loginThenMe": 200,
+      "replayStatus": 409
+    },
+    {
+      "test": "invitation_partial_failure",
+      "firstStatus": 500,
+      "firstNonJSON": true,
+      "retryStatus": 409,
+      "authRows": "1",
+      "domainRows": "0",
+      "invitationStatus": "pending"
+    },
+    {
+      "test": "login_rate_limit_reset",
+      "wrongStatuses": [
+        401,
+        401,
+        401,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429
+      ],
+      "malformedStatus": 429,
+      "counterAfterMalformed": []
+    },
+    {
+      "test": "write_origin_check",
+      "status": 201,
+      "invitationCreated": true
+    },
+    {
+      "test": "audit_cross_org_fk",
+      "orgAWithOrgBStoreAccepted": true
+    },
+    {
+      "test": "db_timestamp_types",
+      "rows": [
+        {
+          "data_type": "timestamp without time zone",
+          "count": "60"
+        }
+      ]
+    },
+    {
+      "test": "signout_control",
+      "status": 200,
+      "oldCookieMe": 401
+    },
+    {
+      "test": "password_change_control",
+      "status": 200,
+      "oldPasswordStatus": 401
+    }
+  ],
+  "fault_probes": [
+    {
+      "test": "member_audit_failure_atomicity",
+      "status": 500,
+      "nonJSON": true,
+      "membership": {
+        "role": "admin",
+        "row_version": 2
+      },
+      "auditCount": "0"
+    },
+    {
+      "test": "malformed_login_clears_counter",
+      "wrongStatus": 401,
+      "before": [
+        {
+          "count": 1
+        }
+      ],
+      "malformedStatus": 400,
+      "after": []
+    },
+    {
+      "test": "invalid_type_error",
+      "status": 500,
+      "nonJSON": true
+    }
+  ],
+  "database_contract_probes": {
+    "timestamp_columns": [
+      {
+        "data_type": "timestamp with time zone",
+        "count": "3"
+      },
+      {
+        "data_type": "timestamp without time zone",
+        "count": "103"
+      }
+    ],
+    "domain_id_type": [
+      {
+        "data_type": "text"
+      }
+    ],
+    "database_timezone": [
+      {
+        "TimeZone": "Asia/Shanghai"
+      }
+    ],
+    "non_uuid_id_and_nonexistent_auth_accepted": true,
+    "created_at_same_transaction_timezone_delta_hours": "8.0000000000000000",
+    "real_invited_user_created_minus_updated_hours": [
+      {
+        "hours": "0.000"
+      }
+    ]
+  },
+  "worker_probes": {
+    "worker_running_exit": 0,
+    "worker_stopped_exit": 1,
+    "missing_database_url_exit": 1,
+    "missing_database_url_named": true
+  },
+  "secrets_scan": {
+    "reachable_commits": 7,
+    "blobs_scanned": 125,
+    "tracked_sensitive_paths": [],
+    "high_confidence_pattern_hits": [],
+    "current_env_secret_value_matches": [],
+    "scope": "all locally reachable Git history; matching values never printed; does not certify all possible secrets or remote deleted history"
+  },
+  "docker_dependency_stage_reproduction": {
+    "layout": "only package.json,pnpm-lock.yaml,pnpm-workspace.yaml,.npmrc as Dockerfile deps COPY",
+    "command": "pnpm run postinstall",
+    "exit_code": 1,
+    "error": "Could not find Prisma Schema",
+    "actual_docker_build_executed": false
+  },
+  "limits": [
+    "HTTP probes explicitly attached Cookie and Origin; CSRF exploit from a real deployment origin not exercised",
+    "No nonmember arbitrary tenant read was reproduced",
+    "No future file/job/AI endpoint was implemented for testing",
+    "No Docker, production deployment, real customer data or real model used",
+    "Expected audit failure constraint removed after probe; remaining test cluster removed at review cleanup",
+    "Database timestamp probe demonstrates default-value/session-timezone risk; normal invited-user created/updated sample did not differ",
+    "Framework login rate limiter did return 429; persistent counter flaw does not imply complete absence of throttling"
+  ],
+  "health_when_isolated_pg_stopped": {
+    "http_status": 503,
+    "body": {
+      "status": "degraded"
+    }
+  },
+  "final_source_audit": {
+    "tracked_files_compared": 99,
+    "tracked_application_files_compared": 70,
+    "tracked_application_changes": [],
+    "tracked_document_changes": [
+      "CODEX_REVIEW_HANDOFF.md",
+      "docs/ai-ecommerce-assistant/12_PROGRESS.md",
+      "prompts/P08_FIX.md"
+    ],
+    "HEAD": "c263610541f8c8f7b41fd38c185f5feac94e8ee2"
+  },
+  "cleanup": {
+    "isolated_pg_stopped_and_removed": true,
+    "review_web_stopped": true,
+    "review_worker_stopped": true,
+    "temporary_runtime_and_credentials_removed": true,
+    "evidence_preserved": "docs/reviews/gate-01-evidence/"
+  }
+}

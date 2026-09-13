@@ -1,117 +1,73 @@
-# CODEX_REVIEW_HANDOFF｜CODEX_REVIEW_GATE_01（Phase 1 冻结版）
+# CODEX_REVIEW_HANDOFF｜CODEX_REVIEW_GATE_01
 
-- 生成日期：2026-09-13
-- 审查类型：**Phase 1 完成门**（CODEX_REVIEW_GATE_01）
-- 交接根目录：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
-- 开发依据：`DEVELOPMENT_HANDOFF.md`（v1.1）+ `FINAL_DECISIONS.md` + `docs/ai-ecommerce-assistant/` 分册 + 根目录 `PHASE_PLAN.md`
+2026-09-13｜Phase 1 项目地基｜**独立审查已完成：BLOCKED，待修复与复审。**
 
-## 项目
+## 当前交接结论
 
-AI 电商运营助手（P0 MVP）。目标：老板每天一页看懂经营变化、待复核问题、证据与优先行动。当前阶段：**Phase 1（项目地基）四个 TASK 全部完成**，等待本 Gate 审查后合并 main。
+TASK-001–004 完整验收均 FAIL；10 HIGH、4 MEDIUM，无已确认 CRITICAL。现有测试通过不能替代权限、邀请、数据库及标准启动路径的实际验收。
 
-## Git 冻结信息
+- 正式报告：[CODEX_REVIEW_GATE_01_2026-09-13.md](docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md)
+- 实测证据：[GATE_01_EVIDENCE.json](docs/reviews/GATE_01_EVIDENCE.json)
+- 测试日志：[gate-01-evidence](docs/reviews/gate-01-evidence/)
+- 唯一进度：[12_PROGRESS.md](docs/ai-ecommerce-assistant/12_PROGRESS.md)
+- 下一工具：ZCode；完整提示词：[P08_FIX.md](prompts/P08_FIX.md)
+- 产品待决：报告 D01，组织成员禁用与全局账号禁用语义，交 GPT/Owner。
+- Checkpoint：YES；**禁止合并 main，禁止 Phase 2 / TASK-005。**
 
-| 项 | 值 |
+## 已审版本与范围
+
+| 项 | 实际值 |
 |---|---|
+| 项目根目录 | `/Users/yuyuyu/Documents/ChatGPT/产品-开发` |
+| 应用目录 | `ai-ecommerce-assistant/` |
 | Current Branch | `phase/01-foundation` |
-| Base Branch | `main` |
-| Review Commit | 本文件提交后的最新 commit（`git log -1 phase/01-foundation`） |
-| Previous Review Commit | 无（首个 Gate） |
-| Git Diff Range | `main..phase/01-foundation` |
-| Working Tree | clean，已推送 origin（`origin/phase/01-foundation` 同步） |
-| Project Status | CODEX_REVIEW_REQUIRED |
+| Base Branch / Commit | `main` / `2a983cc55f136abbb49c5d02b55c1cb82b6547cc` |
+| Review Commit | `c263610541f8c8f7b41fd38c185f5feac94e8ee2` |
+| Diff Range | `main..phase/01-foundation`，45文件，+3176/-97 |
+| TASK-001/002 | iCloud恢复后并入main基线，本次补查当前实现；丢失旧提交无法逐字节复验 |
+| TASK-003 / TASK-004 | `a77f7b5` / `1ab433f` |
+| 工作区 | 业务代码冻结于c263610；原Product OS及本次审查文档未提交，不是clean |
+| GitHub | 之前2026-09-13T00:54:14+08:00核实c263610与远端一致；本轮未重查/提交/推送 |
+| Project Status | REVIEW_BLOCKED / 待修复；正式Gate结论BLOCKED |
 
-## 本阶段完成 TASK
+本文件当前交接审查结果。ZCode原冻结交接可在提交c263610追溯；其中全部DONE、无公开注册、原子消费等描述已被本次实际审查修正，不能继续当作通过证据。
 
-| TASK | Commit | 内容 |
+## 必须修复范围
+
+| TASK | HIGH问题 | 复审要点 |
 |---|---|---|
-| TASK-001 可启动的应用与验证环境 | 并入重建基线（见"特殊说明"） | Next.js 16/React 19/TS5/Tailwind4 最小工程；/api/health（ok/degraded）；独立 Worker+心跳状态检查；env 分阶段校验；Docker/Compose；本地 PG17 |
-| TASK-002 P0数据库与约束迁移 | 并入重建基线 | Prisma 7.10.0（driver adapter）；28 领域实体+Better Auth 官方四表；复合外键 (org,id)/(org,store,id)；p0_init+p0_constraints（20+ CHECK、单 Owner 与 recompute 目标部分唯一） |
-| TASK-003 登录、初始Owner与受控邀请 | `a77f7b5` | Better Auth 1.7.4（DB session、无公开注册、委托门面映射 Auth* 表）；邀请 48h 单次（SHA256 落库、CAS 原子消费）；Owner 初始化幂等；登录/邀请数据库限流；/api/v1 me/invitations/members；/login、/invite/[token] 页面 |
-| TASK-004 组织隔离与固定权限服务 | `1ab433f` | 固定能力矩阵（含导入/邀请/管理范围）；requirePermission 统一授权入口；requireStoreAccess 同域校验（跨组织 404）；客服告警白名单与字段投影；路由改造+organization 端点 |
+| 001 | H10 Docker Prisma生成顺序、Compose Auth配置 | 干净构建/迁移/启动/登录；没有真实Docker证据时保留缺口 |
+| 002 | H08审计同域FK；H09时间类型 | 空库+向前升级、异域拒绝、时区等值、删除行为 |
+| 003 | H04公开注册；H05邀请会话；H06身份/邀请一致性；H07管理事务 | 真实HTTP/Cookie、错误输入无残留、并发/失败恢复、审计回滚 |
+| 004 | H01活跃组织；H02角色提升；H03禁用范围；相关H07 | 同账号双组织不同角色、读写一致、Admin不得授予Admin、A撤权不伤及B |
 
-## 本阶段新增功能（工程能力，无业务范围扩张）
+完整问题的五项字段及完成判据以报告为准。MEDIUM：M01 Origin/CSRF；M02失败响应清空登录计数；M03输入验证/异常信封；M04 Auth外键与UUID。不要为风格扩散重构。
 
-登录/会话/邀请/成员管理/组织信息端点；权限矩阵与统一授权入口；数据库限流；初始化与重置脚本；全部页面仅 /login 与 /invite/[token]（无业务页面，符合合同禁止项）。
+## 独立验证结果
 
-## 主要修改文件
+隔离PostgreSQL17.11/55439、Node24.21.0、随机口令；原开发5433不用于测试写入。
 
-- 规格与流程：`DEVELOPMENT_HANDOFF.md`、`FINAL_DECISIONS.md`、`PHASE_PLAN.md`、`docs/ai-ecommerce-assistant/12_PROGRESS.md`（Git 状态段+四份执行记录+事故记录）、`README.md`（应用）
-- 应用：`prisma/`（schema+3 迁移）、`prisma.config.ts`、`src/lib/{env,dotenv,db,auth,session,http,rateLimit,email,workerStatus}.ts`、`src/services/{audit,invitations,ownerInit}.ts`、`src/services/access/{permissions,index}.ts`、`src/database/prisma.ts`、`src/app/api/`（auth/[...all]、v1/me*、v1/organization、v1/invitations*、v1/members*、health）、`src/app/(auth)/*`、`src/instrumentation*.ts`、`src/jobs/{worker,status}.ts`、`scripts/*`、`tests/**`
-- 完整清单：`git diff --stat main..phase/01-foundation`
-
-## 数据库变化
-
-28 张领域表 + 4 张 Better Auth 官方表 + auth_rate_limit + _prisma_migrations（33+1）；全部约束见 `prisma/migrations/`。
-
-## API 变化
-
-`/api/auth/*`（库原生）、`/api/health`、`/api/v1/{me, me/active-organization, organization, invitations, invitations/{idOrToken}, invitations/{token}/accept, members, members/{id}}`。
-
-## AI 逻辑变化
-
-无（TASK-017 起）。
-
-## 核心业务逻辑（本阶段=身份/权限/数据底座）
-
-- 认证：Better Auth + 领域 User 映射（auth_user_id）；禁用即时失权（删会话+领域禁用）
-- 邀请：token 只存哈希；CAS 消费（并发仅一次）；邮箱一致性 403；过期实时 410
-- 权限：能力矩阵纯函数 + requirePermission 单入口 + requireStoreAccess 同域 404
-- 数据：B/T/F 共用字段、六组 v1.1 契约修订字段、20+ CHECK 与 2 个部分唯一索引
-
-## 测试结果（2026-09-13 冻结时全量回归）
-
-| 套件 | 结果 |
+| 检查 | 结果 |
 |---|---|
-| typecheck | ✅ 0 错误 |
-| unit（env 7 + 能力矩阵/投影 7） | ✅ 14/14 |
-| integration（db 4 + database 9 + auth 8 + permissions 7，真实 PG17×独立测试库） | ✅ 28/28 |
-| build（web+worker） | ✅ 退出码 0 |
-| e2e（Playwright：登录/错误密码/会话 me/未登录 401/健康/基础页） | ✅ 6/6 |
+| typecheck / build | PASS；Web+Worker |
+| unit / integration / E2E | 14/14、28/28、6/6；E2E日志另有一次ECONNRESET，不影响断言 |
+| migration | 两次迁移从空库成功；重复deploy无待应用迁移 |
+| Worker状态/缺配置 | 运行0、停止1、缺DATABASE_URL启动1 |
+| HTTP/DB/审计故障注入 | 复现报告问题；具体范围以证据JSON为准 |
+| Docker deps布局postinstall | exit1，缺Prisma Schema |
+| 真正Docker build/Compose | 未执行，本机无Docker |
+| Secrets | 本地7个可达提交/125个blob未发现真实密钥、当前.env Secret值或被跟踪.env；含开发样例密码 |
+| 应用源码 | 测试后原99个已跟踪文件哈希与开始一致；随后只维护审查/管理文档 |
 
-## 尚未解决的问题
+无线上部署、客户试用、真实模型或商业验证证据。本阶段尚无文件/Job/AI业务对象，不能把权限纯函数通过当作未来对象已实测。
 
-1. 本机无 Docker：compose 链路未本机执行（文件已交付，TASK-029 部署验证）
-2. TASK-001/002 的原始 commit 因 iCloud 事故丢失，代码经等价重建并入基线 commit（详见 12_PROGRESS 事故记录与 TASK-002 已知限制①）
-3. 旧下载地址/旧 job 重放拒绝分别属 TASK-007/013 对象（本阶段已覆盖 Cookie 重放拒绝）
-4. Better Auth 1.7.4 prismaAdapter 无 modelMapping，采用委托门面——升级需复核
-5. E2E 默认密码仅用于本地演示库
+## ZCode接手规则
 
-## 当前已知风险
+1. 显式读项目规则、配置、状态协议、首页、最新进度与正式报告，核对分支和在途修改。
+2. 逐项回复ACCEPT/DISCUSS/REJECT，按依赖一次一个TASK修复。D01未裁决前不自行决定全局禁用语义，可先处理不依赖它的修复。
+3. 不新增P0业务/大型依赖，不改写共享迁移或Git历史，不覆盖未提交管理文档。
+4. 按原Git授权仅提交修复相关文件及必要证据；记录每项实际检查和修复提交。
+5. 修完更新唯一进度与本交接，保留本次基线c263610，添加修复commit/diff，状态回CODEX_REVIEW_REQUIRED、Checkpoint=YES、工具Codex。
+6. Product OS sync并读回首页/总控。Codex复审通过与Owner放行均具备后，才可依PHASE_PLAN合并及进入下一Phase。
 
-- Next.js 16.3.5 / React 19.2.8 / Prisma 7.10 / better-auth 1.7.4 均为当前主线版本，后续升级需按 11_DEVELOPMENT_RULES 最小变更流程
-- iCloud 同步事故史：仓库已建立 GitHub 备份（本分支即产物），但工作区仍在 Documents 下（见 MEMORY 约定：勤提交、保持同步）
-
-## 需要 Codex 重点检查
-
-1. 逻辑错误：env 校验分支、限流 SQL 原子性与等待秒数计算、邀请 CAS/回滚路径、禁用失权时序
-2. 架构：权限单入口是否被绕过（有没有路由仍自行判权）；权限矩阵与 02_USER_ROLES 是否逐行一致
-3. 数据模型：schema 与 04_DATA_MODEL PART10 的字段/键/约束一致性（重点：六组 v1.1 修订字段、复合外键正确性）
-4. API：与 08_API_SPEC §17.1/17.2 一致性（信封、错误码、201/409/410/403/404 语义、遮罩 email、不回 token）
-5. 安全：错误信息不泄值；Cookie 属性；.env 不入库；限流可绕过性（X-Forwarded-For 伪造）；邀请 token 熵与哈希落库；审计不含敏感内容
-6. 不必要复杂度：委托门面 vs 重命名模型；是否提前实现了 005+ 的内容
-7. 后续 Phase 影响：access 服务 API 形状是否支撑 007 文件/013 任务/019 AI 证据复用
-8. 测试缺失：并发接受邀请的竞态覆盖是否充分；缺密码重置脚本的真实运行验证
-9. 是否符合 DEVELOPMENT_HANDOFF（§5.3/§5.4 不变量、TASK-003/004 合同逐项）
-10. 是否擅自扩大 P0 范围
-
-## 建议 Codex 优先阅读
-
-| 顺序 | 文件 |
-|---|---|
-| 1 | `DEVELOPMENT_HANDOFF.md` §5 不变量 + `FINAL_DECISIONS.md` |
-| 2 | `docs/ai-ecommerce-assistant/12_PROGRESS.md`（Git 状态+四份执行记录+事故记录） |
-| 3 | `ai-ecommerce-assistant/README.md` |
-| 4 | `ai-ecommerce-assistant/src/services/access/{permissions.ts,index.ts}` |
-| 5 | `ai-ecommerce-assistant/src/services/{invitations.ts,ownerInit.ts,audit.ts}` |
-| 6 | `ai-ecommerce-assistant/src/lib/{auth.ts,session.ts,rateLimit.ts,http.ts,env.ts}` |
-| 7 | `ai-ecommerce-assistant/prisma/schema.prisma` + `prisma/migrations/*` |
-| 8 | `ai-ecommerce-assistant/src/app/api/` 全部路由 |
-| 9 | `ai-ecommerce-assistant/tests/`（unit/integration/e2e） |
-| 10 | `ai-ecommerce-assistant/scripts/{init-owner,reset-owner-password,postgres.sh}` |
-
-## Review 结果回填约定
-
-PASS → 合并 main（merge commit: `merge: phase/01-foundation after CODEX_REVIEW_GATE_01`，不 squash）→ 从最新 main 建 `phase/02-data-ingestion`。
-PASS_WITH_FIXES → 先修 Critical/High → 单独 commit（`fix(TASK-00X): codex review fixes`）→ push → 更新本文件 → 按要求决定是否复审。
-BLOCKED / GPT_PRODUCT_DECISION_REQUIRED → 停止，等待 Owner。
+本次Codex仅Review与维护交接，未执行修复、Git提交、推送、合并或部署。
