@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-09-13T22:36:26+08:00",
+  "runtime_processes_remaining": [],
+  "ports_closed": {
+    "3000": true,
+    "3001": true,
+    "55459": true
+  },
+  "temporary_root_deleted": true,
+  "temporary_pointer_deleted": true,
+  "random_credentials_and_isolated_databases_deleted": true,
+  "original_development_database_touched": false
+}

@@ -1,0 +1,15 @@
+
+> ai-ecommerce-assistant@0.1.0 test /private/tmp/aiea-gate01-r2-0oo1wpux/snapshot/ai-ecommerce-assistant
+> vitest run tests/unit
+
+
+ RUN  v3.2.7 /private/tmp/aiea-gate01-r2-0oo1wpux/snapshot/ai-ecommerce-assistant
+
+ ✓ tests/unit/permissions.test.ts (7 tests) 9ms
+ ✓ tests/unit/env.test.ts (7 tests) 23ms
+
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  16:13:26
+   Duration  2.29s (transform 195ms, setup 0ms, collect 439ms, tests 32ms, environment 1ms, prepare 1.15s)
+

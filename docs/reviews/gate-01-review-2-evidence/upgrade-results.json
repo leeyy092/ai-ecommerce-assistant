@@ -1,0 +1,7 @@
+{
+  "forward_deploy_exit": 0,
+  "repeat_deploy_exit": 0,
+  "migration_count": "4",
+  "utc_wallclock_preserved": true,
+  "existing_cross_org_audit_survives_upgrade": true
+}

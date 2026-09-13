@@ -1,0 +1,14 @@
+{
+  "workerRunningExit": 0,
+  "workerStoppedExit": 1,
+  "workerMissingDbExit": 1,
+  "workerMissingDbNamed": true,
+  "webMissingAuthExit": 1,
+  "webMissingAuthNamed": true,
+  "health": {
+    "status": 200,
+    "body": {
+      "status": "ok"
+    }
+  }
+}

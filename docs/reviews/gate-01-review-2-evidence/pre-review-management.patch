@@ -1,0 +1,521 @@
+diff --git a/00_START_HERE.html b/00_START_HERE.html
+index caedb4f..465e486 100644
+--- a/00_START_HERE.html
++++ b/00_START_HERE.html
+@@ -7,24 +7,32 @@ main{max-width:1160px;margin:0 auto;padding:42px 28px 70px}h1{font-size:clamp(29
+ .eyebrow{font-size:13px;font-weight:750;letter-spacing:2px;color:var(--teal)}.muted,small{color:var(--muted)}.lead{font-size:19px;max-width:760px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:25px;margin:18px 0;overflow-wrap:anywhere}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.grid .card{margin:0}.tag{display:inline-block;background:#e3eee9;color:#215f53;border-radius:40px;padding:4px 12px;font-size:13px;font-weight:650}.bad{background:#fff0df;color:#874b1e}.button,button{display:inline-block;border:0;border-radius:10px;background:var(--teal);color:white;padding:12px 19px;text-decoration:none;font:inherit;cursor:pointer;margin:6px 8px 6px 0}.secondary{background:#e3eae6;color:#204e44}
+ textarea,pre{width:100%;background:#f3f6f4;color:#20343c;border:1px solid var(--line);border-radius:10px;padding:16px;font:14px/1.8 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;white-space:pre-wrap;overflow-wrap:anywhere}textarea{min-height:210px;resize:vertical}summary{cursor:pointer;font-weight:650;padding:13px 0}details{border-top:1px solid var(--line)}ul,ol{padding-left:24px}.kv{display:grid;grid-template-columns:120px 1fr;gap:8px 16px}.kv b{font-weight:550;color:var(--muted)}nav{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:25px}.empty{border:1px dashed #aabbb3;background:#edf3ee}.note{border-left:4px solid var(--gold);padding:10px 18px;background:#fff8ee}.statusline{font-size:14px;color:var(--muted)}footer{border-top:1px solid var(--line);margin-top:34px;padding-top:18px;font-size:13px;color:var(--muted)}
+ @media(max-width:720px){main{padding:25px 18px 45px}.grid{grid-template-columns:1fr}.card{padding:20px}.kv{grid-template-columns:1fr;gap:0}.kv span{margin-bottom:10px}nav{gap:12px}.button,button{padding:11px 14px}h1{letter-spacing:0}}@media print{body{background:#fff}main{max-width:none;padding:0}.button,button,nav{display:none}.card{break-inside:avoid}details{display:block}}
+-</style></head><body><main><nav><a href="../../AI-Workspace/00_CONTROL_CENTER/index.html">← 项目总控</a><a href="../../AI-Workspace/%E6%8C%87%E5%8D%97/%E4%BA%A7%E5%93%81%E5%BC%80%E5%8F%91%E6%8C%87%E5%BC%95%E5%9B%BE.html">查看全部步骤</a></nav><div class="eyebrow">沨野 AI · 当前一步</div><h1>电商中台 · AI 电商运营助手</h1><span class="tag">待修复</span><p class="lead">GPT/Owner 确认 D01 禁用范围；ZCode 按 H01–H10 在 Phase 1 逐 TASK 修复，之后 Codex 复审；禁止合并 main 和进入 TASK-005</p><div class="card"><h2>下一步交给 ZCode</h2><p>完成标准：在冻结 c263610 基础上修复 H01–H10，落实 D01；真实 HTTP 多组织/角色/邀请与审计故障回归、迁移和容器检查通过；提交独立修复证据供 Codex 复审，不自行放行</p><button data-copy="next-prompt">复制下一步提示词</button><details><summary>展开完整提示词</summary><textarea id="next-prompt" readonly aria-label="下一步完整提示词">当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
++</style></head><body><main><nav><a href="../../AI-Workspace/00_CONTROL_CENTER/index.html">← 项目总控</a><a href="../../AI-Workspace/%E6%8C%87%E5%8D%97/%E4%BA%A7%E5%93%81%E5%BC%80%E5%8F%91%E6%8C%87%E5%BC%95%E5%9B%BE.html">查看全部步骤</a></nav><div class="eyebrow">沨野 AI · 当前一步</div><h1>电商中台 · AI 电商运营助手</h1><span class="tag">待审查</span><p class="lead">交 Codex 按 prompts/P07_CODE_REVIEW.md 对 c263610..c87a141 做第二轮独立复审；核定 Docker 缺证与 M01–M04 延期安排；PASS 后仍需 Owner 放行</p><div class="card"><h2>下一步交给 Codex</h2><p>完成标准：以 c263610..c87a141 的实际差异逐项复核 H01–H10 和 D01；独立记录必要回归、迁移升级及真实 Docker 验证，明确 M01–M04 处置与 Gate 结论；不能以执行者自报测试替代复审</p><button data-copy="next-prompt">复制下一步提示词</button><details><summary>展开完整提示词</summary><textarea id="next-prompt" readonly aria-label="下一步完整提示词">当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
+ 产品目标：让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动
+ 当前任务：TASK-004
+-本轮动作：GPT/Owner 确认 D01 禁用范围；ZCode 按 H01–H10 在 Phase 1 逐 TASK 修复，之后 Codex 复审；禁止合并 main 和进入 TASK-005
++本轮动作：交 Codex 按 prompts/P07_CODE_REVIEW.md 对 c263610..c87a141 做第二轮独立复审；核定 Docker 缺证与 M01–M04 延期安排；PASS 后仍需 Owner 放行
+ 
+-请在 /Users/yuyuyu/Documents/ChatGPT/产品-开发 显式读取 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、docs/ai-ecommerce-assistant/12_PROGRESS.md、PHASE_PLAN.md、CODEX_REVIEW_HANDOFF.md，以及 docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md 和 GATE_01_EVIDENCE.json。
++请接手 AI 电商运营助手的 CODEX_REVIEW_GATE_01_REVIEW_2，只做 Phase 1（TASK-001–004）的独立复审，不修改业务代码、不推进 TASK-005、不合并 main 或部署。
+ 
+-当前为 Phase 1 / CODEX_REVIEW_GATE_01，结论 BLOCKED，TASK-001–004 完整验收均 FAIL，10 HIGH、4 MEDIUM。基线 main=2a983cc，冻结 phase/01-foundation=c263610541f8c8f7b41fd38c185f5feac94e8ee2；TASK-001/002已在恢复基线，不能只看分支diff忽略它们。
++项目根目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant；总控：/Users/yuyuyu/Documents/AI-Workspace。
+ 
+-先核对分支、版本、未提交文件与其他执行者；保留 Product OS 与审查文档修改。逐项给出 ACCEPT/DISCUSS/REJECT，再按依赖一次一个 TASK 修复：TASK-001 H10；TASK-002 H08/H09；TASK-003 H04/H05/H06/H07；TASK-004 H01/H02/H03及相关H07。以报告真实反例和完成判据为准；M01–M04按风险和相称工作量处理，不为风格重构或扩大P0。
++先显式读取根目录 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md；按配置读取 docs/ai-ecommerce-assistant/12_PROGRESS.md（唯一进度）、09_TASKS.md、DEVELOPMENT_HANDOFF.md、FINAL_DECISIONS.md、PHASE_PLAN.md、CODEX_REVIEW_HANDOFF.md，以及首轮 docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md、docs/reviews/GATE_01_EVIDENCE.json。按需读取角色、数据模型、API 和验收原文。
+ 
+-D01：GPT/Owner尚需明确全局账号禁用与组织成员禁用语义。裁决前不可自行改变业务定义，可先完成不依赖D01的修复；H03保留待决状态。租户管理员不能仅凭本组织角色控制其他组织账号有效性。
++本次交接核对状态：Phase 1 / TASK-004 / 待审查 / CODEX_REVIEW_REQUIRED / Checkpoint=YES / 下一工具 Codex。分支 phase/01-foundation；首轮冻结 c263610541f8c8f7b41fd38c185f5feac94e8ee2；第二轮待审提交 c87a141648227954725402c715063a900fa72659；main 基线 2a983cc55f136abbb49c5d02b55c1cb82b6547cc。先重查 HEAD、分支、未提交差异及是否另有执行者；保留本轮未提交管理文档，版本变化则重定范围，不覆盖或重置。
+ 
+-现有unit14/14、integration28/28、e2e6/6、typecheck/build通过，不证明反例已通过。补真实HTTP/Cookie、多组织不同角色、邀请失败和并发、审计故障回滚、数据库同域/时区、新空库及向前升级验证。H10需要真实Docker构建/启动验证；环境不具备时如实记录。关闭公开注册后应保持受控初始化/邀请可用，不手工伪造Better Auth Cookie。
++首轮 c263610 为 BLOCKED（10 HIGH、4 MEDIUM）。ZCode 已提交修复：73a5108（TASK-001）、3e90bf6+24f877a（TASK-002）、63e16ea（TASK-003）、e56be99（TASK-004）；c87a141 为 REVIEW_2 交接。复审差异 c263610..c87a141；TASK-001/002 原实现含恢复基线，必要时核对 main..c87a141 和当前完整应用。不要只看新增回归或交接摘要。
+ 
+-仅在phase/01-foundation修复本轮问题，遵守原Git授权及每TASK记录要求。不改写共享历史/迁移，不开始TASK-005，不合并main，不部署。记录原问题、修改、实际检查、提交版本和剩余缺口。
++D01 已在角色规格与交接记录中裁决为方案 A：只禁用当前 Organization 的 Membership，不通过组织管理接口修改全局 User.status；撤销登录会话后，其他组织有效 Membership 重新登录仍可用。全局账号封禁管理平台不属 P0。无需重新询问 D01，但须验证实现和行为一致。
+ 
+-完成后更新原12_PROGRESS.md任务表、摘要、唯一状态块与CODEX_REVIEW_HANDOFF；保留基线c263610，明确修复commit/diff。满足修复检查后回待审查/CODEX_REVIEW_REQUIRED，Checkpoint=YES，工具Codex，next_prompt=prompts/P07_CODE_REVIEW.md。运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 并读回项目首页与00_CONTROL_CENTER/PROJECTS.md。交Codex复审，Owner最终放行，不自行宣布独立审查通过。</textarea></details></div><div class="card"><h2>当前记录</h2><div class="kv"><b>最终目标</b><span>让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动</span><b>当前阶段</b><span>07 阶段审查 · Phase 1 项目地基</span><b>当前任务</b><span>TASK-004</span><b>当前状态</b><span>待修复</span><b>上一个完成项</b><span>CODEX_REVIEW_GATE_01 独立审查完成；TASK-001–004 的完整验收均 FAIL，旧 DONE 保留为历史</span><b>下一步</b><span>GPT/Owner 确认 D01 禁用范围；ZCode 按 H01–H10 在 Phase 1 逐 TASK 修复，之后 Codex 复审；禁止合并 main 和进入 TASK-005</span><b>交给谁</b><span>ZCode</span><b>做到什么算完成</b><span>在冻结 c263610 基础上修复 H01–H10，落实 D01；真实 HTTP 多组织/角色/邀请与审计故障回归、迁移和容器检查通过；提交独立修复证据供 Codex 复审，不自行放行</span><b>卡点</b><span>10 项 HIGH 未修复；D01 全局账号与组织成员禁用语义待 GPT/Owner 裁决；Docker 完整构建/启动未实测。无阶段通过或 Owner 放行。</span><b>检查点</b><span>YES</span><b>审查</b><span>BLOCKED · CODEX_REVIEW_GATE_01 · 2026-09-13 · c263610；技术验收 FAIL，必须修复并复审</span></div><p class="statusline">进度最后更新：2026-09-13T01:28:09+08:00 · Codex · Gate 01 独立技术审查</p><p class="muted">项目位置：/Users/yuyuyu/Documents/ChatGPT/产品-开发</p><a href="docs/ai-ecommerce-assistant/12_PROGRESS.md">查看进度主记录</a></div><details><summary>查看 Git、GitHub 与部署记录</summary><div class="card"><p><b>Git</b>　已建立本地 Git；存在未提交或未跟踪内容</p><p>分支：phase/01-foundation<br>版本：c263610541f8c8f7b41fd38c185f5feac94e8ee2</p><p>origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置）</p><p><b>GitHub</b>　已连接；此前核实 c263610 与远端一致；本次审查及管理文档未提交/推送（本轮未重查远端）<br>最后核验：2026-09-13T00:54:14+08:00<br>地址：https://github.com/leeyy092/ai-ecommerce-assistant<br>证据：实际 git ls-remote origin：phase/01-foundation 与本地 HEAD 均为 c263610541f8c8f7b41fd38c185f5feac94e8ee2；main 为 2a983cc55f136abbb49c5d02b55c1cb82b6547cc。仓库可见性 unknown。</p><p><b>部署</b>　unknown（未找到生产部署或线上可用证据）<br>最后核验：2026-09-13T00:45:24+08:00<br>地址：未记录<br>证据：已查 Dockerfile、compose.yaml、已跟踪部署配置与 README；只见本地 127.0.0.1:3000，不能当线上地址。本地 /api/health 请求连接重置；未运行部署或容器。</p></div></details><footer>本地快照与页面生成：2026-09-13T01:32:23+08:00。Git 为生成前快照。远端与部署未在此次刷新中联网核验。</footer></main><script>
++ZCode 记录 typecheck/build 通过、unit 14/14、integration 46/46、e2e 8/8、空库/已有库迁移及 Docker 依赖布局复现通过；上轮 Codex 仅做交接收尾，未重跑这些测试，未产生 REVIEW_2 结论。首轮日志只证明 c263610，不是修复后的独立通过证据。
++
++逐项验证 H01–H10 与 D01，重点真实 HTTP/Cookie、多组织不同角色读写、Admin 拟授角色边界、成员禁用后的会话与其他组织、公开注册关闭及受控邀请/初始化、失败重试与并发恢复、审计故障事务回滚、AuditLog 同域约束、新空库及向前升级和时区语义。用隔离环境完成必要验证，避免破坏已有开发数据。
++
++真实 Docker 干净构建/启动仍无实测证据，不能把依赖布局复现当作容器验证；环境不具备时明确缺口及对 Gate 的影响。M01–M04 延期是 ZCode 建议，尚未获独立复审认可；按风险和 P0 范围核定处理时点，不能自动排入 TASK-005 或自行扩范围。
++
++输出逐项复核依据、真实执行结果、未运行原因与剩余问题；按项目协议给出 PASS / FAIL / BLOCKED，测试、审查、Owner 放行、GitHub 同步、部署和真实试用分开记录。FAIL 交 ZCode 修复，缺证据明确补证，PASS 后仍等 Owner 放行；本轮不执行合并或新 Phase。
++
++收尾重新读取磁盘最新进度，更新原 12_PROGRESS.md 的任务表、当前摘要、唯一状态块及 CODEX_REVIEW_HANDOFF.md，保留历史，设置实际下一工具/完整提示词/完成标准/Checkpoint。运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 并读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，确认一致。用户明确只读时不写回或刷新。</textarea></details></div><div class="card"><h2>当前记录</h2><div class="kv"><b>最终目标</b><span>让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动</span><b>当前阶段</b><span>07 阶段审查 · Phase 1 项目地基 · Gate-01 第二轮</span><b>当前任务</b><span>TASK-004</span><b>当前状态</b><span>待审查</span><b>上一个完成项</b><span>ZCode 已提交 Gate 01 H01–H10 修复与 REVIEW_2 交接（c87a141）；Codex 本轮仅完成磁盘核对与交接收尾</span><b>下一步</b><span>交 Codex 按 prompts/P07_CODE_REVIEW.md 对 c263610..c87a141 做第二轮独立复审；核定 Docker 缺证与 M01–M04 延期安排；PASS 后仍需 Owner 放行</span><b>交给谁</b><span>Codex</span><b>做到什么算完成</b><span>以 c263610..c87a141 的实际差异逐项复核 H01–H10 和 D01；独立记录必要回归、迁移升级及真实 Docker 验证，明确 M01–M04 处置与 Gate 结论；不能以执行者自报测试替代复审</span><b>卡点</b><span>第二轮独立复审未执行；真实 Docker 构建/启动证据缺失；M01–M04 延期仅为 ZCode 建议，待复审核定；尚无 Gate PASS 或 Owner 阶段放行。</span><b>检查点</b><span>YES</span><b>审查</b><span>CODEX_REVIEW_REQUIRED · CODEX_REVIEW_GATE_01_REVIEW_2 · target c87a141；首轮 c263610 BLOCKED 保留；本轮收尾不产生新 Gate 结论</span></div><p class="statusline">进度最后更新：2026-09-13T16:06:42+08:00 · Codex · 仅交接收尾与状态核对</p><p class="muted">项目位置：/Users/yuyuyu/Documents/ChatGPT/产品-开发</p><a href="docs/ai-ecommerce-assistant/12_PROGRESS.md">查看进度主记录</a></div><details><summary>查看 Git、GitHub 与部署记录</summary><div class="card"><p><b>Git</b>　已建立本地 Git；存在未提交或未跟踪内容</p><p>分支：phase/01-foundation<br>版本：c87a141648227954725402c715063a900fa72659</p><p>origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置）</p><p><b>GitHub</b>　已核实远端 phase/01-foundation=c87a141，与已提交 HEAD 一致；本轮收尾文档修改尚未提交/推送<br>最后核验：2026-09-13T15:59:55+08:00<br>地址：https://github.com/leeyy092/ai-ecommerce-assistant<br>证据：本轮 git ls-remote origin 返回 phase/01-foundation=c87a141648227954725402c715063a900fa72659；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc。未查询仓库可见性。</p><p><b>部署</b>　unknown（无生产部署；本机无 Docker）<br>最后核验：2026-09-13T15:40:00+08:00<br>地址：未记录<br>证据：docker-deps-repro.sh 静态等价复现通过；真实 docker build/compose 未执行</p></div></details><footer>本地快照与页面生成：2026-09-13T16:06:42+08:00。Git 为生成前快照。远端与部署未在此次刷新中联网核验。</footer></main><script>
+ document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{
+  const el=document.getElementById(b.dataset.copy);const value=el.value||el.textContent;
+  try{if(!navigator.clipboard)throw new Error('clipboard');await navigator.clipboard.writeText(value);b.textContent='已复制，交给指定 AI';}
+diff --git a/00_START_HERE.md b/00_START_HERE.md
+index f59cadf..a22a97d 100644
+--- a/00_START_HERE.md
++++ b/00_START_HERE.md
+@@ -6,51 +6,59 @@
+ | 你要知道的事 | 当前记录 |
+ |---|---|
+ | 最终目标 | 让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动 |
+-| 当前阶段 | 07 阶段审查 · Phase 1 项目地基 |
++| 当前阶段 | 07 阶段审查 · Phase 1 项目地基 · Gate-01 第二轮 |
+ | 当前任务 | TASK-004 |
+-| 当前状态 | 待修复 |
+-| 上一个完成项 | CODEX_REVIEW_GATE_01 独立审查完成；TASK-001–004 的完整验收均 FAIL，旧 DONE 保留为历史 |
+-| 下一步 | GPT/Owner 确认 D01 禁用范围；ZCode 按 H01–H10 在 Phase 1 逐 TASK 修复，之后 Codex 复审；禁止合并 main 和进入 TASK-005 |
+-| 交给谁 | ZCode |
+-| 做到什么算完成 | 在冻结 c263610 基础上修复 H01–H10，落实 D01；真实 HTTP 多组织/角色/邀请与审计故障回归、迁移和容器检查通过；提交独立修复证据供 Codex 复审，不自行放行 |
+-| 卡点 | 10 项 HIGH 未修复；D01 全局账号与组织成员禁用语义待 GPT/Owner 裁决；Docker 完整构建/启动未实测。无阶段通过或 Owner 放行。 |
++| 当前状态 | 待审查 |
++| 上一个完成项 | ZCode 已提交 Gate 01 H01–H10 修复与 REVIEW_2 交接（c87a141）；Codex 本轮仅完成磁盘核对与交接收尾 |
++| 下一步 | 交 Codex 按 prompts/P07_CODE_REVIEW.md 对 c263610..c87a141 做第二轮独立复审；核定 Docker 缺证与 M01–M04 延期安排；PASS 后仍需 Owner 放行 |
++| 交给谁 | Codex |
++| 做到什么算完成 | 以 c263610..c87a141 的实际差异逐项复核 H01–H10 和 D01；独立记录必要回归、迁移升级及真实 Docker 验证，明确 M01–M04 处置与 Gate 结论；不能以执行者自报测试替代复审 |
++| 卡点 | 第二轮独立复审未执行；真实 Docker 构建/启动证据缺失；M01–M04 延期仅为 ZCode 建议，待复审核定；尚无 Gate PASS 或 Owner 阶段放行。 |
+ | 检查点 | YES |
+-| 审查 | BLOCKED · CODEX_REVIEW_GATE_01 · 2026-09-13 · c263610；技术验收 FAIL，必须修复并复审 |
+-| 进度最后更新 | 2026-09-13T01:28:09+08:00 |
++| 审查 | CODEX_REVIEW_REQUIRED · CODEX_REVIEW_GATE_01_REVIEW_2 · target c87a141；首轮 c263610 BLOCKED 保留；本轮收尾不产生新 Gate 结论 |
++| 进度最后更新 | 2026-09-13T16:06:42+08:00 |
+ 
+ 项目绝对路径：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
+ 
+-## 复制这一段，交给 ZCode
++## 复制这一段，交给 Codex
+ 
+ ```text
+ 当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
+ 产品目标：让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动
+ 当前任务：TASK-004
+-本轮动作：GPT/Owner 确认 D01 禁用范围；ZCode 按 H01–H10 在 Phase 1 逐 TASK 修复，之后 Codex 复审；禁止合并 main 和进入 TASK-005
++本轮动作：交 Codex 按 prompts/P07_CODE_REVIEW.md 对 c263610..c87a141 做第二轮独立复审；核定 Docker 缺证与 M01–M04 延期安排；PASS 后仍需 Owner 放行
+ 
+-请在 /Users/yuyuyu/Documents/ChatGPT/产品-开发 显式读取 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、docs/ai-ecommerce-assistant/12_PROGRESS.md、PHASE_PLAN.md、CODEX_REVIEW_HANDOFF.md，以及 docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md 和 GATE_01_EVIDENCE.json。
++请接手 AI 电商运营助手的 CODEX_REVIEW_GATE_01_REVIEW_2，只做 Phase 1（TASK-001–004）的独立复审，不修改业务代码、不推进 TASK-005、不合并 main 或部署。
+ 
+-当前为 Phase 1 / CODEX_REVIEW_GATE_01，结论 BLOCKED，TASK-001–004 完整验收均 FAIL，10 HIGH、4 MEDIUM。基线 main=2a983cc，冻结 phase/01-foundation=c263610541f8c8f7b41fd38c185f5feac94e8ee2；TASK-001/002已在恢复基线，不能只看分支diff忽略它们。
++项目根目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant；总控：/Users/yuyuyu/Documents/AI-Workspace。
+ 
+-先核对分支、版本、未提交文件与其他执行者；保留 Product OS 与审查文档修改。逐项给出 ACCEPT/DISCUSS/REJECT，再按依赖一次一个 TASK 修复：TASK-001 H10；TASK-002 H08/H09；TASK-003 H04/H05/H06/H07；TASK-004 H01/H02/H03及相关H07。以报告真实反例和完成判据为准；M01–M04按风险和相称工作量处理，不为风格重构或扩大P0。
++先显式读取根目录 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md；按配置读取 docs/ai-ecommerce-assistant/12_PROGRESS.md（唯一进度）、09_TASKS.md、DEVELOPMENT_HANDOFF.md、FINAL_DECISIONS.md、PHASE_PLAN.md、CODEX_REVIEW_HANDOFF.md，以及首轮 docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md、docs/reviews/GATE_01_EVIDENCE.json。按需读取角色、数据模型、API 和验收原文。
+ 
+-D01：GPT/Owner尚需明确全局账号禁用与组织成员禁用语义。裁决前不可自行改变业务定义，可先完成不依赖D01的修复；H03保留待决状态。租户管理员不能仅凭本组织角色控制其他组织账号有效性。
++本次交接核对状态：Phase 1 / TASK-004 / 待审查 / CODEX_REVIEW_REQUIRED / Checkpoint=YES / 下一工具 Codex。分支 phase/01-foundation；首轮冻结 c263610541f8c8f7b41fd38c185f5feac94e8ee2；第二轮待审提交 c87a141648227954725402c715063a900fa72659；main 基线 2a983cc55f136abbb49c5d02b55c1cb82b6547cc。先重查 HEAD、分支、未提交差异及是否另有执行者；保留本轮未提交管理文档，版本变化则重定范围，不覆盖或重置。
+ 
+-现有unit14/14、integration28/28、e2e6/6、typecheck/build通过，不证明反例已通过。补真实HTTP/Cookie、多组织不同角色、邀请失败和并发、审计故障回滚、数据库同域/时区、新空库及向前升级验证。H10需要真实Docker构建/启动验证；环境不具备时如实记录。关闭公开注册后应保持受控初始化/邀请可用，不手工伪造Better Auth Cookie。
++首轮 c263610 为 BLOCKED（10 HIGH、4 MEDIUM）。ZCode 已提交修复：73a5108（TASK-001）、3e90bf6+24f877a（TASK-002）、63e16ea（TASK-003）、e56be99（TASK-004）；c87a141 为 REVIEW_2 交接。复审差异 c263610..c87a141；TASK-001/002 原实现含恢复基线，必要时核对 main..c87a141 和当前完整应用。不要只看新增回归或交接摘要。
+ 
+-仅在phase/01-foundation修复本轮问题，遵守原Git授权及每TASK记录要求。不改写共享历史/迁移，不开始TASK-005，不合并main，不部署。记录原问题、修改、实际检查、提交版本和剩余缺口。
++D01 已在角色规格与交接记录中裁决为方案 A：只禁用当前 Organization 的 Membership，不通过组织管理接口修改全局 User.status；撤销登录会话后，其他组织有效 Membership 重新登录仍可用。全局账号封禁管理平台不属 P0。无需重新询问 D01，但须验证实现和行为一致。
+ 
+-完成后更新原12_PROGRESS.md任务表、摘要、唯一状态块与CODEX_REVIEW_HANDOFF；保留基线c263610，明确修复commit/diff。满足修复检查后回待审查/CODEX_REVIEW_REQUIRED，Checkpoint=YES，工具Codex，next_prompt=prompts/P07_CODE_REVIEW.md。运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 并读回项目首页与00_CONTROL_CENTER/PROJECTS.md。交Codex复审，Owner最终放行，不自行宣布独立审查通过。
++ZCode 记录 typecheck/build 通过、unit 14/14、integration 46/46、e2e 8/8、空库/已有库迁移及 Docker 依赖布局复现通过；上轮 Codex 仅做交接收尾，未重跑这些测试，未产生 REVIEW_2 结论。首轮日志只证明 c263610，不是修复后的独立通过证据。
++
++逐项验证 H01–H10 与 D01，重点真实 HTTP/Cookie、多组织不同角色读写、Admin 拟授角色边界、成员禁用后的会话与其他组织、公开注册关闭及受控邀请/初始化、失败重试与并发恢复、审计故障事务回滚、AuditLog 同域约束、新空库及向前升级和时区语义。用隔离环境完成必要验证，避免破坏已有开发数据。
++
++真实 Docker 干净构建/启动仍无实测证据，不能把依赖布局复现当作容器验证；环境不具备时明确缺口及对 Gate 的影响。M01–M04 延期是 ZCode 建议，尚未获独立复审认可；按风险和 P0 范围核定处理时点，不能自动排入 TASK-005 或自行扩范围。
++
++输出逐项复核依据、真实执行结果、未运行原因与剩余问题；按项目协议给出 PASS / FAIL / BLOCKED，测试、审查、Owner 放行、GitHub 同步、部署和真实试用分开记录。FAIL 交 ZCode 修复，缺证据明确补证，PASS 后仍等 Owner 放行；本轮不执行合并或新 Phase。
++
++收尾重新读取磁盘最新进度，更新原 12_PROGRESS.md 的任务表、当前摘要、唯一状态块及 CODEX_REVIEW_HANDOFF.md，保留历史，设置实际下一工具/完整提示词/完成标准/Checkpoint。运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 并读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，确认一致。用户明确只读时不写回或刷新。
+ ```
+ 
+ ## 技术状态（各自独立）
+ 
+ - Git：已建立本地 Git；存在未提交或未跟踪内容。
+-- 分支：phase/01-foundation；版本：c263610541f8c8f7b41fd38c185f5feac94e8ee2。
++- 分支：phase/01-foundation；版本：c87a141648227954725402c715063a900fa72659。
+ - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
+-- GitHub：已连接；此前核实 c263610 与远端一致；本次审查及管理文档未提交/推送（本轮未重查远端）；最后核验：2026-09-13T00:54:14+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：实际 git ls-remote origin：phase/01-foundation 与本地 HEAD 均为 c263610541f8c8f7b41fd38c185f5feac94e8ee2；main 为 2a983cc55f136abbb49c5d02b55c1cb82b6547cc。仓库可见性 unknown。。
+-- 部署：unknown（未找到生产部署或线上可用证据）；最后核验：2026-09-13T00:45:24+08:00；地址：未记录；证据：已查 Dockerfile、compose.yaml、已跟踪部署配置与 README；只见本地 127.0.0.1:3000，不能当线上地址。本地 /api/health 请求连接重置；未运行部署或容器。。
++- GitHub：已核实远端 phase/01-foundation=c87a141，与已提交 HEAD 一致；本轮收尾文档修改尚未提交/推送；最后核验：2026-09-13T15:59:55+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：本轮 git ls-remote origin 返回 phase/01-foundation=c87a141648227954725402c715063a900fa72659；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc。未查询仓库可见性。。
++- 部署：unknown（无生产部署；本机无 Docker）；最后核验：2026-09-13T15:40:00+08:00；地址：未记录；证据：docker-deps-repro.sh 静态等价复现通过；真实 docker build/compose 未执行。
+ 
+-刷新前本地快照时间：2026-09-13T01:32:23+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
++刷新前本地快照时间：2026-09-13T16:06:42+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+ 
+ [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)
+diff --git a/CODEX_REVIEW_HANDOFF.md b/CODEX_REVIEW_HANDOFF.md
+index 0ab9317..03cd931 100644
+--- a/CODEX_REVIEW_HANDOFF.md
++++ b/CODEX_REVIEW_HANDOFF.md
+@@ -1,23 +1,25 @@
+ # CODEX_REVIEW_HANDOFF｜CODEX_REVIEW_GATE_01_REVIEW_2（第二轮复审交接）
+ 
+-- 生成日期：2026-09-13（ZCode 修复完成后）
++- 原交接日期：2026-09-13（ZCode 修复完成后）；Codex 交接收尾核对：2026-09-13T16:04:32+08:00
+ - 交接根目录：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
+-- 审查类型：**Gate-01 第二轮复审**（第一轮 BLOCKED → H01–H10 已修复 → 待复审）
++- 审查类型：**Gate-01 第二轮复审**（第一轮 BLOCKED → ZCode 已提交 H01–H10 修复 → 待独立复审）
+ - 修复依据：[docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md](docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md) + [GATE_01_EVIDENCE.json](docs/reviews/GATE_01_EVIDENCE.json) + Owner 对 D01 的裁决（方案 A，RESOLVED）
+ 
++> 本轮 Codex 只完成交接收尾，未执行 REVIEW_2、未重跑业务测试。以下修复行为与测试结果来自 ZCode 的已提交记录，是否满足首轮验收由第二轮独立复审核定。唯一进度仍为 `docs/ai-ecommerce-assistant/12_PROGRESS.md`；本文件保存版本、证据与接手范围。
++
+ ## 复审定位信息
+ 
+ | 项 | 值 |
+ |---|---|
+ | Current Branch | `phase/01-foundation` |
+-| Base Branch | `main`（= 2a983cc） |
++| Base Branch | `main`（`2a983cc55f136abbb49c5d02b55c1cb82b6547cc`） |
+ | Base Review Commit（第一轮冻结） | `c263610541f8c8f7b41fd38c185f5feac94e8ee2` |
+-| Current Review Commit | 本文件提交后的最新 commit（`chore(review): prepare gate-01 review-2`） |
+-| Git Diff Range | `c263610..HEAD`（复审范围） |
+-| Project Status | CODEX_REVIEW_REQUIRED（Checkpoint=YES；禁止合并 main / Phase 2 / TASK-005） |
+-| Working Tree | 提交并推送本文件后 clean，与 origin/phase/01-foundation 一致 |
++| Current Review Commit | `c87a141648227954725402c715063a900fa72659`（已提交的 REVIEW_2 交接版本） |
++| Git Diff Range | `c263610..c87a141`（固定复审范围；main..c87a141 供 Phase 全量背景核对） |
++| Project Status | TASK-004 / 待审查 / CODEX_REVIEW_REQUIRED；Checkpoint=YES；下一工具 Codex，prompts/P07_CODE_REVIEW.md |
++| Working Tree | 本轮写入前 clean；15:59:55+08:00 实查远端=c87a141。收尾管理修改未提交/推送，接手时须保留并重读 |
+ 
+-## Fixes：H01–H10（逐项 ACCEPT）
++## ZCode 修复记录：H01–H10（执行者逐项 ACCEPT，待独立复核）
+ 
+ | # | 修复 commit | 修复内容 | 复审要点 |
+ |---|---|---|---|
+@@ -34,7 +36,7 @@
+ 
+ **D01：RESOLVED（方案 A）**——Owner 2026-09-13 裁决：组织成员禁用仅影响当前 Organization 的 Membership；不通过组织接口改全局 User.status；其他组织有效 Membership 继续可用；全局封禁属平台级运维 P0 不开发。已同步 `docs/ai-ecommerce-assistant/02_USER_ROLES.md`。
+ 
+-## Tests（修复后全量真实执行，2026-09-13）
++## ZCode 记录的 Tests（2026-09-13；本轮 Codex 未重跑）
+ 
+ | 套件 | 结果 |
+ |---|---|
+@@ -46,15 +48,17 @@
+ | migration | ✅ 空库×4 套件 + aiea_dev 升级（deploy 后 Already in sync） |
+ | docker deps 等价复现 | ✅ scripts/docker-deps-repro.sh OK |
+ 
+-新增回归覆盖：多组织授权（双组织双角色读写同源/伪造 Cookie 回退）、role escalation（Admin 提权 403）、member disable isolation（A 禁用不伤 B）、public signup rejection、invitation success session（框架 Cookie 真实会话）、invitation failure recovery（孤儿/补偿/重试/并发）、audit transaction rollback（邀请/成员/组织三处注入）、AuditLog 跨组织 FK（触发器）、timezone semantics（类型断言+UTC/+08 等值）、Docker dependency installation path（等价复现）。Codex 原有测试全部保留并通过。
++新增回归覆盖：多组织授权（双组织双角色读写同源/伪造 Cookie 回退）、role escalation（Admin 提权 403）、member disable isolation（A 禁用不伤 B）、public signup rejection、invitation success session（框架 Cookie 真实会话）、invitation failure recovery（孤儿/补偿/重试/并发）、audit transaction rollback（邀请/成员/组织三处注入）、AuditLog 跨组织 FK（触发器）、timezone semantics（类型断言+UTC/+08 等值）、Docker dependency installation path（等价复现）。ZCode 记录原有测试均保留并通过；本轮仅核对记录及相关提交存在。首轮 docs/reviews/gate-01-evidence/ 日志和 GATE_01_EVIDENCE.json 对应 c263610，不能用于证明本次修复测试通过。
+ 
+ ## Known Issues（剩余）
+ 
+-1. **真实 Docker runtime 构建/启动未实测**（本机无 Docker）——H10 已修配置并用相同布局等价复现验证，但干净容器构建→迁移→登录链路仍需真实 Docker 环境（TASK-029 部署阶段或提供 Docker 的机器）。
++1. **真实 Docker runtime 构建/启动未实测**（本机无 Docker）——H10 已修配置并用相同布局等价复现验证，但干净容器构建→迁移→登录链路仍需真实 Docker 环境。该缺口是否阻塞 Gate 须由复审核定，不能在交接收尾中自动延期至 TASK-029。
+ 2. E2E 默认密码仅用于本地演示库 aiea_dev。
+ 3. 旧下载地址/旧 job 重放拒绝分别属 TASK-007/013 对象（本轮已覆盖 Cookie 重放拒绝）。
+ 
+-## Medium Follow-up（M01–M04：未修复，不阻塞本轮）
++## Medium Follow-up（M01–M04：ZCode 提议延期，待复审核定）
++
++本轮不将执行者的“不阻塞”建议视为 Reviewer 放行；M03 已有局部修改，其余缺口仍须复核并明确处理时点。
+ 
+ | # | 内容 | 状态 |
+ |---|---|---|
+@@ -65,9 +69,11 @@
+ 
+ ## 建议 Codex 优先阅读（按 diff 顺序）
+ 
++下表第 2–8 项源码、迁移与测试路径均相对于应用目录 `ai-ecommerce-assistant/`；Git 与 docs 路径相对于项目根。复审还需查看范围内其余差异，不能只看本表。
++
+ | 顺序 | 文件 |
+ |---|---|
+-| 1 | `git log c263610..HEAD --oneline`（4ec0011→73a5108→3e90bf6→24f877a→63e16ea→e56be99） |
++| 1 | `git log c263610..c87a141 --oneline`（4ec0011→73a5108→3e90bf6→24f877a→63e16ea→e56be99→c87a141） |
+ | 2 | `prisma/migrations/20260913043631_p0_domain_timestamptz/`、`20260913044218_p0_audit_tenant_fk/` |
+ | 3 | `src/lib/session.ts`（H01 唯一解析点）、`src/app/api/v1/me/active-organization/route.ts` |
+ | 4 | `src/services/invitations.ts`（H05/H06/H07：校验前置/咨询锁事务/补偿）、`src/services/ownerInit.ts` |
+@@ -79,6 +85,13 @@
+ 
+ ## 复审结论回填约定
+ 
+-PASS → Owner 放行 → 合并 main（`merge: phase/01-foundation after CODEX_REVIEW_GATE_01`，不 squash）→ 创建 `phase/02-data-ingestion` → TASK-005。
+-PASS_WITH_FIXES → 修复 Critical/High → 独立 commit → 更新本文件 → 按要求决定是否第三轮。
+-BLOCKED / GPT_PRODUCT_DECISION_REQUIRED → 停止等待 Owner。
++独立复审按项目协议记录 PASS / FAIL / BLOCKED 及精确代码版本、实际测试、未运行项、剩余问题。技术失败交 ZCode 修复并复审；缺证据写清补证动作；只有确需产品决策的问题才交 Owner，不能把所有技术 BLOCKED 都转给用户决定。
++
++PASS 后仍等待 Owner 阶段放行，两者满足后才按 PHASE_PLAN 执行合并与下一 Phase。本轮交接收尾不放行、不开 TASK-005，也不自动提交或推送。
++
++## 本轮核对结果与下一步
++
++- 已确认代码：HEAD 与远端均为 c87a141，main 仍为 2a983cc；D01 的方案 A 已写入 02_USER_ROLES，本轮同步登记 FINAL_DECISIONS（沿用既有记录，非重新裁决）。
++- 待办：Codex 第二轮独立复核 H01–H10/D01；核定真实 Docker 缺证与 M01–M04 延期安排；复审通过后再等 Owner 放行。没有新业务开发任务。
++- 证据边界：本轮仅执行磁盘/Git/文档一致性与 Product OS 刷新检查；ZCode 自报测试与首轮独立日志分开保存。收尾检查及实际 sync 读回结果见唯一进度的最新执行记录。
++- 新对话使用 `prompts/P07_CODE_REVIEW.md`；接手先核对最新 HEAD 与本轮未提交管理差异，再决定实际待审范围。
+diff --git a/FINAL_DECISIONS.md b/FINAL_DECISIONS.md
+index 667f551..157574b 100644
+--- a/FINAL_DECISIONS.md
++++ b/FINAL_DECISIONS.md
+@@ -4,6 +4,8 @@
+ 
+ 原目标仍是：老板每天打开一次，在一页看懂本店经营变化、待复核问题、证据与优先行动。实现路径是 CSV/Mock 导入 → 确定性指标 → 规则异常 → VOC → 有证据的日报/建议 → 本人行动状态。演示可用、工程验收、真实再次使用和付款分别验证。
+ 
++> 以上版本说明及下表“全部 TODO / 不启动开发”描述的是 2026-09-12 规格冻结时点；执行进度一律读取 12_PROGRESS.md。Gate-01 后续产品裁决见本文第 5 节。
++
+ 本表是最终裁决，不要求再把两份报告全量执行。`ACCEPT` 表示采纳；`MODIFY` 表示只采用表中的最小修正；`DEFER` 表示不设为开发前阻塞，放在注明的实现任务或未来范围；`REJECT` 表示本轮不采用。下表“已落文档”只代表对应合同已更新，所有应用任务仍为 TODO。
+ 
+ ## 1. 两份报告如何取舍
+@@ -62,3 +64,13 @@ B1—B6 已在本版写成字段、事务、API、权限和验收合同。它们
+ | [PACKAGE_MANIFEST.md](PACKAGE_MANIFEST.md) | 本次文档检查、文件列表与压缩包使用方式 |
+ 
+ 本版优先级：本表管理审查取舍 → DEVELOPMENT_HANDOFF 管理 P0 范围/启动 → 分册管理精确字段与行为 → 00 合订本同步阅读。两份原审查报告和旧 v1.0 ZIP 是历史参考，不构成额外执行清单。
++
++## 5. Gate-01 D01 既有产品裁决补录（2026-09-13）
++
++**D01：方案 A，RESOLVED。** 组织成员禁用只作用于当前 Organization 的 Membership；组织 Owner/Admin 不得通过成员管理接口修改全局 User.status。撤销登录会话后，其他组织的有效 Membership 在重新登录后仍可使用。全局账号封禁属于平台级运维能力，P0 不开发对应管理平台。
++
++理由：一个组织的管理权限不能决定用户在其他组织的账号有效性。实现须证明本组织失权、旧会话撤销和其他组织资格仍有效这三个行为。
++
++来源：已提交版本 c87a141 的 `docs/ai-ecommerce-assistant/02_USER_ROLES.md` 与 `CODEX_REVIEW_HANDOFF.md` 均记录 Owner 于 2026-09-13 作出此决定。本轮 Codex 收尾仅补齐决策入口，不重新裁决，不把文档一致当成实现验收通过。
++
++D01 无需再次待决；真实 Docker 缺证和 M01–M04 延期建议交第二轮独立复审核定，Gate PASS 后的 Owner 阶段放行仍须独立记录。当前执行状态以唯一进度为准。
+diff --git a/docs/DEPLOYMENT_STATUS.md b/docs/DEPLOYMENT_STATUS.md
+index 1d50131..1041be5 100644
+--- a/docs/DEPLOYMENT_STATUS.md
++++ b/docs/DEPLOYMENT_STATUS.md
+@@ -1,5 +1,7 @@
+ # 部署与外部同步核验
+ 
++> 下方原表为 2026-09-13 凌晨接入时的历史快照，保留证据；本轮新增核验见文末，当前摘要由唯一进度维护。
++
+ GitHub 核验：2026-09-13T00:54:14+08:00。部署文件核验：2026-09-13T00:45:24+08:00。本文件保存核验依据；首页摘要在唯一进度文件中。
+ 
+ | 项目 | 实际结果 | 依据 |
+@@ -17,3 +19,12 @@ GitHub 核验：2026-09-13T00:54:14+08:00。部署文件核验：2026-09-13T00:4
+ | TASK-029 试点运行与最低安全运维 | TODO | 原进度和任务定义 |
+ 
+ 本轮未部署、未提交、未推送、未合并，未启动或停止业务服务。接入期间 ZCode 自行完成 TASK-004 并提交/推送 Gate 01，上表已重新核实最新远端。刷新总控不会联网重验。
++
++## 2026-09-13T15:59:55+08:00 · 交接收尾远端只读核验
++
++实际执行 `git ls-remote origin refs/heads/phase/01-foundation refs/heads/main`：
++
++- phase/01-foundation：`c87a141648227954725402c715063a900fa72659`，与本轮写入前本地 HEAD 一致；工作区当时干净。
++- main：`2a983cc55f136abbb49c5d02b55c1cb82b6547cc`，尚未接收 Phase 1 合并。
++
++本轮后续仅修改进度、交接、决策补录和提示词并运行 Product OS sync；这些收尾文档未提交/推送。本轮未运行部署、容器或本地健康接口检查，不更新部署核验时间。ZCode 最新记录仍为真实 Docker 未实测、生产部署 unknown；仓库可见性未查询。刷新生成视图不等于 GitHub 推送或部署。
+diff --git a/docs/ai-ecommerce-assistant/12_PROGRESS.md b/docs/ai-ecommerce-assistant/12_PROGRESS.md
+index 4297652..7a45af5 100644
+--- a/docs/ai-ecommerce-assistant/12_PROGRESS.md
++++ b/docs/ai-ecommerce-assistant/12_PROGRESS.md
+@@ -4,8 +4,11 @@
+ 
+ ## 当前导航（唯一进度的一部分）
+ 
+-**Phase 1 项目地基 / CODEX_REVIEW_GATE_01_REVIEW_2 = CODEX_REVIEW_REQUIRED / H01–H10 修复完成待复审 / 下一工具 Codex。**
+-D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCode 已按依赖顺序完成 H01–H10 全部修复（TASK-001→004 各自独立 commit 并推送）；真实 HTTP 多组织/角色/邀请、审计故障注入、迁移升级与时区等值回归全部通过。等待 Codex 第二轮复审；复审 PASS 且 Owner 放行前禁止合并 main 或开始 TASK-005。
++**Phase 1 项目地基 / TASK-004 / CODEX_REVIEW_GATE_01_REVIEW_2 = CODEX_REVIEW_REQUIRED / 待 Codex 第二轮独立复审 / Checkpoint=YES。**
++
++最新已提交交接版本为 `c87a141648227954725402c715063a900fa72659`。ZCode 已提交 H01–H10 的修复及回归记录；本轮 Codex 只核对磁盘并完成交接收尾，没有执行第二轮独立复审，也没有重跑业务测试。首轮 `c263610` 的 BLOCKED 结论保留为历史，不能据修复提交直接宣布新版本 PASS。
++
++D01 已在角色规格与 ZCode 交接中记录为方案 A（RESOLVED）：只禁用当前组织 Membership，不通过组织接口修改全局 User.status；撤销登录会话后，其他有效组织资格在重新登录后可用。当前不再等待 D01 裁决。尚需复审确认 H01–H10、D01 落实、真实 Docker 证据缺口与 M01–M04 的延期建议；复审 PASS 且 Owner 放行前禁止合并 main 或开始 TASK-005。本轮仅写回管理文档，未提交或推送这些收尾修改。
+ 
+ <!-- PRODUCT_OS_STATE_BEGIN -->
+ ```json
+@@ -14,30 +17,31 @@ D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCo
+   "project_name": "电商中台 · AI 电商运营助手",
+   "goal": "让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动",
+   "stage": "07 阶段审查 · Phase 1 项目地基 · Gate-01 第二轮",
+-  "current_task": "GATE_01_REVIEW_2",
+-  "status": "CODEX_REVIEW_REQUIRED",
+-  "last_completed": "H01–H10 修复完成（fix TASK-001/002/003/004 四个提交）；D01=RESOLVED 方案A",
+-  "next_action": "Codex 第二轮复审 c263610..<latest>；PASS 后 Owner 放行才可合并 main 并开 Phase 2",
++  "current_task": "TASK-004",
++  "status": "待审查",
++  "last_completed": "ZCode 已提交 Gate 01 H01–H10 修复与 REVIEW_2 交接（c87a141）；Codex 本轮仅完成磁盘核对与交接收尾",
++  "next_action": "交 Codex 按 prompts/P07_CODE_REVIEW.md 对 c263610..c87a141 做第二轮独立复审；核定 Docker 缺证与 M01–M04 延期安排；PASS 后仍需 Owner 放行",
+   "next_owner": "Codex",
+-  "next_prompt": "docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md + CODEX_REVIEW_HANDOFF.md(REVIEW_2)",
+-  "acceptance": "复审基于实际差异覆盖 H01–H10 与 D01 落实；复跑原测试与反例（真实 Cookie、多组织读写/撤权、邀请失败与并发恢复、审计回滚、迁移升级、容器依赖路径）",
+-  "blockers": "等待 Codex 第二轮复审结论；Docker 真实 runtime 构建仍未实测（本机无 Docker，等价复现已过）；M01–M04 为 Follow-up 不阻塞。",
++  "next_prompt": "prompts/P07_CODE_REVIEW.md",
++  "acceptance": "以 c263610..c87a141 的实际差异逐项复核 H01–H10 和 D01；独立记录必要回归、迁移升级及真实 Docker 验证，明确 M01–M04 处置与 Gate 结论；不能以执行者自报测试替代复审",
++  "blockers": "第二轮独立复审未执行；真实 Docker 构建/启动证据缺失；M01–M04 延期仅为 ZCode 建议，待复审核定；尚无 Gate PASS 或 Owner 阶段放行。",
+   "checkpoint": "YES",
+-  "review": "REVIEW_2 · CODEX_REVIEW_GATE_01 · 2026-09-13 · base c263610",
+-  "updated_at": "2026-09-13T15:40:00+08:00",
+-  "updated_by": "ZCode · Gate-01 H01–H10 修复执行",
++  "review": "CODEX_REVIEW_REQUIRED · CODEX_REVIEW_GATE_01_REVIEW_2 · target c87a141；首轮 c263610 BLOCKED 保留；本轮收尾不产生新 Gate 结论",
++  "updated_at": "2026-09-13T16:06:42+08:00",
++  "updated_by": "Codex · 仅交接收尾与状态核对",
+   "evidence": [
+-    "fix(TASK-001) 73a5108：Dockerfile prisma 生成顺序 + compose 认证配置 + scripts/docker-deps-repro.sh 等价复现 OK",
+-    "fix(TASK-002) 3e90bf6+24f877a：audit_log 同域触发器迁移 + 77 列 TIMESTAMPTZ(UTC 显式转换) + gate01.db 3/3",
+-    "fix(TASK-003) 63e16ea：公开注册 403、框架 Set-Cookie、校验前置/孤儿恢复/咨询锁事务/补偿、邀请审计原子 + gate01.auth 8/8 + E2E 邀请全流程",
+-    "fix(TASK-004) e56be99：session 唯一活跃组织解析、拟授予角色校验、D01 方案A 仅 Membership、成员/org 审计同事务 + gate01.access 7/7",
+-    "修复后全量回归：typecheck 0 错、unit 14/14、integration 46/46、build 0、e2e 8/8；aiea_dev 升级部署 Already in sync"
++    "本轮实读 Git：phase/01-foundation HEAD=c87a141648227954725402c715063a900fa72659；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc；写入前工作区干净。",
++    "修复提交确实存在：73a5108（TASK-001）、3e90bf6+24f877a（TASK-002）、63e16ea（TASK-003）、e56be99（TASK-004）；c87a141 为第二轮交接提交。",
++    "ZCode 执行记录：typecheck/build 通过、unit 14/14、integration 46/46、e2e 8/8、空库及 aiea_dev 升级、docker-deps-repro.sh 通过。本轮未重跑，不作 Codex 独立通过证据。",
++    "D01 来源：c87a141 中 02_USER_ROLES.md 与 CODEX_REVIEW_HANDOFF.md 均记载 Owner 方案 A 已裁决；本轮将既有决定补录 FINAL_DECISIONS.md，非新裁决。",
++    "首轮独立报告和 GATE_01_EVIDENCE.json / gate-01-evidence 日志仅证明 c263610 的审查结果，保持原件；不能用于证明 c87a141 回归通过。",
++    "收尾记录见本文末尾；相称验证为文档/状态/路径/Git差异及 Product OS sync 读回，未启动业务 TASK、数据库迁移、服务或第二轮复审。"
+   ],
+   "github": {
+-    "status": "已连接（SSH）；修复提交均已推送 origin/phase/01-foundation",
++    "status": "已核实远端 phase/01-foundation=c87a141，与已提交 HEAD 一致；本轮收尾文档修改尚未提交/推送",
+     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
+-    "verified_at": "2026-09-13T15:40:00+08:00",
+-    "evidence": "git push origin phase/01-foundation 至 e56be99 成功；远端与本分支一致"
++    "verified_at": "2026-09-13T15:59:55+08:00",
++    "evidence": "本轮 git ls-remote origin 返回 phase/01-foundation=c87a141648227954725402c715063a900fa72659；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc。未查询仓库可见性。"
+   },
+   "deployment": {
+     "status": "unknown（无生产部署；本机无 Docker）",
+@@ -49,27 +53,17 @@ D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCo
+ ```
+ <!-- PRODUCT_OS_STATE_END -->
+ 
+-## Git 状态（由 Zcode 自动维护；2026-09-13 Owner 授权 Git 生命周期规则）
++## 当前 Git 与交接状态（2026-09-13T16:02:33+08:00 核对）
+ 
+-- Project Status：**CODEX_REVIEW_REQUIRED**（CODEX_REVIEW_GATE_01_REVIEW_2，等待 Codex 第二轮复审）
+-- Current Branch：`phase/01-foundation`
+-- Base Branch：`main`
+-- Origin：`git@github.com:leeyy092/ai-ecommerce-assistant.git`（SSH）
+-- 同步状态：修复提交已全部推送（e56be99）；本段更新随最终 chore(review) 提交推送后工作区 clean。
+-- Base Review Commit（Gate-01 冻结）：`c263610541f8c8f7b41fd38c185f5feac94e8ee2`
+-- Current Review Commit（REVIEW_2）：本段提交后的最新 commit（chore(review): prepare gate-01 review-2）
+-- Git Diff Range（复审范围）：`c263610..HEAD`
+-- 修复提交清单：4ec0011 docs(review) 基线 → 73a5108 fix(TASK-001) → 3e90bf6+24f877a fix(TASK-002) → 63e16ea fix(TASK-003) → e56be99 fix(TASK-004)
+-- Fixes：H01–H10 全部；D01：RESOLVED（方案 A）
+-- Tests（修复后全量）：typecheck 0 错；unit 14/14；integration 46/46（7 文件）；build 0 错误；e2e 8/8；空库迁移×4 套件 + aiea_dev 升级 Already in sync；docker deps 等价复现 OK
+-- Known Issues：真实 Docker runtime 构建未实测（本机无 Docker）；E2E 演示密码仅本地库
+-- Medium Follow-up：M01 Origin/CSRF、M02 限流清零语义、M03 输入验证信封、M04 Auth 外键/UUID——均未修复，登记为 Review Follow-up（不阻塞本轮）
+-- Next Action：Codex 第二轮复审 → PASS + Owner 放行 → 合并 main → 创建 phase/02-data-ingestion
+-- Git Diff Range：`main..phase/01-foundation`
+-- TASK 验收（本 Phase）：TASK-001 FAIL、TASK-002 FAIL、TASK-003 FAIL、TASK-004 FAIL；ZCode 原完成记录保留为历史，当前需修复复审
+-- Test Results（冻结时全量回归）：typecheck 0 错误；unit 14/14；integration 28/28；build 0 错误；e2e 6/6
+-- Next Action：GPT/Owner 确认 D01 → ZCode 按报告逐 TASK 修复 → Codex 复审 → Owner 最终放行；当前禁止合并或 TASK-005
+-- 规则要点：main 只接收通过 Review Gate 的 Phase 合并；禁止 main 上开发/force push/重写历史；每 TASK 独立 commit（含编号，测试通过后提交）；Gate 冻结=干净树+已推送+HANDOFF 更新。
++- Project Status：**CODEX_REVIEW_REQUIRED**；当前 TASK-004，Gate-01 第二轮待 Codex 复审，Checkpoint=YES。
++- 分支：`phase/01-foundation`；main 基线：`2a983cc55f136abbb49c5d02b55c1cb82b6547cc`。
++- 首轮冻结：`c263610541f8c8f7b41fd38c185f5feac94e8ee2`；第二轮待审提交：`c87a141648227954725402c715063a900fa72659`。
++- 复审差异：`c263610..c87a141`；需要核对 Phase 全量合同与恢复基线时再参考 `main..c87a141`，不把两者混为一轮差异。
++- 修复链：`73a5108` TASK-001 → `3e90bf6` + `24f877a` TASK-002 → `63e16ea` TASK-003 → `e56be99` TASK-004 → `c87a141` 交接；另 `4ec0011` 保存首轮报告与证据。
++- 远端：2026-09-13T15:59:55+08:00 实际 `git ls-remote` 核实两个分支与上列提交一致；本轮管理修改未提交/推送，不属于已同步版本。
++- 任务验收：四项保留 BLOCKED（等待 Gate 复审验收），不表示已判定修复无效。ZCode 的修复后测试结果见下方原执行记录，本轮未重跑。
++- 未完成：第二轮独立复审、真实 Docker 构建/启动证据、M01–M04 延期核定、Owner 阶段放行。
++- 下一步：Codex 使用 `prompts/P07_CODE_REVIEW.md`；复审 PASS 后仍须 Owner 放行。当前禁止合并 main、Phase 2 和 TASK-005。
+ 
+ ## 历史结论（2026-09-12 恢复时，当前以状态块与任务表为准）
+ 
+@@ -89,17 +83,17 @@ D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCo
+ 
+ - TODO：尚未开始。
+ - IN_PROGRESS：仅当前一个TASK在执行。
+-- BLOCKED：记录具体失败、已尝试方法、所需输入；不把未知写成通过。
++- BLOCKED：记录具体失败、缺证据或等待 Gate 验收的原因；修复已提交但独立复审未完成时仍保留此状态，不能据此断言修复无效，也不把未知写成通过。
+ - DONE：该TASK验收与指定测试都通过，且有可核对证据。
+ 
+ ## 开发任务状态
+ 
+ | TASK | 名称 | 状态 | 依赖 | 测试/证据 |
+ |---|---|---|---|---|
+-| TASK-001 | 可启动的应用与验证环境 | BLOCKED | 无前置开发任务 | Gate 01 FAIL：H10 Docker/Compose；本地启动、build、Worker检查通过；原执行记录见下 |
+-| TASK-002 | P0数据库与约束迁移 | BLOCKED | TASK-001 | Gate 01 FAIL：H08审计同域、H09时间语义；现有迁移及约束测试通过；需修复后复审 |
+-| TASK-003 | 登录、初始Owner与受控邀请 | BLOCKED | TASK-002 | Gate 01 FAIL：H03–H07；公开注册、邀请会话/恢复、管理事务；原测试通过不等于验收 |
+-| TASK-004 | 组织隔离与固定权限服务 | BLOCKED | TASK-003 | Gate 01 FAIL：H01–H03；组织上下文、角色提升、跨组织禁用；D01待产品裁决 |
++| TASK-001 | 可启动的应用与验证环境 | BLOCKED | 无前置开发任务 | H10 修复提交 73a5108；ZCode 记录依赖布局复现通过；真实 Docker 未实测，待 REVIEW_2 验收（首轮 FAIL 保留） |
++| TASK-002 | P0数据库与约束迁移 | BLOCKED | TASK-001 | H08/H09 修复提交 3e90bf6+24f877a；ZCode 记录迁移/时区回归通过，待 REVIEW_2 验收；M04 待复审核定 |
++| TASK-003 | 登录、初始Owner与受控邀请 | BLOCKED | TASK-002 | H04–H07 修复提交 63e16ea；ZCode 记录邀请/身份/审计回归通过，待 REVIEW_2 验收；M01–M03 处置待核定 |
++| TASK-004 | 组织隔离与固定权限服务 | BLOCKED | TASK-003 | H01–H03/H07 修复提交 e56be99；D01 已记为方案 A；ZCode 记录多组织/权限回归通过，待 REVIEW_2 验收 |
+ | TASK-005 | 店铺与数据源配置 | TODO | TASK-004 | 未执行 |
+ | TASK-006 | 统一Adapter与最小黄金样本 | TODO | TASK-005 | 未执行 |
+ | TASK-007 | 文件上传、私有存储与ImportTask | TODO | TASK-006 | 未执行 |
+@@ -131,10 +125,10 @@ D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCo
+ 
+ | 项目 | 当前状态 | 达成时需要的证据 |
+ |---|---|---|
+-| 应用可启动 | 2026-09-13 Codex 本地启动/build/E2E/Worker通过；容器路径 H10 阻断，TASK-001 整体 FAIL | 修复 Docker/Compose 并真实容器验证 |
++| 应用可启动 | 首轮本地检查通过；ZCode 已提交 H10 修复并记录依赖布局通过；第二轮待复审、真实 Docker 未实测 | 独立复核修复及真实容器构建/启动证据 |
+ | 六类CSV导入 | 未开发/未执行 | 全链路导入与错误/幂等验证 |
+ | 指标与规则正确 | 未开发/未执行 | 黄金案例手算与实际PG结果一致 |
+-| 角色隔离 | Phase 1 已实现并审查，但 H01–H03 失败；未来文件/AI对象尚未实测 | 修复后真实多组织角色/撤权回归及后续对象测试 |
++| 角色隔离 | 首轮 H01–H03 失败；修复与 D01 已提交、ZCode 回归有记录，待第二轮独立复审；未来文件/AI对象尚未实测 | 独立复跑真实多组织角色/撤权回归及后续对象测试 |
+ | AI联网质量 | 未执行 | 固定模型、脱敏测试集、分类与事实引用指标 |
+ | 首页三分钟任务 | 未执行 | 目标角色观察记录，不能用截图替代 |
+ | 性能/恢复 | 未执行 | 指定规模p95/p99、备份恢复记录 |
+@@ -251,3 +245,46 @@ D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCo
+ 交接：GPT/Owner明确D01禁用范围；下一工具ZCode，完整提示词`prompts/P08_FIX.md`；逐TASK修复H01–H10后回Codex复审，Checkpoint=YES。无Owner放行，禁止TASK-005。Product OS刷新与清理结果见本记录后续补充。
+ 
+ 收尾实测：停止隔离PG后，Web健康接口返回503 `{status:degraded}`；随后本次Web/Worker/PG全部停止，临时集群、脚本、随机口令与运行文件已删除，脱敏证据保留。最终99个原已跟踪文件比对：应用文件0改动，仅CODEX_REVIEW_HANDOFF、12_PROGRESS、P08_FIX为本轮跟踪文档变化。Product OS sync成功（1项目、0错误），首页与总控读回均为TASK-004/待修复/ZCode/Checkpoint YES，完整提示词指向P08_FIX；无自动开发或放行。
++
++## 历史 Git 区原文（c87a141 中保存的交接草稿）
++
++下列原文完整保留以供追溯，其中 `<latest>`、旧 Next Action、D01 待裁决和未修复描述已被本轮当前区取代；原记录时间由 ZCode 填写，未作为本轮实际执行时间。
++
++### Git 状态（由 Zcode 自动维护；2026-09-13 Owner 授权 Git 生命周期规则）
++
++- Project Status：**CODEX_REVIEW_REQUIRED**（CODEX_REVIEW_GATE_01_REVIEW_2，等待 Codex 第二轮复审）
++- Current Branch：`phase/01-foundation`
++- Base Branch：`main`
++- Origin：`git@github.com:leeyy092/ai-ecommerce-assistant.git`（SSH）
++- 同步状态：修复提交已全部推送（e56be99）；本段更新随最终 chore(review) 提交推送后工作区 clean。
++- Base Review Commit（Gate-01 冻结）：`c263610541f8c8f7b41fd38c185f5feac94e8ee2`
++- Current Review Commit（REVIEW_2）：本段提交后的最新 commit（chore(review): prepare gate-01 review-2）
++- Git Diff Range（复审范围）：`c263610..HEAD`
++- 修复提交清单：4ec0011 docs(review) 基线 → 73a5108 fix(TASK-001) → 3e90bf6+24f877a fix(TASK-002) → 63e16ea fix(TASK-003) → e56be99 fix(TASK-004)
++- Fixes：H01–H10 全部；D01：RESOLVED（方案 A）
++- Tests（修复后全量）：typecheck 0 错；unit 14/14；integration 46/46（7 文件）；build 0 错误；e2e 8/8；空库迁移×4 套件 + aiea_dev 升级 Already in sync；docker deps 等价复现 OK
++- Known Issues：真实 Docker runtime 构建未实测（本机无 Docker）；E2E 演示密码仅本地库
++- Medium Follow-up：M01 Origin/CSRF、M02 限流清零语义、M03 输入验证信封、M04 Auth 外键/UUID——均未修复，登记为 Review Follow-up（不阻塞本轮）
++- Next Action：Codex 第二轮复审 → PASS + Owner 放行 → 合并 main → 创建 phase/02-data-ingestion
++- Git Diff Range：`main..phase/01-foundation`
++- TASK 验收（本 Phase）：TASK-001 FAIL、TASK-002 FAIL、TASK-003 FAIL、TASK-004 FAIL；ZCode 原完成记录保留为历史，当前需修复复审
++- Test Results（冻结时全量回归）：typecheck 0 错误；unit 14/14；integration 28/28；build 0 错误；e2e 6/6
++- Next Action：GPT/Owner 确认 D01 → ZCode 按报告逐 TASK 修复 → Codex 复审 → Owner 最终放行；当前禁止合并或 TASK-005
++- 规则要点：main 只接收通过 Review Gate 的 Phase 合并；禁止 main 上开发/force push/重写历史；每 TASK 独立 commit（含编号，测试通过后提交）；Gate 冻结=干净树+已推送+HANDOFF 更新。
++
++
++## 2026-09-13T16:02:33+08:00 · Codex 本轮交接收尾（不推进开发）
++
++- 用户边界：只核对磁盘、补齐已有进度及交接并刷新视图；没有开发或复审执行授权。本轮未改应用源码/Schema/迁移/测试，未启动 TASK-005，未提交/推送/合并/部署。
++- 已确认结论：最新代码已推进至 `c87a141648227954725402c715063a900fa72659`，不是上一对话的 c263610。写入前工作区干净；远端已在 15:59:55+08:00 核实一致。ZCode 的修复、D01 记录和测试记录确实存在；第二轮独立复审尚无结论。
++- 关键理由：执行者记录不能替代 Reviewer 验收；首轮 10 HIGH/4 MEDIUM 和 BLOCKED 仅对应 c263610。不能把修复提交当 PASS，也不能用旧首页把已修复交接退回首次修复阶段。
++- 修正的管理冲突：current_task 从 GATE_01_REVIEW_2 恢复实际 TASK-004；status 从非协议枚举 CODEX_REVIEW_REQUIRED 改为待审查（Gate 标识保留在 review）；next_prompt 改为实际文件 prompts/P07_CODE_REVIEW.md；任务行、摘要、精确复审范围、D01 与下一工具同步。旧 Git 区和历次执行记录均保留。
++- 未完成和待核定：H01–H10 与 D01 的独立复核；真实 Docker 干净构建/迁移/登录链路；M01–M04 延期安排（ZCode 建议，尚非独立审查认可）；Gate PASS 后的 Owner 放行。D01 已裁决，不重新列为待决。TASK-005–030 仍 TODO。
++- 验证分层：本轮只检查管理文件、Git 版本与远端、状态唯一性、30 条 TASK 保留、提示词/链接及生成视图；ZCode 记录 typecheck/build、unit 14/14、integration 46/46、e2e 8/8 等通过，本轮未重跑。首轮独立证据原件保留，未冒充新版本测试。
++- 交接：下一工具 Codex，完整提示词 prompts/P07_CODE_REVIEW.md；先重读磁盘并核对 c263610..c87a141，再执行 REVIEW_2。任何后续代码提交变化必须重定待审版本；本轮未提交管理差异须保留。
++- Product OS：写回后运行协议指定 sync 并读回项目首页/HTML 与总控；实际执行结果在本记录下补充。
++
++
++收尾检查结果：`git diff --check` 通过；唯一状态块及协议字段通过；30 条 TASK 全部保留，TASK-005–030 共 26 项均 TODO；原 TASK 执行记录逐字保留。对照写入前 126 个已跟踪文件的 SHA-256，应用文件与首轮报告/证据均零改动，差异仅在 6 份管理文档及 2 份生成首页；HEAD 保持 c87a141。本轮未产生需保留的临时文件。
++
++Product OS 已实际执行：2026-09-13T16:05:04+08:00 sync 返回 registered=1、updated=1、errors=[]。随后读回项目 Markdown/HTML、总控 PROJECTS.md/index.html 及工作区入口，当前 TASK-004/待审查/Codex 与 P07_CODE_REVIEW 完整提示词一致；项目首页及工作区入口的 Checkpoint=YES（总控简表不单列此字段）。15 个本地页面链接有效。本轮为静态读回及链接检查，未做浏览器点击或业务回归；本段写入后再刷新一次生成视图，不改变 GitHub/部署核验时间。
+diff --git a/prompts/P07_CODE_REVIEW.md b/prompts/P07_CODE_REVIEW.md
+index f1f5e5b..2a6b103 100644
+--- a/prompts/P07_CODE_REVIEW.md
++++ b/prompts/P07_CODE_REVIEW.md
+@@ -1,11 +1,25 @@
+-# 阶段审查 · Codex
++# Gate 01 第二轮独立复审 · Codex 接手提示词
+ 
+ ```text
+-请在 /Users/yuyuyu/Documents/ChatGPT/产品-开发 读取 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、映射的真实进度/任务/验收/决策文档、PHASE_PLAN.md 和 CODEX_REVIEW_HANDOFF.md。
+-先确认当前 Gate、Phase、基线、待审提交和文件差异。旧 TASK-001 交接不能充当 Phase 1 全阶段交接；缺少当前交接或代码仍在变化时先说明缺证据，不给旧版本的 PASS。
+-本轮做独立审查，不开展后续业务任务。按阶段合同核对实际代码、必要测试与结果。Phase 1 重点为运行环境、数据库约束、身份与邀请、两组织隔离、四角色服务端权限与客服字段投影。
+-每个可操作问题写触发条件、影响、位置和修复验收。结论用 PASS/FAIL/BLOCKED：缺证据不是通过，检查未执行要说明原因。
+-FAIL 时记录问题并把下一工具设为 ZCode，next_prompt=prompts/P08_FIX.md，状态待修复；BLOCKED 写清需要补的证据；PASS 记录精确版本并等待用户阶段放行，不能直接替用户合并或启动下一 Phase。
+-除非用户本轮明确只读，每轮结束维护原 12_PROGRESS.md 中任务表、当前摘要、状态块和审查证据，保留历史。运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync，读回首页与总控。用户只读时不写文件、不刷新，输出完整待写回内容并说明尚未保存。
+-最后只告诉我审查结论、主要影响、下一工具及是否需要阶段放行。
++请接手 AI 电商运营助手的 CODEX_REVIEW_GATE_01_REVIEW_2，只做 Phase 1（TASK-001–004）的独立复审，不修改业务代码、不推进 TASK-005、不合并 main 或部署。
++
++项目根目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant；总控：/Users/yuyuyu/Documents/AI-Workspace。
++
++先显式读取根目录 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md；按配置读取 docs/ai-ecommerce-assistant/12_PROGRESS.md（唯一进度）、09_TASKS.md、DEVELOPMENT_HANDOFF.md、FINAL_DECISIONS.md、PHASE_PLAN.md、CODEX_REVIEW_HANDOFF.md，以及首轮 docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md、docs/reviews/GATE_01_EVIDENCE.json。按需读取角色、数据模型、API 和验收原文。
++
++本次交接核对状态：Phase 1 / TASK-004 / 待审查 / CODEX_REVIEW_REQUIRED / Checkpoint=YES / 下一工具 Codex。分支 phase/01-foundation；首轮冻结 c263610541f8c8f7b41fd38c185f5feac94e8ee2；第二轮待审提交 c87a141648227954725402c715063a900fa72659；main 基线 2a983cc55f136abbb49c5d02b55c1cb82b6547cc。先重查 HEAD、分支、未提交差异及是否另有执行者；保留本轮未提交管理文档，版本变化则重定范围，不覆盖或重置。
++
++首轮 c263610 为 BLOCKED（10 HIGH、4 MEDIUM）。ZCode 已提交修复：73a5108（TASK-001）、3e90bf6+24f877a（TASK-002）、63e16ea（TASK-003）、e56be99（TASK-004）；c87a141 为 REVIEW_2 交接。复审差异 c263610..c87a141；TASK-001/002 原实现含恢复基线，必要时核对 main..c87a141 和当前完整应用。不要只看新增回归或交接摘要。
++
++D01 已在角色规格与交接记录中裁决为方案 A：只禁用当前 Organization 的 Membership，不通过组织管理接口修改全局 User.status；撤销登录会话后，其他组织有效 Membership 重新登录仍可用。全局账号封禁管理平台不属 P0。无需重新询问 D01，但须验证实现和行为一致。
++
++ZCode 记录 typecheck/build 通过、unit 14/14、integration 46/46、e2e 8/8、空库/已有库迁移及 Docker 依赖布局复现通过；上轮 Codex 仅做交接收尾，未重跑这些测试，未产生 REVIEW_2 结论。首轮日志只证明 c263610，不是修复后的独立通过证据。
++
++逐项验证 H01–H10 与 D01，重点真实 HTTP/Cookie、多组织不同角色读写、Admin 拟授角色边界、成员禁用后的会话与其他组织、公开注册关闭及受控邀请/初始化、失败重试与并发恢复、审计故障事务回滚、AuditLog 同域约束、新空库及向前升级和时区语义。用隔离环境完成必要验证，避免破坏已有开发数据。
++
++真实 Docker 干净构建/启动仍无实测证据，不能把依赖布局复现当作容器验证；环境不具备时明确缺口及对 Gate 的影响。M01–M04 延期是 ZCode 建议，尚未获独立复审认可；按风险和 P0 范围核定处理时点，不能自动排入 TASK-005 或自行扩范围。
++
++输出逐项复核依据、真实执行结果、未运行原因与剩余问题；按项目协议给出 PASS / FAIL / BLOCKED，测试、审查、Owner 放行、GitHub 同步、部署和真实试用分开记录。FAIL 交 ZCode 修复，缺证据明确补证，PASS 后仍等 Owner 放行；本轮不执行合并或新 Phase。
++
++收尾重新读取磁盘最新进度，更新原 12_PROGRESS.md 的任务表、当前摘要、唯一状态块及 CODEX_REVIEW_HANDOFF.md，保留历史，设置实际下一工具/完整提示词/完成标准/Checkpoint。运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 并读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，确认一致。用户明确只读时不写回或刷新。
+ ```
+diff --git a/prompts/P08_FIX.md b/prompts/P08_FIX.md
+index 2028795..32cd2f5 100644
+--- a/prompts/P08_FIX.md
++++ b/prompts/P08_FIX.md
+@@ -1,5 +1,7 @@
+ # 修复 Gate 01 审查问题 · ZCode
+ 
++> 历史提示词：本文件正文保存首轮 c263610 的修复交接。后续 ZCode 已提交修复与 D01 方案 A；当前应按首页使用 P07_CODE_REVIEW.md 做第二轮复审，不再按下文重复首次修复或询问 D01。若复审发现新问题，由该轮更新本文件。
++
+ ```text
+ 请在 /Users/yuyuyu/Documents/ChatGPT/产品-开发 显式读取 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、docs/ai-ecommerce-assistant/12_PROGRESS.md、PHASE_PLAN.md、CODEX_REVIEW_HANDOFF.md，以及 docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md 和 GATE_01_EVIDENCE.json。
+ 

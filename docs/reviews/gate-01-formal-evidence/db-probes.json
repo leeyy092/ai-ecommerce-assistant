@@ -1,0 +1,75 @@
+{
+  "remaining_domain_timestamp_without_timezone": [
+    {
+      "table_name": "ai_insight",
+      "column_name": "generated_at"
+    },
+    {
+      "table_name": "ai_report",
+      "column_name": "generated_at"
+    },
+    {
+      "table_name": "ai_run",
+      "column_name": "finished_at"
+    },
+    {
+      "table_name": "ai_run",
+      "column_name": "started_at"
+    },
+    {
+      "table_name": "import_task",
+      "column_name": "committed_at"
+    },
+    {
+      "table_name": "import_task",
+      "column_name": "committed_evaluation_at"
+    },
+    {
+      "table_name": "import_task",
+      "column_name": "confirmed_at"
+    },
+    {
+      "table_name": "job_run",
+      "column_name": "finished_at"
+    },
+    {
+      "table_name": "job_run",
+      "column_name": "started_at"
+    },
+    {
+      "table_name": "order",
+      "column_name": "paid_at"
+    },
+    {
+      "table_name": "refund_event",
+      "column_name": "completed_at"
+    },
+    {
+      "table_name": "store",
+      "column_name": "current_snapshot_evaluation_at"
+    },
+    {
+      "table_name": "store",
+      "column_name": "input_evaluation_at"
+    },
+    {
+      "table_name": "store",
+      "column_name": "previous_snapshot_evaluation_at"
+    }
+  ],
+  "domain_timezone_types": [
+    {
+      "data_type": "timestamp with time zone",
+      "count": 77
+    },
+    {
+      "data_type": "timestamp without time zone",
+      "count": 14
+    }
+  ],
+  "audit_parent_change_leaves_cross_org": true,
+  "audit_store_delete_preserves_org_and_nulls_store": true,
+  "fixed_created_at_default_equal": true,
+  "unfixed_input_evaluation_same_instant_delta_hours": "8.0000000000000000",
+  "nonuuid_and_missing_auth_accepted": true
+}

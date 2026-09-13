@@ -4,8 +4,11 @@
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase 1 项目地基 / CODEX_REVIEW_GATE_01_REVIEW_2 = CODEX_REVIEW_REQUIRED / H01–H10 修复完成待复审 / 下一工具 Codex。**
-D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCode 已按依赖顺序完成 H01–H10 全部修复（TASK-001→004 各自独立 commit 并推送）；真实 HTTP 多组织/角色/邀请、审计故障注入、迁移升级与时区等值回归全部通过。等待 Codex 第二轮复审；复审 PASS 且 Owner 放行前禁止合并 main 或开始 TASK-005。
+**Phase 1 / TASK-004 / Gate 01 正式复核 BLOCKED（技术审查 FAIL）/ 待修复 / Checkpoint=YES / 下一工具 ZCode。**
+
+2026-09-13 22 时续接后核实：本地、远端仍为 c87a141，没有 REVIEW_2 之后的新应用修复；126 个已跟踪文件中 76 个应用文件与提交一致，8 份管理差异及前两轮历史保留。本次按用户的 15 节格式完成同版本正式复核，不将旧交接视为新修复版本。
+
+独立重跑锁定安装、typecheck、unit 14/14、integration 46/46、Web/Worker build、e2e 8/8、空库/升级/重复迁移；关键 HTTP、数据库与 Docker build 布局反例再次复现。H01/H02/H03/H04/H05/H07 与 D01 通过，H06/H08/H09/H10 仍为 HIGH；真实 Docker 缺证。正式报告见 docs/reviews/CODEX_REVIEW_GATE_01_FORMAL_2026-09-13.md，证据见 GATE_01_FORMAL_EVIDENCE_2026-09-13.json。仍须修复、Codex 复审和 Owner 阶段放行。
 
 <!-- PRODUCT_OS_STATE_BEGIN -->
 ```json
@@ -13,63 +16,56 @@ D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCo
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动",
-  "stage": "07 阶段审查 · Phase 1 项目地基 · Gate-01 第二轮",
-  "current_task": "GATE_01_REVIEW_2",
-  "status": "CODEX_REVIEW_REQUIRED",
-  "last_completed": "H01–H10 修复完成（fix TASK-001/002/003/004 四个提交）；D01=RESOLVED 方案A",
-  "next_action": "Codex 第二轮复审 c263610..<latest>；PASS 后 Owner 放行才可合并 main 并开 Phase 2",
-  "next_owner": "Codex",
-  "next_prompt": "docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md + CODEX_REVIEW_HANDOFF.md(REVIEW_2)",
-  "acceptance": "复审基于实际差异覆盖 H01–H10 与 D01 落实；复跑原测试与反例（真实 Cookie、多组织读写/撤权、邀请失败与并发恢复、审计回滚、迁移升级、容器依赖路径）",
-  "blockers": "等待 Codex 第二轮复审结论；Docker 真实 runtime 构建仍未实测（本机无 Docker，等价复现已过）；M01–M04 为 Follow-up 不阻塞。",
+  "stage": "07 阶段审查 · Phase 1 项目地基 · Gate01 BLOCKED（技术FAIL）",
+  "current_task": "TASK-004",
+  "status": "待修复",
+  "last_completed": "Codex 同版本正式复核完成；H01/H02/H03/H04/H05/H07及D01通过，H06/H08/H09/H10仍失败",
+  "next_action": "交 ZCode 修复 Phase 1 的 H06/H08/H09/H10，按报告处理 Medium 并补真实 Docker 证据；新提交再交 Codex，PASS 后仍等 Owner 放行",
+  "next_owner": "ZCode",
+  "next_prompt": "prompts/P08_FIX.md",
+  "acceptance": "4项HIGH反例与真实Docker闭环通过，保留已关闭项回归；Medium按正式报告及REVIEW_2核定处理；新冻结提交交Codex独立复审，Owner放行单列",
+  "blockers": "H06/H08/H09/H10有本次重现反例；真实Docker未执行；核心Medium按原核定待修，M05/L01不单独阻断；无Gate PASS或Owner放行",
   "checkpoint": "YES",
-  "review": "REVIEW_2 · CODEX_REVIEW_GATE_01 · 2026-09-13 · base c263610",
-  "updated_at": "2026-09-13T15:40:00+08:00",
-  "updated_by": "ZCode · Gate-01 H01–H10 修复执行",
+  "review": "BLOCKED（本次用户格式）/技术FAIL · c87a141同版本正式复核；4 HIGH；真实Docker另缺证",
+  "updated_at": "2026-09-13T22:31:24+08:00",
+  "updated_by": "Codex · Gate01同版本正式复核",
   "evidence": [
-    "fix(TASK-001) 73a5108：Dockerfile prisma 生成顺序 + compose 认证配置 + scripts/docker-deps-repro.sh 等价复现 OK",
-    "fix(TASK-002) 3e90bf6+24f877a：audit_log 同域触发器迁移 + 77 列 TIMESTAMPTZ(UTC 显式转换) + gate01.db 3/3",
-    "fix(TASK-003) 63e16ea：公开注册 403、框架 Set-Cookie、校验前置/孤儿恢复/咨询锁事务/补偿、邀请审计原子 + gate01.auth 8/8 + E2E 邀请全流程",
-    "fix(TASK-004) e56be99：session 唯一活跃组织解析、拟授予角色校验、D01 方案A 仅 Membership、成员/org 审计同事务 + gate01.access 7/7",
-    "修复后全量回归：typecheck 0 错、unit 14/14、integration 46/46、build 0、e2e 8/8；aiea_dev 升级部署 Already in sync"
+    "docs/reviews/CODEX_REVIEW_GATE_01_FORMAL_2026-09-13.md",
+    "docs/reviews/GATE_01_FORMAL_EVIDENCE_2026-09-13.json",
+    "22时独立重跑14/46/8、build、空库/升级，真实HTTP/并发、审计回滚和数据库/Docker反例；原应用76文件未改。",
+    "docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_2_2026-09-13.md",
+    "docs/reviews/GATE_01_REVIEW_2_EVIDENCE.json",
+    "独立隔离 PostgreSQL 17.11/55449；原开发库5433未用于写入；c87a141临时源码副本、Node24.21.0、pnpm10.34.5。",
+    "实际套件：离线锁定安装及生成、typecheck、unit14/14、integration46/46、Web+Worker build、e2e8/8通过；E2E保留ECONNRESET日志。",
+    "独立反例：并发初始化Auth=0/领域User=1且重跑假幂等；AuditLog父行变更/旧库升级仍跨域；14可空领域时间漏转、同刻差8小时；Docker build缺客户端和构建Auth配置。",
+    "真实HTTP/Cookie证明多组织读写、Admin授予边界、D01旧会话撤销且其他组织重登可用、邀请后会话；审计故障的状态/版本/会话回滚通过；邀请进程退出与并发恢复通过。",
+    "M01–M04的Reviewer技术处置见报告第4节；非Owner产品裁决，不自动并入TASK-005。",
+    "本轮写回前126个已跟踪文件与开始哈希一致；原8处管理差异保留快照；应用代码与首轮证据不变。收尾sync/读回/清理见末尾记录。"
   ],
   "github": {
-    "status": "已连接（SSH）；修复提交均已推送 origin/phase/01-foundation",
+    "status": "本轮只读复核远端phase=c87a141、main=2a983cc；应用未变，前轮及本轮管理文档未提交/推送",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
-    "verified_at": "2026-09-13T15:40:00+08:00",
-    "evidence": "git push origin phase/01-foundation 至 e56be99 成功；远端与本分支一致"
+    "verified_at": "2026-09-13T22:31:24+08:00",
+    "evidence": "实际git ls-remote及隔离clone核实同提交；126文件哈希与HEAD比较仅8份既有管理差异；无远端写操作。"
   },
   "deployment": {
-    "status": "unknown（无生产部署；本机无 Docker）",
+    "status": "unknown（未部署；当前仍无Docker运行时）",
     "url": "",
-    "verified_at": "2026-09-13T15:40:00+08:00",
-    "evidence": "docker-deps-repro.sh 静态等价复现通过；真实 docker build/compose 未执行"
+    "verified_at": "2026-09-13T22:31:24+08:00",
+    "evidence": "本次隔离PG55459、Web/Worker及健康降级验证；Docker build布局两次exit1；未执行真实容器或线上部署。"
   }
 }
 ```
 <!-- PRODUCT_OS_STATE_END -->
 
-## Git 状态（由 Zcode 自动维护；2026-09-13 Owner 授权 Git 生命周期规则）
+## 当前 Git 与交接状态（2026-09-13T22:31:24+08:00）
 
-- Project Status：**CODEX_REVIEW_REQUIRED**（CODEX_REVIEW_GATE_01_REVIEW_2，等待 Codex 第二轮复审）
-- Current Branch：`phase/01-foundation`
-- Base Branch：`main`
-- Origin：`git@github.com:leeyy092/ai-ecommerce-assistant.git`（SSH）
-- 同步状态：修复提交已全部推送（e56be99）；本段更新随最终 chore(review) 提交推送后工作区 clean。
-- Base Review Commit（Gate-01 冻结）：`c263610541f8c8f7b41fd38c185f5feac94e8ee2`
-- Current Review Commit（REVIEW_2）：本段提交后的最新 commit（chore(review): prepare gate-01 review-2）
-- Git Diff Range（复审范围）：`c263610..HEAD`
-- 修复提交清单：4ec0011 docs(review) 基线 → 73a5108 fix(TASK-001) → 3e90bf6+24f877a fix(TASK-002) → 63e16ea fix(TASK-003) → e56be99 fix(TASK-004)
-- Fixes：H01–H10 全部；D01：RESOLVED（方案 A）
-- Tests（修复后全量）：typecheck 0 错；unit 14/14；integration 46/46（7 文件）；build 0 错误；e2e 8/8；空库迁移×4 套件 + aiea_dev 升级 Already in sync；docker deps 等价复现 OK
-- Known Issues：真实 Docker runtime 构建未实测（本机无 Docker）；E2E 演示密码仅本地库
-- Medium Follow-up：M01 Origin/CSRF、M02 限流清零语义、M03 输入验证信封、M04 Auth 外键/UUID——均未修复，登记为 Review Follow-up（不阻塞本轮）
-- Next Action：Codex 第二轮复审 → PASS + Owner 放行 → 合并 main → 创建 phase/02-data-ingestion
-- Git Diff Range：`main..phase/01-foundation`
-- TASK 验收（本 Phase）：TASK-001 FAIL、TASK-002 FAIL、TASK-003 FAIL、TASK-004 FAIL；ZCode 原完成记录保留为历史，当前需修复复审
-- Test Results（冻结时全量回归）：typecheck 0 错误；unit 14/14；integration 28/28；build 0 错误；e2e 6/6
-- Next Action：GPT/Owner 确认 D01 → ZCode 按报告逐 TASK 修复 → Codex 复审 → Owner 最终放行；当前禁止合并或 TASK-005
-- 规则要点：main 只接收通过 Review Gate 的 Phase 合并；禁止 main 上开发/force push/重写历史；每 TASK 独立 commit（含编号，测试通过后提交）；Gate 冻结=干净树+已推送+HANDOFF 更新。
+- Gate：BLOCKED（技术FAIL）；TASK-004 / 待修复 / ZCode / P08_FIX / Checkpoint=YES。
+- phase/01-foundation 本地与远端=c87a141648227954725402c715063a900fa72659；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc；未合并。
+- 没有第二轮之后的新应用修复。本次正式报告按15节格式补齐同版本验收，并重新执行必要检查；REVIEW_2 FAIL与首轮BLOCKED历史保留。
+- H01/H02/H03/H04/H05/H07与D01通过；H06/H08/H09/H10仍须修复。M01–M04按原核定，M05本地Compose配置和L01根目录旧副本为非阻断建议。
+- 报告：docs/reviews/CODEX_REVIEW_GATE_01_FORMAL_2026-09-13.md；证据：docs/reviews/GATE_01_FORMAL_EVIDENCE_2026-09-13.json；下一完整提示词prompts/P08_FIX.md。
+- 前轮及本轮管理文档未提交/推送；没有部署、没有Owner阶段放行、不开始TASK-005。下次复审须有新冻结提交。
 
 ## 历史结论（2026-09-12 恢复时，当前以状态块与任务表为准）
 
@@ -89,17 +85,17 @@ D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCo
 
 - TODO：尚未开始。
 - IN_PROGRESS：仅当前一个TASK在执行。
-- BLOCKED：记录具体失败、已尝试方法、所需输入；不把未知写成通过。
+- BLOCKED：记录具体失败、缺证据或等待 Gate 验收的原因；修复已提交但独立复审未完成时仍保留此状态，不能据此断言修复无效，也不把未知写成通过。
 - DONE：该TASK验收与指定测试都通过，且有可核对证据。
 
 ## 开发任务状态
 
 | TASK | 名称 | 状态 | 依赖 | 测试/证据 |
 |---|---|---|---|---|
-| TASK-001 | 可启动的应用与验证环境 | BLOCKED | 无前置开发任务 | Gate 01 FAIL：H10 Docker/Compose；本地启动、build、Worker检查通过；原执行记录见下 |
-| TASK-002 | P0数据库与约束迁移 | BLOCKED | TASK-001 | Gate 01 FAIL：H08审计同域、H09时间语义；现有迁移及约束测试通过；需修复后复审 |
-| TASK-003 | 登录、初始Owner与受控邀请 | BLOCKED | TASK-002 | Gate 01 FAIL：H03–H07；公开注册、邀请会话/恢复、管理事务；原测试通过不等于验收 |
-| TASK-004 | 组织隔离与固定权限服务 | BLOCKED | TASK-003 | Gate 01 FAIL：H01–H03；组织上下文、角色提升、跨组织禁用；D01待产品裁决 |
+| TASK-001 | 可启动的应用与验证环境 | BLOCKED | 无前置开发任务 | H10 REVIEW_2 FAIL：deps通过；干净build缺生成客户端，补客户端后缺构建Auth配置；真实Docker仍缺证 |
+| TASK-002 | P0数据库与约束迁移 | BLOCKED | TASK-001 | H08/H09 REVIEW_2 FAIL：审计父行/旧库升级跨域、14可空时间列遗漏；M04身份外键Gate01内补齐，UUID按报告限定延期 |
+| TASK-003 | 登录、初始Owner与受控邀请 | BLOCKED | TASK-002 | H04/H05/H07通过；H06并发Owner初始化Auth=0/领域User=1；M01/M02/M03及身份恢复待修；原套件14/46/8通过 |
+| TASK-004 | 组织隔离与固定权限服务 | BLOCKED | TASK-003 | H01/H02/H03/H07/D01本次HTTP再次PASS；整体依赖TASK-003的H06未验收，现有M01/M03待修；Gate正式BLOCKED，不进入005 |
 | TASK-005 | 店铺与数据源配置 | TODO | TASK-004 | 未执行 |
 | TASK-006 | 统一Adapter与最小黄金样本 | TODO | TASK-005 | 未执行 |
 | TASK-007 | 文件上传、私有存储与ImportTask | TODO | TASK-006 | 未执行 |
@@ -131,10 +127,10 @@ D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCo
 
 | 项目 | 当前状态 | 达成时需要的证据 |
 |---|---|---|
-| 应用可启动 | 2026-09-13 Codex 本地启动/build/E2E/Worker通过；容器路径 H10 阻断，TASK-001 整体 FAIL | 修复 Docker/Compose 并真实容器验证 |
+| 应用可启动 | 本次本地Web/Worker/build/健康验证通过；H10两处干净构建失败，真实Docker未实测 | 修复H10并补真实容器构建/启动/迁移/登录 |
 | 六类CSV导入 | 未开发/未执行 | 全链路导入与错误/幂等验证 |
 | 指标与规则正确 | 未开发/未执行 | 黄金案例手算与实际PG结果一致 |
-| 角色隔离 | Phase 1 已实现并审查，但 H01–H03 失败；未来文件/AI对象尚未实测 | 修复后真实多组织角色/撤权回归及后续对象测试 |
+| 角色隔离 | 本次H01/H02/H03/H07及D01独立HTTP再次通过；未来文件/Job/AI对象未实测；身份H06仍失败 | 修复身份完整性，保留公共授权回归；未来对象在所属TASK验证 |
 | AI联网质量 | 未执行 | 固定模型、脱敏测试集、分类与事实引用指标 |
 | 首页三分钟任务 | 未执行 | 目标角色观察记录，不能用截图替代 |
 | 性能/恢复 | 未执行 | 指定规模p95/p99、备份恢复记录 |
@@ -251,3 +247,91 @@ D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCo
 交接：GPT/Owner明确D01禁用范围；下一工具ZCode，完整提示词`prompts/P08_FIX.md`；逐TASK修复H01–H10后回Codex复审，Checkpoint=YES。无Owner放行，禁止TASK-005。Product OS刷新与清理结果见本记录后续补充。
 
 收尾实测：停止隔离PG后，Web健康接口返回503 `{status:degraded}`；随后本次Web/Worker/PG全部停止，临时集群、脚本、随机口令与运行文件已删除，脱敏证据保留。最终99个原已跟踪文件比对：应用文件0改动，仅CODEX_REVIEW_HANDOFF、12_PROGRESS、P08_FIX为本轮跟踪文档变化。Product OS sync成功（1项目、0错误），首页与总控读回均为TASK-004/待修复/ZCode/Checkpoint YES，完整提示词指向P08_FIX；无自动开发或放行。
+
+## 历史 Git 区原文（c87a141 中保存的交接草稿）
+
+下列原文完整保留以供追溯，其中 `<latest>`、旧 Next Action、D01 待裁决和未修复描述已被本轮当前区取代；原记录时间由 ZCode 填写，未作为本轮实际执行时间。
+
+### Git 状态（由 Zcode 自动维护；2026-09-13 Owner 授权 Git 生命周期规则）
+
+- Project Status：**CODEX_REVIEW_REQUIRED**（CODEX_REVIEW_GATE_01_REVIEW_2，等待 Codex 第二轮复审）
+- Current Branch：`phase/01-foundation`
+- Base Branch：`main`
+- Origin：`git@github.com:leeyy092/ai-ecommerce-assistant.git`（SSH）
+- 同步状态：修复提交已全部推送（e56be99）；本段更新随最终 chore(review) 提交推送后工作区 clean。
+- Base Review Commit（Gate-01 冻结）：`c263610541f8c8f7b41fd38c185f5feac94e8ee2`
+- Current Review Commit（REVIEW_2）：本段提交后的最新 commit（chore(review): prepare gate-01 review-2）
+- Git Diff Range（复审范围）：`c263610..HEAD`
+- 修复提交清单：4ec0011 docs(review) 基线 → 73a5108 fix(TASK-001) → 3e90bf6+24f877a fix(TASK-002) → 63e16ea fix(TASK-003) → e56be99 fix(TASK-004)
+- Fixes：H01–H10 全部；D01：RESOLVED（方案 A）
+- Tests（修复后全量）：typecheck 0 错；unit 14/14；integration 46/46（7 文件）；build 0 错误；e2e 8/8；空库迁移×4 套件 + aiea_dev 升级 Already in sync；docker deps 等价复现 OK
+- Known Issues：真实 Docker runtime 构建未实测（本机无 Docker）；E2E 演示密码仅本地库
+- Medium Follow-up：M01 Origin/CSRF、M02 限流清零语义、M03 输入验证信封、M04 Auth 外键/UUID——均未修复，登记为 Review Follow-up（不阻塞本轮）
+- Next Action：Codex 第二轮复审 → PASS + Owner 放行 → 合并 main → 创建 phase/02-data-ingestion
+- Git Diff Range：`main..phase/01-foundation`
+- TASK 验收（本 Phase）：TASK-001 FAIL、TASK-002 FAIL、TASK-003 FAIL、TASK-004 FAIL；ZCode 原完成记录保留为历史，当前需修复复审
+- Test Results（冻结时全量回归）：typecheck 0 错误；unit 14/14；integration 28/28；build 0 错误；e2e 6/6
+- Next Action：GPT/Owner 确认 D01 → ZCode 按报告逐 TASK 修复 → Codex 复审 → Owner 最终放行；当前禁止合并或 TASK-005
+- 规则要点：main 只接收通过 Review Gate 的 Phase 合并；禁止 main 上开发/force push/重写历史；每 TASK 独立 commit（含编号，测试通过后提交）；Gate 冻结=干净树+已推送+HANDOFF 更新。
+
+
+## 2026-09-13T16:02:33+08:00 · Codex 本轮交接收尾（不推进开发）
+
+- 用户边界：只核对磁盘、补齐已有进度及交接并刷新视图；没有开发或复审执行授权。本轮未改应用源码/Schema/迁移/测试，未启动 TASK-005，未提交/推送/合并/部署。
+- 已确认结论：最新代码已推进至 `c87a141648227954725402c715063a900fa72659`，不是上一对话的 c263610。写入前工作区干净；远端已在 15:59:55+08:00 核实一致。ZCode 的修复、D01 记录和测试记录确实存在；第二轮独立复审尚无结论。
+- 关键理由：执行者记录不能替代 Reviewer 验收；首轮 10 HIGH/4 MEDIUM 和 BLOCKED 仅对应 c263610。不能把修复提交当 PASS，也不能用旧首页把已修复交接退回首次修复阶段。
+- 修正的管理冲突：current_task 从 GATE_01_REVIEW_2 恢复实际 TASK-004；status 从非协议枚举 CODEX_REVIEW_REQUIRED 改为待审查（Gate 标识保留在 review）；next_prompt 改为实际文件 prompts/P07_CODE_REVIEW.md；任务行、摘要、精确复审范围、D01 与下一工具同步。旧 Git 区和历次执行记录均保留。
+- 未完成和待核定：H01–H10 与 D01 的独立复核；真实 Docker 干净构建/迁移/登录链路；M01–M04 延期安排（ZCode 建议，尚非独立审查认可）；Gate PASS 后的 Owner 放行。D01 已裁决，不重新列为待决。TASK-005–030 仍 TODO。
+- 验证分层：本轮只检查管理文件、Git 版本与远端、状态唯一性、30 条 TASK 保留、提示词/链接及生成视图；ZCode 记录 typecheck/build、unit 14/14、integration 46/46、e2e 8/8 等通过，本轮未重跑。首轮独立证据原件保留，未冒充新版本测试。
+- 交接：下一工具 Codex，完整提示词 prompts/P07_CODE_REVIEW.md；先重读磁盘并核对 c263610..c87a141，再执行 REVIEW_2。任何后续代码提交变化必须重定待审版本；本轮未提交管理差异须保留。
+- Product OS：写回后运行协议指定 sync 并读回项目首页/HTML 与总控；实际执行结果在本记录下补充。
+
+
+收尾检查结果：`git diff --check` 通过；唯一状态块及协议字段通过；30 条 TASK 全部保留，TASK-005–030 共 26 项均 TODO；原 TASK 执行记录逐字保留。对照写入前 126 个已跟踪文件的 SHA-256，应用文件与首轮报告/证据均零改动，差异仅在 6 份管理文档及 2 份生成首页；HEAD 保持 c87a141。本轮未产生需保留的临时文件。
+
+Product OS 已实际执行：2026-09-13T16:05:04+08:00 sync 返回 registered=1、updated=1、errors=[]。随后读回项目 Markdown/HTML、总控 PROJECTS.md/index.html 及工作区入口，当前 TASK-004/待审查/Codex 与 P07_CODE_REVIEW 完整提示词一致；项目首页及工作区入口的 Checkpoint=YES（总控简表不单列此字段）。15 个本地页面链接有效。本轮为静态读回及链接检查，未做浏览器点击或业务回归；本段写入后再刷新一次生成视图，不改变 GitHub/部署核验时间。
+
+
+## 2026-09-13T16:36:06+08:00 · Codex Gate 01 第二轮独立复审（已完成，FAIL）
+
+- 用户授权范围：仅复审 TASK-001–004，执行必要测试，更新原进度/交接及 Product OS；不改原业务代码、不推进005、不合并/部署。本轮严格执行，原有8处管理修改在开始时备份为证据patch，测试结束写回前126份已跟踪文件0变化。
+- 版本：phase/01-foundation，c263610..c87a141；补查当前完整应用和原合同。远端实查phase=c87a141、main=2a983cc，无远端写入。
+- 结论：**FAIL**，6项HIGH（H01/H02/H03/H04/H05/H07）及D01通过；H06/H08/H09/H10仍有已复现缺陷。Docker runtime未具备，真实容器检查另BLOCKED。无新的Owner产品决策问题，未获阶段放行。
+- 独立实测：临时git archive副本、Node24.21.0/pnpm10.34.5、独立PG17.11/55449（开发5433未写入）；offline frozen install+generate、typecheck、unit14/14、integration46/46、build web+worker、e2e8/8通过。E2E一次ECONNRESET/aborted保留。空库4迁移、旧2→4升级、重复deploy成功；不能以迁移退出码取代约束与数据语义验收。
+- 反例：并发初始化会删除在途Auth身份，Auth=0/领域User=1，重跑alreadyInitialized=true但登录401；审计父行改域及升级存量仍跨域；14可空领域时间漏转，同一时刻可差8h；Dockerbuild缺客户端，隔离补齐后缺构建Auth变量。各项精确位置/结果见报告及JSON。
+- 已验证恢复：实际邀请子进程Auth后exit55，pending/Auth1/领域0，重试accepted/Auth1/领域1；已有用户并发接受200/409且仅1成员；成员禁用审计失败保留原状态/版本和2个会话，组织/邀请创建/撤销/接受审计失败均不部分提交；多组织授权、D01重登其他组织、邀请后框架Cookie有效。
+- Medium核定：M01现有写入口来源保护、M02成功认证才清零/代理信任、M03当前接口严格类型/正整数版本/稳定信封、M04身份外键均在Gate01内处理；只允许UUID数据库格式约束延期至首次后续Schema变更或TASK-028前（二者较早），仍属TASK-002技术债，不自动并入005。详见报告第4节。
+- 交付：`docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_2_2026-09-13.md`、`docs/reviews/GATE_01_REVIEW_2_EVIDENCE.json`、`docs/reviews/gate-01-review-2-evidence/`；更新原进度、当前交接和P08，保留首轮报告与上轮收尾历史。下一工具ZCode，按原TASK顺序修复后回Codex，以c87a141..新冻结提交复审；Checkpoint=YES。
+- 环境限制：早期临时依赖未就绪导致模块/命令缺失，完整离线安装后重跑通过，未算产品失败；撤销邀请探测首次body版本422无效，正确query版本补测为500+完整回滚；报告明确列出两者。
+- 清理：审查Web/Worker/PG已停止，注入约束0残留；原开发服务未操作。临时数据库/凭据/目录删除与最终应用哈希、sync读回证据在下方补充。
+- Product OS：本次写回后按协议执行sync，读回项目首页MD/HTML和总控；待将实际结果补录，不提前宣称成功。
+
+
+收尾实际核验（2026-09-13T16:37:40+08:00）：Product OS sync 于 2026-09-13T16:36:30+08:00 返回 registered=1、updated=1、errors=[]；项目首页 MD/HTML 和总控 PROJECTS.md/index.html 已读回，均为 TASK-004 / 待修复 / ZCode / P08_FIX / Gate REVIEW_2 FAIL，项目 Checkpoint=YES，完整提示词一致。30条TASK保留，005–030全部TODO，原TASK执行及上轮收尾历史原文保留。当前新增报告本地链接7处有效，git diff --check通过；对照开始126个已跟踪文件，76个应用文件0变化，首轮报告/证据0变化。
+
+清理已完成：本轮Web/Worker/PG停止，3000/3001/55449无审查监听，故障约束0残留；临时副本、数据库、依赖、脚本运行目录与随机凭据全部删除，仅保留脱敏报告/证据和复现逻辑。最终检查详见 docs/reviews/gate-01-review-2-evidence/final-checks.json。本段写入后再次按协议sync并读回，不改变Gate结论、GitHub核验或Owner放行状态。
+
+## Gate01 同版本正式复核记录（2026-09-13T22:31:24+08:00）
+
+- 执行人：Codex；范围TASK-001–004。用户要求正式15节报告并于22时继续；没有新代码版本，HEAD及远端仍c87a141。
+- 先核对规则/配置/协议、首页、原进度/任务/开发合同、决定、当前交接、Schema/迁移/Auth/权限/测试和main差异；8处管理修改、REVIEW_2原件及33份证据哈希保留。17时被中断的临时准备不计通过。
+- 22时实跑：Node24.21.0/pnpm10.34.5/PG17.11独立55459；锁定安装/生成、typecheck、unit14/14、integration46/46、build、e2e8/8、空库/向前/重复迁移通过；E2E保留ECONNRESET警告。
+- H06并发初始化、H08父行/旧库审计跨域、H09全部14可空时间及8小时反例、H10缺客户端/缺Auth构建配置均再次复现。H01/H02/H03/H04/H05/H07及D01通过；撤销邀请故障本次正确使用query expected_version，500后状态/版本/审计无部分提交。
+- Worker运行/停止状态0/1、缺DB/缺Auth退出1、健康200/停止隔离PG后503均通过；无Docker/Podman/Colima/Docker.app，未进行真实容器或部署。
+- 历史14提交/167blob强Secret模式未命中、真实.env未入历史；本地.env只读变量名、Git忽略。已提交本地开发口令/测试Secret不能称生产泄漏；M05给出本地配置收敛建议。根目录旧Schema副本列L01；不改变P0。
+- 正式结论BLOCKED，项目技术FAIL；四个TASK保留BLOCKED，004公共授权检查通过但依赖未完整验收。仅4项HIGH构成必修清单，Owner未放行。
+- 交付docs/reviews/CODEX_REVIEW_GATE_01_FORMAL_2026-09-13.md及docs/reviews/GATE_01_FORMAL_EVIDENCE_2026-09-13.json；当前下一工具仍ZCode/P08_FIX；下一轮差异c87a141..新冻结修复提交。不改业务代码、不提交/推送/合并、不部署、不推进005。
+- Product OS sync及读回与最终清理核验结果见随后收尾条目。
+
+正式复核收尾实际核验（2026-09-13T22:36:26+08:00）：首次 Product OS sync 于 2026-09-13T22:31:54+08:00 返回 registered=1、updated=1、errors=[]，已读回项目首页 MD/HTML 和总控 PROJECTS.md/index.html，均为 TASK-004 / 待修复 / ZCode / P08_FIX / Gate BLOCKED（技术 FAIL），Checkpoint=YES，完整提示词一致。正式报告15节及23个本地链接有效，30条TASK保留、005–030全部TODO；原交接全文、原TASK执行历史和REVIEW_2证据保留。git diff --check通过。测试后再逐一比较76个已跟踪应用文件与c87a141干净副本，SHA256零变化。
+
+本轮审查Web/Worker/PG已停止，3000/3001/55459无监听；临时副本、依赖、随机凭据与独立数据库已实际删除，保留脱敏日志和复现脚本。当前没有提交、推送、合并或部署，Owner未放行。本收尾条目写入后再次运行sync并读回，最终机器结果存放docs/reviews/GATE_01_FORMAL_EVIDENCE_2026-09-13.json及gate-01-formal-evidence/，不更新业务进展时间或远端核验时间。
+
+
+## 2026-09-13T22:50:59+08:00 · AI 电商作图独立商业预算咨询
+
+- 用户提供的作图产品现状：约500个注册用户、付费不足50人；该数据仅用于本次独立商业测算，不代表本仓库电商运营助手已获客或验收。半年目标暂按累计5万—10万付费测算，期末在付费目标尚未确认。
+- 公开检索未找到图豆或LinkFox可核对的早期付费获客成本；参考ChartMogul 2026 SaaS转化问卷与RevenueCat 2025订阅应用投放图表，均不是国内电商作图行业均值。来源：https://chartmogul.com/reports/saas-conversion-report/ 和 https://www.revenuecat.com/state-of-subscription-apps-2025 。
+- 预算假设：主要由投流带来新增付费，媒体成本100/200/400元每人，对应5万付费500/1000/2000万元、10万付费1000/2000/4000万元；中档仅供规划，不是已验证单价。建议先以3万—5万元媒体测试取得广告来源付费、退款后贡献和复购证据。
+- 实际检查：预算乘法及等量月末新增、月流失10%的期末存续模型已复算（所需毛新增约为期末目标1.2805倍）。未改业务代码，未运行业务测试（本轮为商业咨询），未投放广告、未提交或推送。读取版本：c87a141648227954725402c715063a900fa72659。
+- 开发状态、任务表、当前摘要及唯一状态块保留：TASK-004 / 待修复 / 下一工具ZCode / P08_FIX / Checkpoint=YES；商业咨询不构成Gate放行或业务开发进展。按协议随后刷新并读回项目首页及总控，结果以本轮工具输出为准。

@@ -1,0 +1,19 @@
+Loaded Prisma config from ../../../../../tmp/aiea-gate01-r2-0oo1wpux/upgrade/prisma.config.ts.
+
+Prisma schema loaded from ../../../../../tmp/aiea-gate01-r2-0oo1wpux/upgrade/prisma/schema.prisma.
+Datasource "db": PostgreSQL database "aiea_upgrade2", schema "public" at "127.0.0.1:55449"
+
+2 migrations found in prisma/migrations
+
+Applying migration `20260912102945_p0_init`
+Applying migration `20260912103005_p0_constraints`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260912102945_p0_init/
+    └─ migration.sql
+  └─ 20260912103005_p0_constraints/
+    └─ migration.sql
+
+All migrations have been successfully applied.

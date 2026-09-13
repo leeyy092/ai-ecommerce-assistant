@@ -1,0 +1,14 @@
+[
+  {
+    "name": "docker-build-missing-client",
+    "exit": 1,
+    "missing_client": true,
+    "missing_auth": false
+  },
+  {
+    "name": "docker-build-missing-auth",
+    "exit": 1,
+    "missing_client": false,
+    "missing_auth": true
+  }
+]

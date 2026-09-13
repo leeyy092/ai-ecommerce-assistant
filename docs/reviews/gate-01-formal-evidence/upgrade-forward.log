@@ -1,0 +1,19 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "aiea_upgrade_formal", schema "public" at "127.0.0.1:55459"
+
+4 migrations found in prisma/migrations
+
+Applying migration `20260913043631_p0_domain_timestamptz`
+Applying migration `20260913044218_p0_audit_tenant_fk`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260913043631_p0_domain_timestamptz/
+    └─ migration.sql
+  └─ 20260913044218_p0_audit_tenant_fk/
+    └─ migration.sql
+
+All migrations have been successfully applied.

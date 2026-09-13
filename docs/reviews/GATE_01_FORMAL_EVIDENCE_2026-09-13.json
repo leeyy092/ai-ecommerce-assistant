@@ -1,0 +1,430 @@
+{
+  "review": "CODEX_REVIEW_GATE_01_FORMAL_SAME_COMMIT",
+  "reviewed_at": "2026-09-13T22:31:24+08:00",
+  "gate_result": "BLOCKED",
+  "technical_review_result": "FAIL",
+  "head": "c87a141648227954725402c715063a900fa72659",
+  "main": "2a983cc55f136abbb49c5d02b55c1cb82b6547cc",
+  "branch": "phase/01-foundation",
+  "scope": "TASK-001–004; main...phase/01-foundation plus c263610..c87a141 and current full app for recovered TASK-001/002",
+  "new_zcode_code_since_review2": false,
+  "tracked_files_compared": 126,
+  "tracked_app_files_compared": 76,
+  "tracked_application_changes": [],
+  "preexisting_management_changes": [
+    "00_START_HERE.md",
+    "00_START_HERE.html",
+    "CODEX_REVIEW_HANDOFF.md",
+    "FINAL_DECISIONS.md",
+    "docs/DEPLOYMENT_STATUS.md",
+    "docs/ai-ecommerce-assistant/12_PROGRESS.md",
+    "prompts/P07_CODE_REVIEW.md",
+    "prompts/P08_FIX.md"
+  ],
+  "environment": {
+    "node": "24.21.0",
+    "pnpm": "10.34.5",
+    "postgresql": "17.11",
+    "pg_port": 55459,
+    "development_pg_5433_written": false,
+    "random_temporary_credentials": true
+  },
+  "checks": [
+    {
+      "check": "migrate",
+      "exit": 0
+    },
+    {
+      "check": "typecheck",
+      "exit": 0
+    },
+    {
+      "check": "unit",
+      "exit": 0
+    },
+    {
+      "check": "integration",
+      "exit": 0
+    },
+    {
+      "check": "build",
+      "exit": 0
+    },
+    {
+      "check": "e2e",
+      "exit": 0
+    },
+    {
+      "check": "http-probes",
+      "exit": 0
+    }
+  ],
+  "suite_counts": {
+    "unit": 14,
+    "integration": 46,
+    "integration_files": 7,
+    "e2e": 8
+  },
+  "e2e_warning": "aborted/ECONNRESET retained",
+  "findings": {
+    "CRITICAL": [],
+    "HIGH": [
+      "H06",
+      "H08",
+      "H09",
+      "H10"
+    ],
+    "MEDIUM": [
+      "M01",
+      "M02",
+      "M03",
+      "M04",
+      "M05"
+    ],
+    "LOW": [
+      "L01"
+    ]
+  },
+  "closed_high": [
+    "H01",
+    "H02",
+    "H03",
+    "H04",
+    "H05",
+    "H07"
+  ],
+  "D01": "PASS / RESOLVED / solution A",
+  "task_verdicts": {
+    "TASK-001": "FAIL H10",
+    "TASK-002": "FAIL H08/H09/H06 identity FK",
+    "TASK-003": "FAIL H06",
+    "TASK-004": "FAIL whole dependency acceptance; own H01/H02/H03/H07 authorization behavior PASS"
+  },
+  "runtime_container": {
+    "docker": null,
+    "podman": null,
+    "colima": null,
+    "Docker.app": false
+  },
+  "medium_policy": "M01-M04 prior technical dispositions retained; identity FK part of H06 closure; UUID limited deferral; M05 nonblocking local configuration advice",
+  "owner_release": "NOT GIVEN",
+  "merge_main": false,
+  "start_TASK_005": false,
+  "deployment": "unknown; no deployment performed",
+  "remote_refs_verified_this_resumption": {
+    "phase": "c87a141648227954725402c715063a900fa72659",
+    "main": "2a983cc55f136abbb49c5d02b55c1cb82b6547cc",
+    "read_only": true
+  },
+  "old_evidence_checksums": {
+    "total": 33,
+    "passed": 33
+  },
+  "limits": [
+    "No real Docker engine or Linux container verification",
+    "Manual Cookie Origin probe is not a demonstrated browser CSRF exploit",
+    "Owner concurrency uses shipped scheduling hook with real Auth and PG",
+    "Store parent change tested through SQL; no public org-transfer API exists",
+    "Known synthetic UTC wallclock upgrade sample is not an audit of real historical production data",
+    "Secret pattern scan is not an exhaustive proof of secret absence",
+    "Preparation interrupted around 17:00 is not counted as successful tests"
+  ],
+  "report": "docs/reviews/CODEX_REVIEW_GATE_01_FORMAL_2026-09-13.md",
+  "evidence_directory": "docs/reviews/gate-01-formal-evidence",
+  "http": {
+    "H01": {
+      "switchStatus": 200,
+      "meB": true,
+      "role": "customer_service",
+      "organizationB": true,
+      "budgetAbsent": true,
+      "patch": 403,
+      "orgAUnchanged": true,
+      "forgedFallsBackA": true
+    },
+    "H05": {
+      "accept": 200,
+      "me": 200,
+      "replay": 409
+    },
+    "H02": {
+      "adminToAdmin": 403,
+      "unchangedRole": "operator",
+      "adminToOwner": 422,
+      "operatorToCS": 200,
+      "csToOperator": 200,
+      "ownerToAdmin": 200
+    },
+    "H07member": {
+      "http": 500,
+      "json": false,
+      "statusUnchanged": true,
+      "versionUnchanged": true,
+      "oldSessionStillWorks": true,
+      "sessionsBefore": 2,
+      "sessionsAfter": 2
+    },
+    "H03_D01": {
+      "disable": 200,
+      "oldCookie": 401,
+      "globalStatus": "active",
+      "otherMembership": "active",
+      "relogin": 200,
+      "me": 200,
+      "activeB": true,
+      "role": "owner"
+    },
+    "H07org": {
+      "http": 500,
+      "nameUnchanged": true,
+      "versionUnchanged": true,
+      "auditCount": 0
+    },
+    "H07_invite_create": {
+      "http": 500,
+      "auditCount": 0,
+      "authRows": 0,
+      "domainRows": 0,
+      "invitationRows": 0
+    },
+    "H07_invite_revoke": {
+      "http": 500,
+      "auditCount": 0,
+      "invitationStatus": "pending",
+      "rowVersion": 1,
+      "authRows": 0,
+      "domainRows": 0
+    },
+    "H07_invite_accept": {
+      "http": 500,
+      "auditCount": 0,
+      "invitationStatus": "pending",
+      "rowVersion": 1,
+      "authRows": 0,
+      "domainRows": 0,
+      "retry": 200
+    },
+    "M01": {
+      "untrustedOriginStatus": 201,
+      "created": true,
+      "manualCookie": true
+    },
+    "M02": {
+      "wrong": 401,
+      "countBefore": 1,
+      "bad": 400,
+      "counterAfter": null
+    },
+    "M03": {
+      "numericNameStatus": 422,
+      "nullBodyStatus": 500,
+      "nullBodyJSON": false,
+      "fractionalVersionStatus": 200,
+      "fractionalVersionJSON": true,
+      "orgNameAfterFraction": "FractionAccepted"
+    },
+    "H04": {
+      "statuses": [
+        403,
+        403
+      ],
+      "json": [
+        true,
+        false
+      ],
+      "authRows": 0
+    },
+    "H06_owner_concurrent": {
+      "firstSucceeded": true,
+      "secondSucceeded": false,
+      "authRows": 0,
+      "domainRows": 1,
+      "domainPointsToExistingAuth": false,
+      "retryAlreadyInitialized": true,
+      "relogin": 401
+    },
+    "signout": {
+      "status": 200,
+      "oldCookie": 401
+    }
+  },
+  "database": {
+    "remaining_domain_timestamp_without_timezone": [
+      {
+        "table_name": "ai_insight",
+        "column_name": "generated_at"
+      },
+      {
+        "table_name": "ai_report",
+        "column_name": "generated_at"
+      },
+      {
+        "table_name": "ai_run",
+        "column_name": "finished_at"
+      },
+      {
+        "table_name": "ai_run",
+        "column_name": "started_at"
+      },
+      {
+        "table_name": "import_task",
+        "column_name": "committed_at"
+      },
+      {
+        "table_name": "import_task",
+        "column_name": "committed_evaluation_at"
+      },
+      {
+        "table_name": "import_task",
+        "column_name": "confirmed_at"
+      },
+      {
+        "table_name": "job_run",
+        "column_name": "finished_at"
+      },
+      {
+        "table_name": "job_run",
+        "column_name": "started_at"
+      },
+      {
+        "table_name": "order",
+        "column_name": "paid_at"
+      },
+      {
+        "table_name": "refund_event",
+        "column_name": "completed_at"
+      },
+      {
+        "table_name": "store",
+        "column_name": "current_snapshot_evaluation_at"
+      },
+      {
+        "table_name": "store",
+        "column_name": "input_evaluation_at"
+      },
+      {
+        "table_name": "store",
+        "column_name": "previous_snapshot_evaluation_at"
+      }
+    ],
+    "domain_timezone_types": [
+      {
+        "data_type": "timestamp with time zone",
+        "count": 77
+      },
+      {
+        "data_type": "timestamp without time zone",
+        "count": 14
+      }
+    ],
+    "audit_parent_change_leaves_cross_org": true,
+    "audit_store_delete_preserves_org_and_nulls_store": true,
+    "fixed_created_at_default_equal": true,
+    "unfixed_input_evaluation_same_instant_delta_hours": "8.0000000000000000",
+    "nonuuid_and_missing_auth_accepted": true
+  },
+  "upgrade": {
+    "forward_deploy_exit": 0,
+    "repeat_deploy_exit": 0,
+    "migration_count": "4",
+    "utc_wallclock_preserved": true,
+    "existing_cross_org_audit_survives_upgrade": true
+  },
+  "docker_layout": [
+    {
+      "name": "docker-build-missing-client",
+      "exit": 1,
+      "missing_client": true,
+      "missing_auth": false
+    },
+    {
+      "name": "docker-build-missing-auth",
+      "exit": 1,
+      "missing_client": false,
+      "missing_auth": true
+    }
+  ],
+  "runtime": {
+    "workerRunningExit": 0,
+    "workerStoppedExit": 1,
+    "workerMissingDbExit": 1,
+    "workerMissingDbNamed": true,
+    "webMissingAuthExit": 1,
+    "webMissingAuthNamed": true,
+    "health": {
+      "status": 200,
+      "body": {
+        "status": "ok"
+      }
+    }
+  },
+  "health_stopped": {
+    "status": 503,
+    "body": {
+      "status": "degraded"
+    }
+  },
+  "secrets": {
+    "commits": 14,
+    "blobs_scanned": 167,
+    "strong_secret_pattern_candidates": [],
+    "historical_tracked_real_dotenv": [],
+    "limitations": "Pattern scan cannot establish validity or absence of all secrets; known static local development password and synthetic test secrets retained; no credential values printed."
+  },
+  "final_source_audit": {
+    "checked_at": "2026-09-13T22:36:26+08:00",
+    "head": "c87a141648227954725402c715063a900fa72659",
+    "tracked_application_files_compared": 76,
+    "application_changes": [],
+    "comparison": "SHA256 of original against clean c87a141 clone, after tests and before temp deletion"
+  },
+  "cleanup": {
+    "checked_at": "2026-09-13T22:36:26+08:00",
+    "runtime_processes_remaining": [],
+    "ports_closed": {
+      "3000": true,
+      "3001": true,
+      "55459": true
+    },
+    "temporary_root_deleted": true,
+    "temporary_pointer_deleted": true,
+    "random_credentials_and_isolated_databases_deleted": true,
+    "original_development_database_touched": false
+  },
+  "product_os_initial_sync": {
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-13T22:31:54+08:00"
+  },
+  "product_os_final": {
+    "checked_at": "2026-09-13T22:37:24+08:00",
+    "sync": {
+      "registered": 1,
+      "updated": 1,
+      "errors": [],
+      "generated_at": "2026-09-13T22:36:50+08:00"
+    },
+    "views_read_back": [
+      "00_START_HERE.md",
+      "00_START_HERE.html",
+      "PROJECTS.md",
+      "index.html"
+    ],
+    "state": {
+      "stage": "07 阶段审查 · Phase 1 项目地基 · Gate01 BLOCKED（技术FAIL）",
+      "current_task": "TASK-004",
+      "status": "待修复",
+      "next_owner": "ZCode",
+      "next_prompt": "prompts/P08_FIX.md",
+      "checkpoint": "YES",
+      "review": "BLOCKED（本次用户格式）/技术FAIL · c87a141同版本正式复核；4 HIGH；真实Docker另缺证",
+      "updated_at": "2026-09-13T22:31:24+08:00"
+    },
+    "full_prompt_matches_md_html": true,
+    "unique_progress_state": true,
+    "application_diff": [],
+    "git_diff_check": "PASS",
+    "report_sections": 15
+  }
+}

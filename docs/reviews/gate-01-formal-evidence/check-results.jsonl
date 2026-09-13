@@ -1,0 +1,7 @@
+{"check": "migrate", "exit": 0}
+{"check": "typecheck", "exit": 0}
+{"check": "unit", "exit": 0}
+{"check": "integration", "exit": 0}
+{"check": "build", "exit": 0}
+{"check": "e2e", "exit": 0}
+{"check": "http-probes", "exit": 0}

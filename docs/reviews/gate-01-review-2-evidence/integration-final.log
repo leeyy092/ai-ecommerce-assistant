@@ -1,0 +1,57 @@
+
+> ai-ecommerce-assistant@0.1.0 test:integration /private/tmp/aiea-gate01-r2-0oo1wpux/snapshot/ai-ecommerce-assistant
+> vitest run tests/integration
+
+
+ RUN  v3.2.7 /private/tmp/aiea-gate01-r2-0oo1wpux/snapshot/ai-ecommerce-assistant
+
+ ✓ tests/integration/db.test.ts (4 tests) 42ms
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+ ✓ tests/integration/gate01.db.test.ts (3 tests) 13543ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > 同组织店铺 PASS；跨组织店铺 FAIL；空 store PASS  589ms
+ ✓ tests/integration/auth.test.ts (8 tests) 19227ms
+   ✓ TASK-003｜初始 Owner 与登录 > 初始化创建 Auth+领域身份并可用真实会话登录；/api 层无公开注册入口依赖  1108ms
+   ✓ TASK-003｜初始 Owner 与登录 > 重复初始化幂等：不重设密码、不建第二个 Owner、不接管邮箱  1102ms
+   ✓ TASK-003｜初始 Owner 与登录 > 禁用即时失权：禁用后旧会话解析为未登录  777ms
+   ✓ TASK-003｜受控邀请 > Operator 不能创建邀请；Owner 创建返回一次性 URL（只存哈希）  525ms
+   ✓ TASK-003｜受控邀请 > 已是成员的邮箱再邀请 → 409  424ms
+   ✓ TASK-003｜受控邀请 > 完整接受流程：新用户建 Auth+领域身份并入组织；并发两次接受仅一次成功  744ms
+   ✓ TASK-003｜受控邀请 > 过期邀请 → 410；已登录邮箱不符 → 403；撤销后接受 → 409  471ms
+ ✓ tests/integration/gate01.access.test.ts (7 tests) 19462ms
+   ✓ Gate-01 H02｜拟授予角色校验 > Admin 在 P↔C 之间调整允许  736ms
+   ✓ Gate-01 H03｜D01 方案 A：成员禁用仅作用于本组织 > A 禁用 dual 后：B 的 Membership/全局 User 不变；旧 Cookie 401；重新登录 B 可用，A 失效  571ms
+ ✓ tests/integration/permissions.test.ts (7 tests) 19392ms
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.10.0 -> 8.0.0-rc.14                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+ ✓ tests/integration/gate01.auth.test.ts (8 tests) 19173ms
+   ✓ Gate-01 H04｜公开注册关闭 > 匿名 POST /api/auth/sign-up/email → 403，且不创建任何 AuthUser  2418ms
+   ✓ Gate-01 H04｜公开注册关闭 > 两条受控创建路径仍可用：服务端 auth.api.signUpEmail 正常建身份  742ms
+   ✓ Gate-01 H05｜邀请接受后为框架真实会话 > accept 响应转发的 Set-Cookie 可建立可用登录态（getSessionContext 解析成功）  1282ms
+   ✓ Gate-01 H06｜输入校验、孤儿恢复与故障补偿 > 超长姓名：422 且零副作用（无 AuthUser / 无领域行 / 邀请仍 pending）  326ms
+   ✓ Gate-01 H06｜输入校验、孤儿恢复与故障补偿 > 孤儿 Auth 身份（有 Auth 无领域）→ 安全回收后正常接受  864ms
+   ✓ Gate-01 H06｜输入校验、孤儿恢复与故障补偿 > Auth 创建后领域事务失败：补偿删除 Auth 身份，邀请回 pending，重试成功  1205ms
+   ✓ Gate-01 H06｜输入校验、孤儿恢复与故障补偿 > Owner 初始化同型故障：补偿后重跑成功  751ms
+   ✓ Gate-01 H07｜邀请创建与审计原子 > 审计写入失败（DB 级故障注入）→ 邀请零提交（无残留行）  561ms
+ ✓ tests/integration/database.test.ts (9 tests) 21060ms
+   ✓ TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL） > 空库迁移部署成功，且重复部署幂等（从空库与上次迁移各验证一次；迁移数随 Gate-01 修复增至 4）  8350ms
+   ✓ TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL） > 正常记录链可写入（B 组默认值与复合外键生效）  595ms
+   ✓ TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL） > 异租户外键被阻断：B 组织订单行引用 A 组织 SKU  347ms
+
+ Test Files  7 passed (7)
+      Tests  46 passed (46)
+   Start at  16:16:17
+   Duration  26.74s (transform 2.53s, setup 0ms, collect 7.77s, tests 111.90s, environment 1ms, prepare 24.61s)
+

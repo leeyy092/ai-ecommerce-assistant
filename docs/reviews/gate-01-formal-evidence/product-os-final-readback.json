@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-09-13T22:37:24+08:00",
+  "sync": {
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-13T22:36:50+08:00"
+  },
+  "views_read_back": [
+    "00_START_HERE.md",
+    "00_START_HERE.html",
+    "PROJECTS.md",
+    "index.html"
+  ],
+  "state": {
+    "stage": "07 阶段审查 · Phase 1 项目地基 · Gate01 BLOCKED（技术FAIL）",
+    "current_task": "TASK-004",
+    "status": "待修复",
+    "next_owner": "ZCode",
+    "next_prompt": "prompts/P08_FIX.md",
+    "checkpoint": "YES",
+    "review": "BLOCKED（本次用户格式）/技术FAIL · c87a141同版本正式复核；4 HIGH；真实Docker另缺证",
+    "updated_at": "2026-09-13T22:31:24+08:00"
+  },
+  "full_prompt_matches_md_html": true,
+  "unique_progress_state": true,
+  "application_diff": [],
+  "git_diff_check": "PASS",
+  "report_sections": 15
+}
