@@ -1,8 +1,10 @@
-# 本地完整栈：PostgreSQL 17 + Web + Worker（TASK-001）
-# 使用：cp .env.example .env（compose 路径可不填 DATABASE_URL，下方已注入）
+# 本地完整栈：PostgreSQL 17 + Web + Worker（TASK-001；Gate-01 H10 修复认证配置）
+# 前置：cp .env.example .env 并填写 BETTER_AUTH_SECRET（随机 64 hex）；
+#       DATABASE_URL 可不填（容器内连接串由下方注入）。
 # 启动：docker compose up -d --build
 # 地址：Web http://127.0.0.1:3000 ；健康检查 http://127.0.0.1:3000/api/health
 # 状态：docker compose ps（worker healthcheck 使用 dist/jobs/status.js）
+# 迁移：docker compose exec web pnpm exec prisma migrate deploy
 name: ai-ecommerce-assistant
 
 services:
@@ -27,6 +29,9 @@ services:
     command: pnpm start
     environment:
       DATABASE_URL: postgres://aiea:aiea_local_dev@postgres:5432/aiea_dev
+      # TASK-003 起启动必需（instrumentation 校验）；从 .env 注入，缺失即拒绝启动
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required (set it in .env)}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       LOG_LEVEL: info
     ports:
       - "3000:3000"

@@ -927,3 +927,9 @@ pnpm vitest run tests/integration/auth.test.ts   # 认证/邀请集成测试
 | unit（能力矩阵+投影） | ✅ 14/14 |
 | integration（含新增 permissions 7/7：跨组织 404、C/P 403、禁用重放 401、双组织同名 SKU 隔离） | ✅ 28/28 |
 | e2e 回归 | ✅ 6/6 |
+
+### Gate-01 H10 修复（2026-09-13）
+
+- Dockerfile deps 阶段在 `pnpm install` 前 COPY `prisma/schema.prisma` 与 `prisma.config.ts`（postinstall 的 `prisma generate` 不再缺 Schema）。
+- compose.yaml 为 Web 显式注入 `BETTER_AUTH_SECRET`（缺失即拒绝启动）与 `BETTER_AUTH_URL`；补充容器内迁移命令说明。
+- 等价复现：`scripts/docker-deps-repro.sh` 在与 deps 阶段相同的文件布局执行 install（--ignore-scripts）+ postinstall 等价命令 `prisma generate` → **OK**（本机无 Docker，真实容器构建仍未验证）。

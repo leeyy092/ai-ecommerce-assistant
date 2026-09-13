@@ -1,0 +1,53 @@
+{
+  "name": "ai-ecommerce-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "scripts": {
+    "postinstall": "prisma generate",
+    "dev": "next dev",
+    "build": "next build && pnpm build:worker",
+    "start": "next start",
+    "build:worker": "esbuild src/jobs/worker.ts src/jobs/status.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/jobs",
+    "worker:dev": "tsx src/jobs/worker.ts",
+    "worker:start": "node dist/jobs/worker.js",
+    "worker:status": "tsx src/jobs/status.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "better-auth": "^1.7.4",
+    "next": "16.3.5",
+    "pg": "^8.16.0",
+    "pino": "^10.0.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^24",
+    "@types/pg": "^8.15.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "esbuild": "^0.25.0",
+    "prisma": "7.10.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.20.0",
+    "typescript": "^5",
+    "vitest": "^3.2.0"
+  }
+}
