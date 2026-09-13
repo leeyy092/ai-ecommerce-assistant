@@ -1,12 +1,14 @@
 /**
- * /api/v1/organization（08 §17.2）
- * GET：全员可看 id/name/demo_mode/配置版本；O/A 另见 AI 限额字段。
- * PATCH：O/A 改组织名（expected_version 乐观锁；仅名称修改不触发任何重算）。
+ * /api/v1/organization（08 §17.2；Gate-01 H01/H07 修复版）
+ * GET：全员可见 id/name/demo_mode/配置版本；O/A 另见 AI 限额字段。
+ * 活跃组织取自统一解析（H01：与 /me、requirePermission 同源）。
+ * PATCH：O/A 改组织名；CAS + 审计同一事务（H07）；仅名称修改不触发重算。
  */
 import type { NextRequest } from "next/server";
 import { CAPABILITIES, requirePermission } from "@/services/access";
 import { fail, ok, serviceFailure } from "@/lib/http";
 import { getPrismaClient } from "@/database/prisma";
+import { writeAudit } from "@/services/audit";
 
 export async function GET(req: NextRequest) {
   try {
@@ -52,22 +54,41 @@ export async function PATCH(req: NextRequest) {
     } catch {
       return fail(422, "请求体不是合法 JSON");
     }
-    const expectedVersion = Number(body.expected_version);
-    if (!body.name?.trim()) {
-      return fail(422, "缺少组织名称", { fieldErrors: { name: "必填" } });
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    if (name.length < 1 || name.length > 100) {
+      return fail(422, "组织名称长度须为 1–100 个字符", {
+        fieldErrors: { name: "必填，1–100 字符" },
+      });
     }
+    const expectedVersion = Number(body.expected_version);
     if (!Number.isFinite(expectedVersion) || expectedVersion < 1) {
       return fail(422, "缺少合法的 expected_version");
     }
 
-    const updated = await getPrismaClient().organization.updateMany({
-      where: { id: ctx.orgId, rowVersion: expectedVersion },
-      data: { name: body.name.trim(), rowVersion: { increment: 1 } },
+    const db = getPrismaClient();
+    const result = await db.$transaction(async (tx) => {
+      const updated = await tx.organization.updateMany({
+        where: { id: ctx.orgId, rowVersion: expectedVersion },
+        data: { name, rowVersion: { increment: 1 } },
+      });
+      if (updated.count !== 1) {
+        throw Object.assign(new Error("组织信息已被修改，请刷新后重试"), {
+          status: 409,
+          code: "VERSION_CONFLICT",
+        });
+      }
+      await writeAudit(tx, {
+        orgId: ctx.orgId,
+        actorUserId: ctx.userId,
+        action: "org_update",
+        entityType: "organization",
+        entityId: ctx.orgId,
+        beforeSummary: undefined,
+        afterSummary: { name },
+      });
+      return { status: "updated" as const };
     });
-    if (updated.count !== 1) {
-      return fail(409, "组织信息已被修改，请刷新后重试");
-    }
-    return ok({ status: "updated" });
+    return ok(result);
   } catch (error) {
     const mapped = serviceFailure(error);
     if (mapped) return mapped;

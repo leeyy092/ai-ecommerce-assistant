@@ -948,3 +948,11 @@ pnpm vitest run tests/integration/auth.test.ts   # 认证/邀请集成测试
 - H06：接受流程重写——输入先完整校验（422 零副作用）；孤儿 Auth 身份安全回收；单一事务内（PG 事务级咨询锁按邮箱+邀请串行）完成 token CAS+领域身份+成员+审计；Auth 创建失败/领域事务失败均补偿删除 Auth 身份，邀请回 pending 可重试。
 - H07：邀请创建/撤销/接受与 AuditLog 同事务（DB 级 NOT VALID 约束注入验证零部分提交）。
 - 回归：gate01.auth 集成 8/8（公开注册拒绝、框架会话、孤儿恢复、补偿重试、Owner 同型故障、审计原子）；E2E +2（邀请全流程双浏览器上下文、公开注册拒绝）；全套 39/39 + 8/8。
+
+### Gate-01 H01–H03/H07 修复（2026-09-13，TASK-004）
+
+- H01：`src/lib/session.ts` 成为活跃组织唯一解析点（Cookie 只能在有效成员关系内选择，否则回退首个；伪造/失效 Cookie 不能自授权限）；/me、requirePermission、organization 读写全部同源；active-organization 改为直接写响应 Set-Cookie。
+- H02：`assertRoleAssignment` 同时校验操作者与拟授予新角色——Admin 不可授予 admin（owner 永不可授予）。
+- H03（D01 方案 A）：成员禁用仅更新本组织 Membership.status 并撤销登录会话；**不修改全局 User.status**，其他组织的有效成员关系不受影响，重新登录后其余组织可用。
+- H07：members PATCH（CAS+会话撤销+审计）与 organization PATCH（CAS+审计，原先无审计）单一事务。
+- 回归：gate01.access 集成 7/7（双组织双角色切换读写同源、伪造 Cookie 回退、Admin 提权 403/Owner 合法 200、P↔C 允许、A 禁用不伤 B 的 Owner 且重登可用 B、成员/组织审计故障零提交）；全套 unit 14/14、integration 46/46、e2e 8/8。

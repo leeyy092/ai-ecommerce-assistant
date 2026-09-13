@@ -1,12 +1,10 @@
 /**
- * PUT /api/v1/me/active-organization（08 §17.2）：切换活跃组织（仅显示上下文，不授权）。
- * 校验当前用户确为该组织成员；写入 HttpOnly Cookie；切换即清空客户端旧域缓存语义。
+ * PUT /api/v1/me/active-organization（08 §17.2；Gate-01 H01 修复版）。
+ * 切换活跃组织（仅显示/授权上下文选择，不授权）。校验成员关系后写 HttpOnly
+ * Cookie（直接写响应头，不依赖请求作用域 API，便于路由处理器直调测试）。
  */
-import { cookies } from "next/headers";
-import { getSessionContext } from "@/lib/session";
+import { getSessionContext, ACTIVE_ORG_COOKIE } from "@/lib/session";
 import { fail, ok, unauthorized } from "@/lib/http";
-
-const ACTIVE_ORG_COOKIE = "aiea_active_org";
 
 export async function PUT(request: Request) {
   const ctx = await getSessionContext(request);
@@ -25,13 +23,12 @@ export async function PUT(request: Request) {
   const membership = ctx.memberships.find((m) => m.orgId === body.organization_id);
   if (!membership) return fail(404, "不是该组织的成员");
 
-  const store = await cookies();
-  store.set(ACTIVE_ORG_COOKIE, membership.orgId, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-  });
-
-  return ok({ active_org: membership.orgId, role: membership.role });
+  const response = ok({ active_org: membership.orgId, role: membership.role });
+  response.headers.append(
+    "set-cookie",
+    `${ACTIVE_ORG_COOKIE}=${membership.orgId}; Path=/; HttpOnly; SameSite=Lax${
+      process.env.NODE_ENV === "production" ? "; Secure" : ""
+    }`,
+  );
+  return response;
 }
