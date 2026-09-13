@@ -107,12 +107,12 @@ async function seedChain(p: PrismaClient, tag: string) {
 }
 
 describe("TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL）", () => {
-  it("空库迁移部署成功，且重复部署幂等（从空库与上次迁移各验证一次）", () => {
+  it("空库迁移部署成功，且重复部署幂等（从空库与上次迁移各验证一次；迁移数随 Gate-01 修复增至 4）", () => {
     const output = runMigrateDeploy(testUrl);
     expect(output).toMatch(/Already in sync|No pending migrations|applied/i);
     return expect(
       prisma.$queryRawUnsafe(`SELECT count(*)::int AS n FROM "_prisma_migrations"`),
-    ).resolves.toEqual([{ n: 2 }]);
+    ).resolves.toEqual([{ n: 4 }]);
   });
 
   it("正常记录链可写入（B 组默认值与复合外键生效）", async () => {
