@@ -933,3 +933,10 @@ pnpm vitest run tests/integration/auth.test.ts   # 认证/邀请集成测试
 - Dockerfile deps 阶段在 `pnpm install` 前 COPY `prisma/schema.prisma` 与 `prisma.config.ts`（postinstall 的 `prisma generate` 不再缺 Schema）。
 - compose.yaml 为 Web 显式注入 `BETTER_AUTH_SECRET`（缺失即拒绝启动）与 `BETTER_AUTH_URL`；补充容器内迁移命令说明。
 - 等价复现：`scripts/docker-deps-repro.sh` 在与 deps 阶段相同的文件布局执行 install（--ignore-scripts）+ postinstall 等价命令 `prisma generate` → **OK**（本机无 Docker，真实容器构建仍未验证）。
+
+### Gate-01 H08/H09 修复（2026-09-13，TASK-002）
+
+- 新迁移 `20260913043631_p0_domain_timestamptz`：77 个领域 DateTime 列转 `TIMESTAMPTZ(6)`，显式 `USING ... AT TIME ZONE 'UTC'`（历史业务行均经 Prisma 以 UTC 墙钟写入；集群时区 Asia/Shanghai，不依赖隐式 cast）；Better Auth 四表保持框架原生类型；瞬时表 auth_rate_limit 重置。
+- 新迁移 `20260913044218_p0_audit_tenant_fk`：AuditLog 店铺同域校验以**数据库触发器**实现（同域/空 store 放行、异域异常；选触发器而非复合外键的原因见迁移注释——Prisma 混合可空性建模限制 + 零漂移）。
+- 升级路径：aiea_dev（现有数据）`migrate deploy` 应用成功且复查 `migrate dev` "Already in sync"；空库路径由测试套件覆盖。
+- 回归：`tests/integration/gate01.db.test.ts` 3/3（同域三例 + 类型断言 + UTC/+08 等值）。
