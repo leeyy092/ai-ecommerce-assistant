@@ -4,8 +4,8 @@
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase 1 项目地基 / CODEX_REVIEW_GATE_01 = BLOCKED / TASK-001–004 需修复重新验收 / 下一工具 ZCode。**
-Codex 已完成独立审查：10 HIGH、4 MEDIUM、无已确认 CRITICAL；现有测试通过不等于完整验收通过。先由 GPT/Owner 明确 D01 禁用范围，ZCode 按审查报告逐 TASK 修复后交 Codex 复审。Checkpoint=YES，禁止合并 main 或开始 TASK-005。
+**Phase 1 项目地基 / CODEX_REVIEW_GATE_01_REVIEW_2 = CODEX_REVIEW_REQUIRED / H01–H10 修复完成待复审 / 下一工具 Codex。**
+D01 已由 Owner 裁决为方案 A（RESOLVED）并同步至 02_USER_ROLES。ZCode 已按依赖顺序完成 H01–H10 全部修复（TASK-001→004 各自独立 commit 并推送）；真实 HTTP 多组织/角色/邀请、审计故障注入、迁移升级与时区等值回归全部通过。等待 Codex 第二轮复审；复审 PASS 且 Owner 放行前禁止合并 main 或开始 TASK-005。
 
 <!-- PRODUCT_OS_STATE_BEGIN -->
 ```json
@@ -13,37 +13,37 @@ Codex 已完成独立审查：10 HIGH、4 MEDIUM、无已确认 CRITICAL；现�
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动",
-  "stage": "07 阶段审查 · Phase 1 项目地基",
-  "current_task": "TASK-004",
-  "status": "待修复",
-  "last_completed": "CODEX_REVIEW_GATE_01 独立审查完成；TASK-001–004 的完整验收均 FAIL，旧 DONE 保留为历史",
-  "next_action": "GPT/Owner 确认 D01 禁用范围；ZCode 按 H01–H10 在 Phase 1 逐 TASK 修复，之后 Codex 复审；禁止合并 main 和进入 TASK-005",
-  "next_owner": "ZCode",
-  "next_prompt": "prompts/P08_FIX.md",
-  "acceptance": "在冻结 c263610 基础上修复 H01–H10，落实 D01；真实 HTTP 多组织/角色/邀请与审计故障回归、迁移和容器检查通过；提交独立修复证据供 Codex 复审，不自行放行",
-  "blockers": "10 项 HIGH 未修复；D01 全局账号与组织成员禁用语义待 GPT/Owner 裁决；Docker 完整构建/启动未实测。无阶段通过或 Owner 放行。",
+  "stage": "07 阶段审查 · Phase 1 项目地基 · Gate-01 第二轮",
+  "current_task": "GATE_01_REVIEW_2",
+  "status": "CODEX_REVIEW_REQUIRED",
+  "last_completed": "H01–H10 修复完成（fix TASK-001/002/003/004 四个提交）；D01=RESOLVED 方案A",
+  "next_action": "Codex 第二轮复审 c263610..<latest>；PASS 后 Owner 放行才可合并 main 并开 Phase 2",
+  "next_owner": "Codex",
+  "next_prompt": "docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md + CODEX_REVIEW_HANDOFF.md(REVIEW_2)",
+  "acceptance": "复审基于实际差异覆盖 H01–H10 与 D01 落实；复跑原测试与反例（真实 Cookie、多组织读写/撤权、邀请失败与并发恢复、审计回滚、迁移升级、容器依赖路径）",
+  "blockers": "等待 Codex 第二轮复审结论；Docker 真实 runtime 构建仍未实测（本机无 Docker，等价复现已过）；M01–M04 为 Follow-up 不阻塞。",
   "checkpoint": "YES",
-  "review": "BLOCKED · CODEX_REVIEW_GATE_01 · 2026-09-13 · c263610；技术验收 FAIL，必须修复并复审",
-  "updated_at": "2026-09-13T01:28:09+08:00",
-  "updated_by": "Codex · Gate 01 独立技术审查",
+  "review": "REVIEW_2 · CODEX_REVIEW_GATE_01 · 2026-09-13 · base c263610",
+  "updated_at": "2026-09-13T15:40:00+08:00",
+  "updated_by": "ZCode · Gate-01 H01–H10 修复执行",
   "evidence": [
-    "docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md：正式 15 节审查报告，10 HIGH、4 MEDIUM，TASK-001–004 FAIL。",
-    "docs/reviews/GATE_01_EVIDENCE.json 与 gate-01-evidence/：真实隔离 PG17，unit 14/14、integration 28/28、e2e 6/6、typecheck/build PASS；额外 HTTP/数据库/故障注入复现阻断问题。",
-    "审查前后原 99 个已跟踪文件哈希未变，随后仅报告/进度/交接/提示词管理写回；应用代码未改。",
-    "基线 main=2a983cc，冻结 phase/01-foundation=c263610；TASK-001/002 已在恢复基线，按当前代码快照补验。",
-    "未提交/推送/合并/部署；之前 Product OS 接入证据仍见 docs/PRODUCT_OS_ADOPTION.md。"
+    "fix(TASK-001) 73a5108：Dockerfile prisma 生成顺序 + compose 认证配置 + scripts/docker-deps-repro.sh 等价复现 OK",
+    "fix(TASK-002) 3e90bf6+24f877a：audit_log 同域触发器迁移 + 77 列 TIMESTAMPTZ(UTC 显式转换) + gate01.db 3/3",
+    "fix(TASK-003) 63e16ea：公开注册 403、框架 Set-Cookie、校验前置/孤儿恢复/咨询锁事务/补偿、邀请审计原子 + gate01.auth 8/8 + E2E 邀请全流程",
+    "fix(TASK-004) e56be99：session 唯一活跃组织解析、拟授予角色校验、D01 方案A 仅 Membership、成员/org 审计同事务 + gate01.access 7/7",
+    "修复后全量回归：typecheck 0 错、unit 14/14、integration 46/46、build 0、e2e 8/8；aiea_dev 升级部署 Already in sync"
   ],
   "github": {
-    "status": "已连接；此前核实 c263610 与远端一致；本次审查及管理文档未提交/推送（本轮未重查远端）",
+    "status": "已连接（SSH）；修复提交均已推送 origin/phase/01-foundation",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
-    "verified_at": "2026-09-13T00:54:14+08:00",
-    "evidence": "实际 git ls-remote origin：phase/01-foundation 与本地 HEAD 均为 c263610541f8c8f7b41fd38c185f5feac94e8ee2；main 为 2a983cc55f136abbb49c5d02b55c1cb82b6547cc。仓库可见性 unknown。"
+    "verified_at": "2026-09-13T15:40:00+08:00",
+    "evidence": "git push origin phase/01-foundation 至 e56be99 成功；远端与本分支一致"
   },
   "deployment": {
-    "status": "unknown（未找到生产部署或线上可用证据）",
+    "status": "unknown（无生产部署；本机无 Docker）",
     "url": "",
-    "verified_at": "2026-09-13T00:45:24+08:00",
-    "evidence": "已查 Dockerfile、compose.yaml、已跟踪部署配置与 README；只见本地 127.0.0.1:3000，不能当线上地址。本地 /api/health 请求连接重置；未运行部署或容器。"
+    "verified_at": "2026-09-13T15:40:00+08:00",
+    "evidence": "docker-deps-repro.sh 静态等价复现通过；真实 docker build/compose 未执行"
   }
 }
 ```
@@ -51,13 +51,20 @@ Codex 已完成独立审查：10 HIGH、4 MEDIUM、无已确认 CRITICAL；现�
 
 ## Git 状态（由 Zcode 自动维护；2026-09-13 Owner 授权 Git 生命周期规则）
 
-- Project Status：**REVIEW_BLOCKED / 待修复**（CODEX_REVIEW_GATE_01，2026-09-13；正式结论 BLOCKED）
+- Project Status：**CODEX_REVIEW_REQUIRED**（CODEX_REVIEW_GATE_01_REVIEW_2，等待 Codex 第二轮复审）
 - Current Branch：`phase/01-foundation`
 - Base Branch：`main`
 - Origin：`git@github.com:leeyy092/ai-ecommerce-assistant.git`（SSH）
-- 同步状态：2026-09-13T00:54:14+08:00 已联网核实，已提交 HEAD 与远端一致于 c263610；本次后续管理接入改动尚未提交，当前工作区不再是 clean。
-- Review Commit（业务冻结点）：`c263610541f8c8f7b41fd38c185f5feac94e8ee2`；审查同时核对本次管理文档差异，不将“最新 HEAD”永久视为同一审查版本。
-- Previous Review Commit：无（首个 Gate）
+- 同步状态：修复提交已全部推送（e56be99）；本段更新随最终 chore(review) 提交推送后工作区 clean。
+- Base Review Commit（Gate-01 冻结）：`c263610541f8c8f7b41fd38c185f5feac94e8ee2`
+- Current Review Commit（REVIEW_2）：本段提交后的最新 commit（chore(review): prepare gate-01 review-2）
+- Git Diff Range（复审范围）：`c263610..HEAD`
+- 修复提交清单：4ec0011 docs(review) 基线 → 73a5108 fix(TASK-001) → 3e90bf6+24f877a fix(TASK-002) → 63e16ea fix(TASK-003) → e56be99 fix(TASK-004)
+- Fixes：H01–H10 全部；D01：RESOLVED（方案 A）
+- Tests（修复后全量）：typecheck 0 错；unit 14/14；integration 46/46（7 文件）；build 0 错误；e2e 8/8；空库迁移×4 套件 + aiea_dev 升级 Already in sync；docker deps 等价复现 OK
+- Known Issues：真实 Docker runtime 构建未实测（本机无 Docker）；E2E 演示密码仅本地库
+- Medium Follow-up：M01 Origin/CSRF、M02 限流清零语义、M03 输入验证信封、M04 Auth 外键/UUID——均未修复，登记为 Review Follow-up（不阻塞本轮）
+- Next Action：Codex 第二轮复审 → PASS + Owner 放行 → 合并 main → 创建 phase/02-data-ingestion
 - Git Diff Range：`main..phase/01-foundation`
 - TASK 验收（本 Phase）：TASK-001 FAIL、TASK-002 FAIL、TASK-003 FAIL、TASK-004 FAIL；ZCode 原完成记录保留为历史，当前需修复复审
 - Test Results（冻结时全量回归）：typecheck 0 错误；unit 14/14；integration 28/28；build 0 错误；e2e 6/6
@@ -206,6 +213,20 @@ Codex 已完成独立审查：10 HIGH、4 MEDIUM、无已确认 CRITICAL；现�
 - 实际测试（2026-09-13 真实执行）：typecheck ✅ 0 错误；unit 14/14（能力矩阵 5 + 客服投影 2 + env 7）；integration 28/28（新增 permissions 7/7：O/A 可见预算字段而 P/C 不可见、P 改组织名 403/O 200 乐观锁、C/P 邀请 403、Admin 邀 admin 403/邀 operator 201、P 成员列表 403、跨组织改成员 404、禁用后旧 Cookie 401、跨组织店铺 404、两组织同名 SKU 复合键隔离+同域拒绝）；build ✅ 0 错误；e2e 6/6。
 - 已知限制：① 旧下载地址/旧 job 重放拒绝属 TASK-007/013 的文件与任务对象，本任务先行落地 Cookie 重放拒绝；② scoped repositories 完整形态随后续数据实体服务（005+）在 requireStoreAccess 之上生长，未提前建空壳。
 - 下一TASK：无——Phase 1 全部完成，进入 CODEX_REVIEW_GATE_01。
+
+## Gate-01 修复执行记录（2026-09-13，Zcode）
+
+- 依据：docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md（BLOCKED，10 HIGH/4 MEDIUM）+ Owner D01 裁决（方案 A，RESOLVED）。
+- 逐项判定：H01–H10 全部 **ACCEPT**；M01–M04 **DEFER**（登记 Follow-up，本轮不扩范围）。
+- 按依赖顺序一次一个 TASK 修复，每个 TASK 独立 commit 并推送：
+  - fix(TASK-001) 73a5108｜H10：Dockerfile deps 阶段先 COPY prisma/schema.prisma + prisma.config.ts 再 install（postinstall generate 不再缺 Schema）；compose 为 Web 注入 BETTER_AUTH_SECRET（缺失拒绝启动）/BETTER_AUTH_URL；scripts/docker-deps-repro.sh 在相同布局执行 install + postinstall 等价命令 → OK。真实 Docker runtime 未实测（如实保留缺口）。
+  - fix(TASK-002) 3e90bf6 + 24f877a｜H08：新迁移 20260913044218_p0_audit_tenant_fk——audit_log 同域校验用数据库触发器（同域/空 store 放行、异域异常；不用复合外键的原因：Prisma 混合可空性建模限制 + 零漂移；删除行为维持单列 FK SET NULL）。H09：新迁移 20260913043631_p0_domain_timestamptz——77 个领域 DateTime 列 TIMESTAMPTZ(6)，显式 USING ... AT TIME ZONE 'UTC'（历史行均 Prisma UTC 墙钟；集群时区 Asia/Shanghai）；Auth 四表保持框架原生；auth_rate_limit 瞬时计数重置。空库（测试套件）与 aiea_dev 升级（deploy + Already in sync）双路径验证；迁移计数断言 2→4 修正。
+  - fix(TASK-003) 63e16ea｜H04：/api/auth/sign-up/email HTTP 层 403 PUBLIC_SIGNUP_DISABLED（受控路径走服务端 auth.api 不受影响）。H05：接受邀请转发框架 signUpEmail 完整 Set-Cookie（asResponse:true），不再手工伪造 Cookie。H06：输入写库前完整校验（姓名 1–80/密码≥8，422 零副作用）；孤儿 Auth 身份安全回收（含幂等重试恢复）；接受流程单事务 + PG 事务级咨询锁（邮箱+邀请双键，并发串行、后到者 409 且从未建号）；Auth 创建在事务回调内、失败补偿删除（testHookAfterAuth 注入验证 + 重试成功）。H07：邀请创建/撤销/接受与审计同事务（DB 级 NOT VALID 约束注入证明零部分提交）。
+  - fix(TASK-004) e56be99｜H01：src/lib/session.ts 为活跃组织唯一解析点（Cookie 仅在有效成员关系内选择，伪造/失效回退首个；/me、requirePermission、organization 同源）；active-organization 直接写响应 Set-Cookie（不经请求作用域 API）。H02：assertRoleAssignment 校验拟授予新角色——Admin 禁授 admin、owner 永不可授予。H03（D01 方案 A）：禁用仅更新本组织 Membership.status + 撤销登录会话，不修改全局 User.status；其他组织可用性保持（重登后验证）；02_USER_ROLES 已同步裁决。H07：members PATCH（CAS+会话撤销+审计）与 organization PATCH（CAS+审计，补齐原先缺失的审计）单一事务。
+- 新增回归：tests/integration/gate01.db.test.ts（3）、gate01.auth.test.ts（8）、gate01.access.test.ts（7）；E2E +2（邀请全流程双浏览器上下文、公开注册拒绝）。
+- 修复后全量（真实执行）：typecheck 0 错；pnpm test 14/14；pnpm test:integration 46/46（7 文件：db 4/database 9/auth 8/permissions 7/gate01.db 3/gate01.auth 8/gate01.access 7）；pnpm build 0 错误；pnpm test:e2e 8/8；aiea_dev migrate deploy Already in sync；docker-deps-repro.sh OK。
+- 遗留：M01–M04 未修（Follow-up）；真实 Docker 构建未实测；旧下载地址/旧 job 重放拒绝属 TASK-007/013 对象。
+- 状态：CODEX_REVIEW_REQUIRED（GATE_01_REVIEW_2），停止开发等待 Codex 第二轮复审。
 
 ## 每次TASK完成后追加的记录格式
 

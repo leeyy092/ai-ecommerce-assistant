@@ -1,73 +1,84 @@
-# CODEX_REVIEW_HANDOFF｜CODEX_REVIEW_GATE_01
+# CODEX_REVIEW_HANDOFF｜CODEX_REVIEW_GATE_01_REVIEW_2（第二轮复审交接）
 
-2026-09-13｜Phase 1 项目地基｜**独立审查已完成：BLOCKED，待修复与复审。**
+- 生成日期：2026-09-13（ZCode 修复完成后）
+- 交接根目录：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
+- 审查类型：**Gate-01 第二轮复审**（第一轮 BLOCKED → H01–H10 已修复 → 待复审）
+- 修复依据：[docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md](docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md) + [GATE_01_EVIDENCE.json](docs/reviews/GATE_01_EVIDENCE.json) + Owner 对 D01 的裁决（方案 A，RESOLVED）
 
-## 当前交接结论
+## 复审定位信息
 
-TASK-001–004 完整验收均 FAIL；10 HIGH、4 MEDIUM，无已确认 CRITICAL。现有测试通过不能替代权限、邀请、数据库及标准启动路径的实际验收。
-
-- 正式报告：[CODEX_REVIEW_GATE_01_2026-09-13.md](docs/reviews/CODEX_REVIEW_GATE_01_2026-09-13.md)
-- 实测证据：[GATE_01_EVIDENCE.json](docs/reviews/GATE_01_EVIDENCE.json)
-- 测试日志：[gate-01-evidence](docs/reviews/gate-01-evidence/)
-- 唯一进度：[12_PROGRESS.md](docs/ai-ecommerce-assistant/12_PROGRESS.md)
-- 下一工具：ZCode；完整提示词：[P08_FIX.md](prompts/P08_FIX.md)
-- 产品待决：报告 D01，组织成员禁用与全局账号禁用语义，交 GPT/Owner。
-- Checkpoint：YES；**禁止合并 main，禁止 Phase 2 / TASK-005。**
-
-## 已审版本与范围
-
-| 项 | 实际值 |
+| 项 | 值 |
 |---|---|
-| 项目根目录 | `/Users/yuyuyu/Documents/ChatGPT/产品-开发` |
-| 应用目录 | `ai-ecommerce-assistant/` |
 | Current Branch | `phase/01-foundation` |
-| Base Branch / Commit | `main` / `2a983cc55f136abbb49c5d02b55c1cb82b6547cc` |
-| Review Commit | `c263610541f8c8f7b41fd38c185f5feac94e8ee2` |
-| Diff Range | `main..phase/01-foundation`，45文件，+3176/-97 |
-| TASK-001/002 | iCloud恢复后并入main基线，本次补查当前实现；丢失旧提交无法逐字节复验 |
-| TASK-003 / TASK-004 | `a77f7b5` / `1ab433f` |
-| 工作区 | 业务代码冻结于c263610；原Product OS及本次审查文档未提交，不是clean |
-| GitHub | 之前2026-09-13T00:54:14+08:00核实c263610与远端一致；本轮未重查/提交/推送 |
-| Project Status | REVIEW_BLOCKED / 待修复；正式Gate结论BLOCKED |
+| Base Branch | `main`（= 2a983cc） |
+| Base Review Commit（第一轮冻结） | `c263610541f8c8f7b41fd38c185f5feac94e8ee2` |
+| Current Review Commit | 本文件提交后的最新 commit（`chore(review): prepare gate-01 review-2`） |
+| Git Diff Range | `c263610..HEAD`（复审范围） |
+| Project Status | CODEX_REVIEW_REQUIRED（Checkpoint=YES；禁止合并 main / Phase 2 / TASK-005） |
+| Working Tree | 提交并推送本文件后 clean，与 origin/phase/01-foundation 一致 |
 
-本文件当前交接审查结果。ZCode原冻结交接可在提交c263610追溯；其中全部DONE、无公开注册、原子消费等描述已被本次实际审查修正，不能继续当作通过证据。
+## Fixes：H01–H10（逐项 ACCEPT）
 
-## 必须修复范围
+| # | 修复 commit | 修复内容 | 复审要点 |
+|---|---|---|---|
+| H10 | 73a5108 | Dockerfile deps 先 COPY prisma/schema.prisma+prisma.config.ts 再 install；compose 注入 BETTER_AUTH_SECRET/URL；docker-deps-repro.sh 等价复现 OK | 干净布局 install+generate；**真实 Docker runtime 未实测（本机无 Docker）** |
+| H08 | 3e90bf6 | 新迁移 p0_audit_tenant_fk：audit_log 同域触发器（同域/空 store 放行、异域拒绝）；选触发器而非复合外键的原因见迁移注释 | 异域 INSERT 被 DB 拒绝；空 store 合法；删除行为=单列 FK SET NULL |
+| H09 | 3e90bf6 | 新迁移 p0_domain_timestamptz：77 列 TIMESTAMPTZ(6) 显式 `USING ... AT TIME ZONE 'UTC'`（历史行均 Prisma UTC 墙钟、集群时区 Asia/Shanghai）；Auth 四表保持框架原生；auth_rate_limit 重置 | 空库+升级双路径；UTC/+08 同一时刻等值；默认值/ORM 路径 |
+| H04 | 63e16ea | `/api/auth/sign-up/email` HTTP 层 403 PUBLIC_SIGNUP_DISABLED；受控路径（初始化/邀请）走服务端 auth.api 不受影响 | 匿名 URL 拒绝且零 AuthUser；两条受控路径成功 |
+| H05 | 63e16ea | 接受邀请转发框架 signUpEmail(asResponse:true) 的完整 Set-Cookie；不再手工伪造 Cookie | E2E 双浏览器上下文：接受→受保护接口 200 |
+| H06 | 63e16ea | 输入写库前完整校验（422 零副作用）；孤儿 Auth 身份回收（幂等重试恢复）；单事务+PG 事务级咨询锁（邮箱+邀请双键）覆盖 CAS+领域+审计；Auth 创建失败/事务失败补偿删除 | 长姓名 500→422 无残留；孤儿恢复；注入失败→邀请 pending+AuthUser 0→重试成功；并发仅一成功 |
+| H07 | 63e16ea + e56be99 | 邀请创建/撤销/接受、成员 PATCH（CAS+会话撤销+审计）、organization PATCH（CAS+审计，补齐缺失审计）全部单事务 | DB 级 NOT VALID 约束注入：失败后业务/版本/审计零提交 |
+| H01 | e56be99 | session.ts 唯一活跃组织解析（Cookie 仅在有效成员关系内选择，否则回退首个）；/me、requirePermission、organization 读写同源；active-organization 直接写响应 Set-Cookie | 同账号 A=owner/B=CS：切换后读写均为 B、CS 无预算/无 PATCH 权；伪造 Cookie 回退 |
+| H02 | e56be99 | assertRoleAssignment 校验拟授予新角色：Admin 禁授 admin；owner 永不可授予 | Admin op→admin 403 且角色不变；Owner 合法；P↔C 允许 |
+| H03 | e56be99 | D01 方案 A：禁用仅本组织 Membership.status+撤登录会话；不修改全局 User.status；其他组织可用（重登验证）；02_USER_ROLES 已同步裁决 | A 禁用不伤 B 的 Owner；旧 Cookie 401；重登 active_org=B role=owner |
 
-| TASK | HIGH问题 | 复审要点 |
-|---|---|---|
-| 001 | H10 Docker Prisma生成顺序、Compose Auth配置 | 干净构建/迁移/启动/登录；没有真实Docker证据时保留缺口 |
-| 002 | H08审计同域FK；H09时间类型 | 空库+向前升级、异域拒绝、时区等值、删除行为 |
-| 003 | H04公开注册；H05邀请会话；H06身份/邀请一致性；H07管理事务 | 真实HTTP/Cookie、错误输入无残留、并发/失败恢复、审计回滚 |
-| 004 | H01活跃组织；H02角色提升；H03禁用范围；相关H07 | 同账号双组织不同角色、读写一致、Admin不得授予Admin、A撤权不伤及B |
+**D01：RESOLVED（方案 A）**——Owner 2026-09-13 裁决：组织成员禁用仅影响当前 Organization 的 Membership；不通过组织接口改全局 User.status；其他组织有效 Membership 继续可用；全局封禁属平台级运维 P0 不开发。已同步 `docs/ai-ecommerce-assistant/02_USER_ROLES.md`。
 
-完整问题的五项字段及完成判据以报告为准。MEDIUM：M01 Origin/CSRF；M02失败响应清空登录计数；M03输入验证/异常信封；M04 Auth外键与UUID。不要为风格扩散重构。
+## Tests（修复后全量真实执行，2026-09-13）
 
-## 独立验证结果
-
-隔离PostgreSQL17.11/55439、Node24.21.0、随机口令；原开发5433不用于测试写入。
-
-| 检查 | 结果 |
+| 套件 | 结果 |
 |---|---|
-| typecheck / build | PASS；Web+Worker |
-| unit / integration / E2E | 14/14、28/28、6/6；E2E日志另有一次ECONNRESET，不影响断言 |
-| migration | 两次迁移从空库成功；重复deploy无待应用迁移 |
-| Worker状态/缺配置 | 运行0、停止1、缺DATABASE_URL启动1 |
-| HTTP/DB/审计故障注入 | 复现报告问题；具体范围以证据JSON为准 |
-| Docker deps布局postinstall | exit1，缺Prisma Schema |
-| 真正Docker build/Compose | 未执行，本机无Docker |
-| Secrets | 本地7个可达提交/125个blob未发现真实密钥、当前.env Secret值或被跟踪.env；含开发样例密码 |
-| 应用源码 | 测试后原99个已跟踪文件哈希与开始一致；随后只维护审查/管理文档 |
+| typecheck | ✅ 0 错误 |
+| unit（env 7 + 权限矩阵/投影 7） | ✅ 14/14 |
+| integration（7 文件 46 例：db 4 / database 9 / auth 8 / permissions 7 / **gate01.db 3** / **gate01.auth 8** / **gate01.access 7**） | ✅ 46/46 |
+| build（web+worker） | ✅ 退出码 0 |
+| e2e（原 6 + **邀请全流程 + 公开注册拒绝**） | ✅ 8/8 |
+| migration | ✅ 空库×4 套件 + aiea_dev 升级（deploy 后 Already in sync） |
+| docker deps 等价复现 | ✅ scripts/docker-deps-repro.sh OK |
 
-无线上部署、客户试用、真实模型或商业验证证据。本阶段尚无文件/Job/AI业务对象，不能把权限纯函数通过当作未来对象已实测。
+新增回归覆盖：多组织授权（双组织双角色读写同源/伪造 Cookie 回退）、role escalation（Admin 提权 403）、member disable isolation（A 禁用不伤 B）、public signup rejection、invitation success session（框架 Cookie 真实会话）、invitation failure recovery（孤儿/补偿/重试/并发）、audit transaction rollback（邀请/成员/组织三处注入）、AuditLog 跨组织 FK（触发器）、timezone semantics（类型断言+UTC/+08 等值）、Docker dependency installation path（等价复现）。Codex 原有测试全部保留并通过。
 
-## ZCode接手规则
+## Known Issues（剩余）
 
-1. 显式读项目规则、配置、状态协议、首页、最新进度与正式报告，核对分支和在途修改。
-2. 逐项回复ACCEPT/DISCUSS/REJECT，按依赖一次一个TASK修复。D01未裁决前不自行决定全局禁用语义，可先处理不依赖它的修复。
-3. 不新增P0业务/大型依赖，不改写共享迁移或Git历史，不覆盖未提交管理文档。
-4. 按原Git授权仅提交修复相关文件及必要证据；记录每项实际检查和修复提交。
-5. 修完更新唯一进度与本交接，保留本次基线c263610，添加修复commit/diff，状态回CODEX_REVIEW_REQUIRED、Checkpoint=YES、工具Codex。
-6. Product OS sync并读回首页/总控。Codex复审通过与Owner放行均具备后，才可依PHASE_PLAN合并及进入下一Phase。
+1. **真实 Docker runtime 构建/启动未实测**（本机无 Docker）——H10 已修配置并用相同布局等价复现验证，但干净容器构建→迁移→登录链路仍需真实 Docker 环境（TASK-029 部署阶段或提供 Docker 的机器）。
+2. E2E 默认密码仅用于本地演示库 aiea_dev。
+3. 旧下载地址/旧 job 重放拒绝分别属 TASK-007/013 对象（本轮已覆盖 Cookie 重放拒绝）。
 
-本次Codex仅Review与维护交接，未执行修复、Git提交、推送、合并或部署。
+## Medium Follow-up（M01–M04：未修复，不阻塞本轮）
+
+| # | 内容 | 状态 |
+|---|---|---|
+| M01 | 业务写 API Origin/CSRF 校验 | Follow-up（建议 TASK-005 前置或并入首个业务写端点任务） |
+| M02 | 仅成功认证清零登录失败计数（400/429 不清零）；固定代理信任边界 | Follow-up |
+| M03 | 输入类型/长度统一 Zod 校验与未预期异常稳定信封 | Follow-up（本轮已在 organization PATCH/邀请路径落地局部校验） |
+| M04 | User.authUserId 外键与领域 UUID 数据库校验 | Follow-up（建议与下一次 schema 迁移一并评估） |
+
+## 建议 Codex 优先阅读（按 diff 顺序）
+
+| 顺序 | 文件 |
+|---|---|
+| 1 | `git log c263610..HEAD --oneline`（4ec0011→73a5108→3e90bf6→24f877a→63e16ea→e56be99） |
+| 2 | `prisma/migrations/20260913043631_p0_domain_timestamptz/`、`20260913044218_p0_audit_tenant_fk/` |
+| 3 | `src/lib/session.ts`（H01 唯一解析点）、`src/app/api/v1/me/active-organization/route.ts` |
+| 4 | `src/services/invitations.ts`（H05/H06/H07：校验前置/咨询锁事务/补偿）、`src/services/ownerInit.ts` |
+| 5 | `src/app/api/auth/[...all]/route.ts`（H04 封禁）、`src/app/api/v1/invitations/[idOrToken]/accept/route.ts`（H05） |
+| 6 | `src/app/api/v1/members/[id]/route.ts`（H02/H03/H07）、`src/app/api/v1/organization/route.ts`（H01/H07） |
+| 7 | `tests/integration/gate01.{db,auth,access}.test.ts`（新增 18 例回归）+ `tests/e2e/auth.spec.ts`（新增 2 例） |
+| 8 | `Dockerfile`、`compose.yaml`、`scripts/docker-deps-repro.sh`（H10） |
+| 9 | `docs/ai-ecommerce-assistant/02_USER_ROLES.md`（D01 同步）、`docs/ai-ecommerce-assistant/12_PROGRESS.md`（修复执行记录） |
+
+## 复审结论回填约定
+
+PASS → Owner 放行 → 合并 main（`merge: phase/01-foundation after CODEX_REVIEW_GATE_01`，不 squash）→ 创建 `phase/02-data-ingestion` → TASK-005。
+PASS_WITH_FIXES → 修复 Critical/High → 独立 commit → 更新本文件 → 按要求决定是否第三轮。
+BLOCKED / GPT_PRODUCT_DECISION_REQUIRED → 停止等待 Owner。
