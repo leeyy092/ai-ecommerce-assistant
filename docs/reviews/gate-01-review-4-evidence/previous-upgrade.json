@@ -1,0 +1,10 @@
+{
+  "good": {
+    "baseline_exit": 0,
+    "upgrade_exit": 0
+  },
+  "bad_uuid": {
+    "baseline_exit": 0,
+    "upgrade_exit": 1
+  }
+}

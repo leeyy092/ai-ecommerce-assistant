@@ -1,0 +1,4 @@
+NAME                               IMAGE                    COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+aiea-r4-codex-858c20a-postgres-1   postgres:17              "docker-entrypoint.s…"   postgres   16 seconds ago   Up 15 seconds (healthy)   127.0.0.1:55480->5432/tcp
+aiea-r4-codex-858c20a-web-1        aiea-r4-review:858c20a   "docker-entrypoint.s…"   web        16 seconds ago   Up 10 seconds             127.0.0.1:3301->3000/tcp
+aiea-r4-codex-858c20a-worker-1     aiea-r4-review:858c20a   "docker-entrypoint.s…"   worker     16 seconds ago   Up 10 seconds (healthy)   3000/tcp

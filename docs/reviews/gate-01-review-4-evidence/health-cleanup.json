@@ -1,0 +1,17 @@
+{
+  "health_before": {
+    "status": 200,
+    "body": "{\"status\":\"ok\"}"
+  },
+  "review_pg_stop_exit": 0,
+  "health_after": {
+    "status": 503,
+    "body": "{\"status\":\"degraded\"}"
+  },
+  "utc_control_health_after": {
+    "status": 503,
+    "body": "{\"status\":\"degraded\"}"
+  },
+  "web.pid": "SIGTERM sent",
+  "web-utc.pid": "SIGTERM sent"
+}

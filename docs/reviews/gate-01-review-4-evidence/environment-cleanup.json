@@ -1,0 +1,16 @@
+{
+  "running_containers": [],
+  "docker_ps_exit": 0,
+  "colima_stop_exit": 0,
+  "restore_context_exit": 0,
+  "listener_3000": false,
+  "listener_3002": false,
+  "listener_3003": false,
+  "listener_55470": false,
+  "listener_3301": false,
+  "listener_55480": false,
+  "temporary_directory_removed": true,
+  "private_credentials_and_database_removed": true,
+  "removed_at": "2026-09-14T19:28:36+08:00",
+  "image_cleanup_note": "Task image/layers were removed; subsequent No such image messages refer to layers already removed recursively. Shared base and cached layers were not selected for deletion."
+}

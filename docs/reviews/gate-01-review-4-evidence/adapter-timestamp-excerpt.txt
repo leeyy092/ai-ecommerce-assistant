@@ -1,0 +1,16 @@
+Installed @prisma/adapter-pg 7.10.0
+sha256=d57ac2ea38047c648b0f3b4b8012031b5adaa9f919dbb21419a4153f7e02d3c4
+307: function normalize_timestamp(time) {
+308:   return `${time.replace(" ", "T")}+00:00`;
+309: }
+310: function normalize_timestamptz(time) {
+311:   return time.replace(" ", "T").replace(/[+-]\d{2}(:\d{2})?$/, "+00:00");
+312: }
+313: function normalize_time(time) {
+388: }
+389: function formatDateTime(date) {
+390:   const pad = (n, z = 2) => String(n).padStart(z, "0");
+391:   const ms = date.getUTCMilliseconds();
+392:   return pad(date.getUTCFullYear(), 4) + "-" + pad(date.getUTCMonth() + 1) + "-" + pad(date.getUTCDate()) + " " + pad(date.getUTCHours()) + ":" + pad(date.getUTCMinutes()) + ":" + pad(date.getUTCSeconds()) + (ms ? "." + String(ms).padStart(3, "0") : "");
+393: }
+394: function formatDate(date) {

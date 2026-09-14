@@ -1,0 +1,28 @@
+{
+  "at": "2026-09-14T19:16:30+08:00",
+  "tracked_files": 328,
+  "application_files": 83,
+  "tracked_changes": [],
+  "history": {
+    "gate-01-evidence": {
+      "files": 8,
+      "mismatches": []
+    },
+    "gate-01-review-2-evidence": {
+      "files": 34,
+      "mismatches": []
+    },
+    "gate-01-formal-evidence": {
+      "files": 45,
+      "mismatches": []
+    },
+    "gate-01-review-3-evidence": {
+      "files": 76,
+      "mismatches": []
+    },
+    "gate-01-r4-evidence": {
+      "files": 20,
+      "mismatches": []
+    }
+  }
+}

@@ -4,9 +4,9 @@
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase 1 / TASK-004 / Gate 01 REVIEW_3 修复完成 / 待 Codex 第四轮复审 / Checkpoint=YES / 下一工具 Codex。**
+**Phase 1 / TASK-004 / Gate 01 REVIEW_4 修复完成（收敛候选交付）/ 待 Codex 收敛复审 / Checkpoint=YES / 下一工具 Codex。**
 
-2026-09-14 晚：ZCode 按 prompts/P08_FIX.md 顶部提示词完成 REVIEW_3 两项 HIGH（H08 复合外键、H11 测试隔离）与 M01–M06 逐项落实。H08 以合同要求的复合外键关闭两个并发方向（双连接交错实测 cross_org=0）；H11 删除跨库模糊清理、唯一命名测试库、基线固化，并以旁观库在途事务跨越全套件运行后 COMMIT 成功完成验收。M06 查明本机 CLI 空转根因为 iCloud dataless 文件同步读挂死，官方 CLI 空库/重复/4→8 升级/坏行拒绝四项检查在 /tmp 副本通过。M05 非默认特殊字符口令与默认口令双路径真实容器验证。本机独立集群（可丢弃）全绿：typecheck 0 错、unit 18/18、integration 60/60、build exit 0、e2e 8/8。修复提交 936387a/ba12ad3/9ef85bd/e293b2e，复审差异 9a5798c..e293b2e。修复自测通过不代表 Gate 通过；Codex 复审 PASS 后仍须 Owner 阶段放行，此前不合并 main、不部署、不开始 TASK-005。
+2026-09-14 深夜：ZCode 按 prompts/P08_FIX.md 与 GATE_01_CLOSURE_PLAN 完成收敛修复。先在 858c20a 独立非 UTC 集群复现五项反例（H12 过期邀请 200+Cookie/epoch 偏 28800s、M03 限流故障 500 非 JSON、M04 11 表缺约束+JobRun 非法 ID 写入、M06 重复 upTo 越界、M07 diff DROP 复合 FK），再按 TASK-002（M06→H12 连接 UTC→M04/M07）与 TASK-003（H12 邀请时效回归+M03 异常边界）修复，TASK-004 回归保留。修复提交 a66f106/6382407；关闭矩阵（合同行为→覆盖清单→修复前失败→提交→修复后通过→遗留范围）见 CODEX_REVIEW_HANDOFF.md 本轮区。本机独立集群全绿：typecheck 0 错、unit 18/18、integration 65/65（0 未捕获错误）、build exit 0、e2e 8/8；官方 CLI 空库 10 迁移/重复/8→10 升级/坏行 P3018 拒绝；真实容器（TZ=Asia/Shanghai 非 UTC DB + 特殊字符口令）全链路 epoch delta=-1s（修复前 +28800s）。修复自测通过不代表 Gate 通过；Codex 收敛复审 PASS 后仍须 Owner 阶段放行。
 
 <!-- PRODUCT_OS_STATE_BEGIN -->
 ```json
@@ -14,53 +14,52 @@
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动",
-  "stage": "07 阶段审查 · Phase 1 项目地基 · Gate01 REVIEW_4 待复审",
+  "stage": "07 阶段审查 · Phase 1 项目地基 · Gate01 收敛验收待复审",
   "current_task": "TASK-004",
   "status": "待审查",
-  "last_completed": "ZCode 完成 H08 复合外键/H11 测试隔离与 M01-M06 逐项落实；独立集群 60/60、sentinel 在途事务完好、真实容器双口令链路通过；9a5798c..e293b2e",
-  "next_action": "Codex 第四轮独立复审 9a5798c..e293b2e（H08 并发、H11 旁观库、Medium 逐项、迁移链与容器口令）；PASS 后仍等 Owner 阶段放行",
+  "last_completed": "ZCode 完成 H12 连接UTC/M03 异常边界/M04 UUID 28:28/M06 upTo 边界/M07 Schema 同步；关闭矩阵交付；独立集群 65/65+容器非UTC 链路 epoch 一致",
+  "next_action": "Codex 按 P07 收敛验收提示词独立复审 858c20a..handoff HEAD（关闭矩阵逐项+受影响边界+必要回归）；PASS 后仍等 Owner 阶段放行",
   "next_owner": "Codex",
   "next_prompt": "prompts/P07_CODE_REVIEW.md",
-  "acceptance": "H08两方向并发交错均拒绝且无跨组织引用；H11旁观库连接与事务全程保留且配置隔离不被覆盖；M01-M06按核定逐项落实；已通过项回归保留；新冻结提交交Codex，Owner放行单列",
-  "blockers": "待Codex第四轮复审；无Owner放行；不合并main、不部署、不开始TASK-005",
+  "acceptance": "五项反例修复后不成立且同类范围核对完成；同一候选完成必要回归（65/65+官方CLI+容器双口令非UTC）；已通过项无触发原因不重开；无未关闭CRITICAL/HIGH",
+  "blockers": "待Codex收敛复审；无Owner放行；不合并main、不部署、不开始TASK-005",
   "checkpoint": "YES",
-  "review": "首轮BLOCKED→R2 FAIL(4H)→R3 BLOCKED(H08/H11)→R3修复完成待复审；待审基线9a5798c..e293b2e",
-  "updated_at": "2026-09-14T18:35:00+08:00",
-  "updated_by": "ZCode · Gate01 REVIEW_3 修复",
+  "review": "首轮BLOCKED→R2 FAIL(4H)→R3 BLOCKED(H08/H11)→R4 BLOCKED(H12+4M)→修复完成待复审；待审基线858c20a..handoff HEAD",
+  "updated_at": "2026-09-14T23:05:00+08:00",
+  "updated_by": "ZCode · Gate01 REVIEW_4 收敛修复",
   "evidence": [
-    "docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_3_2026-09-14.md（本轮修复依据）",
-    "修复提交：936387a(H08复合FK+M04 UUID)、ba12ad3(H11隔离+M06)、9ef85bd(M01/M02/M03)、e293b2e(M05)",
-    "H08：PG17独立集群双连接交错实测两方向均拒绝、cross_org=0；迁移20260914150000_p0_audit_store_composite_fk已应用aiea_dev",
-    "H11：旁观库aiea_review_sentinel连接与BEGIN-INSERT-sleep400s事务跨越60/60集成运行后COMMIT成功数据完好；测试库唯一命名aiea_t_*仅自管理",
-    "M06根因：iCloud驱逐node_modules后同步read挂死（sample栈卡uv_fs_read）；官方CLI四项检查在/tmp副本通过（空库1.2s/重复/4→8升级/坏行P3018拒绝）",
-    "M05：真实容器双路径（默认口令+特殊字符口令r4-p@ss w0rd:!/#?Xy全新卷）up→健康200→迁移→init-owner→登录200→me200→注册403→down；证据docs/reviews/gate-01-r4-evidence/（20文件，login.json会话token已脱敏）",
-    "本机验证(2026-09-14晚)：typecheck 0错；unit 18/18(+4)；integration 60/60(+7新回归)；build exit 0；e2e 8/8(注入独立集群，保留一次历轮一致的ECONNRESET)",
-    "环境清理：独立集群/tmp/aiea-r4-cluster已停止删除、/tmp副本与旧迁移样例已删、colima已停止"
+    "docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_4_2026-09-14.md（本轮修复依据）与 GATE_01_CLOSURE_PLAN_2026-09-14.md（收敛约定）",
+    "修复提交：a66f106（TASK-002 H12连接/M04/M06/M07）、6382407（TASK-003 H12邀请时效/M03）",
+    "修复前反例复现（858c20a 独立 Asia/Shanghai 集群）：H12 预览/接受 200+Cookie、epoch +28799s；M03 500 非 JSON；M04 11 表缺约束+JobRun 非法 ID 写入；M06 重复 upTo 执行 5-8；M07 diff DROP 复合 FK",
+    "修复后：预览 410/接受 409/0 Set-Cookie；503 JSON 信封；28/28+辅助表约束+非法 ID 23514；首次/重复/缺失目标边界；diff 护栏（同引用配平）",
+    "集成 65/65（+5 新回归）0 未捕获错误；unit 18/18；typecheck 0 错；build exit 0；e2e 8/8（非 UTC 注入集群）",
+    "官方 CLI（/tmp 副本）：空库 10 迁移/重复/858c20a 8→10 升级 exit 0；存量坏行 P3018 拒绝",
+    "真实容器：TZ=Asia/Shanghai（非 UTC DB）+特殊字符口令全新卷全链路，epoch delta=-1s（修复前 +28800s）；默认口令回归；证据 docs/reviews/gate-01-r5-evidence/",
+    "环境清理：独立集群、/tmp 副本、colima 已停止删除；容器证据无敏感凭据"
   ],
   "github": {
-    "status": "phase/01-foundation 本地=9a5798c+4修复提交+handoff提交（待推送后更新）；main=2a983cc 未合并",
+    "status": "phase/01-foundation 本地=a66f106/6382407+handoff 提交（推送后以 origin 为准）；main=2a983cc 未合并",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
-    "verified_at": "2026-09-14T18:35:00+08:00",
-    "evidence": "修复提交已完成；handoff 提交后统一推送并读回 origin 确认"
+    "verified_at": "2026-09-14T23:05:00+08:00",
+    "evidence": "提交完成后统一推送并读回 origin 确认"
   },
   "deployment": {
-    "status": "未部署（P0无部署要求）；真实容器验证已在colima完成双口令链路并留证",
+    "status": "未部署（P0 无部署要求）；真实容器非 UTC DB 场景双口令验证完成并留证",
     "url": "",
-    "verified_at": "2026-09-14T18:35:00+08:00",
-    "evidence": "docs/reviews/gate-01-r4-evidence/：非默认特殊字符口令与默认口令两条全链路，down --volumes 清理"
+    "verified_at": "2026-09-14T23:05:00+08:00",
+    "evidence": "docs/reviews/gate-01-r5-evidence/：special-*/default-* 全套日志；down --volumes 清理"
   }
 }
 ```
 <!-- PRODUCT_OS_STATE_END -->
 
-## 当前 Git 与交接状态（2026-09-14T18:35:00+08:00）
+## 当前 Git 与交接状态（2026-09-14T23:05:00+08:00）
 
-- Gate：REVIEW_3 修复完成，待 Codex 第四轮复审；TASK-004 / 待审查（Gate 标识 REVIEW_4 待复审） / Codex / P07_CODE_REVIEW / Checkpoint=YES。
-- phase/01-foundation 本地=e293b2e（修复链 936387a→ba12ad3→9ef85bd→e293b2e）+handoff 提交后推送并读回 origin 确认；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc；未合并。
-- 复审差异范围：9a5798c..e293b2e（4 个 fix 提交，Codex 本轮报告与证据随 handoff 提交入库）。
-- H08/H11 已修；M01–M06 按 R3 报告第 5 节核定逐项落实（M04 随 H08 迁移落地 UUID 主键约束、M06 保留真实 CLI 检查）；H01–H07/H09/H10/D01 通过项回归保留。
-- 交接：CODEX_REVIEW_HANDOFF.md（REVIEW_4 版）；下一轮复审提示词 prompts/P07_CODE_REVIEW.md。
-- 本轮修复自测通过≠Gate 通过；Codex 复审 PASS 后仍等 Owner 阶段放行。不合并 main、不部署、不开始 TASK-005/Phase 2。
+- 分支：phase/01-foundation；上一审查冻结 858c20ab9645b494840b219f0b39b01c39023291；本轮修复提交 a66f106（TASK-002）→ 6382407（TASK-003），handoff 提交后推送并读回 origin 确认；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc；未合并。
+- 复审差异范围：**858c20a..handoff HEAD**（2 个 fix 提交 + handoff；Codex R4 报告/证据与收敛约定随 handoff 入库）。
+- REVIEW_4 五项问题全部按关闭矩阵处理（H12/M03/M04/M06/M07：合同行为→覆盖清单→修复前失败→提交→修复后通过→遗留范围，见 CODEX_REVIEW_HANDOFF.md 本轮区）。
+- 下一工具 Codex（prompts/P07_CODE_REVIEW.md 收敛验收提示词）；先查实际 HEAD 与未提交差异。
+- 修复自测通过≠Gate 通过；Codex 收敛复审 PASS 后仍等 Owner 阶段放行。不合并 main、不部署、不开始 TASK-005。
 
 ## 历史结论（2026-09-12 恢复时，当前以状态块与任务表为准）
 
@@ -87,10 +86,10 @@
 
 | TASK | 名称 | 状态 | 依赖 | 测试/证据 |
 |---|---|---|---|---|
-| TASK-001 | 可启动的应用与验证环境 | DONE | 无前置开发任务 | REVIEW_3 PASS：锁定安装、Web/Worker/健康降级、真实纯Git容器7迁移/初始化/登录通过；H10关闭，非默认DB密码M05保留 |
-| TASK-002 | P0数据库与约束迁移 | BLOCKED | TASK-001 | REVIEW_3 FAIL：H08并发仍产生跨组织审计引用；H11测试越界断连；H09/身份FK/正式迁移通过；M04/M06待落实 |
-| TASK-003 | 登录、初始Owner与受控邀请 | BLOCKED | TASK-002 | REVIEW_3完整依赖验收FAIL：H04/H05/H06/H07通过，实际进程退出恢复通过；TASK-002未过，邀请M01/M02/M03未完整关闭 |
-| TASK-004 | 组织隔离与固定权限服务 | BLOCKED | TASK-003 | REVIEW_3完整依赖验收FAIL：H01/H02/H03/H07/D01通过；依赖链未过；Gate BLOCKED，仍停TASK-004，不进入005 |
+| TASK-001 | 可启动的应用与验证环境 | DONE | 无前置开发任务 | REVIEW_4 PASS：本地与真实Docker默认/特殊字符密码8迁移/初始化/登录闭环、Worker/缺配置/健康降级通过；M05关闭 |
+| TASK-002 | P0数据库与约束迁移 | BLOCKED | TASK-001 | REVIEW_4 FAIL：H08/H11已通过；新增H12真实epoch与ORM绝对时刻不一致；M04/M06/M07未关闭；正式迁移通过 |
+| TASK-003 | 登录、初始Owner与受控邀请 | BLOCKED | TASK-002 | REVIEW_4 FAIL：H12过期邀请接受200并签发有效会话；M03限流DB异常信封遗漏；常规身份/并发/回滚及M01/M02通过 |
+| TASK-004 | 组织隔离与固定权限服务 | BLOCKED | TASK-003 | REVIEW_4完整依赖验收FAIL：H01/H02/H03/H07/D01权限回归通过；TASK-003 H12未验收；Gate BLOCKED，不进入005 |
 | TASK-005 | 店铺与数据源配置 | TODO | TASK-004 | 未执行 |
 | TASK-006 | 统一Adapter与最小黄金样本 | TODO | TASK-005 | 未执行 |
 | TASK-007 | 文件上传、私有存储与ImportTask | TODO | TASK-006 | 未执行 |
@@ -122,10 +121,10 @@
 
 | 项目 | 当前状态 | 达成时需要的证据 |
 |---|---|---|
-| 应用可启动 | REVIEW_3本地与真实纯Git容器闭环通过，H10关闭；非默认密码失败M05 | 修复M05非默认配置；线上部署与真实试点仍属后续独立验收 |
+| 应用可启动 | REVIEW_4本地与真实容器双口令闭环通过，H10/M05关闭 | 线上部署与真实试点为后续独立验收 |
 | 六类CSV导入 | 未开发/未执行 | 全链路导入与错误/幂等验证 |
 | 指标与规则正确 | 未开发/未执行 | 黄金案例手算与实际PG结果一致 |
-| 角色隔离 | H01–H07/D01独立HTTP/并发/恢复通过；H08数据库并发关联风险未关闭；未来对象未实测 | 修复H08并保留授权回归；未来文件/Job/AI在所属TASK验证 |
+| 角色隔离 | H01/H02/H03/H07/D01回归通过，H08数据库同域并发通过；H12邀请时效未通过 | 修复H12，保留现有授权回归；未来文件/Job/AI在所属TASK验证 |
 | AI联网质量 | 未执行 | 固定模型、脱敏测试集、分类与事实引用指标 |
 | 首页三分钟任务 | 未执行 | 目标角色观察记录，不能用截图替代 |
 | 性能/恢复 | 未执行 | 指定规模p95/p99、备份恢复记录 |
@@ -385,3 +384,55 @@ R3 收尾实际核验（2026-09-14T15:03:56+08:00）：Product OS sync 首次因
 - Product OS：本记录写回后运行协议 sync 并读回首页/总控，实际结果见下条。
 
 R4 收尾实际核验（2026-09-14T18:34:13+08:00）：Product OS sync 返回 registered=1、updated=1、errors=[]。已读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，均为 TASK-004 / 待审查 / Codex / 第四轮复审 9a5798c..e293b2e / Checkpoint=YES，P07_CODE_REVIEW 完整提示词一致。本段补记写入后随 handoff 提交一并推送。
+
+
+## Gate 01 REVIEW_4 独立复审记录（2026-09-14T19:25:32+08:00）
+
+- Reviewer：Codex；范围Phase1 / TASK-001–004；正式BLOCKED、技术FAIL，1 HIGH H12、4 MEDIUM M03/M04/M06/M07。报告docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_4_2026-09-14.md；证据GATE_01_REVIEW_4_EVIDENCE_2026-09-14.json及gate-01-review-4-evidence/。
+- 版本：9a5798c..858c20a；main仍2a983cc；本地/远端phase一致；开始工作区干净。main到HEAD应用59文件+5402/-150，R3冻结到HEAD应用24文件+783/-220。测试在临时副本/独立PG55470与独立Compose项目完成，未操作开发库5433。
+- 实际通过：冻结离线安装/生成、typecheck、Unit18/18、Integration60/60、Web/Worker build、E2E首次8/8；保留ECONNRESET/颜色变量及容器OpenSSL检测警告。Worker运行0、SIGTERM退出0、停止检测1；缺Auth/DB启动1；健康200→503。
+- H08独立双向pg_stat_activity实际Lock等待后冲突写入拒绝，cross_org=0；删除只清store_id。H11旁观库同一连接及BEGIN/INSERT事务跨完整60例后COMMIT成功，独立连接读回1行；故意冲突.env没有覆盖外部注入，测试库清理无遗留。
+- M01来源保护、M02邀请代理信任与登录计数、M05真实Docker两口令闭环通过。默认和含空格/@/:/斜杠/#/?/%随机密码均有新卷up→8迁移→Owner→登录/me200→注册403×2→Worker0→down --volumes证据，纯Git上下文构建无宿主依赖或生成客户端，允许标准层缓存。
+- 新H12：Asia/Shanghai会话下原始PG epoch与ORM相差8小时，创建响应与实际存储也相差8小时；49小时前创建、48小时TTL的合成邀请在已过期1小时后仍预览/接受200、签发Cookie并me200。相同代码仅连接参数固定UTC的独立对照，epoch一致、预览410后接受409，无会话。H12不是声称本轮新代码引入；原H09 SQL类型检查没有覆盖绝对时刻，既有连接工厂未固定会话UTC。
+- Medium核定：M03 ACCEPT补限流/会话等当前异常边界（实测500非JSON）；M04 MODIFY补遗漏11领域表（非UUID JobRun实际写入成功），原期限已触发；M06 MODIFY重复upTo不应执行目标之后迁移，官方元数据兼容已通过；M07 ACCEPT保护Schema生成不删除复合FK，下一次Schema变更前落实。本轮未整体提升Medium或批准无限延期，无新产品裁决，D01不变。
+- 正式Prisma：空库8迁移、c87四→八、9a七→八、重复deploy通过；坏审计/悬空身份/非法UUID旧库按预期拒绝。首次旧副本缺prisma/config依赖解析，补临时依赖链接后重跑通过，错误保留。原ZCode iCloud归因本轮未重复诊断，不冒充已独立证实。
+- H01–H07/H09/H10/D01常规回归通过；H06本轮跑现有恢复测试与真实HTTP并发，R3真实子进程退出历史证据保留，没有另跑整套退出实验。未来CSV/Job/AI/文件链路、生产负载和真实企业验证未执行。
+- 写回前328跟踪文件零变化（应用83）；原历史报告/证据均保留。只更新审查报告/证据、原进度/交接/P08及生成视图，未改业务代码/Schema/迁移/测试，未提交/推送/合并/部署；TASK-005–030保持TODO。
+- 下一工具ZCode，只修Phase1；新冻结提交交Codex，PASS后仍等Owner阶段放行。清理与Product OS实际收尾结果见下方记录与证据索引。
+
+
+### REVIEW_4 收尾与视图读回（2026-09-14T19:29:09+08:00）
+
+- Product OS sync实际成功：registered=1、updated=1、errors=[]；首次新状态读回时间2026-09-14T19:25:50+08:00。项目首页Markdown/HTML中的完整提示词与当前P08逐字一致；总控Markdown/HTML均为TASK-004、待修复、ZCode、REVIEW_4 BLOCKED。收尾追加后再运行sync，最终时间见product-os-sync.log和final-verification.json；不以页面刷新改动updated_at。
+- 对照开始时328个跟踪文件，应用83文件全部未变；原183份历史证据无差异，旧执行记录、完整交接和P08原文保留。当前只有原进度、交接、P08及两个生成首页变更，另新增本轮正式报告/证据；TASK-005–030共26项仍TODO，git diff --check通过。
+- 本次临时PG/Web/Worker和容器均停止，六个使用端口无监听，Compose卷清理；本次镜像/构建层清理后Colima停止并恢复原Docker context。重复删除已级联移除层的No such image提示保留，未指定共享基础/缓存镜像删除。临时副本、合成数据库、随机凭据与临时写回文件已删除；归档随机敏感值扫描0命中。
+- 正式报告15节及所有本地引用路径已核对；最终SHA256SUMS.json记录新证据目录文件哈希。同步与清理证明管理交接完成，不改变Gate BLOCKED。未改业务代码、Schema、迁移或测试，未提交/推送/合并/部署，未获得Owner放行。
+
+
+## Gate 01 修复收敛与产品进度提效交接（2026-09-14T21:00:32+08:00）
+
+- 用户要求：解决反复多轮返修并提高产品推进效率。核对实际HEAD仍858c20a，原R4管理文档尚未提交；保留全部在途内容。
+- 诊断：主要审查轮次HIGH为10→4→2→1，存在已关闭、同项遗漏、新引入及新发现既有缺口四种情况；不把所有返修归成同一问题没修。实现与独审需提前共用可执行关闭标准。
+- 已交付docs/reviews/GATE_01_CLOSURE_PLAN_2026-09-14.md；P08补修复前失败、同类全量清单、修复后通过、按TASK合并交接；P07新增下一候选预备矩阵并完整保留R4原文。下一轮没有新候选不误触发复审。
+- 执行分层：开发中跑受影响检查，最终候选一次完整验证；已关闭项只在相关修改/新反例/证据缺口时重开；新真实HIGH仍阻断，MEDIUM沿原等级与核定期限，不制造无限审查或无期限延期。
+- 提效沿用现有8阶段/30TASK，无需每TASK新增正式Gate；按可演示/可人工核对的产品结果汇报，Owner只裁决范围/产品问题与阶段放行。无额外平台建设、模型更换、跨工具自动传话承诺。
+- 本轮未修改应用/测试/Schema，未重跑业务测试，H12和四项MEDIUM仍未关闭；Phase1/TASK004/待修复/ZCode/Checkpoint=YES。无合并、部署、TASK-005或Owner放行。
+- 管理验证与sync读回见本节随后记录；原R4报告、索引、82份归档清单项和既往审查证据保持原样，本轮不改写其收尾时间。
+
+收敛交接管理验证（2026-09-14T21:01:50+08:00）：对照本轮开始413个文件哈希，仅6个预期管理/生成文件变化；原应用83文件、R4正式报告/索引/全部证据未变。旧执行记录、完整交接、P07原文及P08历史保留；唯一状态块1个、TASK行30条、后续26项TODO。Product OS sync于2026-09-14T21:01:49+08:00返回registered=1/updated=1/errors=[]，项目首页MD/HTML完整P08提示词一致，总控MD/HTML当前任务/工具/动作一致，git diff --check通过。本段追加后再次sync并读回；不把管理验证计入业务测试通过数。
+
+
+## 2026-09-14T23:05:00+08:00 · ZCode Gate 01 REVIEW_4 收敛修复完成（待 Codex 收敛复审）
+
+- 授权与依据：执行 prompts/P08_FIX.md 顶部提示词与 docs/reviews/GATE_01_CLOSURE_PLAN_2026-09-14.md 收敛约定；基线 858c20a（开始前核对 HEAD/分支/远端一致；Codex R4 报告/证据/管理文档保留，未 reset）。逐项处理意见已先行列出：H12/M03/M07 ACCEPT，M04/M06 ACCEPT（MODIFY），无 REJECT/DISCUSS。
+- 修复前复现（858c20a 应用代码，独立 Asia/Shanghai 集群 127.0.0.1:5434 /tmp initdb）：H12——真实邀请 SQL 平移为 49h 前/48h TTL 后 HTTP 预览 200、接受 200 且签发 Set-Cookie，创建响应 epoch 比 DB 大 28799s；M03——注入 auth_rate_limit CHECK 后预览/接受 500 且无 content-type；M04——11 张遗漏表全缺约束、JobRun.id='not-a-uuid-review' 写入成功；M06——同参数 upTo 重复调用执行第 5–8 份（count 3→8）；M07——migrate diff 输出 DROP fk_audit_log_store_same_domain。
+- TASK-002（提交 a66f106）：M06 upTo 先截断目标集合再排除已执行+缺失目标报错；H12 以 createUtcPool 统一全部连接（启动参数 '-c timezone=UTC' + connect 钩子 SET 兜底 + 池级 error 监听），覆盖 Web/Worker/Better Auth/init-owner CLI 与全部集成测试；M04 新迁移 20260914210000 补齐 11 张遗漏领域表 UUID CHECK（存量守卫，合计 28/28；auth_rate_limit 辅助表经核定单独约束 ck_auth_rate_limit_uuid；认证四表保持框架 string）；M07 Schema 声明混合可空复合关系（validate 通过）+ 迁移 20260914200000 移除被复合覆盖的单列 FK 并重命名对齐 Prisma 约定名；按列 SET NULL (store_id) 为 Prisma 不可表达边界，以迁移注释+gate01.db 护栏回归保护（diff 中任何 audit_log FK DROP 必伴随同引用 ADD）。
+- TASK-003（提交 6382407）：H12 邀请时效回归（合成过期邀请预览 410/接受 409/0 Set-Cookie；边界内 200；创建响应 epoch=DB epoch）；M03 预览限流与接受限流/会话读取纳入稳定异常边界（503 JSON 信封含 request_id）。
+- TASK-004：gate01.access 7/7、permissions 7/7 回归通过（无相关改动，不重开）。
+- 连接池生命周期附带修复：外部池不由 PrismaClient.$disconnect 关闭 → 各套件显式 end/resetClientPool + 池级 error 监听，消除 10 个 57P01 未捕获错误。
+- 最终候选验证（同一候选代码）：typecheck 0 错；unit 18/18；integration **65/65**（+5 新回归，0 未捕获错误）；build exit 0；e2e 8/8（注入独立非 UTC 集群）；官方 CLI（/tmp 工作副本）空库 10 迁移/重复/858c20a 8→10 升级 exit 0、存量坏行（非法 JobRun UUID）P3018 拒绝 exit 1；真实容器（colima，独立项目/全新卷）特殊字符口令 `r5-p@ss w0rd:!/#?Xy` + **postgres TZ=Asia/Shanghai（非 UTC DB 场景）**：up 三服务 healthy→DB 会话确认非 UTC→健康 200→容器内 10 迁移 exit 0→init-owner exit 0→登录 200→/me 200→公开注册 403→**H12 epoch delta=-1s（修复前 +28800s）**→down --volumes；默认口令回归 up→healthy→健康 200→down。证据 docs/reviews/gate-01-r5-evidence/（无敏感凭据）。
+- 提交与差异：a66f106、6382407 + handoff 提交；下轮复审范围 **858c20a..handoff HEAD**。提交前安全检查通过（无密钥/真实数据/token）。临时环境（独立集群/工作副本/colima）已清理。执行偏差如实记录：新增 UTC 池后暴露外部池生命周期缺口（10 个 57P01），以显式池管理修复后 0 错误；本轮集成基线从 60 例增至 65 例（+5 回归）。
+- 下一步：Codex 收敛复审（prompts/P07_CODE_REVIEW.md）。修复自测通过不代表 Gate 通过；复审 PASS 后仍等 Owner 阶段放行，不合并 main、不部署、不开始 TASK-005。
+- Product OS：本记录写回后运行协议 sync 并读回首页/总控，实际结果见下条。
+
+R5 收尾实际核验（2026-09-14T22:53:30+08:00）：Product OS sync 返回 registered=1、updated=1、errors=[]；读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，均为 TASK-004 / 待审查（收敛验收待复审）/ Codex / P07_CODE_REVIEW / Checkpoint=YES。本段随 handoff 提交一并推送。

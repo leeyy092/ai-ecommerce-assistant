@@ -1,3 +1,87 @@
+# CODEX_REVIEW_HANDOFF｜Gate01 REVIEW_4 修复完成（收敛候选交付），待 Codex 收敛复审
+
+日期：2026-09-14T23:05:00+08:00；执行者：ZCode。**Phase 1 / TASK-004 / 待审查（收敛验收待复审）/ Checkpoint=YES / 下一工具 Codex（prompts/P07_CODE_REVIEW.md 收敛验收提示词）。**
+
+## 关闭矩阵（每项：合同行为 → 覆盖清单 → 修复前失败 → 提交 → 修复后通过 → 遗留范围）
+
+| 问题ID | 合同/必须成立的行为 | 全部受影响对象 | 修复前失败（858c20a 复现） | 修复提交 | 修复后通过 | 遗留范围 |
+|---|---|---|---|---|---|---|
+| H12 | 应用/Worker/CLI 全部数据库连接会话 UTC；ORM/API 绝对时刻=数据库真实 epoch；48h 有效期内 200、过期拒绝不签发会话 | src/database/prisma.ts（Web/Worker/Better Auth 单例）、createPrismaClient（init-owner CLI）、七个集成测试套件连接、e2e 种子链路 | Asia/Shanghai 独立集群合成邀请（49h 前/48h TTL/过期 1h）：预览 200、接受 200 且签发 Cookie；创建响应 epoch 比 DB 大 28799s；DB `expires_at<now()`=t（R4 timezone-probe 同型反例本机复现） | a66f106 | 同环境重跑：预览 410、接受 409、0 条 Set-Cookie；epoch delta 1s（应用-DB 插值，非时区）；容器级（TZ=Asia/Shanghai DB）epoch delta=-1s；集成回归 gate01.db（SHOW timezone=UTC、ORM 写→SQL epoch、SQL+08 字面量→ORM 读、多连接） | 店铺业务时区展示未改（合同口径）；真实历史行写入来源核验归上线前数据治理 |
+| M03 | 邀请全部入口的限流/会话等 DB 访问失败返回稳定 JSON 信封+request_id，无 500 非 JSON | 预览 GET、接受 POST（创建/撤销已带边界） | 注入 auth_rate_limit CHECK 后：预览/接受 500 且无 content-type | 6382407 | 同注入下 503 + application/json + request_id；集成回归 gate01.auth（503 JSON 断言）；无业务部分提交 | 无（当前入口清单四路全部覆盖） |
+| M04 | 04_DATA_MODEL"所有 P0 实体采用 UUID 领域主键"= 领域 28/28 表主键格式约束；非法 ID 数据库拒绝 | daily_metric/voc_insight/rule_evaluation/alert/ai_insight/action_state/ai_report/ai_run/import_task/data_coverage/job_run（11 张遗漏）+ auth_rate_limit 辅助表（另行核定约束） | 目录查询 11 表全缺 ck_domain_uuid_*；JobRun.id='not-a-uuid-review' 写入成功 | a66f106 | 10 迁移后 28/28+辅助表约束存在；JobRun 非法 ID 插入 23514、合法通过；官方 CLI 旧库（8 迁移+坏行）升级 P3018 拒绝；集成回归 28/28 断言 | 认证框架四表 string ID 保持（合同）；_prisma_migrations 工具表不适用 |
+| M06 | upTo 重复调用不越过目标；不存在目标明确失败 | tests/helpers/pgMigrate.applyMigrations（升级守卫夹具唯一调用方） | 同参数 upTo 第 3 份重复调用执行 5–8（count 3→8） | a66f106 | 首次 3、重复 0（count 仍 3）、不存在目标报"目标迁移 … 不存在"；升级守卫测试保留 | 辅助器仅测试用途限定不变（文件头声明） |
+| M07 | 官方 diff 不意外删除同域复合 FK；自定义 SQL 不能由 Schema 表达的部分逐条保护 | prisma/schema.prisma（AuditLog.store 关系）、fk（现名 audit_log_org_id_store_id_fkey）、迁移注释维护规则 | 858c20a 上 migrate diff 输出 `DROP CONSTRAINT "fk_audit_log_store_same_domain"` | a66f106 | Schema 声明混合可空复合关系（validate 通过）；单列 FK 已由迁移移除、FK 重命名对齐；gate01.db 护栏：diff 中任何 audit_log FK DROP 必伴随同引用 (org_id,store_id)→store(org_id,id) 的 ADD | 按列 SET NULL (store_id) 无法被 Prisma 表达——diff 将持续输出同引用等价重建，属已知维护边界（迁移注释+本矩阵），照用破坏性迁移会被 H08 并发/删除回归拦截 |
+
+## 本轮实际验证（独立可丢弃环境）
+
+| 检查 | 结果 |
+|---|---|
+| typecheck | ✅ 0 错误 |
+| unit | ✅ 18/18 |
+| integration | ✅ **65/65**（7 文件；+5 新回归：H12 epoch 三向对照+会话 UTC、M04 28/28、M06 边界、M07 护栏、H12 邀请时效 HTTP、M03 限流故障信封）；0 未捕获错误（池生命周期显式化修复 57P01） |
+| build（web+worker） | ✅ exit 0 |
+| e2e | ✅ 8/8（注入独立非 UTC 集群） |
+| 官方 CLI（/tmp 工作副本） | ✅ 空库 10 迁移 exit 0；重复 No pending exit 0；858c20a 旧库 8→10 升级 exit 0；存量坏行（非法 JobRun UUID）P3018 拒绝 exit 1 |
+| 真实容器（colima，独立项目/全新卷） | ✅ 特殊字符口令 `r5-p@ss w0rd:!/#?Xy` + **DB 时区覆写 Asia/Shanghai（非 UTC 场景）**：up 三服务 healthy→DB 会话确认 Asia/Shanghai→健康 200→容器内 10 迁移 exit 0→init-owner exit 0→登录 200→/me 200→公开注册 403→**epoch delta=-1s（修复前 +28800s）**→down --volumes；默认口令回归 up→healthy→健康 200→down |
+| TASK-004 回归 | ✅ gate01.access 7/7、permissions 7/7（H01/H02/H03/H07/D01 保留，无相关改动不重开） |
+
+## 定位信息
+
+| 项 | 值 |
+|---|---|
+| Branch / 冻结 | phase/01-foundation；上一审查冻结 858c20a；本轮修复提交 a66f106（TASK-002）→ 6382407（TASK-003），handoff 提交后为准 |
+| Diff Range | **858c20a..handoff HEAD**（下一轮复审范围） |
+| 复现/回归对应 | 五项反例修复前复现记录见 12_PROGRESS R5 条目；修复后 HTTP/CLI/容器证据 docs/reviews/gate-01-r5-evidence/ |
+| Working Tree | handoff 提交后 clean；接手先核对 HEAD 与未提交差异 |
+
+## 已通过项与不重开声明
+
+H01–H07/H08/H09/H10/H11、D01 与 M01/M02/M05 已关闭；本轮仅连接/迁移/邀请入口相关改动，其回归（65 例内）全部通过，无重开触发原因。D01 方案 A、48 小时邀请规则、店铺时区未变。遗留：TRUST_PROXY_HEADERS 反代拓扑归 TASK-029；真实历史行写入来源核验归上线前数据治理；仓库迁出 iCloud 目录仍是基础设施建议（本轮再证其拖慢本机工具链）。
+
+复审结论回填：按项目协议 PASS/FAIL/BLOCKED + 精确版本 + 实际测试 + 未运行项；PASS 后仍等 Owner 阶段放行。本轮不合并 main、不部署、不开始 TASK-005。
+
+---
+
+# 最新补充：Gate 01修复收敛与提效交接（2026-09-14T21:00:32+08:00）
+
+当前仍Phase1 / TASK-004 / 待修复 / ZCode / Checkpoint=YES，R4 BLOCKED不变；代码仍858c20a，没有新修复或新测试结果。以下完整保留R4正式交接。
+
+Owner要求减少多轮返修。本轮方法与关闭矩阵见[收敛执行约定](docs/reviews/GATE_01_CLOSURE_PLAN_2026-09-14.md)；先复现H12/M03/M04/M06/M07，再盘点当前同类对象，依TASK完成修复，交付一个验证完整的新候选。用当前[P08](prompts/P08_FIX.md)执行；[P07](prompts/P07_CODE_REVIEW.md)已准备下轮复审标准，不代表审查已开始。
+
+每项沿“合同行为→覆盖清单→修复前失败→提交→修复后通过→剩余风险”记录；开发中跑相关检查，最终候选跑完整必要检查。已通过项只有相关改动或新反例等理由才重开；新真实HIGH仍阻断，MEDIUM沿原等级与核定期限。无新增功能/正式Gate，不把业务进度改成已完成。
+
+仅管理文件更新，测试/审查/Owner放行继续分开；保留所有未提交文档。原正式R4报告与证据未改。
+
+---
+
+# CODEX_REVIEW_HANDOFF｜Gate01 REVIEW_4 独立复审完成，待 ZCode 修复
+
+日期：2026-09-14T19:25:32+08:00；Reviewer：Codex。**Phase 1 / TASK-004 / 待修复 / Checkpoint=YES / 下一工具ZCode。**
+
+**Gate结论BLOCKED；技术FAIL；1 HIGH H12、4 MEDIUM M03/M04/M06/M07。** 原H08/H11已通过，M01/M02/M05关闭；D01方案A不变。Owner尚未放行，不能合并main、部署或开始TASK-005。
+
+| 项 | 最新事实 |
+|---|---|
+| 分支/冻结 | phase/01-foundation / 858c20ab9645b494840b219f0b39b01c39023291，本地/远端一致 |
+| main与范围 | main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc；9a5798c..858c20a；e293b2e是最后业务修复 |
+| TASK验收 | 001 PASS；002/003 FAIL；004完整依赖验收FAIL，权限回归通过 |
+| H12 | 非UTC连接导致真实epoch与ORM偏移8小时；已过期邀请接受200、签发Cookie/me200；UTC独立对照拒绝。是本轮新发现的既有运行时缺口 |
+| H08/H11 | 双方向实际Lock等待后冲突写入拒绝，cross_org=0；旁观连接/在途事务跨60例完好，注入配置不被.env覆盖 |
+| Medium | M03限流DB异常500非JSON；M04遗漏11领域表UUID；M06重复upTo越界；M07Schema生成删除审计复合FK（仅生成未执行） |
+| 实际测试 | typecheck/build PASS；18/60/8；空库8迁移/四→八/七→八/重复通过，三类坏旧行拒绝；真实Docker默认/特殊密码两完整闭环通过 |
+| 报告/证据 | [正式15节报告](docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_4_2026-09-14.md)；[机器索引](docs/reviews/GATE_01_REVIEW_4_EVIDENCE_2026-09-14.json)；[复现说明](docs/reviews/gate-01-review-4-evidence/README.md) |
+| 下一提示词 | [prompts/P08_FIX.md](prompts/P08_FIX.md)顶部最新内容；下次差异858c20a..新冻结提交 |
+
+H12修复统一连接会话UTC与真实epoch，不更改48小时邀请、店铺时区或产品范围；历史时间按写入来源核对，不盲目整体平移。M03/M04/M06沿原最小范围补齐，M07在下一次Schema变更前保护复合约束，均仍为Medium。
+
+本轮原应用83文件未改，历史证据保留；只写审查与管理文档，未提交/推送/合并/部署。测试、Reviewer结果、Owner阶段放行、GitHub与部署分别记录；实际清理/同步读回见唯一进度最新记录。
+
+---
+
+# 历史：ZCode REVIEW_4 待复审交接及此前全部原文
+
+以下完整保留审查前交接；其“待复审”“全部落实”是当时执行者状态，以最上方独立复审结论为当前事实。
+
 # CODEX_REVIEW_HANDOFF｜Gate01 REVIEW_3 修复完成，待 Codex 第四轮独立复审
 
 日期：2026-09-14T18:35:00+08:00；执行者：ZCode。**Phase 1 / TASK-004 / 待审查（REVIEW_4 待复审）/ Checkpoint=YES / 下一工具 Codex。**

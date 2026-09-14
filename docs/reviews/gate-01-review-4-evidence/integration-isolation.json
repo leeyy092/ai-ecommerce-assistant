@@ -1,0 +1,9 @@
+{
+  "integration_exit": 0,
+  "connectionError": null,
+  "same_connection": true,
+  "visibleDuring": 1,
+  "committedRows": 1,
+  "external_DATABASE_URL_wins_over_conflicting_dotenv": true,
+  "remaining_test_databases": []
+}

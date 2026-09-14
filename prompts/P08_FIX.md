@@ -1,3 +1,44 @@
+# Gate 01 REVIEW_4 剩余问题修复 · ZCode
+
+以下首个text代码块为当前有效提示词；后面的原提示词完整保留，仅供历史追溯。
+
+```text
+请接手AI电商运营助手Gate 01第四轮独立复审后的Phase 1修复。只处理TASK-001–004，不开始TASK-005、不合并main、不部署、不扩大P0。
+
+项目根目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用目录：其下ai-ecommerce-assistant；总控：/Users/yuyuyu/Documents/AI-Workspace。
+先读取AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、唯一进度docs/ai-ecommerce-assistant/12_PROGRESS.md、09_TASKS.md、11_DEVELOPMENT_RULES.md、DEVELOPMENT_HANDOFF.md、PHASE_PLAN.md、FINAL_DECISIONS.md及最新CODEX_REVIEW_HANDOFF.md。
+
+本轮依据：docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_4_2026-09-14.md、GATE_01_REVIEW_4_EVIDENCE_2026-09-14.json、gate-01-review-4-evidence/README.md和相关复现脚本/日志。当前Phase1 / TASK-004 / 待修复 / Gate BLOCKED（技术FAIL）/ Checkpoint=YES。
+Owner要求减少多轮返修并提高产品进度效率：完整读取docs/reviews/GATE_01_CLOSURE_PLAN_2026-09-14.md，按其中本轮收敛约定执行。它是验收与执行方法，不是新增产品范围或已修复证明。
+审查冻结phase/01-foundation=858c20ab9645b494840b219f0b39b01c39023291；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc。开始先查实际HEAD、分支、未提交差异及是否有其他执行者；保留Codex本轮报告/证据/进度/交接/生成视图，不reset或覆盖。下次复审基线858c20a..新冻结提交，不继续用e293b2e当最新HEAD。
+
+原H08、H11已独立通过，M01、M02、M05关闭；H01–H07/H09/H10/D01常规回归保留，不重做已通过修复。D01方案A不改：只禁当前Membership并撤会话，不由组织接口改全局User.status；其他组织重登可用，无需重问。
+
+先逐项给ACCEPT/DISCUSS/REJECT及对应TASK，然后在现有合同内一次一项执行。必须修复的HIGH只有H12：
+执行方式补充：先在858c20a隔离副本复现H12/M03/M04/M06/M07五项原反例，再按连接/时间消费者、全部邀请入口、28张领域表、迁移辅助器与Schema差异做一次有限范围盘点。每项在现有交接本轮区记录“合同行为→覆盖对象→修复前失败→提交→修复后通过→残余范围”。环境错误不算产品失败，不新增等待Owner/Codex批准盘点的节点。
+沿TASK顺序：TASK-002先M06再H12连接/M04/M07；TASK-003完成H12真实邀请与M03错误边界；TASK-004回归授权与D01。开发中跑受影响检查，最终候选完成一次完整验证；将有效反例保留在现有tests中，复用现有命令，必要时只加薄的检查入口，不建设新测试平台。局部失败自行继续处理，不每改一项就让Owner中转。
+已关闭项只有相关实现/依赖/配置改变、证据不覆盖变化或出现新反例时重开，写明原因。新真实CRITICAL/HIGH必须报告；不承诺必然一轮PASS。MEDIUM沿R4等级与核定期限处理，不自动升级，也不擅自无限延期。没有新代码与实际验证前不得宣布本计划已落实。
+TASK-002连接边界 + TASK-003邀请时效：PrismaPg连接未固定UTC。当前锁定adapter在Asia/Shanghai会话中使真实epoch与ORM读数偏移8小时，写入响应与DB实际存储也偏移。合成合法历史邀请49小时前创建、48小时TTL、已过期1小时，HTTP预览/接受/me仍200并签发Cookie。独立UTC连接对照epoch相等且拒绝过期请求。证据timezone-probe.json、timezone-utc-control.json、adapter-timestamp-excerpt.txt、scripts/review-timezone.ts。
+在每条实际应用/Worker连接建立阶段保证UTC会话，统一CLI/初始化脚本配置；不能只在连接池任一查询上SET一次时区。以原始pg/SQL epoch作为独立参考，验证ORM写→DB读、SQL写→ORM/API读、UTC和非UTC数据库默认值、多连接池、有效与已过期邀请边界。有效期规则仍为48小时，不通过放宽时效让测试通过。原H09类型检查不能替代绝对时刻检查。既有数据按来源/历史连接配置核对，禁止盲目整体加减8小时，不修改店铺业务时区，不为此升级大型依赖或改认证框架。
+
+Medium按正式报告第5节落实，仍是MEDIUM，不整体升级HIGH或无期限延期：
+- M03 ACCEPT，TASK-003：邀请preview/accept的限流DB访问在try/catch之外，故障仍500非JSON。把限流/会话等当前可能失败操作纳入稳定异常边界；保留现已通过的严格输入、小数版本拒绝、审计回滚和统一request_id。
+- M04 MODIFY，TASK-002：UUID约束只覆盖17张领域表，遗漏daily_metric/voc_insight/rule_evaluation/alert/ai_insight/action_state/ai_report/ai_run/import_task/data_coverage/job_run。非UUID JobRun实际写入成功。按全量模型补新增迁移/存量守卫和覆盖断言，认证框架四表string ID保持。原期限已触发，不再机械延期；AuthRateLimit辅助表另核，不混为框架表。
+- M06 MODIFY，TASK-002测试：相同upTo第4迁移调用第二次会执行5–8。先限定目标集合再排除已执行项，验证首次/重复/不存在目标。官方迁移元数据缺列已修，不重做；保留真实CLI空库/重复/旧库升级检查。
+- M07 ACCEPT，TASK-002：当前Prisma migrate diff会输出DROP fk_audit_log_store_same_domain。同步可表达的复合关系，明确PG按列SET NULL的SQL维护边界，下一次Schema变更前防止生成迁移撤销H08约束。报告生成的DROP仅用于证据，不要执行。保留双向并发/删除/坏行守卫回归。
+
+独立回归基线：Node24.21.0/pnpm10.34.5/PG17.11；typecheck/build PASS；Unit18/18、Integration60/60、E2E首次8/8（保留ECONNRESET）；官方空库8迁移、四→八、七→八、重复与三类坏旧行拒绝；真实Docker纯Git上下文默认/特殊字符密码两完整链路通过。H11旁观连接/在途事务跨全套件完好，故意冲突.env未覆盖注入配置。按改动范围保留这些有效回归。
+
+测试只使用独立可丢弃集群、工作副本/本次测试库和随机凭据，不操作客户数据或原开发库。遵守原Git授权，仅纳入相关文件并检查敏感内容，不force push、不改写共享历史或历史迁移。不将执行者自测、Codex独立PASS或Owner放行混为一谈。
+
+完成后重读磁盘最新唯一进度，更新TASK表、摘要、唯一状态块、CODEX_REVIEW_HANDOFF和下一轮P07_CODE_REVIEW完整提示词；保留历史，列明实际修复提交、858c20a..新冻结提交差异、反例与回归结果。回待审查/CODEX_REVIEW_REQUIRED、TASK-004、Checkpoint=YES、下一工具Codex；缺证如实记录。
+运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync，读回项目00_START_HERE.md/.html与总控00_CONTROL_CENTER/PROJECTS.md，核对状态、工具、完整提示词和完成标准。Codex复审PASS后仍等Owner明确阶段放行，不能自行合并main、部署或开始Phase2/TASK-005。
+```
+
+---
+
+## 历史：此前P08提示词全文（不得作为当前指令）
+
 # Gate 01 REVIEW_3 剩余问题修复 · ZCode
 
 这是当前有效提示词，对应 2026-09-14 Codex 对 9a5798c 的第三轮独立审查。下方更早提示词完整保留，仅供历史追溯。

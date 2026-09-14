@@ -1,0 +1,4 @@
+SERVICE    STATUS
+postgres   Up 2 minutes (healthy)
+web        Up 2 minutes
+worker     Up 2 minutes (healthy)

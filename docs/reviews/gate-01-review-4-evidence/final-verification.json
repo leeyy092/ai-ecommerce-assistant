@@ -1,0 +1,74 @@
+{
+  "at": "2026-09-14T19:29:09+08:00",
+  "head": "858c20ab9645b494840b219f0b39b01c39023291",
+  "tracked_files_checked": 328,
+  "application_files_unchanged": 83,
+  "changed_tracked_files": [
+    "00_START_HERE.html",
+    "00_START_HERE.md",
+    "CODEX_REVIEW_HANDOFF.md",
+    "docs/ai-ecommerce-assistant/12_PROGRESS.md",
+    "prompts/P08_FIX.md"
+  ],
+  "history_evidence": {
+    "gate-01-evidence": {
+      "files": 8,
+      "mismatches": []
+    },
+    "gate-01-review-2-evidence": {
+      "files": 34,
+      "mismatches": []
+    },
+    "gate-01-formal-evidence": {
+      "files": 45,
+      "mismatches": []
+    },
+    "gate-01-review-3-evidence": {
+      "files": 76,
+      "mismatches": []
+    },
+    "gate-01-r4-evidence": {
+      "files": 20,
+      "mismatches": []
+    }
+  },
+  "progress_history_preserved": true,
+  "handoff_history_preserved": true,
+  "p08_history_preserved": true,
+  "task_rows": 30,
+  "future_tasks_todo": 26,
+  "state_blocks": 1,
+  "report_sections": 15,
+  "valid_report_local_links": 12,
+  "source_state": {
+    "current_task": "TASK-004",
+    "status": "待修复",
+    "stage": "07 阶段审查 · Phase 1 项目地基 · Gate01 REVIEW_4 BLOCKED",
+    "next_owner": "ZCode",
+    "next_prompt": "prompts/P08_FIX.md",
+    "checkpoint": "YES",
+    "review": "REVIEW_4 BLOCKED（技术FAIL）：1 HIGH H12、4 MEDIUM M03/M04/M06/M07；原H08/H11已通过；本次审查9a5798c..858c20a",
+    "updated_at": "2026-09-14T19:25:32+08:00"
+  },
+  "product_os_sync": {
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-14T19:29:09+08:00"
+  },
+  "home_md_prompt_matches": true,
+  "home_html_prompt_matches": true,
+  "control_md_matches": true,
+  "control_html_matches": true,
+  "git_diff_check_exit": 0,
+  "listeners": {
+    "3000": false,
+    "3002": false,
+    "3003": false,
+    "55470": false,
+    "3301": false,
+    "55480": false
+  },
+  "temporary_directory_removed": true,
+  "no_business_edit_commit_push_merge_deploy": true
+}

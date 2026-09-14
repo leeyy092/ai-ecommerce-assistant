@@ -1,0 +1,173 @@
+{
+  "H08_A": {
+    "observed_lock_wait": true,
+    "result": {
+      "ok": false,
+      "code": "23503",
+      "constraint": "fk_audit_log_store_same_domain"
+    },
+    "cross_org_count": 0
+  },
+  "H08_B": {
+    "observed_lock_wait": true,
+    "result": {
+      "ok": false,
+      "code": "P0001"
+    },
+    "cross_org_count": 0
+  },
+  "H08_delete": {
+    "store_null": true,
+    "org_preserved": true
+  },
+  "M04_coverage": [
+    {
+      "table_name": "action_state",
+      "constrained": false
+    },
+    {
+      "table_name": "ad_metric",
+      "constrained": true
+    },
+    {
+      "table_name": "after_sale_record",
+      "constrained": true
+    },
+    {
+      "table_name": "ai_insight",
+      "constrained": false
+    },
+    {
+      "table_name": "ai_report",
+      "constrained": false
+    },
+    {
+      "table_name": "ai_run",
+      "constrained": false
+    },
+    {
+      "table_name": "alert",
+      "constrained": false
+    },
+    {
+      "table_name": "audit_log",
+      "constrained": true
+    },
+    {
+      "table_name": "auth_rate_limit",
+      "constrained": false
+    },
+    {
+      "table_name": "customer_message",
+      "constrained": true
+    },
+    {
+      "table_name": "daily_metric",
+      "constrained": false
+    },
+    {
+      "table_name": "data_coverage",
+      "constrained": false
+    },
+    {
+      "table_name": "data_source",
+      "constrained": true
+    },
+    {
+      "table_name": "domain_user",
+      "constrained": true
+    },
+    {
+      "table_name": "import_task",
+      "constrained": false
+    },
+    {
+      "table_name": "invitation",
+      "constrained": true
+    },
+    {
+      "table_name": "job_run",
+      "constrained": false
+    },
+    {
+      "table_name": "membership",
+      "constrained": true
+    },
+    {
+      "table_name": "order",
+      "constrained": true
+    },
+    {
+      "table_name": "order_item",
+      "constrained": true
+    },
+    {
+      "table_name": "organization",
+      "constrained": true
+    },
+    {
+      "table_name": "product",
+      "constrained": true
+    },
+    {
+      "table_name": "refund_event",
+      "constrained": true
+    },
+    {
+      "table_name": "rule_config",
+      "constrained": true
+    },
+    {
+      "table_name": "rule_evaluation",
+      "constrained": false
+    },
+    {
+      "table_name": "sku",
+      "constrained": true
+    },
+    {
+      "table_name": "sku_alias",
+      "constrained": true
+    },
+    {
+      "table_name": "store",
+      "constrained": true
+    },
+    {
+      "table_name": "voc_insight",
+      "constrained": false
+    }
+  ],
+  "M04_non_uuid_job": {
+    "inserted": true,
+    "id": "not-a-uuid-review"
+  },
+  "H09": [
+    {
+      "data_type": "timestamp with time zone",
+      "n": 91
+    }
+  ],
+  "M06_helper_applied": [
+    "20260912102945_p0_init",
+    "20260912103005_p0_constraints",
+    "20260913043631_p0_domain_timestamptz",
+    "20260913044218_p0_audit_tenant_fk",
+    "20260913120000_p0_nullable_timestamptz",
+    "20260913120100_p0_audit_tenant_fk_v2",
+    "20260913120200_p0_domain_user_auth_fk",
+    "20260914150000_p0_audit_store_composite_fk"
+  ],
+  "M06_upto_first": [
+    "20260912102945_p0_init",
+    "20260912103005_p0_constraints",
+    "20260913043631_p0_domain_timestamptz",
+    "20260913044218_p0_audit_tenant_fk"
+  ],
+  "M06_upto_repeat": [
+    "20260913120000_p0_nullable_timestamptz",
+    "20260913120100_p0_audit_tenant_fk_v2",
+    "20260913120200_p0_domain_user_auth_fk",
+    "20260914150000_p0_audit_store_composite_fk"
+  ]
+}

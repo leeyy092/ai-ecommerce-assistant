@@ -1,0 +1,16 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "aiea_r4_previous_good", schema "public" at "127.0.0.1:55470"
+
+8 migrations found in prisma/migrations
+
+Applying migration `20260914150000_p0_audit_store_composite_fk`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260914150000_p0_audit_store_composite_fk/
+    └─ migration.sql
+
+All migrations have been successfully applied.

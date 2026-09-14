@@ -1,0 +1,5 @@
+{"name": "typecheck", "command": "pnpm typecheck", "exit": 0, "seconds": 7.47}
+{"name": "unit", "command": "pnpm test", "exit": 0, "seconds": 6.19}
+{"name": "migrate", "command": "pnpm exec prisma migrate deploy", "exit": 0, "seconds": 2.21}
+{"name": "build", "command": "pnpm build", "exit": 0, "seconds": 18.29}
+{"name": "e2e", "command": "pnpm test:e2e", "exit": 0, "seconds": 9.15}

@@ -1,0 +1,3 @@
+Failed to load config file "/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r4-review-w_8wd2xf/old/ai-ecommerce-assistant/prisma.config.ts" as a TypeScript/JavaScript module. Error: Error: Cannot find module 'prisma/config'
+Require stack:
+- /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r4-review-w_8wd2xf/old/ai-ecommerce-assistant/prisma.config.ts

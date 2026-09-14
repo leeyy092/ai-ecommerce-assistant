@@ -1,3 +1,31 @@
+# Gate 01 下一轮独立复审预备提示词 · 收敛验收
+
+当前仍待ZCode修复；本提示词供新候选交付后使用，不代表已修复、已冻结或已开始下一轮审查。以下首个text块有效，末尾保留R4原提示词。
+
+```text
+请对AI电商运营助手Gate 01下一轮修复候选做独立复审，只审Phase1/TASK-001–004，不改业务代码、不开始TASK-005、不提交/推送/合并或部署。
+项目根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用为其下ai-ecommerce-assistant。
+先读AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md及配置指定的唯一进度、任务合同、决策、阶段计划和CODEX_REVIEW_HANDOFF.md。再完整读取docs/reviews/GATE_01_CLOSURE_PLAN_2026-09-14.md、CODEX_REVIEW_GATE_01_REVIEW_4_2026-09-14.md、GATE_01_REVIEW_4_EVIDENCE_2026-09-14.json和gate-01-review-4-evidence/README.md，以及执行者本轮提交/测试证据。
+先查实际分支、HEAD、未提交差异和候选是否真的交付。前一审查冻结858c20ab9645b494840b219f0b39b01c39023291；本轮范围858c20a..实际新候选；main最后核验2a983cc。当前基线BLOCKED，HIGH H12及MEDIUM M03/M04/M06/M07。没有新的修复候选时如实报告仍待修复，不把相同版本重新跑测试当成新一轮通过。保留所有在途管理文档，不reset/clean。
+
+按关闭矩阵独立验收：
+1. H12：原始SQL epoch与ORM/API绝对时刻一致；默认UTC和非UTC数据库、多连接及当前Web/Worker/脚本连接；有效邀请成功、48小时到期与报告49小时前创建的已过期邀请均拒绝且不签发会话。会话等现有时间消费者按真实驱动核查；不盲目平移历史数据、不改店铺时区。
+2. M03：当前邀请创建/预览/接受/撤销覆盖清单完整，限流/会话/服务异常稳定返回JSON/request_id；无部分提交；通过项保留。
+3. M04：28张领域表全量枚举与非法ID阻断、正常ID通过、旧库坏行守卫，框架四表和辅助表单独说明。
+4. M06：首次/重复upTo不越界、不存在目标明确失败；官方迁移接续正常。
+5. M07：真实Prisma差异不意外删除审计复合FK；不能表达的自定义SQL逐条说明维护方式；保留H08双向并发、删除及旧库守卫。
+
+复审以本轮差异、五项反例和受影响边界为主。H08/H11及M01/M02/M05等已关闭项无触发原因不反复重开；涉及共同连接、迁移或测试清理时保留对应回归。必要检查由Reviewer独立运行，不能只读ZCode全绿日志。H12/M04/M07影响本轮连接与迁移，运行相称完整回归、真实容器、空库/858c20a旧库升级/重复/坏行检查；更早未改升级链可引用已冻结证据并写适用条件。不要重复无关实验，也不能为赶进度省略受影响验证。
+新问题必须给出位置、可复现证据、影响、原合同依据及本轮改动关系；真实CRITICAL/HIGH仍阻断，MEDIUM按原严重级别和期限明确核定，不临时升级风格要求或批准无期限延期。D01方案A不变，无需再问。
+
+按既定15节格式输出正式报告；逐项区分PASS/FAIL/BLOCKED、已关闭、未处理、合理延期及未运行原因。无未关闭CRITICAL/HIGH、TASK合同与必要证据满足后才可技术PASS；通过后仍等Owner明确阶段放行。
+收尾重读最新12_PROGRESS.md，更新原任务表、摘要、唯一状态块和CODEX_REVIEW_HANDOFF，保留历史；按实际结果设置下一工具和提示词。执行/usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync，读回项目首页MD/HTML完整提示词和总控PROJECTS.md/HTML。用户明确只读时仅输出待写回内容。本轮不推进下一Phase。
+```
+
+---
+
+## 历史：R4审查时的P07全文
+
 # Gate 01 第四轮独立复审 · Codex 接手提示词
 
 ```text

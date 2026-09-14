@@ -1,0 +1,667 @@
+{
+  "schema_version": 1,
+  "review": "CODEX_REVIEW_GATE_01_REVIEW_4",
+  "reviewer": "Codex",
+  "date": "2026-09-14",
+  "scope": "Phase 1 / TASK-001–004",
+  "git": {
+    "branch": "phase/01-foundation",
+    "head": "858c20ab9645b494840b219f0b39b01c39023291",
+    "previous_review": "9a5798ccdfad1be1e60d2df4dce9f9c189f85b93",
+    "main": "2a983cc55f136abbb49c5d02b55c1cb82b6547cc",
+    "last_business_fix": "e293b2e77738c82f4bba17f7ad1e8fcb8b17a393",
+    "range": "9a5798c..858c20a",
+    "application_diff": {
+      "main_to_head": "59 files, +5402/-150",
+      "previous_review_to_head": "24 files, +783/-220"
+    },
+    "starting_working_tree": "clean",
+    "remote_refs": "gate-01-review-4-evidence/remote-refs.txt"
+  },
+  "verdict": {
+    "gate": "BLOCKED",
+    "technical": "FAIL",
+    "owner_release": "NOT_GRANTED",
+    "merge_main": false,
+    "start_task_005": false
+  },
+  "tasks": {
+    "TASK-001": "PASS",
+    "TASK-002": "FAIL: H12 absolute time semantics",
+    "TASK-003": "FAIL: H12 expired invitation accepted",
+    "TASK-004": "FAIL full dependency acceptance; authorization regression passes"
+  },
+  "findings": {
+    "CRITICAL": [],
+    "HIGH": [
+      "H12: non-UTC PrismaPg session shifts absolute timestamps and accepts expired invitation"
+    ],
+    "MEDIUM": [
+      "M03: rate-limit DB failures outside route error boundary",
+      "M04: 11 domain primary-key tables missing UUID constraint",
+      "M06: repeat upTo exceeds selected target",
+      "M07: generated schema diff drops audit composite FK"
+    ],
+    "LOW": [],
+    "closed_this_round": [
+      "H08",
+      "H11",
+      "M01",
+      "M02",
+      "M05"
+    ],
+    "prior_regressions": "H01-H07/H09/H10/D01 baseline tests passed within documented scope; H12 newly covers true epoch and aged invitation",
+    "H12_origin": "existing Phase 1 factory and pinned adapter behavior; not claimed introduced by this round fix commits",
+    "product_decisions_required": []
+  },
+  "checks": [
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "seconds": 7.47
+    },
+    {
+      "name": "unit",
+      "command": "pnpm test",
+      "exit": 0,
+      "seconds": 6.19
+    },
+    {
+      "name": "migrate",
+      "command": "pnpm exec prisma migrate deploy",
+      "exit": 0,
+      "seconds": 2.21
+    },
+    {
+      "name": "build",
+      "command": "pnpm build",
+      "exit": 0,
+      "seconds": 18.29
+    },
+    {
+      "name": "e2e",
+      "command": "pnpm test:e2e",
+      "exit": 0,
+      "seconds": 9.15
+    }
+  ],
+  "integration": {
+    "integration_exit": 0,
+    "connectionError": null,
+    "same_connection": true,
+    "visibleDuring": 1,
+    "committedRows": 1,
+    "external_DATABASE_URL_wins_over_conflicting_dotenv": true,
+    "remaining_test_databases": []
+  },
+  "database": {
+    "H08_A": {
+      "observed_lock_wait": true,
+      "result": {
+        "ok": false,
+        "code": "23503",
+        "constraint": "fk_audit_log_store_same_domain"
+      },
+      "cross_org_count": 0
+    },
+    "H08_B": {
+      "observed_lock_wait": true,
+      "result": {
+        "ok": false,
+        "code": "P0001"
+      },
+      "cross_org_count": 0
+    },
+    "H08_delete": {
+      "store_null": true,
+      "org_preserved": true
+    },
+    "M04_coverage": [
+      {
+        "table_name": "action_state",
+        "constrained": false
+      },
+      {
+        "table_name": "ad_metric",
+        "constrained": true
+      },
+      {
+        "table_name": "after_sale_record",
+        "constrained": true
+      },
+      {
+        "table_name": "ai_insight",
+        "constrained": false
+      },
+      {
+        "table_name": "ai_report",
+        "constrained": false
+      },
+      {
+        "table_name": "ai_run",
+        "constrained": false
+      },
+      {
+        "table_name": "alert",
+        "constrained": false
+      },
+      {
+        "table_name": "audit_log",
+        "constrained": true
+      },
+      {
+        "table_name": "auth_rate_limit",
+        "constrained": false
+      },
+      {
+        "table_name": "customer_message",
+        "constrained": true
+      },
+      {
+        "table_name": "daily_metric",
+        "constrained": false
+      },
+      {
+        "table_name": "data_coverage",
+        "constrained": false
+      },
+      {
+        "table_name": "data_source",
+        "constrained": true
+      },
+      {
+        "table_name": "domain_user",
+        "constrained": true
+      },
+      {
+        "table_name": "import_task",
+        "constrained": false
+      },
+      {
+        "table_name": "invitation",
+        "constrained": true
+      },
+      {
+        "table_name": "job_run",
+        "constrained": false
+      },
+      {
+        "table_name": "membership",
+        "constrained": true
+      },
+      {
+        "table_name": "order",
+        "constrained": true
+      },
+      {
+        "table_name": "order_item",
+        "constrained": true
+      },
+      {
+        "table_name": "organization",
+        "constrained": true
+      },
+      {
+        "table_name": "product",
+        "constrained": true
+      },
+      {
+        "table_name": "refund_event",
+        "constrained": true
+      },
+      {
+        "table_name": "rule_config",
+        "constrained": true
+      },
+      {
+        "table_name": "rule_evaluation",
+        "constrained": false
+      },
+      {
+        "table_name": "sku",
+        "constrained": true
+      },
+      {
+        "table_name": "sku_alias",
+        "constrained": true
+      },
+      {
+        "table_name": "store",
+        "constrained": true
+      },
+      {
+        "table_name": "voc_insight",
+        "constrained": false
+      }
+    ],
+    "M04_non_uuid_job": {
+      "inserted": true,
+      "id": "not-a-uuid-review"
+    },
+    "H09": [
+      {
+        "data_type": "timestamp with time zone",
+        "n": 91
+      }
+    ],
+    "M06_helper_applied": [
+      "20260912102945_p0_init",
+      "20260912103005_p0_constraints",
+      "20260913043631_p0_domain_timestamptz",
+      "20260913044218_p0_audit_tenant_fk",
+      "20260913120000_p0_nullable_timestamptz",
+      "20260913120100_p0_audit_tenant_fk_v2",
+      "20260913120200_p0_domain_user_auth_fk",
+      "20260914150000_p0_audit_store_composite_fk"
+    ],
+    "M06_upto_first": [
+      "20260912102945_p0_init",
+      "20260912103005_p0_constraints",
+      "20260913043631_p0_domain_timestamptz",
+      "20260913044218_p0_audit_tenant_fk"
+    ],
+    "M06_upto_repeat": [
+      "20260913120000_p0_nullable_timestamptz",
+      "20260913120100_p0_audit_tenant_fk_v2",
+      "20260913120200_p0_domain_user_auth_fk",
+      "20260914150000_p0_audit_store_composite_fk"
+    ]
+  },
+  "official_cli_extra": {
+    "helper-deploy": 0,
+    "schema-diff": 0
+  },
+  "old_four_migration_upgrade": {
+    "good": {
+      "baseline_exit": 0,
+      "forward_exit": 0,
+      "repeat_exit": 0,
+      "utc_preserved": "SET\n2026-01-01 12:00:00+00",
+      "domain_without_tz": "0"
+    },
+    "bad_audit": {
+      "baseline_exit": 0,
+      "forward_exit": 1,
+      "error_tail": "migrations\n\nApplying migration `20260913120000_p0_nullable_timestamptz`\nApplying migration `20260913120100_p0_audit_tenant_fk_v2`\nError: P3018\n\nA migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve\n\nMigration name: 20260913120100_p0_audit_tenant_fk_v2\n\nDatabase error code: P0001\n\nDatabase error:\nERROR: audit_log 存在 1 条跨组织店铺引用，拒绝升级；请先人工核对这些历史行\n\nDbError { severity: \"ERROR\", parsed_severity: Some(Error), code: SqlState(EP0001), message: \"audit_log 存在 1 条跨组织店铺引用，拒绝升级；请先人工核对这些历史行\", detail: None, hint: None, position: None, where_: Some(\"PL/pgSQL function inline_code_block line 8 at RAISE\"), schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"pl_exec.c\"), line: Some(3911), routine: Some(\"exec_stmt_raise\") }\n\n\n"
+    },
+    "bad_identity": {
+      "baseline_exit": 0,
+      "forward_exit": 1,
+      "error_tail": " migration `20260913120100_p0_audit_tenant_fk_v2`\nApplying migration `20260913120200_p0_domain_user_auth_fk`\nError: P3018\n\nA migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve\n\nMigration name: 20260913120200_p0_domain_user_auth_fk\n\nDatabase error code: P0001\n\nDatabase error:\nERROR: domain_user 存在 1 条悬空 auth_user_id，拒绝升级；请先人工核对这些身份链\n\nDbError { severity: \"ERROR\", parsed_severity: Some(Error), code: SqlState(EP0001), message: \"domain_user 存在 1 条悬空 auth_user_id，拒绝升级；请先人工核对这些身份链\", detail: None, hint: None, position: None, where_: Some(\"PL/pgSQL function inline_code_block line 7 at RAISE\"), schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"pl_exec.c\"), line: Some(3911), routine: Some(\"exec_stmt_raise\") }\n\n\n"
+    }
+  },
+  "previous_seven_migration_upgrade": {
+    "good": {
+      "baseline_exit": 0,
+      "upgrade_exit": 0
+    },
+    "bad_uuid": {
+      "baseline_exit": 0,
+      "upgrade_exit": 1
+    }
+  },
+  "http": {
+    "H01": {
+      "switchStatus": 200,
+      "meB": true,
+      "role": "customer_service",
+      "organizationB": true,
+      "budgetAbsent": true,
+      "patch": 403,
+      "orgAUnchanged": true,
+      "forgedFallsBackA": true
+    },
+    "H05": {
+      "accept": 200,
+      "me": 200,
+      "replay": 409
+    },
+    "H02": {
+      "adminToAdmin": 403,
+      "unchangedRole": "operator",
+      "adminToOwner": 422,
+      "operatorToCS": 200,
+      "csToOperator": 200,
+      "ownerToAdmin": 200
+    },
+    "H07member": {
+      "http": 503,
+      "json": true,
+      "statusUnchanged": true,
+      "versionUnchanged": true,
+      "oldSessionStillWorks": true,
+      "sessionsBefore": 2,
+      "sessionsAfter": 2
+    },
+    "H03_D01": {
+      "disable": 200,
+      "oldCookie": 401,
+      "globalStatus": "active",
+      "otherMembership": "active",
+      "relogin": 200,
+      "me": 200,
+      "activeB": true,
+      "role": "owner"
+    },
+    "H07org": {
+      "http": 503,
+      "nameUnchanged": true,
+      "versionUnchanged": true,
+      "auditCount": 0
+    },
+    "H07_invite_create": {
+      "http": 503,
+      "auditCount": 0,
+      "authRows": 0,
+      "domainRows": 0,
+      "invitationRows": 0
+    },
+    "H07_invite_revoke": {
+      "http": 503,
+      "auditCount": 0,
+      "invitationStatus": "pending",
+      "rowVersion": 1,
+      "authRows": 0,
+      "domainRows": 0
+    },
+    "H07_invite_accept": {
+      "http": 503,
+      "auditCount": 0,
+      "invitationStatus": "pending",
+      "rowVersion": 1,
+      "authRows": 0,
+      "domainRows": 0,
+      "retry": 200
+    },
+    "M01": {
+      "untrustedOriginStatus": 403,
+      "created": false,
+      "manualCookie": true
+    },
+    "M02": {
+      "wrong": 401,
+      "countBefore": 1,
+      "bad": 400,
+      "counterAfter": {
+        "id": "df860e8b-70cf-4c74-80c7-9c244c7f1175",
+        "key": "login-fail:direct",
+        "count": 1,
+        "expiresAt": "2026-09-14T19:03:20.566Z",
+        "updatedAt": "2026-09-14T19:02:20.566Z"
+      }
+    },
+    "M03": {
+      "numericNameStatus": 422,
+      "nullBodyStatus": 422,
+      "nullBodyJSON": true,
+      "fractionalVersionStatus": 422,
+      "fractionalVersionJSON": true,
+      "orgNameAfterFraction": "A"
+    },
+    "H04": {
+      "statuses": [
+        403,
+        403
+      ],
+      "json": [
+        true,
+        true
+      ],
+      "authRows": 0
+    },
+    "H06_owner_concurrent": {
+      "secondWaited": true,
+      "oneOrg": true,
+      "secondIdempotent": true,
+      "authRows": 1,
+      "domainRows": 1,
+      "login": 200
+    },
+    "M01_M03_revoke": {
+      "manualCookie": true,
+      "untrustedOriginFractionalVersion": 403,
+      "rowStatus": "pending"
+    },
+    "M03_invitation": {
+      "nullBody": 422,
+      "numericEmail": 422,
+      "unexpectedField": 422
+    },
+    "M02_invite_proxy": {
+      "trustProxyHeaders": false,
+      "sameIP": 429,
+      "forgedNewIP": 429
+    },
+    "M03_revoke_fraction_trusted": {
+      "status": 422,
+      "stillPending": true
+    },
+    "M01_no_origin_no_body": {
+      "status": 200
+    },
+    "M03_accept_body": {
+      "malformed": 422,
+      "existing_user_empty_body": 200
+    },
+    "M02_accept_proxy": {
+      "forgedNewIP": 429
+    },
+    "M03_rate_db_failure": {
+      "preview": {
+        "status": 500,
+        "json": false
+      },
+      "accept": {
+        "status": 500,
+        "json": false
+      }
+    },
+    "M03_error_request_id": {
+      "present": true,
+      "matchesWebLog": true
+    },
+    "signout": {
+      "status": 200,
+      "oldCookie": 401
+    }
+  },
+  "H12": {
+    "default_non_UTC": {
+      "postgres_timezone": "Asia/Shanghai",
+      "original_created_http_expires": "2026-09-16T11:08:25.652Z",
+      "original_db_epoch_ms": 1789528105652,
+      "original_http_epoch_ms": 1789556905652,
+      "expired_db_timestamp": "2026-09-14T10:08:25.663Z",
+      "expired_db_epoch_ms": 1789380505663.168,
+      "db_says_expired": true,
+      "orm_expires_at": "2026-09-14T18:08:25.663Z",
+      "orm_vs_db_delta_ms": 28799999.83203125,
+      "preview_status": 200,
+      "accept_status": 200,
+      "fixture_age_hours": 49,
+      "fixture_ttl_hours": 48,
+      "accepted_cookie_issued": true,
+      "accepted_session_me_status": 200
+    },
+    "UTC_control": {
+      "postgres_timezone": "UTC",
+      "original_created_http_expires": "2026-09-16T11:08:26.374Z",
+      "original_db_epoch_ms": 1789556906374,
+      "original_http_epoch_ms": 1789556906374,
+      "expired_db_timestamp": "2026-09-14T10:08:26.381Z",
+      "expired_db_epoch_ms": 1789380506381.572,
+      "db_says_expired": true,
+      "orm_expires_at": "2026-09-14T10:08:26.381Z",
+      "orm_vs_db_delta_ms": -0.572021484375,
+      "preview_status": 410,
+      "accept_status": 409,
+      "fixture_age_hours": 49,
+      "fixture_ttl_hours": 48,
+      "accepted_cookie_issued": false,
+      "accepted_session_me_status": null
+    },
+    "adapter_excerpt": "gate-01-review-4-evidence/adapter-timestamp-excerpt.txt",
+    "source": "src/database/prisma.ts and services/invitations.ts"
+  },
+  "runtime": {
+    "worker_running_status": 0,
+    "worker_exit": 0,
+    "worker_stopped_status": 1,
+    "missing-auth": {
+      "exit": 1,
+      "missing_variable_names_only_in_error": true
+    },
+    "missing-db": {
+      "exit": 1,
+      "missing_variable_names_only_in_error": true
+    }
+  },
+  "health": {
+    "health_before": {
+      "status": 200,
+      "body": "{\"status\":\"ok\"}"
+    },
+    "review_pg_stop_exit": 0,
+    "health_after": {
+      "status": 503,
+      "body": "{\"status\":\"degraded\"}"
+    },
+    "utc_control_health_after": {
+      "status": 503,
+      "body": "{\"status\":\"degraded\"}"
+    },
+    "web.pid": "SIGTERM sent",
+    "web-utc.pid": "SIGTERM sent"
+  },
+  "docker": {
+    "build": {
+      "exit": 0,
+      "source": "git archive 858c20a ai-ecommerce-assistant",
+      "node_modules_in_context": false,
+      "generated_client_in_context": false,
+      "cache": "standard Docker layer cache allowed",
+      "image": "aiea-r4-review:858c20a"
+    },
+    "runtime": {
+      "default": {
+        "up_exit": 0,
+        "health": 200,
+        "migrate_exit": 0,
+        "init_exit": 0,
+        "login": {
+          "status": 200,
+          "cookie_issued": true
+        },
+        "me": {
+          "status": 200,
+          "role": "owner"
+        },
+        "public_signup": [
+          403,
+          403
+        ],
+        "worker_exit": 0,
+        "ps_exit": 0,
+        "down_exit": 0
+      },
+      "special": {
+        "up_exit": 0,
+        "health": 200,
+        "migrate_exit": 0,
+        "init_exit": 0,
+        "login": {
+          "status": 200,
+          "cookie_issued": true
+        },
+        "me": {
+          "status": 200,
+          "role": "owner"
+        },
+        "public_signup": [
+          403,
+          403
+        ],
+        "worker_exit": 0,
+        "ps_exit": 0,
+        "down_exit": 0
+      }
+    }
+  },
+  "secrets": {
+    "commits_scanned": 26,
+    "unique_blobs": 429,
+    "pattern_candidates_without_secret_values": [],
+    "tracked_real_env_paths": [],
+    "limitations": "pattern scan, not proof no secrets; historical synthetic passwords and test secrets are not production credentials"
+  },
+  "source_before_write": {
+    "at": "2026-09-14T19:16:30+08:00",
+    "tracked_files": 328,
+    "application_files": 83,
+    "tracked_changes": [],
+    "history": {
+      "gate-01-evidence": {
+        "files": 8,
+        "mismatches": []
+      },
+      "gate-01-review-2-evidence": {
+        "files": 34,
+        "mismatches": []
+      },
+      "gate-01-formal-evidence": {
+        "files": 45,
+        "mismatches": []
+      },
+      "gate-01-review-3-evidence": {
+        "files": 76,
+        "mismatches": []
+      },
+      "gate-01-r4-evidence": {
+        "files": 20,
+        "mismatches": []
+      }
+    }
+  },
+  "medium_disposition": {
+    "M03": "ACCEPT remaining failure boundary within current Gate work",
+    "M04": "MODIFY finish all domain tables; previous deferral trigger reached",
+    "M06": "MODIFY fix idempotent upTo and preserve official CLI validation",
+    "M07": "ACCEPT protect current composite FK before next Schema change"
+  },
+  "limitations": [
+    "No original business/schema/migration/test changes",
+    "No customer DB/data accessed",
+    "No production load, future-phase end-to-end tests or live deployment",
+    "R3 process-exit experiment evidence preserved but not rerun this round",
+    "ZCode iCloud root-cause claim not independently re-diagnosed",
+    "Docker standard cache allowed; context was pure Git archive",
+    "UTC control changes isolated runtime connection config only; no business fix applied",
+    "No commit/push/merge or Owner release"
+  ],
+  "report": "CODEX_REVIEW_GATE_01_REVIEW_4_2026-09-14.md",
+  "evidence_directory": "gate-01-review-4-evidence",
+  "closeout": {
+    "status": "complete",
+    "at": "2026-09-14T19:29:42+08:00",
+    "product_os_sync": {
+      "registered": 1,
+      "updated": 1,
+      "errors": [],
+      "generated_at": "2026-09-14T19:29:09+08:00"
+    },
+    "readback": "Project Markdown/HTML full prompt equals current P08; control Markdown/HTML agrees with unique progress.",
+    "current_task": "TASK-004",
+    "status_in_progress": "待修复",
+    "next_tool": "ZCode",
+    "checkpoint": "YES",
+    "gate": "BLOCKED",
+    "owner_release": false,
+    "application_files_unchanged": 83,
+    "historical_evidence_files_unchanged": 183,
+    "temporary_environment_removed": true,
+    "private_value_scan_hits": 0,
+    "details": "gate-01-review-4-evidence/final-verification.json",
+    "no_commit_push_merge_or_deploy": true
+  }
+}

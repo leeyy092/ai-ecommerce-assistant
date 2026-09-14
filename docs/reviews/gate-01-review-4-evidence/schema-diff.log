@@ -1,0 +1,5 @@
+Loaded Prisma config from prisma.config.ts.
+
+-- DropForeignKey
+ALTER TABLE "audit_log" DROP CONSTRAINT "fk_audit_log_store_same_domain";
+
