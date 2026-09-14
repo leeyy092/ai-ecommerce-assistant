@@ -1,0 +1,12 @@
+{
+  "before_pg_stop": {
+    "status": 200,
+    "body": "{\"status\":\"ok\"}"
+  },
+  "review_pg_stop_exit": 0,
+  "after_pg_stop": {
+    "status": 503,
+    "body": "{\"status\":\"degraded\"}"
+  },
+  "review_web_stop_signal": "SIGTERM"
+}

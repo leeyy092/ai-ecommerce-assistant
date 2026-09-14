@@ -1,0 +1,18 @@
+{
+  "worker_running_status": 0,
+  "worker_exit": 0,
+  "worker_stopped_status": 1,
+  "missing-auth": {
+    "exit": 1,
+    "names_mentioned": [
+      "BETTER_AUTH_SECRET",
+      "BETTER_AUTH_URL"
+    ]
+  },
+  "missing-db": {
+    "exit": 1,
+    "names_mentioned": [
+      "DATABASE_URL"
+    ]
+  }
+}

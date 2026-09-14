@@ -1,0 +1,7 @@
+{"name": "typecheck", "command": "pnpm typecheck", "exit": 0, "seconds": 3.86}
+{"name": "unit", "command": "pnpm test", "exit": 0, "seconds": 3.7}
+{"name": "integration", "command": "pnpm test:integration", "exit": 0, "seconds": 10.64}
+{"name": "migrate", "command": "pnpm exec prisma migrate deploy", "exit": 0, "seconds": 2.07}
+{"name": "build", "command": "pnpm build", "exit": 0, "seconds": 15.24}
+{"name": "e2e", "command": "pnpm test:e2e", "exit": 1, "seconds": 18.55}
+{"name": "e2e-corrected", "command": "pnpm test:e2e", "exit": 0, "seconds": 7.62}

@@ -1,0 +1,15 @@
+{
+  "H08_concurrent": {
+    "parent_update_committed": true,
+    "insert_result": "OK",
+    "insert_waited": true,
+    "cross_org": true
+  },
+  "H09_types": [
+    {
+      "data_type": "timestamp with time zone",
+      "n": 91
+    }
+  ],
+  "H09_same_instant_delta_ms": 0
+}

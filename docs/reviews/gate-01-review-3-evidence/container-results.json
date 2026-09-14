@@ -1,0 +1,126 @@
+{
+  "source": "9a5798c git archive",
+  "review_only_overrides": [
+    "unique project and image name",
+    "loopback ports 3300 and 55479",
+    "runtime auth secret/url"
+  ],
+  "steps": {
+    "up": {
+      "exit": 0,
+      "args": [
+        "up",
+        "-d",
+        "--no-build",
+        "--wait",
+        "--wait-timeout",
+        "50"
+      ]
+    },
+    "migrate": {
+      "exit": 0,
+      "args": [
+        "exec",
+        "-T",
+        "web",
+        "node",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "deploy"
+      ]
+    },
+    "init-owner": {
+      "exit": 0,
+      "args": [
+        "exec",
+        "-T",
+        "web",
+        "node",
+        "--import",
+        "tsx",
+        "scripts/init-owner.ts",
+        "--org",
+        "Review",
+        "--email",
+        "docker-review@example.test",
+        "--name",
+        "Reviewer",
+        "--demo"
+      ]
+    },
+    "worker-status": {
+      "exit": 0,
+      "args": [
+        "exec",
+        "-T",
+        "worker",
+        "node",
+        "dist/jobs/status.js"
+      ]
+    },
+    "ps": {
+      "exit": 0,
+      "args": [
+        "ps"
+      ]
+    },
+    "down": {
+      "exit": 0,
+      "args": [
+        "down",
+        "--volumes",
+        "--remove-orphans"
+      ]
+    },
+    "custom-password-up": {
+      "exit": 0,
+      "args": [
+        "up",
+        "-d",
+        "--no-build"
+      ]
+    },
+    "custom-password-worker-status": {
+      "exit": 1,
+      "args": [
+        "exec",
+        "-T",
+        "worker",
+        "node",
+        "dist/jobs/status.js"
+      ]
+    },
+    "custom-password-logs": {
+      "exit": 0,
+      "args": [
+        "logs",
+        "--tail",
+        "35",
+        "web",
+        "worker"
+      ]
+    },
+    "custom-password-down": {
+      "exit": 0,
+      "args": [
+        "down",
+        "--volumes",
+        "--remove-orphans"
+      ]
+    }
+  },
+  "health": 200,
+  "login": {
+    "status": 200,
+    "cookieIssued": true
+  },
+  "me": {
+    "status": 200,
+    "role": "owner"
+  },
+  "public_signup": [
+    403,
+    403
+  ],
+  "custom_password_health": 503
+}

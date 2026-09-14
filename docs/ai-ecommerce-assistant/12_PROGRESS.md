@@ -4,9 +4,9 @@
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase 1 / TASK-004 / Gate 01 R3 修复完成 / 待 Codex 第三轮复审 / Checkpoint=YES / 下一工具 Codex。**
+**Phase 1 / TASK-004 / Gate 01 REVIEW_3 修复完成 / 待 Codex 第四轮复审 / Checkpoint=YES / 下一工具 Codex。**
 
-2026-09-14：ZCode 按 prompts/P08_FIX.md 与正式复核报告完成 Phase 1 四项 HIGH（H06/H08/H09/H10）修复，并按核定处理 M01–M04、M05、L01。真实 Docker 全链路证据（colima+compose 干净构建→迁移→init-owner→登录→/me→公开注册 403）已留档 docs/reviews/gate-01-r3-evidence/。四个 fix 提交 e66e3f8/c6fc5fa/08e1793/e7b5eea 已推送，复审差异范围 c87a141..e7b5eea（含 47269bb 正式报告与 80c1342 L01 清理）。本机验证：typecheck 0 错、unit 14/14、integration 53/53、build（web+worker）exit 0、e2e 8/8（保留一次 ECONNRESET 警告）。修复自测通过不代表 Gate 通过；Codex 复审 PASS 后仍须 Owner 阶段放行，此前不合并 main、不部署、不开始 TASK-005。
+2026-09-14 晚：ZCode 按 prompts/P08_FIX.md 顶部提示词完成 REVIEW_3 两项 HIGH（H08 复合外键、H11 测试隔离）与 M01–M06 逐项落实。H08 以合同要求的复合外键关闭两个并发方向（双连接交错实测 cross_org=0）；H11 删除跨库模糊清理、唯一命名测试库、基线固化，并以旁观库在途事务跨越全套件运行后 COMMIT 成功完成验收。M06 查明本机 CLI 空转根因为 iCloud dataless 文件同步读挂死，官方 CLI 空库/重复/4→8 升级/坏行拒绝四项检查在 /tmp 副本通过。M05 非默认特殊字符口令与默认口令双路径真实容器验证。本机独立集群（可丢弃）全绿：typecheck 0 错、unit 18/18、integration 60/60、build exit 0、e2e 8/8。修复提交 936387a/ba12ad3/9ef85bd/e293b2e，复审差异 9a5798c..e293b2e。修复自测通过不代表 Gate 通过；Codex 复审 PASS 后仍须 Owner 阶段放行，此前不合并 main、不部署、不开始 TASK-005。
 
 <!-- PRODUCT_OS_STATE_BEGIN -->
 ```json
@@ -14,51 +14,52 @@
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动",
-  "stage": "07 阶段审查 · Phase 1 项目地基 · Gate01 REVIEW_3 待复审",
+  "stage": "07 阶段审查 · Phase 1 项目地基 · Gate01 REVIEW_4 待复审",
   "current_task": "TASK-004",
   "status": "待审查",
-  "last_completed": "ZCode 完成 H06/H08/H09/H10 修复与 M01-M05/L01 处理；真实 Docker 全链路证据留档；c87a141..e7b5eea 已推送",
-  "next_action": "Codex 第三轮独立复审 c87a141..e7b5eea（含真实容器证据核验）；PASS 后仍等 Owner 阶段放行，才可合并 main/开 Phase 2",
+  "last_completed": "ZCode 完成 H08 复合外键/H11 测试隔离与 M01-M06 逐项落实；独立集群 60/60、sentinel 在途事务完好、真实容器双口令链路通过；9a5798c..e293b2e",
+  "next_action": "Codex 第四轮独立复审 9a5798c..e293b2e（H08 并发、H11 旁观库、Medium 逐项、迁移链与容器口令）；PASS 后仍等 Owner 阶段放行",
   "next_owner": "Codex",
   "next_prompt": "prompts/P07_CODE_REVIEW.md",
-  "acceptance": "四项HIGH反例不复现且回归保留；真实Docker构建/启动/迁移/初始化/登录证据可核；M01-M05按核定落地；L01已清理；Medium延期项仅余UUID格式约束（首次后续Schema变更或TASK-028前）",
-  "blockers": "待Codex第三轮复审；无Owner放行；不合并main、不部署、不开始TASK-005",
+  "acceptance": "H08两方向并发交错均拒绝且无跨组织引用；H11旁观库连接与事务全程保留且配置隔离不被覆盖；M01-M06按核定逐项落实；已通过项回归保留；新冻结提交交Codex，Owner放行单列",
+  "blockers": "待Codex第四轮复审；无Owner放行；不合并main、不部署、不开始TASK-005",
   "checkpoint": "YES",
-  "review": "首轮BLOCKED(10H/4M)→R2 FAIL(4H)→正式复核BLOCKED(4H)→R3修复完成待复审；待审基线c87a141..e7b5eea",
-  "updated_at": "2026-09-14T14:58:39+08:00",
-  "updated_by": "ZCode · Gate01 R3 修复",
+  "review": "首轮BLOCKED→R2 FAIL(4H)→R3 BLOCKED(H08/H11)→R3修复完成待复审；待审基线9a5798c..e293b2e",
+  "updated_at": "2026-09-14T18:35:00+08:00",
+  "updated_by": "ZCode · Gate01 REVIEW_3 修复",
   "evidence": [
-    "docs/reviews/CODEX_REVIEW_GATE_01_FORMAL_2026-09-13.md（修复依据）",
-    "docs/reviews/gate-01-r3-evidence/（真实容器17文件：docker-build exit0、compose-up/ps、migrate exit0、init-owner exit0、login 200、me 200、publicsignup 403×2、health 200、web首启corepack失败与重建对照、compose-down）",
-    "修复提交：e66e3f8(TASK-001 H10+M05)、c6fc5fa(TASK-002 H08/H09/M04+测试基建)、08e1793(TASK-003 H06+M01/M02/M03)、e7b5eea(TASK-004 M01/M03)",
-    "本机验证(2026-09-14)：typecheck 0错；unit 14/14；integration 53/53(7文件)；build web+worker exit0；e2e 8/8(保留一次ECONNRESET警告)",
-    "新回归：gate01.db+4(父行变更阻断/升级守卫/时区全量清单/悬空FK)、gate01.auth+3(init并发一胜一幂等/init与invite交错/断链恢复真实登录)",
-    "container-login.json 会话token提交前脱敏；curl cookie jar(cj.txt)按安全规则删除未入库",
-    "环境事实：本机Prisma CLI启动空转~10分钟，测试改用pg驱动直跑迁移；本地PG于09-14 12:10被外部smart shutdown后PANIC(iCloud写超时)，14:06重启自动崩溃恢复成功后完成全部验证"
+    "docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_3_2026-09-14.md（本轮修复依据）",
+    "修复提交：936387a(H08复合FK+M04 UUID)、ba12ad3(H11隔离+M06)、9ef85bd(M01/M02/M03)、e293b2e(M05)",
+    "H08：PG17独立集群双连接交错实测两方向均拒绝、cross_org=0；迁移20260914150000_p0_audit_store_composite_fk已应用aiea_dev",
+    "H11：旁观库aiea_review_sentinel连接与BEGIN-INSERT-sleep400s事务跨越60/60集成运行后COMMIT成功数据完好；测试库唯一命名aiea_t_*仅自管理",
+    "M06根因：iCloud驱逐node_modules后同步read挂死（sample栈卡uv_fs_read）；官方CLI四项检查在/tmp副本通过（空库1.2s/重复/4→8升级/坏行P3018拒绝）",
+    "M05：真实容器双路径（默认口令+特殊字符口令r4-p@ss w0rd:!/#?Xy全新卷）up→健康200→迁移→init-owner→登录200→me200→注册403→down；证据docs/reviews/gate-01-r4-evidence/（20文件，login.json会话token已脱敏）",
+    "本机验证(2026-09-14晚)：typecheck 0错；unit 18/18(+4)；integration 60/60(+7新回归)；build exit 0；e2e 8/8(注入独立集群，保留一次历轮一致的ECONNRESET)",
+    "环境清理：独立集群/tmp/aiea-r4-cluster已停止删除、/tmp副本与旧迁移样例已删、colima已停止"
   ],
   "github": {
-    "status": "phase/01-foundation 本地与远端=e7b5eea（80c1342..e7b5eea 本轮推送）；main=2a983cc 未合并",
+    "status": "phase/01-foundation 本地=9a5798c+4修复提交+handoff提交（待推送后更新）；main=2a983cc 未合并",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
-    "verified_at": "2026-09-14T14:58:39+08:00",
-    "evidence": "git push 后 git log origin/phase/01-foundation -1 = e7b5eea；提交均含TASK编号，未混入.env/密钥/真实数据"
+    "verified_at": "2026-09-14T18:35:00+08:00",
+    "evidence": "修复提交已完成；handoff 提交后统一推送并读回 origin 确认"
   },
   "deployment": {
-    "status": "未部署（P0无部署要求）；真实容器验证已在colima完成并留证",
+    "status": "未部署（P0无部署要求）；真实容器验证已在colima完成双口令链路并留证",
     "url": "",
-    "verified_at": "2026-09-14T14:58:39+08:00",
-    "evidence": "docs/reviews/gate-01-r3-evidence/ 全链路：build→up→migrate→init-owner→login200→me200→publicsignup403→down；compose端口已限127.0.0.1"
+    "verified_at": "2026-09-14T18:35:00+08:00",
+    "evidence": "docs/reviews/gate-01-r4-evidence/：非默认特殊字符口令与默认口令两条全链路，down --volumes 清理"
   }
 }
 ```
 <!-- PRODUCT_OS_STATE_END -->
 
-## 当前 Git 与交接状态（2026-09-14T14:58:39+08:00）
+## 当前 Git 与交接状态（2026-09-14T18:35:00+08:00）
 
-- Gate：R3 修复完成，待 Codex 第三轮复审；TASK-004 / 待审查（Gate 标识 REVIEW_3） / Codex / P07_CODE_REVIEW / Checkpoint=YES。
-- phase/01-foundation 本地与远端=e7b5eea9（fix 提交链 e66e3f8→c6fc5fa→08e1793→e7b5eea）；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc；未合并。
-- 复审差异范围：c87a141..e7b5eea（6 提交：47269bb 正式报告、80c1342 L01、四个 fix）。
-- H06/H08/H09/H10 已修；H01–H05/H07/D01 通过项回归保留；M01/M02/M03/M04/M05 已落地；L01 已清理；仅 UUID 数据库格式约束按核定延期（首次后续 Schema 变更或 TASK-028 前）。
-- 交接：CODEX_REVIEW_HANDOFF.md（REVIEW_3 版）；下一轮复审提示词 prompts/P07_CODE_REVIEW.md。
+- Gate：REVIEW_3 修复完成，待 Codex 第四轮复审；TASK-004 / 待审查（Gate 标识 REVIEW_4 待复审） / Codex / P07_CODE_REVIEW / Checkpoint=YES。
+- phase/01-foundation 本地=e293b2e（修复链 936387a→ba12ad3→9ef85bd→e293b2e）+handoff 提交后推送并读回 origin 确认；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc；未合并。
+- 复审差异范围：9a5798c..e293b2e（4 个 fix 提交，Codex 本轮报告与证据随 handoff 提交入库）。
+- H08/H11 已修；M01–M06 按 R3 报告第 5 节核定逐项落实（M04 随 H08 迁移落地 UUID 主键约束、M06 保留真实 CLI 检查）；H01–H07/H09/H10/D01 通过项回归保留。
+- 交接：CODEX_REVIEW_HANDOFF.md（REVIEW_4 版）；下一轮复审提示词 prompts/P07_CODE_REVIEW.md。
 - 本轮修复自测通过≠Gate 通过；Codex 复审 PASS 后仍等 Owner 阶段放行。不合并 main、不部署、不开始 TASK-005/Phase 2。
 
 ## 历史结论（2026-09-12 恢复时，当前以状态块与任务表为准）
@@ -86,10 +87,10 @@
 
 | TASK | 名称 | 状态 | 依赖 | 测试/证据 |
 |---|---|---|---|---|
-| TASK-001 | 可启动的应用与验证环境 | BLOCKED | 无前置开发任务 | H10 REVIEW_2 FAIL：deps通过；干净build缺生成客户端，补客户端后缺构建Auth配置；真实Docker仍缺证 |
-| TASK-002 | P0数据库与约束迁移 | BLOCKED | TASK-001 | H08/H09 REVIEW_2 FAIL：审计父行/旧库升级跨域、14可空时间列遗漏；M04身份外键Gate01内补齐，UUID按报告限定延期 |
-| TASK-003 | 登录、初始Owner与受控邀请 | BLOCKED | TASK-002 | H04/H05/H07通过；H06并发Owner初始化Auth=0/领域User=1；M01/M02/M03及身份恢复待修；原套件14/46/8通过 |
-| TASK-004 | 组织隔离与固定权限服务 | BLOCKED | TASK-003 | H01/H02/H03/H07/D01本次HTTP再次PASS；整体依赖TASK-003的H06未验收，现有M01/M03待修；Gate正式BLOCKED，不进入005 |
+| TASK-001 | 可启动的应用与验证环境 | DONE | 无前置开发任务 | REVIEW_3 PASS：锁定安装、Web/Worker/健康降级、真实纯Git容器7迁移/初始化/登录通过；H10关闭，非默认DB密码M05保留 |
+| TASK-002 | P0数据库与约束迁移 | BLOCKED | TASK-001 | REVIEW_3 FAIL：H08并发仍产生跨组织审计引用；H11测试越界断连；H09/身份FK/正式迁移通过；M04/M06待落实 |
+| TASK-003 | 登录、初始Owner与受控邀请 | BLOCKED | TASK-002 | REVIEW_3完整依赖验收FAIL：H04/H05/H06/H07通过，实际进程退出恢复通过；TASK-002未过，邀请M01/M02/M03未完整关闭 |
+| TASK-004 | 组织隔离与固定权限服务 | BLOCKED | TASK-003 | REVIEW_3完整依赖验收FAIL：H01/H02/H03/H07/D01通过；依赖链未过；Gate BLOCKED，仍停TASK-004，不进入005 |
 | TASK-005 | 店铺与数据源配置 | TODO | TASK-004 | 未执行 |
 | TASK-006 | 统一Adapter与最小黄金样本 | TODO | TASK-005 | 未执行 |
 | TASK-007 | 文件上传、私有存储与ImportTask | TODO | TASK-006 | 未执行 |
@@ -121,10 +122,10 @@
 
 | 项目 | 当前状态 | 达成时需要的证据 |
 |---|---|---|
-| 应用可启动 | 本次本地Web/Worker/build/健康验证通过；H10两处干净构建失败，真实Docker未实测 | 修复H10并补真实容器构建/启动/迁移/登录 |
+| 应用可启动 | REVIEW_3本地与真实纯Git容器闭环通过，H10关闭；非默认密码失败M05 | 修复M05非默认配置；线上部署与真实试点仍属后续独立验收 |
 | 六类CSV导入 | 未开发/未执行 | 全链路导入与错误/幂等验证 |
 | 指标与规则正确 | 未开发/未执行 | 黄金案例手算与实际PG结果一致 |
-| 角色隔离 | 本次H01/H02/H03/H07及D01独立HTTP再次通过；未来文件/Job/AI对象未实测；身份H06仍失败 | 修复身份完整性，保留公共授权回归；未来对象在所属TASK验证 |
+| 角色隔离 | H01–H07/D01独立HTTP/并发/恢复通过；H08数据库并发关联风险未关闭；未来对象未实测 | 修复H08并保留授权回归；未来文件/Job/AI在所属TASK验证 |
 | AI联网质量 | 未执行 | 固定模型、脱敏测试集、分类与事实引用指标 |
 | 首页三分钟任务 | 未执行 | 目标角色观察记录，不能用截图替代 |
 | 性能/恢复 | 未执行 | 指定规模p95/p99、备份恢复记录 |
@@ -346,3 +347,41 @@ Product OS 已实际执行：2026-09-13T16:05:04+08:00 sync 返回 registered=1�
 - Product OS：本记录写回后运行协议 sync 并读回首页/总控，实际结果见下条。
 
 R3 收尾实际核验（2026-09-14T15:03:56+08:00）：Product OS sync 首次因状态字段误用非协议枚举 CODEX_REVIEW_REQUIRED 报"状态、检查点或版本字段无效"（updated=0），改正为 current_task=TASK-004 / status=待审查（Gate 标识 REVIEW_3 保留于 stage/review）后重跑返回 registered=1、updated=1、errors=[]。已读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，均为 TASK-004 / 待审查 / Codex / c87a141..e7b5eea 复审 / Checkpoint=YES，P07 完整提示词一致。本段补记后再次 sync，状态块无变化。
+
+
+## Gate 01 REVIEW_3 独立复审记录（2026-09-14T16:18:39+08:00）
+
+- Reviewer：Codex；范围仅Phase 1 / TASK-001–004。正式结论BLOCKED，技术FAIL，2 HIGH / 6 MEDIUM；Owner未放行。正式报告：docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_3_2026-09-14.md；机器索引：docs/reviews/GATE_01_REVIEW_3_EVIDENCE_2026-09-14.json。
+- 版本：开始工作区干净，HEAD/远端phase均9a5798c；main仍2a983cc；修复差异c87a141..9a5798c。测试在系统临时副本、独立PG55469与独立Compose项目执行，不操作原开发库5433。写回前228个跟踪文件（其中应用81个）均未变，前轮44份正式证据与33份REVIEW_2证据校验一致。
+- 实际通过：pnpm冻结离线安装/生成；typecheck；unit14/14；integration53/53（gate01.auth为11例）；Web+Worker build；E2E最终8/8。真实Prisma7.10空库7迁移、c87四→七升级/重复通过，坏审计/悬空身份升级按预期P3018拒绝；91领域时间列与同刻偏移通过。
+- H01–H07/H09/H10及D01均独立通过。H06有强制并发交错和真实子进程Auth创建后exit55的恢复证据。H08最后有效两连接实验形成cross_org=true；H11原样清理SQL终止旁观样例库连接并回滚其在途事务。没有将夹具失败当产品缺陷。
+- 真实Docker：第一次无缓存构建成功，另用纯Git归档上下文成功；容器内7迁移、Owner、真实Cookie登录/me200、公开注册403×2、Worker通过。仅改非默认PG口令后health503、Worker1，列M05。Web健康在停止本次独立PG后200→503；缺Auth/DB启动exit1。
+- Medium核定：M01/M02/M03 ACCEPT，按前轮已定范围补当前邀请来源、代理信任、输入/版本/错误信封；M04 MODIFY，身份FK关闭，UUID债务的首次后续迁移触发点已到，应在后续H08迁移落实，仍为Medium；M05 ACCEPT非默认配置一致性；M06 MODIFY自制迁移器，保留官方CLI验证。没有把整包Medium升级成HIGH，也没有批准无期限延期。L01关闭；无新产品裁决，D01不重问。
+- 执行偏差：首次E2E因审查环境localhost/127不一致失败，改隔离配置后8/8；ECONNRESET保留。Docker缺buildx，去除不支持参数后legacy真实构建；SQL夹具初次Owner/参数类型错误留档，H08以最终有效实验为准。原Prisma“空转10分钟”本轮未复现，不臆断原环境原因。
+- 原R3修复自报、首轮及第二轮/正式复核历史均保留；当前入口改为ZCode/P08修复H08/H11，另逐项落实Medium。只有新冻结提交经Codex复审PASS后再等Owner阶段放行。没有改业务代码、Schema、迁移或测试，没有提交/推送/合并/部署，没有执行TASK-005。
+- 清理与Product OS：实际执行和读回结果另见下方收尾记录及独立证据，不以规则存在代替执行。
+
+
+### REVIEW_3 收尾与视图读回（2026-09-14）
+
+- Product OS sync 已于2026-09-14T16:19:53+08:00成功：registered=1、updated=1、errors=[]。已实际读回项目首页MD/HTML与总控PROJECTS.md/index.html；任务TASK-004、待修复、ZCode、Checkpoint=YES、完成标准及完整P08提示词一致。首页自动前缀与P08正文共同校验；总控链接到该首页。
+- 18项收尾核对通过：唯一状态块、30条TASK、005–030均TODO、15节正式报告、文件链接、旧历史保留、git diff --check等；原应用81文件零变化。改动仅审查报告/证据、原进度/交接/P08与生成视图。
+- 临时Web与独立PG已停止，健康200→503通过；两轮Compose均down --volumes，审查镜像及可识别本轮中间层已清理，无删除冲突；无其他运行容器后停止本轮启动的Colima并恢复Docker default上下文。3000/55469/3300/55479均无监听。临时副本/凭据随后删除，实际完成标记见机器索引；原开发库未操作。
+- 追加本记录后再执行sync并读回；最终结果保存在gate-01-review-3-evidence/product-os-sync.log与final-verification.json。业务状态updated_at不因单纯刷新改动。本轮未提交/推送、未合并main、未部署；线上/真实企业试用未核验，Owner放行未取得。
+
+
+## 2026-09-14T18:35:00+08:00 · ZCode Gate 01 REVIEW_3 修复（P08 顶部提示词执行完成，待 Codex 第四轮复审）
+
+- 授权与依据：用户指令执行 prompts/P08_FIX.md 顶部"Gate 01 REVIEW_3 剩余问题修复"，依据 docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_3_2026-09-14.md + GATE_01_REVIEW_3_EVIDENCE_2026-09-14.json；审查基线 9a5798c（开始前已核对 HEAD/分支/远端一致，Codex 本轮报告、证据及管理差异全部保留，未 reset/覆盖）。逐项 ACCEPT/MODIFY 意见已先行列出（H08/H11/M01/M02/M03/M05 ACCEPT，M04/M06 ACCEPT-MODIFY），无 REJECT。未开始 TASK-005、未合并 main、未部署、未扩大 P0。
+- 逐项处理意见与对应 TASK：H08→TASK-002（复合外键）；H11→TASK-002 测试（隔离）；M01→TASK-003/004；M02→TASK-003；M03→TASK-003/004；M04→TASK-002（随 H08 迁移落实 UUID 主键约束）；M05→TASK-001（统一口令+URL 编码）；M06→TASK-002 测试（兼容列+真实 CLI 检查）。
+- **H08（提交 936387a）**：新迁移 audit_log(org_id,store_id)→store(org_id,id) 复合外键（复用既有 store_org_id_id_key 唯一索引、ON DELETE SET NULL (store_id)）。审查反例时序在 PG 17 独立集群双连接交错实测：方向 A（先改归属未提交→插旧组织审计引用）RI 检查等待父行锁、T1 提交后按最新快照拒绝；方向 B（先插引用未提交→改归属）被引用键变更与 KEY SHARE 冲突等待、T2 提交后反向检查拒绝；两方向 cross_org=0。v1/v2 触发器保留纵深防御；存量坏行守卫保留（新迁移内再设 DO 块，拒绝静默通过/不改写历史）。M04 同迁移为 17 张领域表主键加 UUID CHECK（NOT VALID→VALIDATE），认证四表保持框架 string ID。
+- **H11/M06（提交 ba12ad3）**：pgMigrate 重构为 createTestDatabase/dropTestDatabase——唯一命名 aiea_t_<tag>、只 terminate 本库连接、删除前校验命名规则；七套件全部改自建自清；基线在 vitest.config 启动时求值（注入 DATABASE_URL 优先）经 AIEA_TEST_BASE_DB 固化，修复".env 覆盖注入"与"前文件改写 process.env"两类问题。_prisma_migrations 补齐 started_at/rolled_back_at 官方列、applied_steps_count=1，官方 deploy 可接续；辅助器文件头明确测试用途与 upTo 语义（升级守卫夹具专用），不宣称等价。**M06 根因查明**：本机 CLI"空转"= iCloud 驱逐 node_modules 文件后同步 read 挂死（sample 栈卡 uv_fs_read，卡点文件 zeptomatch/.../parse/index.js；同命令 /tmp 副本 1.2s 完成）——与本仓库 2026-09-12 iCloud 事故同机制。官方 CLI 四项真实检查（/tmp 工作副本，Node 24.21.0/pnpm 10.34.5/PG 17.11）：空库 8 迁移 1.2s exit 0；重复 deploy No pending exit 0；c87a141 四迁移旧库→8 迁移升级 exit 0；坏行旧库 P3018+守卫报错拒绝 exit 1（符合预期）。
+- **M01/M02/M03（提交 9ef85bd）**：DELETE invitation 接 guardWrite（无 body/无 Origin 合法调用保留，跨站非可信 Origin 403）；clientIpFromRequest 共享化统一登录与邀请的 TRUST_PROXY_HEADERS 边界（direct 共享桶语义已注释，部署拓扑验证归 TASK-029）；创建/接受/撤销 Zod 严格校验（额外字段/数字类型/非法 JSON/小数版本→422），接受区分合法空 body；internalFailure 日志与响应共用 request_id（只记录异常消息）。
+- **M05（提交 e293b2e）**：新增 src/lib/dbUrl.ts（进程 DATABASE_URL→.env→PG* 分量组装+encodeURIComponent），prisma.config.ts/env.ts 共用；compose 三服务引用同一 POSTGRES_PASSWORD，web/worker 改 PG* 分量注入，不再写死口令连接串；Dockerfile deps 补 COPY dbUrl.ts（构建期修复）。真实容器双路径验证（colima 29.5.2，独立 compose 项目、全新数据卷、端口限回环）：非默认口令 r4-p@ss w0rd:!/#?Xy（空格+6 种 URL 保留字符）up→健康 200→容器内迁移 8 份 exit 0→init-owner exit 0→登录 200→/me 200→公开注册 403→down --volumes；默认口令回归 up→三服务 healthy→健康 200→down。证据 docs/reviews/gate-01-r4-evidence/（20 文件；login.json 会话 token 提交前脱敏）。
+- 测试结果（本机 /tmp 独立可丢弃集群 127.0.0.1:5434，PG 17.11）：typecheck 0 错；unit 18/18（+4 dbUrl/env 组装）；integration **60/60**（7 文件，+7 新回归：H08 并发 A/B、删除+UUID 约束、M01/M02/M03 邀请 4 例）；build（web+worker）exit 0；e2e 8/8（DATABASE_URL 注入同一独立集群；保留一次历轮一致的 ECONNRESET 警告）。**H11 验收**：旁观库 aiea_review_sentinel 连接与在途事务（BEGIN-INSERT-sleep 400s）自集成开始前建立、跨越 60/60 全程后 COMMIT 成功且数据完好。迁移已应用 aiea_dev（psql 单事务，等价 deploy）。
+- 提交与差异：本轮修复提交 936387a/ba12ad3/9ef85bd/e293b2e；下一轮复审差异范围 **9a5798c..新冻结提交**。提交前安全检查：无 .env/密钥/真实数据；容器证据内会话 token 已脱敏。临时环境已清理（独立集群、/tmp 工作副本、colima 已停止）。
+- 剩余问题与边界：修复自测通过≠Gate 通过；H01–H07/H09/H10/D01 通过项回归保留（gate01.auth/access/db、permissions、database、auth、db 七套件全部通过）；M04 UUID 外键列不加 CHECK（引用完整性传导，合同口径内）；e2e 首跑因 integration_base 未迁移失败一次，补迁移后 8/8（如实记录）。
+- 下一步：Codex 第四轮独立复审（prompts/P07_CODE_REVIEW.md）。PASS 后仍等 Owner 阶段放行，才可合并 main 并开 Phase 2。
+- Product OS：本记录写回后运行协议 sync 并读回首页/总控，实际结果见下条。
+
+R4 收尾实际核验（2026-09-14T18:34:13+08:00）：Product OS sync 返回 registered=1、updated=1、errors=[]。已读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，均为 TASK-004 / 待审查 / Codex / 第四轮复审 9a5798c..e293b2e / Checkpoint=YES，P07_CODE_REVIEW 完整提示词一致。本段补记写入后随 handoff 提交一并推送。

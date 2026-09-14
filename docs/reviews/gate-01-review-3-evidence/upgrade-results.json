@@ -1,0 +1,19 @@
+{
+  "good": {
+    "baseline_exit": 0,
+    "forward_exit": 0,
+    "repeat_exit": 0,
+    "utc_preserved": "SET\n2026-01-01 12:00:00+00",
+    "domain_without_tz": "0"
+  },
+  "bad_audit": {
+    "baseline_exit": 0,
+    "forward_exit": 1,
+    "error_tail": "migrations\n\nApplying migration `20260913120000_p0_nullable_timestamptz`\nApplying migration `20260913120100_p0_audit_tenant_fk_v2`\nError: P3018\n\nA migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve\n\nMigration name: 20260913120100_p0_audit_tenant_fk_v2\n\nDatabase error code: P0001\n\nDatabase error:\nERROR: audit_log 存在 1 条跨组织店铺引用，拒绝升级；请先人工核对这些历史行\n\nDbError { severity: \"ERROR\", parsed_severity: Some(Error), code: SqlState(EP0001), message: \"audit_log 存在 1 条跨组织店铺引用，拒绝升级；请先人工核对这些历史行\", detail: None, hint: None, position: None, where_: Some(\"PL/pgSQL function inline_code_block line 8 at RAISE\"), schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"pl_exec.c\"), line: Some(3911), routine: Some(\"exec_stmt_raise\") }\n\n\n"
+  },
+  "bad_identity": {
+    "baseline_exit": 0,
+    "forward_exit": 1,
+    "error_tail": " migration `20260913120100_p0_audit_tenant_fk_v2`\nApplying migration `20260913120200_p0_domain_user_auth_fk`\nError: P3018\n\nA migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve\n\nMigration name: 20260913120200_p0_domain_user_auth_fk\n\nDatabase error code: P0001\n\nDatabase error:\nERROR: domain_user 存在 1 条悬空 auth_user_id，拒绝升级；请先人工核对这些身份链\n\nDbError { severity: \"ERROR\", parsed_severity: Some(Error), code: SqlState(EP0001), message: \"domain_user 存在 1 条悬空 auth_user_id，拒绝升级；请先人工核对这些身份链\", detail: None, hint: None, position: None, where_: Some(\"PL/pgSQL function inline_code_block line 7 at RAISE\"), schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"pl_exec.c\"), line: Some(3911), routine: Some(\"exec_stmt_raise\") }\n\n\n"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "init": {
+    "childExit": 55,
+    "beforeRetry": {
+      "auth": 1,
+      "domain": 0
+    },
+    "afterRetry": {
+      "alreadyInitialized": false,
+      "auth": 1,
+      "domain": 1,
+      "login": 200
+    }
+  },
+  "invite": {
+    "childExit": 55,
+    "beforeRetry": {
+      "auth": 1,
+      "domain": 0,
+      "status": "pending"
+    },
+    "afterRetry": {
+      "auth": 1,
+      "domain": 1,
+      "status": "accepted",
+      "login": 200
+    }
+  }
+}

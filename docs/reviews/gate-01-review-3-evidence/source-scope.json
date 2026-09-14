@@ -1,0 +1,17 @@
+{
+  "head": "9a5798ccdfad1be1e60d2df4dce9f9c189f85b93",
+  "main": "2a983cc55f136abbb49c5d02b55c1cb82b6547cc",
+  "status_before": "",
+  "phase_diff_stat": "185 files changed, 15139 insertions(+), 238 deletions(-)",
+  "fix_diff_stat": "144 files changed, 9963 insertions(+), 5691 deletions(-)",
+  "handoff_commit_app_files": [
+    "ai-ecommerce-assistant/README.md"
+  ],
+  "original_env_ignored": true,
+  "env_names": [
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "DATABASE_URL",
+    "LOG_LEVEL"
+  ]
+}

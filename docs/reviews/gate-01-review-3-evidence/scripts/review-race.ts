@@ -1,0 +1,31 @@
+import pg from 'pg';
+import {randomUUID} from 'node:crypto';
+import {writeFileSync, readFileSync} from 'node:fs';
+import {applyMigrations} from './tests/helpers/pgMigrate';
+import {getPrismaClient} from './src/database/prisma';
+const url=process.env.DATABASE_URL!,db=getPrismaClient(),out:any={};
+async function run(){
+ const tag=randomUUID().slice(0,8);
+ const au=await db.authUser.create({data:{id:'audit-'+tag,name:'audit',email:tag+'@example.test'}});
+ const u=await db.user.create({data:{authUserId:au.id,email:au.email,displayName:'audit'}});
+ const a=await db.organization.create({data:{id:randomUUID(),name:'A',ownerUserId:u.id}});
+ const au2=await db.authUser.create({data:{id:'audit-b-'+tag,name:'audit-b',email:'b-'+tag+'@example.test'}});
+ const u2=await db.user.create({data:{authUserId:au2.id,email:au2.email,displayName:'audit-b'}});
+ const b=await db.organization.create({data:{id:randomUUID(),name:'B',ownerUserId:u2.id}});
+ const s=await db.store.create({data:{id:randomUUID(),orgId:a.id,name:'Store',externalStoreId:tag,platform:'manual',currency:'CNY',timezone:'Asia/Shanghai'}});
+ const c1=new pg.Client({connectionString:url}),c2=new pg.Client({connectionString:url});await c1.connect();await c2.connect();
+ await c1.query('BEGIN');await c1.query('UPDATE store SET org_id=$1 WHERE id=$2',[b.id,s.id]);
+ await c2.query('BEGIN');const id=randomUUID();let completed=false;
+ const pending=c2.query('INSERT INTO audit_log(id,org_id,store_id,action,entity_type,entity_id,request_id,updated_at) VALUES($1::text,$2,$3,\'race\',\'probe\',$1::text,$1::uuid,now())',[id,a.id,s.id]).then(()=>{completed=true;return 'OK'},e=>{completed=true;return e.code+':'+e.message});
+ await new Promise(r=>setTimeout(r,300));const waited=!completed;await c1.query('COMMIT');const ins=await pending;await c2.query('COMMIT');
+ const corrupt=await c1.query('SELECT a.org_id<>s.org_id AS cross_org FROM audit_log a JOIN store s ON s.id=a.store_id WHERE a.id=$1',[id]);
+ out.H08_concurrent={parent_update_committed:true,insert_result:ins,insert_waited:waited,cross_org:corrupt.rows[0]?.cross_org??false};
+ await c1.end();await c2.end();
+ out.H09_types=await db.$queryRaw`SELECT data_type,count(*)::int AS n FROM information_schema.columns WHERE table_schema='public' AND data_type LIKE 'timestamp%' AND table_name NOT IN ('user','session','account','verification','_prisma_migrations') GROUP BY data_type`;
+ await db.$executeRaw`UPDATE store SET input_evaluation_at='2026-01-01 12:00:00+00' WHERE id=${s.id}`;
+ const t1=(await db.store.findUniqueOrThrow({where:{id:s.id}})).inputEvaluationAt!;
+ await db.$executeRaw`UPDATE store SET input_evaluation_at='2026-01-01 20:00:00+08' WHERE id=${s.id}`;
+ const t2=(await db.store.findUniqueOrThrow({where:{id:s.id}})).inputEvaluationAt!;out.H09_same_instant_delta_ms=t2.getTime()-t1.getTime();
+ writeFileSync(process.env.REVIEW_OUT!,JSON.stringify(out,null,2));await db.$disconnect();
+}
+run().catch(e=>{console.error(e);process.exit(1)});

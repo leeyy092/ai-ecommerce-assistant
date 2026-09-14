@@ -1,3 +1,108 @@
+# CODEX_REVIEW_HANDOFF｜Gate01 REVIEW_3 修复完成，待 Codex 第四轮独立复审
+
+日期：2026-09-14T18:35:00+08:00；执行者：ZCode。**Phase 1 / TASK-004 / 待审查（REVIEW_4 待复审）/ Checkpoint=YES / 下一工具 Codex。**
+
+## 复审定位信息
+
+| 项 | 值 |
+|---|---|
+| Current Branch | `phase/01-foundation` |
+| Base Branch | `main`（`2a983cc55f136abbb49c5d02b55c1cb82b6547cc`，未合并） |
+| Previous Review Commit（REVIEW_3 冻结） | `9a5798ccdfad1be1e60d2df4dce9f9c189f85b93` |
+| Current Review Commit | `e293b2e`（4 个 fix 提交后冻结；handoff 提交随后推送） |
+| Git Diff Range | `9a5798c..e293b2e`（936387a H08+M04 → ba12ad3 H11+M06 → 9ef85bd M01/M02/M03 → e293b2e M05） |
+| Project Status | TASK-004 / 待审查（Gate 标识 REVIEW_4 待复审）；Checkpoint=YES；下一工具 Codex，prompts/P07_CODE_REVIEW.md |
+| Working Tree | handoff 提交后 clean；接手时若 HEAD 变化先重定范围 |
+
+## 本轮修复摘要（ZCode 执行，待独立复核）
+
+| # | 修复 commit | 内容 |
+|---|---|---|
+| H08+M04 | 936387a (TASK-002) | 复合外键 audit_log(org_id,store_id)→store(org_id,id)（复用既有唯一索引、ON DELETE SET NULL (store_id)）；PG17 双连接交错实测两方向均拒绝、cross_org=0；坏行守卫保留；M04 同迁移为 17 张领域表主键加 UUID CHECK（认证四表保持框架 string） |
+| H11+M06 | ba12ad3 (TASK-002 测试) | 删除 LIKE 'aiea_%' 模糊 kill；唯一命名 aiea_t_<tag> 测试库只自管理；基线 vitest 启动时求值经 AIEA_TEST_BASE_DB 固化（注入优先，不被 .env/先跑文件覆盖）；_prisma_migrations 补官方列；M06 根因查明（iCloud dataless 同步读挂死）+ 官方 CLI 四项检查 |
+| M01/M02/M03 | 9ef85bd (TASK-003/004) | DELETE invitation 接 guardWrite；clientIpFromRequest 共享（TRUST_PROXY_HEADERS 边界覆盖邀请入口，换头不换桶）；邀请创建/接受/撤销 Zod 严格校验、DELETE 正整数版本、接受区分合法空 body、internalFailure 日志与响应共用 request_id |
+| M05 | e293b2e (TASK-001) | src/lib/dbUrl.ts 统一连接串解析（PG* 分量组装+percent-encode）；compose 三服务引用同一 POSTGRES_PASSWORD；Dockerfile deps 补 COPY dbUrl.ts；真实容器双口令链路验证 |
+
+## 关键证据
+
+- **H08 并发**：PG 17 独立集群双连接交错——方向 A（改归属未提交→插旧组织审计）RI 等待父行锁后按最新快照拒绝；方向 B（插引用未提交→改归属）key-change 与 KEY SHARE 冲突+反向 RI 检查拒绝；两方向 cross_org=0。回归入 gate01.db（并发 A/B/删除/UUID 约束 4 例）。
+- **H11 验收**：独立可丢弃集群（127.0.0.1:5434，/tmp initdb）上，旁观库 aiea_review_sentinel 连接与 BEGIN-INSERT-sleep(400s) 在途事务在集成运行前建立、跨越 60/60 全程后 COMMIT 成功、数据完好。
+- **M06 官方 CLI 四项**（/tmp 工作副本，排除 iCloud dataless 影响）：空库 8 迁移 1.2s exit 0；重复 deploy No pending exit 0；c87a141 四迁移旧库→8 迁移 exit 0；坏行旧库 P3018+守卫报错拒绝 exit 1。根因：本机 CLI 空转=iCloud 驱逐 node_modules 后同步 read 挂死（sample 栈卡 uv_fs_read）。
+- **M05 容器双路径**（colima，独立 compose 项目，全新数据卷，端口限回环）：特殊字符口令 `r4-p@ss w0rd:!/#?Xy` 与默认口令均为 up→健康 200→迁移 8 份→init-owner→登录 200→/me 200→公开注册 403→down --volumes。证据 docs/reviews/gate-01-r4-evidence/（20 文件；login.json 会话 token 提交前脱敏）。
+
+## ZCode 记录的 Tests（2026-09-14 晚，独立集群）
+
+| 套件 | 结果 |
+|---|---|
+| typecheck | ✅ 0 错误 |
+| unit | ✅ 18/18（+4 dbUrl/env 组装） |
+| integration（7 文件 60 例） | ✅ 60/60（+7 新回归：H08 并发 A/B、删除+UUID、M01/M02/M03 邀请 4 例） |
+| build（web+worker） | ✅ exit 0 |
+| e2e | ✅ 8/8（DATABASE_URL 注入独立集群；保留一次历轮一致 ECONNRESET 警告） |
+| 真实容器 | ✅ 双口令链路（见上）；迁移已应用 aiea_dev（psql 单事务） |
+
+执行偏差如实记录：e2e 首跑失败一次（种子指向的 integration_base 未迁移，属临时环境准备缺口），对基线库执行官方 migrate deploy 后 8/8；gate01.db 并发测试首版把"等待中拒绝"写成顺序 await 造成自死锁，改为"先挂起 promise→对端提交→再断言"后通过（与报告反例时序一致）。
+
+## Known Issues / Follow-up
+
+1. M01–M06 本轮全部按 R3 报告第 5 节核定落实；无新增延期项。M04 外键列不加 UUID CHECK（引用完整性传导至已约束主键）。
+2. TRUST_PROXY_HEADERS 真实反代拓扑验证归 TASK-029；旧下载地址/旧 job 重放拒绝属 TASK-007/013 对象。
+3. 仓库仍位于 iCloud 同步目录：本轮实证该环境会同时拖慢本机开发（CLI/测试挂死风险）——迁移出 iCloud 仍是基础设施建议，不阻断 Gate。
+4. 临时环境已清理：独立 PG 集群、/tmp 工作副本、旧迁移样例、colima 均已停止/删除。
+
+## 建议 Codex 优先阅读（按 diff 顺序）
+
+源码/迁移/测试路径相对应用目录 `ai-ecommerce-assistant/`；docs 路径相对项目根。
+
+| 顺序 | 文件 |
+|---|---|
+| 1 | `git log 9a5798c..e293b2e --oneline` |
+| 2 | `prisma/migrations/20260914150000_p0_audit_store_composite_fk/migration.sql`、`tests/integration/gate01.db.test.ts`（H08 并发回归+M04 断言） |
+| 3 | `tests/helpers/pgMigrate.ts`、`vitest.config.ts`、七套件 beforeAll/afterAll（H11）；官方 CLI 四项检查可按 P08_FIX 记录在 /tmp 副本复跑 |
+| 4 | `src/app/api/v1/invitations/**`、`src/app/api/v1/invitations/[idOrToken]/route.ts`、`src/lib/rateLimit.ts`（clientIpFromRequest）、`src/lib/http.ts`（requestId）、`src/app/api/auth/[...all]/route.ts` |
+| 5 | `src/lib/dbUrl.ts`、`compose.yaml`、`Dockerfile`、`prisma.config.ts`、`src/lib/env.ts`（M05） |
+| 6 | `docs/reviews/gate-01-r4-evidence/`（容器双口令链路）；`docs/ai-ecommerce-assistant/12_PROGRESS.md`（R4 执行记录） |
+
+## 复审结论回填约定
+
+独立复审按项目协议记录 PASS / FAIL / BLOCKED 及精确代码版本、实际测试、未运行项、剩余问题。FAIL 交 ZCode 修复并复审；缺证据写清补证动作；只有确需产品决策的问题才交 Owner。PASS 后仍等待 Owner 阶段放行，两者满足后才按 PHASE_PLAN 执行合并与下一 Phase。本轮不合并 main、不部署、不开始 TASK-005。
+
+---
+
+# 历史：REVIEW_3 独立复审（Codex）及此前全部原文
+
+以下为先前原文；其中"待修复""BLOCKED"等表述已被上方 R3 修复完成后的待复审状态取代，仅供追溯。
+
+# CODEX_REVIEW_HANDOFF｜Gate01 REVIEW_3 独立复审完成，待 ZCode 修复
+
+日期：2026-09-14T16:18:39+08:00；Reviewer：Codex。**Phase 1 / TASK-004 / 待修复 / Checkpoint=YES / 下一工具 ZCode。**
+
+**正式 Gate 结论：BLOCKED；项目技术审查：FAIL。** 2 HIGH（H08 未关闭、H11 新增），6 MEDIUM。Owner 尚未阶段放行；不得合并 main、部署或开始 TASK-005。
+
+| 项 | 最新事实 |
+|---|---|
+| 审查分支/提交 | phase/01-foundation / `9a5798ccdfad1be1e60d2df4dce9f9c189f85b93`，本地与远端一致 |
+| 基准与范围 | main=`2a983cc55f136abbb49c5d02b55c1cb82b6547cc`；修复审查 `c87a141..9a5798c`，另核对完整Phase1 |
+| 旧交接版本说明 | e7b5eea 为最后业务修复，9a5798c 仅其后管理文档/应用README；当前以实际HEAD为准 |
+| 原 HIGH 已关闭 | H01–H07、H09、H10，共9项；D01方案A通过，不再询问 |
+| 剩余 HIGH | H08：两事务并发可形成审计/店铺跨组织引用；H11：新测试清理会终止同集群无关库连接，配置覆盖隔离目标 |
+| TASK 验收 | 001 PASS；002 FAIL；003/004 核心功能通过，完整依赖验收FAIL |
+| 实际测试 | typecheck/build PASS，unit14/14、integration53/53、E2E最终8/8；真实HTTP/进程退出/回滚、真实Prisma空库7迁移与四→七升级 |
+| 真实 Docker | 纯Git上下文构建成功，容器7迁移/初始化/登录/me200/公开注册403×2/Worker通过；非默认密码503列M05 |
+| Medium | M01来源保护遗漏撤销；M02邀请仍信任伪造代理头；M03邀请输入/版本/错误信封未全落地；M04 UUID债务触发点已到；M05 Compose非默认密码不一致；M06测试迁移元数据不兼容Prisma |
+| 报告/证据 | [正式15节报告](docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_3_2026-09-14.md)；[机器索引](docs/reviews/GATE_01_REVIEW_3_EVIDENCE_2026-09-14.json)；[原始记录与复现](docs/reviews/gate-01-review-3-evidence/README.md) |
+| 下一提示词 | [prompts/P08_FIX.md](prompts/P08_FIX.md)，只修Phase1；新版本以9a5798c..新冻结提交回Codex |
+
+M01–M03 沿用前轮 ACCEPT 范围，不能把漏改写成全部完成；M04 身份外键已通过，UUID约束延期条件已触发，应在后续H08迁移落实，仍为Medium。M05/M06按报告最小修补处理。两项HIGH独立决定BLOCKED，没有新增产品决策，也没有把全部Medium升级为HIGH。
+
+本轮原应用81跟踪文件保持不变；测试只在临时副本、独立PG/Compose环境进行，未操作原开发库5433。原报告与证据完整保留。本轮只写审查管理文档，未提交/推送/合并/部署；测试成功、Reviewer通过、Owner放行、GitHub与部署分开记录。清理和Product OS实际收尾见唯一进度最新记录。
+
+---
+
+# 历史：ZCode 2026-09-14 R3 修复交接及此前全部原文
+
+以下完整保留审查前交接，其中“待Codex复审”“全部落地”等自报由上方独立结论取代，不能作为当前状态或新指令。
+
 # CODEX_REVIEW_HANDOFF｜Gate01 R3 修复完成，待 Codex 第三轮独立复审
 
 日期：2026-09-14T14:58:39+08:00；执行者：ZCode。当前 Phase 1 / TASK-004 / 待审查（Gate01 REVIEW_3 待复审） / Checkpoint=YES / 下一工具 Codex。

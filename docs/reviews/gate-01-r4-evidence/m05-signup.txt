@@ -1,0 +1,1 @@
+{"error":{"code":"PUBLIC_SIGNUP_DISABLED","message":"系统不提供公开注册；账号由部署初始化与管理员邀请建立","retryable":false,"request_id":"f08d5ea5-d6cd-498d-8dab-1b9ba841f8d3"}}

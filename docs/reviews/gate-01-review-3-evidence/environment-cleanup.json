@@ -1,0 +1,10 @@
+{
+  "running_containers_before_stop": [],
+  "docker_ps_exit": 0,
+  "colima_stop_exit": 0,
+  "restore_context_exit": 0,
+  "listener_3000": false,
+  "listener_55469": false,
+  "listener_3300": false,
+  "listener_55479": false
+}

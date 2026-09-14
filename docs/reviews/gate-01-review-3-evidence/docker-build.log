@@ -1,0 +1,295 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0
+            environment-variable.
+
+Sending build context to Docker daemon  5.246MB
+
+Step 1/26 : FROM node:24.21.0-bookworm-slim AS deps
+ ---> 2fe369e96955
+Step 2/26 : WORKDIR /app
+ ---> Running in e348b6244bb4
+ ---> Removed intermediate container e348b6244bb4
+ ---> 0cfaaaf51a44
+Step 3/26 : RUN corepack enable
+ ---> Running in 991d2116a87c
+ ---> Removed intermediate container 991d2116a87c
+ ---> 41c232dad2b8
+Step 4/26 : COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+ ---> 105ffbca8397
+Step 5/26 : COPY prisma/schema.prisma ./prisma/schema.prisma
+ ---> a5340dcd84fe
+Step 6/26 : COPY prisma.config.ts ./
+ ---> ee5b1a144be7
+Step 7/26 : RUN pnpm install --frozen-lockfile
+ ---> Running in d66bb5e2a9fb
+[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0mLockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +277
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 277, reused 0, downloaded 0, added 0
+Progress: resolved 277, reused 0, downloaded 5, added 5
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │     Update available! 10.34.5 → 12.4.1.      │
+   │     Changelog: https://pnpm.io/v/12.4.1      │
+   │   To update, run: corepack use pnpm@12.4.1   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 277, reused 0, downloaded 10, added 10
+Progress: resolved 277, reused 0, downloaded 19, added 19
+Progress: resolved 277, reused 0, downloaded 28, added 28
+Progress: resolved 277, reused 0, downloaded 32, added 32
+Progress: resolved 277, reused 0, downloaded 35, added 35
+Progress: resolved 277, reused 0, downloaded 36, added 35
+Progress: resolved 277, reused 0, downloaded 37, added 37
+Progress: resolved 277, reused 0, downloaded 40, added 40
+Progress: resolved 277, reused 0, downloaded 50, added 50
+Progress: resolved 277, reused 0, downloaded 69, added 69
+Progress: resolved 277, reused 0, downloaded 81, added 81
+Progress: resolved 277, reused 0, downloaded 91, added 91
+Progress: resolved 277, reused 0, downloaded 109, added 109
+Progress: resolved 277, reused 0, downloaded 121, added 121
+Progress: resolved 277, reused 0, downloaded 130, added 129
+Progress: resolved 277, reused 0, downloaded 139, added 139
+Progress: resolved 277, reused 0, downloaded 147, added 147
+Progress: resolved 277, reused 0, downloaded 158, added 158
+Progress: resolved 277, reused 0, downloaded 169, added 169
+Progress: resolved 277, reused 0, downloaded 170, added 170
+Progress: resolved 277, reused 0, downloaded 171, added 171
+Progress: resolved 277, reused 0, downloaded 177, added 177
+Progress: resolved 277, reused 0, downloaded 179, added 179
+Progress: resolved 277, reused 0, downloaded 182, added 182
+Progress: resolved 277, reused 0, downloaded 185, added 185
+Progress: resolved 277, reused 0, downloaded 188, added 188
+Progress: resolved 277, reused 0, downloaded 190, added 190
+Progress: resolved 277, reused 0, downloaded 193, added 193
+Progress: resolved 277, reused 0, downloaded 197, added 197
+Progress: resolved 277, reused 0, downloaded 198, added 198
+Progress: resolved 277, reused 0, downloaded 199, added 199
+ WARN  Tarball download average speed 42 KiB/s (size 87 KiB) is below 50 KiB/s: https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz (GET)
+Progress: resolved 277, reused 0, downloaded 201, added 201
+Progress: resolved 277, reused 0, downloaded 202, added 202
+Progress: resolved 277, reused 0, downloaded 203, added 203
+Progress: resolved 277, reused 0, downloaded 204, added 203
+Progress: resolved 277, reused 0, downloaded 204, added 204
+ WARN  Tarball download average speed 42 KiB/s (size 530 KiB) is below 50 KiB/s: https://registry.npmjs.org/vite/-/vite-7.3.6.tgz (GET)
+Progress: resolved 277, reused 0, downloaded 205, added 204
+Progress: resolved 277, reused 0, downloaded 206, added 206
+Progress: resolved 277, reused 0, downloaded 207, added 206
+Progress: resolved 277, reused 0, downloaded 207, added 207
+Progress: resolved 277, reused 0, downloaded 210, added 210
+Progress: resolved 277, reused 0, downloaded 211, added 210
+Progress: resolved 277, reused 0, downloaded 212, added 212
+Progress: resolved 277, reused 0, downloaded 215, added 214
+Progress: resolved 277, reused 0, downloaded 217, added 217
+ WARN  Tarball download average speed 28 KiB/s (size 562 KiB) is below 50 KiB/s: https://registry.npmjs.org/rollup/-/rollup-4.63.2.tgz (GET)
+Progress: resolved 277, reused 0, downloaded 219, added 219
+Progress: resolved 277, reused 0, downloaded 221, added 221
+Progress: resolved 277, reused 0, downloaded 224, added 224
+Progress: resolved 277, reused 0, downloaded 229, added 229
+Progress: resolved 277, reused 0, downloaded 234, added 234
+Progress: resolved 277, reused 0, downloaded 239, added 239
+Progress: resolved 277, reused 0, downloaded 247, added 246
+Progress: resolved 277, reused 0, downloaded 253, added 253
+Progress: resolved 277, reused 0, downloaded 254, added 254
+Progress: resolved 277, reused 0, downloaded 255, added 255
+Progress: resolved 277, reused 0, downloaded 256, added 256
+Progress: resolved 277, reused 0, downloaded 257, added 256
+Progress: resolved 277, reused 0, downloaded 259, added 259
+Progress: resolved 277, reused 0, downloaded 261, added 261
+Progress: resolved 277, reused 0, downloaded 262, added 262
+Progress: resolved 277, reused 0, downloaded 263, added 263
+ WARN  Tarball download average speed 32 KiB/s (size 308 KiB) is below 50 KiB/s: https://registry.npmjs.org/lodash/-/lodash-4.18.1.tgz (GET)
+Progress: resolved 277, reused 0, downloaded 264, added 263
+Progress: resolved 277, reused 0, downloaded 264, added 264
+Progress: resolved 277, reused 0, downloaded 265, added 265
+ WARN  Tarball download average speed 19 KiB/s (size 1635 KiB) is below 50 KiB/s: https://registry.npmjs.org/elkjs/-/elkjs-0.11.1.tgz (GET)
+Progress: resolved 277, reused 0, downloaded 266, added 265
+Progress: resolved 277, reused 0, downloaded 266, added 266
+Progress: resolved 277, reused 0, downloaded 267, added 266
+Progress: resolved 277, reused 0, downloaded 267, added 267
+ WARN  Tarball download average speed 40 KiB/s (size 4102 KiB) is below 50 KiB/s: https://registry.npmjs.org/effect/-/effect-3.20.0.tgz (GET)
+Progress: resolved 277, reused 0, downloaded 268, added 268
+Progress: resolved 277, reused 0, downloaded 269, added 268
+Progress: resolved 277, reused 0, downloaded 270, added 270
+ WARN  Tarball download average speed 42 KiB/s (size 3500 KiB) is below 50 KiB/s: https://registry.npmjs.org/lightningcss-linux-arm64-gnu/-/lightningcss-linux-arm64-gnu-1.32.0.tgz (GET)
+Progress: resolved 277, reused 0, downloaded 271, added 271
+Progress: resolved 277, reused 0, downloaded 272, added 271
+Progress: resolved 277, reused 0, downloaded 272, added 272
+Progress: resolved 277, reused 0, downloaded 273, added 272
+Progress: resolved 277, reused 0, downloaded 273, added 273
+Progress: resolved 277, reused 0, downloaded 274, added 273
+Progress: resolved 277, reused 0, downloaded 274, added 274
+Progress: resolved 277, reused 0, downloaded 275, added 274
+Progress: resolved 277, reused 0, downloaded 275, added 275
+Progress: resolved 277, reused 0, downloaded 276, added 275
+Progress: resolved 277, reused 0, downloaded 276, added 276
+Progress: resolved 277, reused 0, downloaded 277, added 276
+Progress: resolved 277, reused 0, downloaded 277, added 277, done
+.../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+.../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+
+dependencies:
++ @prisma/adapter-pg 7.10.0
++ @prisma/client 7.10.0
++ better-auth 1.7.4
++ next 16.3.5
++ pg 8.23.0
++ pino 10.3.1
++ react 19.2.8
++ react-dom 19.2.8
++ zod 4.6.2
+
+devDependencies:
++ @playwright/test 1.63.0
++ @tailwindcss/postcss 4.3.3
++ @types/node 24.13.4
++ @types/pg 8.23.1
++ @types/react 19.3.0
++ @types/react-dom 19.3.0
++ esbuild 0.25.12
++ prisma 7.10.0
++ tailwindcss 4.3.3
++ tsx 4.23.13
++ typescript 5.9.3
++ vitest 3.2.7
+
+. postinstall$ prisma generate
+. postinstall: Loaded Prisma config from prisma.config.ts.
+. postinstall: prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+. postinstall: Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+. postinstall: prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+. postinstall: Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+. postinstall: Prisma schema loaded from prisma/schema.prisma.
+. postinstall: ✔ Generated Prisma Client (7.10.0) to ./src/generated/prisma in 423ms
+. postinstall: Done
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: @prisma/engines@7.10.0, prisma@7.10.0.              │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 3m 22.5s using pnpm v10.34.5
+ ---> Removed intermediate container d66bb5e2a9fb
+ ---> 43112f823491
+Step 8/26 : FROM node:24.21.0-bookworm-slim AS build
+ ---> 2fe369e96955
+Step 9/26 : WORKDIR /app
+ ---> Running in 5cff567a7b6d
+ ---> Removed intermediate container 5cff567a7b6d
+ ---> 28c1085ed38b
+Step 10/26 : RUN corepack enable
+ ---> Running in 993bb511b209
+ ---> Removed intermediate container 993bb511b209
+ ---> 6dffdca2e2f3
+Step 11/26 : COPY --from=deps /app/node_modules ./node_modules
+ ---> 2d8915feb01d
+Step 12/26 : COPY --from=deps /app/src/generated ./src/generated
+ ---> dcb5da0a2820
+Step 13/26 : COPY . .
+ ---> 16acfd8360c1
+Step 14/26 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Running in a7d1fa23351a
+ ---> Removed intermediate container a7d1fa23351a
+ ---> 77f342fe0678
+Step 15/26 : ENV DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:5432/placeholder
+ ---> Running in 1cfbc1800fee
+ ---> Removed intermediate container 1cfbc1800fee
+ ---> 1494a92968b1
+Step 16/26 : ENV BETTER_AUTH_SECRET=build-time-placeholder-not-a-secret
+ ---> Running in 689661e5b7a7
+ ---> Removed intermediate container 689661e5b7a7
+ ---> e066bdadb7d1
+Step 17/26 : ENV BETTER_AUTH_URL=http://localhost:3000
+ ---> Running in 61f80b1faf40
+ ---> Removed intermediate container 61f80b1faf40
+ ---> 11ecf3908018
+Step 18/26 : RUN pnpm build
+ ---> Running in 627469bcf9c1
+[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0m
+> ai-ecommerce-assistant@0.1.0 build /app
+> next build && pnpm build:worker
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 24ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 9.2s
+  Running TypeScript ...
+  Finished TypeScript in 5.1s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/9) ...
+  Generating static pages using 1 worker (2/9) 
+  Generating static pages using 1 worker (4/9) 
+  Generating static pages using 1 worker (6/9) 
+✓ Generating static pages using 1 worker (9/9) in 115ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/[...all]
+├ ƒ /api/health
+├ ƒ /api/v1/invitations
+├ ƒ /api/v1/invitations/[idOrToken]
+├ ƒ /api/v1/invitations/[idOrToken]/accept
+├ ƒ /api/v1/me
+├ ƒ /api/v1/me/active-organization
+├ ƒ /api/v1/members
+├ ƒ /api/v1/members/[id]
+├ ƒ /api/v1/organization
+├ ƒ /invite/[token]
+└ ○ /login
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> ai-ecommerce-assistant@0.1.0 build:worker /app
+> esbuild src/jobs/worker.ts src/jobs/status.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/jobs
+
+[91m
+  dist/jobs/worker.js  1.0mb ⚠️
+  dist/jobs/status.js  2.6kb
+
+⚡ Done in 74ms
+[0m ---> Removed intermediate container 627469bcf9c1
+ ---> f6662fc4ec01
+Step 19/26 : FROM node:24.21.0-bookworm-slim AS runner
+ ---> 2fe369e96955
+Step 20/26 : WORKDIR /app
+ ---> Running in 0cbe06ece979
+ ---> Removed intermediate container 0cbe06ece979
+ ---> 5a2c2d81d5cf
+Step 21/26 : RUN corepack enable
+ ---> Running in 8c99084044f3
+ ---> Removed intermediate container 8c99084044f3
+ ---> d8a0c62eae9d
+Step 22/26 : ENV NODE_ENV=production
+ ---> Running in aeedb64708c8
+ ---> Removed intermediate container aeedb64708c8
+ ---> b246ed7908ca
+Step 23/26 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Running in a4f8916b5c31
+ ---> Removed intermediate container a4f8916b5c31
+ ---> ebb979070110
+Step 24/26 : COPY --from=build /app ./
+ ---> 33794121f519
+Step 25/26 : EXPOSE 3000
+ ---> Running in 7a1ac005b96e
+ ---> Removed intermediate container 7a1ac005b96e
+ ---> 42f760267b31
+Step 26/26 : CMD ["node", "node_modules/next/dist/bin/next", "start"]
+ ---> Running in 48aa30bc3bc6
+ ---> Removed intermediate container 48aa30bc3bc6
+ ---> 7a579d1b8ba9
+Successfully built 7a579d1b8ba9
+Successfully tagged aiea-r3-review:9a5798c

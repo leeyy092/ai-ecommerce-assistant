@@ -1,3 +1,45 @@
+# Gate 01 REVIEW_3 剩余问题修复 · ZCode
+
+这是当前有效提示词，对应 2026-09-14 Codex 对 9a5798c 的第三轮独立审查。下方更早提示词完整保留，仅供历史追溯。
+
+```text
+请接手 AI 电商运营助手 Gate 01 REVIEW_3 后的 Phase 1 修复。只处理 TASK-001–004，不开始 TASK-005，不合并 main，不部署，不扩大 P0 或重做已通过的功能。
+
+项目根目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发
+应用目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant
+总控目录：/Users/yuyuyu/Documents/AI-Workspace
+
+先完整读取项目 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md，以及唯一进度 docs/ai-ecommerce-assistant/12_PROGRESS.md、09_TASKS.md、11_DEVELOPMENT_RULES.md、DEVELOPMENT_HANDOFF.md、PHASE_PLAN.md、FINAL_DECISIONS.md、最新 CODEX_REVIEW_HANDOFF.md。正式审查依据为 docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_3_2026-09-14.md、GATE_01_REVIEW_3_EVIDENCE_2026-09-14.json 和 gate-01-review-3-evidence/README.md、相关证据与原任务合同；旧交接中的“全部落地”不是当前事实。
+
+当前 Phase 1 / TASK-004 / 待修复 / Gate BLOCKED（技术 FAIL）/ Checkpoint=YES。审查冻结 phase/01-foundation=9a5798ccdfad1be1e60d2df4dce9f9c189f85b93；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc。先重查实际 HEAD、Git Diff、未提交管理文件和是否有其他执行者；保留 Codex 本轮报告、证据、进度、交接与生成视图，不能 reset/覆盖。下次审查差异以9a5798c..新冻结提交为准，不继续用旧e7b5eea短版本当最新HEAD。
+
+本次结论：2 HIGH（H08未关闭、H11新增），6 MEDIUM；无CRITICAL、无新产品裁决。原HIGH中H01–H07、H09、H10共9项已独立通过。D01方案A已验证：只禁当前组织Membership并撤登录会话；不通过组织接口改全局User.status；其他有效组织资格重新登录仍可用。无需重问D01。
+
+先逐项给出ACCEPT/DISCUSS/REJECT及依据，在原TASK范围内一次一项修复。必须修复的HIGH只有：
+1. TASK-002 / H08：并发持续同域。当前父行和审计触发器仅各查当前可见数据；T1把无审计Store从A改B暂不提交，T2插入A的审计引用并等待，T1提交后T2也提交，最终cross_org=true。有效反例是db-race-final.json和scripts/review-race.ts；db-probes.json/H08_concurrent属于首次夹具类型错误，不是通过证据。新增迁移实现复合外键或经并发验证的锁定/重查；删除店铺只清store_id保留org_id，保留坏旧行升级拒绝，不自动改写历史审计。补两种交错、正常同域、跨域拒绝、删除、空库/旧库升级回归。
+2. TASK-002 / H11：测试隔离。六套件beforeAll的datname LIKE 'aiea_%' + pg_terminate_backend会杀同集群其他库连接；部分测试还由.env覆盖外部DATABASE_URL。删除跨库模糊清理，只管理本次明确创建的唯一测试库/连接，配置不能悄悄回退到开发库。修复前不得在开发库所在集群直接跑原套件，应使用独立可丢弃的整个集群。修复后测试旁观库连接和在途事务完整保留，再跑完整套件。不要提高权限或扩大kill范围来掩盖资源泄漏。
+
+Medium按正式报告第5节与前轮核定落实，不把执行者建议当Reviewer批准，也不把它们全部升格HIGH：
+- M01 ACCEPT（TASK-003/004）：现有来源保护漏了DELETE invitation。补当前全部写入口，包括无body DELETE；明确MIME/无Origin边界，保留合法调用。
+- M02 ACCEPT（TASK-003）：登录计数语义已修，邀请预览/接受仍直接信任伪造X-Forwarded-For。把既定TRUST_PROXY_HEADERS边界覆盖所有邀请入口并验证不能换头绕桶；真实部署反代拓扑验证归TASK-029。
+- M03 ACCEPT（TASK-003/004）：完成邀请创建/接受的严格对象/类型/长度/额外字段，DELETE正整数expected_version；非法输入422、异常稳定信封，审计故障业务仍回滚。internalFailure的日志与响应共用request_id。只修当前入口，不建设新的异常平台。
+- M04 MODIFY（TASK-002）：认证外键及悬空守卫通过；领域UUID格式约束的延期条件“首次后续Schema变更或TASK-028前取较早”已经触发，三份新迁移不能继续机械顺延。随后续H08迁移检查存量并落实领域ID约束，保留认证框架string ID。本项仍MEDIUM。
+- M05 ACCEPT（TASK-001）：Compose默认口令闭环已通过，但自定义POSTGRES_PASSWORD只改PG、web/worker连接串仍旧值。统一配置并正确处理URL编码；用全新数据卷、非默认口令真实验证启动/迁移/初始化/登录。端口回环已通过；不要重新开发H10。
+- M06 MODIFY（TASK-002测试）：pgMigrate辅助器写入的_prisma_migrations缺rolled_back_at/started_at，官方Prisma后续deploy失败。保留真实CLI空库/重复/升级检查，优先去掉不必要的自制迁移历史；若保留辅助执行则明确测试用途、upTo语义与兼容证据，不能宣称等价。先查原慢启动原因，不以“空转”把实际迁移验证永久替换掉。
+
+独立基线回归：typecheck/build通过；unit14/14、integration53/53（gate01.auth为11例）、E2E最终8/8。真实Prisma空库7迁移、c87四→七升级/重复通过；旧坏审计/悬空身份按预期拒绝。真实纯Git上下文Docker构建→启动→7迁移→Owner→登录/me200→注册403×2→Worker通过。H06包含实际子进程退出55后的恢复。保留这些有效回归，不把测试全绿当剩余反例关闭。首次E2E配置不一致、ECONNRESET、无buildx参数问题及审查夹具错误均有区分说明，不能误报为产品新问题。
+
+所有测试使用独立可丢弃的集群、工作副本/明确测试库和临时凭据，不改客户或原开发数据。修复保持现有技术栈，不增加大型依赖，不重写共享迁移或Git历史。遵守原Git授权与TASK记录；仅纳入相关修改，先检查敏感内容，禁止force push。修复、自测、独立审查、Owner放行、GitHub和部署分开记录。
+
+完成后重读磁盘最新唯一进度，更新TASK表、当前摘要、唯一状态块、CODEX_REVIEW_HANDOFF和下一轮P07_CODE_REVIEW完整提示词。保留全部历史，列出实际提交、9a5798c..新冻结提交差异及每项问题的反例/修复/回归结果。回到待审查/CODEX_REVIEW_REQUIRED、TASK-004、Checkpoint=YES、下一工具Codex；未取得证据的检查明确写未运行或BLOCKED。
+
+运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync，并读回项目00_START_HERE.md/.html和总控00_CONTROL_CENTER/PROJECTS.md，核对任务、工具、完整提示词、完成标准与状态一致。Codex复审PASS后仍等待Owner阶段放行，不自行合并main、部署或开始Phase2/TASK-005。
+```
+
+---
+
+## 历史：REVIEW_2 与首轮提示词全文（不得作为当前指令）
+
 # Gate 01 第二轮剩余问题修复 · ZCode
 
 当前执行提示词对应 c87a141 的 REVIEW_2 FAIL；下方旧提示词仅保存历史。

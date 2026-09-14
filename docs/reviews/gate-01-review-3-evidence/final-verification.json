@@ -1,0 +1,94 @@
+{
+  "at": "2026-09-14T16:21:31+08:00",
+  "checks": {
+    "unique_state_block": true,
+    "homepage_md_full_prompt": true,
+    "homepage_html_full_prompt": true,
+    "control_md_status_owner_task": true,
+    "control_html_state": true,
+    "control_links_to_project_homepage": true,
+    "checkpoint_preserved": true,
+    "not_next_phase": true,
+    "full_report_15_sections": true,
+    "thirty_task_rows": true,
+    "tasks005_030_todo": true,
+    "all_81_application_files_unchanged": true,
+    "original_progress_history_preserved": true,
+    "entire_original_handoff_preserved": true,
+    "entire_original_p08_preserved": true,
+    "only_allowed_tracked_changes": true,
+    "report_local_links_valid": true,
+    "git_diff_check": true
+  },
+  "changed_tracked_files": [
+    "00_START_HERE.html",
+    "00_START_HERE.md",
+    "CODEX_REVIEW_HANDOFF.md",
+    "docs/ai-ecommerce-assistant/12_PROGRESS.md",
+    "prompts/P08_FIX.md"
+  ],
+  "application_tracked_count": 81,
+  "local_links_checked": 20,
+  "bad_links": [],
+  "control_prompt_design": "Control center links to project homepage; homepage includes Product OS prefix and complete current P08 text",
+  "cleanup": {
+    "running_containers_before_stop": [],
+    "docker_ps_exit": 0,
+    "colima_stop_exit": 0,
+    "restore_context_exit": 0,
+    "listener_3000": false,
+    "listener_55469": false,
+    "listener_3300": false,
+    "listener_55479": false
+  },
+  "image_cleanup_summary": {
+    "delete_records": 38,
+    "untag_records": 2,
+    "conflicts": [],
+    "already_absent": [
+      "Error response from daemon: No such image: 22994dc757ea:latest",
+      "Error response from daemon: No such image: 7a579d1b8ba9:latest",
+      "Error response from daemon: No such image: 42f760267b31:latest",
+      "Error response from daemon: No such image: 33794121f519:latest",
+      "Error response from daemon: No such image: ebb979070110:latest",
+      "Error response from daemon: No such image: b246ed7908ca:latest",
+      "Error response from daemon: No such image: d8a0c62eae9d:latest",
+      "Error response from daemon: No such image: 5a2c2d81d5cf:latest",
+      "Error response from daemon: No such image: 11ecf3908018:latest",
+      "Error response from daemon: No such image: e066bdadb7d1:latest",
+      "Error response from daemon: No such image: 1494a92968b1:latest",
+      "Error response from daemon: No such image: 77f342fe0678:latest",
+      "Error response from daemon: No such image: 16acfd8360c1:latest",
+      "Error response from daemon: No such image: dcb5da0a2820:latest",
+      "Error response from daemon: No such image: 2d8915feb01d:latest",
+      "Error response from daemon: No such image: 6dffdca2e2f3:latest",
+      "Error response from daemon: No such image: 28c1085ed38b:latest",
+      "Error response from daemon: No such image: ee5b1a144be7:latest",
+      "Error response from daemon: No such image: a5340dcd84fe:latest",
+      "Error response from daemon: No such image: 105ffbca8397:latest",
+      "Error response from daemon: No such image: 41c232dad2b8:latest",
+      "Error response from daemon: No such image: 0cfaaaf51a44:latest"
+    ]
+  },
+  "history_evidence": {
+    "gate-01-formal-evidence": {
+      "files": 44,
+      "mismatches": []
+    },
+    "gate-01-review-2-evidence": {
+      "files": 33,
+      "mismatches": []
+    }
+  },
+  "view_comparison_initial_correction": "Initial exact comparison omitted automatic Product OS prefix; corrected to renderer contract and verified both generated prompts. No source change needed.",
+  "final_sync": {
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-14T16:24:32+08:00"
+  },
+  "final_readback_at": "2026-09-14T16:24:37+08:00",
+  "temporary_directory_removed": true,
+  "temporary_pointer_removed": true,
+  "report_updated_after_checks": "Added explicit Medium disposition table; still 15 sections and existing links"
+}

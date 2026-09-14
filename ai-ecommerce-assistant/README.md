@@ -964,3 +964,12 @@ pnpm vitest run tests/integration/auth.test.ts   # 认证/邀请集成测试
 - **H06（TASK-003）**：`ownerInit` 重写——单事务 + `pg_advisory_xact_lock(hashtext('identity-email:<email>'))` 统一邮箱锁，锁内权威重查；断链（Auth 身份丢失）走 signUp 重建 + `owner_init_recovered` 审计；孤儿回收与补偿删除 Auth 身份；`acceptInvitation` 用同一把锁。并发 init/init 一胜一幂等、init/invite 交错恰一路径胜出、断链恢复后二次密码真实登录，均有回归。
 - **M01/M02/M03/M05**：v1 写路由接入 `guardWrite`（跨源 403 / 非 JSON 415）+ Zod 严格校验（422 fieldErrors）+ `internalFailure` 稳定 503 信封；登录失败计数仅 401 消费、200 清零，peek 预检不消费；代理头仅 `TRUST_PROXY_HEADERS=true` 信任；公开注册每次新 Response。
 - **测试基建**：本机 Prisma CLI 启动空转 ~10 分钟 → `tests/helpers/pgMigrate.ts` 用 pg 驱动直跑迁移 + `resetDbSingletons`（含 Better Auth 懒单例重置）+ `baseUrlFromDotenv`；vitest singleFork/maxWorkers=1。本机全绿：typecheck 0 错、unit 14/14、integration 53/53、build exit 0、e2e 8/8。
+
+### Gate-01 REVIEW_3 修复（2026-09-14，H08/H11 + M01–M06）
+
+- **H08（TASK-002）**：新迁移 `20260914150000_p0_audit_store_composite_fk` 落地 04_DATA_MODEL 合同的"复合(org_id,id)外键"——`audit_log(org_id,store_id)→store(org_id,id)`，删除店铺只清 `store_id` 保留 `org_id`。READ COMMITTED 下即关闭两个并发方向（PG 17 双连接交错实测）：先改归属再插审计引用→FK 拒；先插审计引用再改归属→行锁冲突+反向 RI 检查拒。v1/v2 触发器保留为纵深防御；坏行守卫保留，不改写历史。**M04**：延期触发点已到，同迁移为 17 张领域表主键加 UUID 格式 CHECK（认证框架四表保持 string）。
+- **H11（TASK-002 测试）**：删除六套件 `datname LIKE 'aiea_%'` 的 `pg_terminate_backend` 模糊清理；测试库改为每次运行唯一命名 `aiea_t_<tag>`，重建前仅终止连到本库的会话；测试基线在 vitest.config 启动时求值一次（进程 `DATABASE_URL` 注入优先）经 `AIEA_TEST_BASE_DB` 固化，不再被 .env 或先跑文件覆盖。验收：独立可丢弃集群上，旁观库的连接与在途事务（BEGIN-INSERT-sleep 400s）跨越整个 60/60 集成运行后 COMMIT 成功、数据完好。
+- **M01/M02/M03（TASK-003/004）**：DELETE invitation 接入 guardWrite；邀请预览/接受与登录共用 `clientIpFromRequest`（`TRUST_PROXY_HEADERS` 边界，关信任时伪造 XFF 不能换限流桶）；创建/接受/撤销全部 Zod 严格校验（422），接受区分合法空 body 与非法 JSON；`internalFailure` 日志与响应共用 request_id。
+- **M05（TASK-001）**：`src/lib/dbUrl.ts` 统一连接串解析（进程 env → .env → `PG*` 分量组装 + percent-encode），compose 的 postgres/web/worker 引用同一 `POSTGRES_PASSWORD`，口令含 URL 保留字符也可用。真实容器（colima，全新卷）验证：`r4-p@ss w0rd:!/#?Xy` 与默认口令两条链路均为 up→健康 200→迁移→init-owner→登录 200→/me 200→注册 403。
+- **M06（TASK-002 测试）**：本机 Prisma CLI"空转"根因= iCloud 驱逐 node_modules 文件后同步 read 挂死（sample 栈卡 `uv_fs_read`）；`_prisma_migrations` 补齐官方列，官方 `migrate deploy` 可接续；空库 1.2s / 重复 / 4→8 升级 / 坏行 P3018 拒绝四项真实 CLI 检查在 /tmp 工作副本通过。
+- 本机全绿（独立集群 127.0.0.1:5434 可丢弃实例）：typecheck 0 错、unit 18/18、integration **60/60**（+7 新回归）、build exit 0、e2e 8/8。
