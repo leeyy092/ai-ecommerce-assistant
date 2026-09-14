@@ -1329,7 +1329,9 @@ model AuditLog {
   rowVersion    Int       @default(1) @map("row_version")
 
   organization Organization @relation(fields: [orgId], references: [id])
-  store        Store?       @relation(fields: [storeId], references: [id])
+  // M07：审计同域复合外键（fk_audit_log_store_same_domain，SQL 迁移维护的按列 SET NULL）。
+  // orgId 必填 + storeId 可空的混合可空性由 PG MATCH SIMPLE 语义支持。
+  store        Store?       @relation(fields: [orgId, storeId], references: [orgId, id], onUpdate: Cascade, onDelete: SetNull)
   actorUser    User?        @relation(fields: [actorUserId], references: [id])
 
   @@unique([orgId, id])

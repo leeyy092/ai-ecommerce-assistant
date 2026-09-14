@@ -9,6 +9,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import type { PrismaClient } from "@/generated/prisma/client";
+import { resetClientPool } from "@/database/prisma";
 import { applyMigrations, createTestDatabase, dropTestDatabase, resetDbSingletons, resolveDatabaseUrl } from "../helpers/pgMigrate";
 
 const adminUrl = resolveDatabaseUrl().replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
@@ -138,6 +139,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await db?.$disconnect();
+  await resetClientPool();
   await dropTestDatabase(adminUrl, testUrl);
 });
 

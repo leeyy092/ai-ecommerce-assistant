@@ -10,6 +10,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
+import { createUtcPool, UTC_SESSION_OPTIONS } from "@/database/prisma";
 import {
   applyMigrations,
   applyMigrationsUpTo,
@@ -25,17 +26,25 @@ const testUrl = await createTestDatabase(adminUrl, randomUUID().slice(0, 8));
 
 let prisma: PrismaClient;
 let admin: PrismaClient;
+let adminPool: import("pg").Pool;
+let prismaPool: import("pg").Pool;
 
 beforeAll(async () => {
-  admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
+  adminPool = createUtcPool(adminUrl);
+  admin = new PrismaClient({ adapter: new PrismaPg(adminPool) });
   await applyMigrations(testUrl);
   resetDbSingletons();
-  prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: testUrl }) });
+  prismaPool = createUtcPool(testUrl);
+  prisma = new PrismaClient({ adapter: new PrismaPg(prismaPool) });
 });
 
 afterAll(async () => {
   await prisma?.$disconnect();
   await admin.$disconnect();
+  await admin.$disconnect();
+  await prisma.$disconnect();
+  await adminPool.end().catch(() => undefined);
+  await prismaPool.end().catch(() => undefined);
   await dropTestDatabase(adminUrl, testUrl);
 });
 
@@ -88,8 +97,10 @@ describe("Gate-01 H08｜AuditLog 店铺同域强制（数据库级）", () => {
     const { org: orgA2, store: sharedStore } = await mk(`${t}a`);
     const { org: orgB2 } = await mk(`${t}b`);
 
-    const c1 = new pg.Client({ connectionString: testUrl });
-    const c2 = new pg.Client({ connectionString: testUrl });
+    const c1 = new pg.Client({ connectionString: testUrl, options: UTC_SESSION_OPTIONS });
+    c1.on("error", () => undefined);
+    const c2 = new pg.Client({ connectionString: testUrl, options: UTC_SESSION_OPTIONS });
+    c2.on("error", () => undefined);
     await c1.connect();
     await c2.connect();
     try {
@@ -140,8 +151,10 @@ describe("Gate-01 H08｜AuditLog 店铺同域强制（数据库级）", () => {
     const { org: orgA2, store: sharedStore } = await mk(`${t}a`);
     const { org: orgB2 } = await mk(`${t}b`);
 
-    const c1 = new pg.Client({ connectionString: testUrl });
-    const c2 = new pg.Client({ connectionString: testUrl });
+    const c1 = new pg.Client({ connectionString: testUrl, options: UTC_SESSION_OPTIONS });
+    c1.on("error", () => undefined);
+    const c2 = new pg.Client({ connectionString: testUrl, options: UTC_SESSION_OPTIONS });
+    c2.on("error", () => undefined);
     await c1.connect();
     await c2.connect();
     try {
@@ -191,22 +204,39 @@ describe("Gate-01 H08｜AuditLog 店铺同域强制（数据库级）", () => {
     await prisma.auditLog.create({
       data: { id: auditId, orgId: org.id, storeId: store.id, action: "del", entityType: "probe", entityId: randomUUID(), requestId: randomUUID() },
     });
+
+    // M04 REVIEW_5：领域 28/28 表主键 UUID CHECK 全量覆盖；auth_rate_limit 辅助表单独约束；认证框架四表不带
+    const ck = await prisma.$queryRaw<{ n: bigint }[]>`
+      SELECT count(*)::int AS n FROM pg_constraint
+      WHERE contype='c' AND conname LIKE 'ck_domain_uuid_%'`;
+    expect(Number(ck[0].n)).toBe(28);
+    const auxCk = await prisma.$queryRaw<{ n: bigint }[]>`
+      SELECT count(*)::int AS n FROM pg_constraint
+      WHERE conrelid='auth_rate_limit'::regclass AND conname = 'ck_auth_rate_limit_uuid'`;
+    expect(Number(auxCk[0].n)).toBe(1);
+    const authCk = await prisma.$queryRaw<{ n: bigint }[]>`
+      SELECT count(*)::int AS n FROM pg_constraint
+      WHERE conrelid IN ('user'::regclass,'session'::regclass,'account'::regclass,'verification'::regclass)
+        AND (conname LIKE 'ck_domain_uuid_%' OR conname = 'ck_auth_rate_limit_uuid')`;
+    expect(Number(authCk[0].n)).toBe(0);
+
+    // M04：遗漏表代表（JobRun）非法 ID 被数据库拒绝（23514 check violation）、合法 UUID 通过
+    await expect(
+      prisma.$executeRaw`
+      INSERT INTO job_run (id, org_id, store_id, job_kind, idempotency_key, context, dataset_version, ruleset_version, status, attempt_count, created_at, updated_at, row_version)
+      VALUES ('not-a-uuid-review', ${org.id}, ${store.id}, 'recompute_snapshot', ${"idem-" + t}, '{}'::jsonb, 1, 'v1', 'succeeded', 1, now(), now(), 1)`,
+    ).rejects.toThrow(/23514/);
+    const legalId = randomUUID();
+    await prisma.$executeRaw`
+      INSERT INTO job_run (id, org_id, store_id, job_kind, idempotency_key, context, dataset_version, ruleset_version, status, attempt_count, created_at, updated_at, row_version)
+      VALUES (${legalId}, ${org.id}, ${store.id}, 'recompute_snapshot', ${"idem2-" + t}, '{}'::jsonb, 1, 'v1', 'succeeded', 1, now(), now(), 1)`;
+    await prisma.jobRun.delete({ where: { id: legalId } });
+
+    // H08 删除语义：删除店铺只清 store_id、保留 org_id
     await prisma.store.delete({ where: { id: store.id } });
     const row = await prisma.auditLog.findUniqueOrThrow({ where: { id: auditId } });
     expect(row.storeId).toBeNull();
     expect(row.orgId).toBe(org.id);
-
-    // M04：领域表主键均带 UUID 格式 CHECK；认证表不带
-    const ck = await prisma.$queryRaw<{ n: bigint }[]>`
-      SELECT count(*)::int AS n FROM pg_constraint
-      WHERE conrelid IN ('domain_user'::regclass,'organization'::regclass,'membership'::regclass,'invitation'::regclass,'store'::regclass,'order'::regclass,'audit_log'::regclass)
-        AND contype='c' AND conname LIKE 'ck_domain_uuid_%'`;
-    expect(Number(ck[0].n)).toBe(7);
-    const authCk = await prisma.$queryRaw<{ n: bigint }[]>`
-      SELECT count(*)::int AS n FROM pg_constraint
-      WHERE conrelid IN ('user'::regclass,'session'::regclass,'account'::regclass,'verification'::regclass)
-        AND conname LIKE 'ck_domain_uuid_%'`;
-    expect(Number(authCk[0].n)).toBe(0);
   });
 });
 
@@ -292,7 +322,8 @@ describe("Gate-01 正式复核 H08/H09/M04 增补", () => {
 
     // 只应用到 v1 审计迁移（无守卫），注入坏行，再应用 v2 → 必须失败
     await applyMigrationsUpTo(guardUrl, "20260913044218_p0_audit_tenant_fk");
-    const seed = new PrismaClient({ adapter: new PrismaPg({ connectionString: guardUrl }) });
+    const seedPool = createUtcPool(guardUrl);
+    const seed = new PrismaClient({ adapter: new PrismaPg(seedPool) });
     await seed.authUser.create({ data: { id: "auth-g", name: "g", email: "g@example.com" } });
     await seed.authUser.create({ data: { id: "auth-g2", name: "g2", email: "g2@example.com" } });
     const u = await seed.user.create({ data: { authUserId: "auth-g", email: "g@example.com", displayName: "g" } });
@@ -307,6 +338,7 @@ describe("Gate-01 正式复核 H08/H09/M04 增补", () => {
     await seed.$disconnect();
 
     await expect(applyMigrationsUpTo(guardUrl, "20260913120100_p0_audit_tenant_fk_v2")).rejects.toThrow(/跨组织店铺引用/);
+    await seed.$disconnect();
     await dropTestDatabase(adminUrl, guardUrl);
   });
 
@@ -325,5 +357,89 @@ describe("Gate-01 正式复核 H08/H09/M04 增补", () => {
         data: { authUserId: `ghost-${randomUUID().slice(0, 8)}`, email: `ghost-${randomUUID().slice(0, 8)}@example.com`, displayName: "ghost" },
       }),
     ).rejects.toThrow(/Foreign key constraint failed|domain_user_auth_user_id_fkey/i);
+  });
+});
+
+describe("Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏）", () => {
+  it("H12：应用连接池会话为 UTC；ORM 写→SQL epoch、SQL 写→ORM 读均与真实时刻一致（原始 pg 独立参考）", async () => {
+    // 1) 应用连接（createUtcPool）会话时区必须是 UTC
+    const tz = await prisma.$queryRaw<{ TimeZone: string }[]>`SHOW timezone`;
+    expect(String(tz[0].TimeZone)).toMatch(/^(UTC|Etc\/UTC|GMT)$/i);
+
+    // 2) ORM 写 → 原始 SQL 读 epoch：绝对时刻一致（与集群默认时区无关）
+    const t = randomUUID().slice(0, 8);
+    await prisma.authUser.create({ data: { id: `auth-${t}`, name: t, email: `tz2-${t}@example.com` } });
+    const user = await prisma.user.create({
+      data: { authUserId: `auth-${t}`, email: `tz2-${t}@example.com`, displayName: t },
+    });
+    const org = await prisma.organization.create({ data: { id: randomUUID(), name: `TZ组织${t}`, ownerUserId: user.id } });
+    const at = new Date("2026-01-01T00:30:00.000Z");
+    const inv = await prisma.invitation.create({
+      data: { id: randomUUID(), orgId: org.id, email: `tz2-${t}@example.com`, role: "operator", tokenHash: `hash-${t}`, invitedBy: user.id, expiresAt: at },
+    });
+    const pgMod = (await import("pg")).default;
+    const raw = new pgMod.Client({ connectionString: testUrl, options: UTC_SESSION_OPTIONS });
+    raw.on("error", () => undefined);
+    await raw.connect();
+    try {
+      const dbEpoch = Number((await raw.query<{ e: string }>(`SELECT EXTRACT(EPOCH FROM expires_at)::text AS e FROM invitation WHERE id=$1`, [inv.id])).rows[0].e);
+      expect(Math.floor(dbEpoch)).toBe(Math.floor(at.getTime() / 1000));
+
+      // 3) SQL 写（非 UTC 偏移字面量表达同一时刻）→ ORM 读：绝对时刻一致
+      const sqlEpoch = 1767225600; // 2026-01-01T00:00:00Z
+      await raw.query(`UPDATE invitation SET expires_at = '2026-01-01 08:00:00+08' WHERE id=$1`, [inv.id]);
+      const readBack = await prisma.invitation.findUniqueOrThrow({ where: { id: inv.id } });
+      expect(Math.floor(readBack.expiresAt.getTime() / 1000)).toBe(sqlEpoch);
+
+      // 4) 多连接池：另一条原始连接读同一行，epoch 一致
+      const raw2 = new pgMod.Client({ connectionString: testUrl });
+      raw2.on("error", () => undefined);
+      await raw2.connect();
+      try {
+        const dbEpoch2 = Number((await raw2.query<{ e: string }>(`SELECT EXTRACT(EPOCH FROM expires_at)::text AS e FROM invitation WHERE id=$1`, [inv.id])).rows[0].e);
+        expect(Math.floor(dbEpoch2)).toBe(sqlEpoch);
+      } finally {
+        await raw2.end();
+      }
+      await prisma.invitation.delete({ where: { id: inv.id } });
+    } finally {
+      await raw.end();
+    }
+  });
+
+  it("M06：applyMigrationsUpTo 首次执行到目标、重复不越界、不存在目标明确失败", async () => {
+    const guardUrl = await createTestDatabase(adminUrl, randomUUID().slice(0, 8));
+    const target = "20260913043631_p0_domain_timestamptz"; // 第 3 份迁移
+    const first = await applyMigrationsUpTo(guardUrl, target);
+    expect(first.length).toBe(3);
+    const repeat = await applyMigrationsUpTo(guardUrl, target);
+    expect(repeat.length).toBe(0);
+    const pgMod = (await import("pg")).default;
+    const c = new pgMod.Client({ connectionString: guardUrl });
+    c.on("error", () => undefined);
+    await c.connect();
+    const n = (await c.query("SELECT count(*)::int AS n FROM _prisma_migrations")).rows[0].n;
+    await c.end();
+    expect(n).toBe(3);
+    await expect(applyMigrationsUpTo(guardUrl, "20991231_not_exists")).rejects.toThrow(/不存在/);
+    await dropTestDatabase(adminUrl, guardUrl);
+  });
+
+  it("M07：官方 migrate diff 不再净删除审计同域复合外键（重建必须同引用且配平）", async () => {
+    const { execFileSync } = await import("node:child_process");
+    const out = execFileSync(
+      process.execPath,
+      ["node_modules/prisma/build/index.js", "migrate", "diff", "--from-config-datasource", "--to-schema", "prisma/schema.prisma", "--script"],
+      { encoding: "utf8", env: { ...process.env, DATABASE_URL: testUrl }, timeout: 120_000 },
+    );
+    // 复合外键的单列旧外键已由迁移移除
+    expect(out).not.toContain("audit_log_store_id_fkey");
+    // 对 audit_log 同域外键：任何 DROP 必须伴随同引用 (org_id, store_id)→store(org_id, id) 的 ADD（按列 SET NULL 是 Prisma 无法表达的 SQL 维护边界）
+    const drops = out.match(/ALTER TABLE "audit_log" DROP CONSTRAINT "[^"]+"/g) ?? [];
+    for (const drop of drops) {
+      const name = drop.match(/DROP CONSTRAINT "([^"]+)"/)![1];
+      const addRe = new RegExp(`ADD CONSTRAINT "${name}" [^;]*REFERENCES "store"\\("org_id", "id"\\)`);
+      expect(out).toMatch(addRe);
+    }
   });
 });

@@ -51,7 +51,17 @@ export async function applyMigrations(databaseUrl: string, upTo?: string): Promi
     const dirs = readdirSync(MIGRATIONS_DIR)
       .filter((d) => /^\d+_/.test(d))
       .sort();
-    for (const dir of dirs) {
+    // M06：先按 upTo 截断本次目标集合，再排除已执行项——目标已应用时重复调用
+    // 不再越过目标继续执行；目标不存在时明确失败而非静默全量。
+    let targets = dirs;
+    if (upTo) {
+      const idx = dirs.indexOf(upTo);
+      if (idx === -1) {
+        throw new Error(`applyMigrationsUpTo：目标迁移 ${upTo} 不存在于 prisma/migrations`);
+      }
+      targets = dirs.slice(0, idx + 1);
+    }
+    for (const dir of targets) {
       if (done.has(dir)) continue;
       const sql = readFileSync(path.join(MIGRATIONS_DIR, dir, "migration.sql"), "utf8");
       await client.query("BEGIN");
@@ -68,7 +78,6 @@ export async function applyMigrations(databaseUrl: string, upTo?: string): Promi
         await client.query("ROLLBACK");
         throw error;
       }
-      if (upTo && dir === upTo) break;
     }
     return applied;
   } finally {
@@ -119,6 +128,7 @@ export async function dropTestDatabase(adminUrl: string, testUrl: string): Promi
     throw new Error(`拒绝删除非测试命名规则的数据库：${dbName}`);
   }
   const admin = new pg.Client({ connectionString: adminUrl });
+  admin.on("error", () => undefined);
   await admin.connect();
   try {
     await admin.query(
