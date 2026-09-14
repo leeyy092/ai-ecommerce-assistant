@@ -10,6 +10,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
+import { resetClientPool } from "@/database/prisma";
 import { applyMigrations, createTestDatabase, dropTestDatabase, resetDbSingletons, resolveDatabaseUrl } from "../helpers/pgMigrate";
 
 const adminUrl = resolveDatabaseUrl().replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
@@ -44,6 +45,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await db?.$disconnect();
+  await resetClientPool();
   await dropTestDatabase(adminUrl, testUrl);
 });
 
@@ -523,5 +525,100 @@ describe("Gate-01 REVIEW_4｜邀请入口来源/输入/限流键（M01/M02/M03�
       { params: Promise.resolve({ idOrToken: token }) },
     );
     expect(spoof.status).toBe(429);
+  });
+});
+
+describe("Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封）", () => {
+  function pathReq(path: string, init: RequestInit = {}): NextRequest {
+    return new NextRequest(`http://127.0.0.1:3000${path}`, {
+      ...init,
+      headers: new Headers(init.headers),
+    } as ConstructorParameters<typeof NextRequest>[1]);
+  }
+
+  it("H12：49 小时前创建、48 小时有效期的邀请已过期——预览 410、接受 409 且不签发会话；有效期边界内 200", async () => {
+    const t = tag();
+    const owner = await seedOwner(t);
+    const { createInvitation } = await import("@/services/invitations");
+    const created = await createInvitation(
+      { db, orgId: owner.orgId, userId: owner.userId, role: "owner" },
+      { email: `expired-${t}@example.com`, role: "operator", baseUrl: "http://127.0.0.1:3000" },
+    );
+    const token = created.url.split("/invite/")[1];
+
+    // 写入响应与数据库真实 epoch 一致（原始 SQL 独立参考）
+    const row = await db.invitation.findUniqueOrThrow({ where: { id: created.id } });
+    expect(Math.floor(row.expiresAt.getTime() / 1000)).toBe(
+      Math.floor(created.expiresAt.getTime() / 1000),
+    );
+
+    // 同套件 M02 用例已打满 direct 预览桶（60/分钟）：清空限流计数避免 429 掩盖时效断言
+    await db.authRateLimit.deleteMany({ where: { key: { startsWith: "invite-" } } });
+
+    // 合成合法历史：创建于 49h 前、TTL 48h → 已过期 1h（数据库真实时刻判断）
+    await db.invitation.update({
+      where: { id: created.id },
+      data: { createdAt: new Date(Date.now() - 49 * 3600_000), expiresAt: new Date(Date.now() - 3600_000) },
+    });
+
+    const { GET } = await import("@/app/api/v1/invitations/[idOrToken]/route");
+    const preview = await GET(pathReq(`/api/v1/invitations/${token}`), {
+      params: Promise.resolve({ idOrToken: token }),
+    });
+    expect(preview.status).toBe(410);
+
+    const { POST } = await import("@/app/api/v1/invitations/[idOrToken]/accept/route");
+    const accept = await POST(
+      pathReq(`/api/v1/invitations/${token}/accept`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: "H12", password: "h12-pass-123456" }),
+      }),
+      { params: Promise.resolve({ idOrToken: token }) },
+    );
+    expect(accept.status).toBe(409);
+    expect(accept.headers.getSetCookie().length).toBe(0);
+
+    // 有效期边界：剩余 1 小时的同型邀请预览 200
+    const okCreated = await createInvitation(
+      { db, orgId: owner.orgId, userId: owner.userId, role: "owner" },
+      { email: `valid-${t}@example.com`, role: "operator", baseUrl: "http://127.0.0.1:3000" },
+    );
+    const okToken = okCreated.url.split("/invite/")[1];
+    const okPreview = await GET(pathReq(`/api/v1/invitations/${okToken}`), {
+      params: Promise.resolve({ idOrToken: okToken }),
+    });
+    expect(okPreview.status).toBe(200);
+  });
+
+  it("M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON", async () => {
+    const t = tag();
+    await db.$executeRawUnsafe(
+      `ALTER TABLE auth_rate_limit ADD CONSTRAINT ck_m03_block_invite CHECK (key NOT LIKE 'invite-%') NOT VALID`,
+    );
+    try {
+      const { GET } = await import("@/app/api/v1/invitations/[idOrToken]/route");
+      const preview = await GET(pathReq(`/api/v1/invitations/some-token-m03`), {
+        params: Promise.resolve({ idOrToken: "some-token-m03" }),
+      });
+      expect(preview.status).toBe(503);
+      const body = (await preview.json()) as { error: { request_id: string } };
+      expect(body.error.request_id).toBeTruthy();
+
+      const { POST } = await import("@/app/api/v1/invitations/[idOrToken]/accept/route");
+      const accept = await POST(
+        pathReq(`/api/v1/invitations/some-token-m03/accept`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: "{}",
+        }),
+        { params: Promise.resolve({ idOrToken: "some-token-m03" }) },
+      );
+      expect(accept.status).toBe(503);
+      const acceptBody = (await accept.json()) as { error: { request_id: string } };
+      expect(acceptBody.error.request_id).toBeTruthy();
+    } finally {
+      await db.$executeRawUnsafe(`ALTER TABLE auth_rate_limit DROP CONSTRAINT IF EXISTS ck_m03_block_invite`);
+    }
   });
 });

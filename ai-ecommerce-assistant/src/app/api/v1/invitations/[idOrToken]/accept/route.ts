@@ -53,15 +53,21 @@ export async function POST(
   }
   const body = bodyOrError.body;
 
-  // 接受端点防爆破：20 次/IP/分钟（M02：统一代理信任边界）
-  const limit = await consumeRateLimit(db, `invite-accept:${clientIpFromRequest(req)}`, 20, 60);
-  if (!limit.allowed) {
-    return fail(429, `请求过于频繁，请约 ${limit.retryAfterSeconds} 秒后重试`, {
-      retryable: true,
-    });
-  }
+  let sessionCtx: Awaited<ReturnType<typeof getSessionContext>> | null = null;
+  // M03：限流与会话读取都是可能失败的 DB 访问，与接受事务一并纳入稳定异常边界
+  try {
+    // 接受端点防爆破：20 次/IP/分钟（M02：统一代理信任边界）
+    const limit = await consumeRateLimit(db, `invite-accept:${clientIpFromRequest(req)}`, 20, 60);
+    if (!limit.allowed) {
+      return fail(429, `请求过于频繁，请约 ${limit.retryAfterSeconds} 秒后重试`, {
+        retryable: true,
+      });
+    }
 
-  const sessionCtx = await getSessionContext(req);
+    sessionCtx = await getSessionContext(req);
+  } catch (error) {
+    return internalFailure(error);
+  }
 
   // H05：保留框架 signUpEmail 的完整 Set-Cookie（含签名/安全属性），原样转发
   let frameworkCookies: string[] = [];

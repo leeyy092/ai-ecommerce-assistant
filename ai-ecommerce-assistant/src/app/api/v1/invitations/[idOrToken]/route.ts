@@ -21,15 +21,16 @@ export async function GET(
   const { idOrToken } = await params;
   const db = getPrismaClient();
 
-  // 未登录 token 枚举防爆破：60 次/IP/分钟（M02：限流键走统一代理信任边界）
-  const limit = await consumeRateLimit(db, `invite-preview:${clientIpFromRequest(req)}`, 60, 60);
-  if (!limit.allowed) {
-    return fail(429, `请求过于频繁，请约 ${limit.retryAfterSeconds} 秒后重试`, {
-      retryable: true,
-    });
-  }
-
   try {
+    // 未登录 token 枚举防爆破：60 次/IP/分钟（M02：限流键走统一代理信任边界；
+    // M03：限流属于可能失败的 DB 访问，纳入稳定异常边界）
+    const limit = await consumeRateLimit(db, `invite-preview:${clientIpFromRequest(req)}`, 60, 60);
+    if (!limit.allowed) {
+      return fail(429, `请求过于频繁，请约 ${limit.retryAfterSeconds} 秒后重试`, {
+        retryable: true,
+      });
+    }
+
     const preview = await previewInvitationByToken(db, idOrToken);
     // 公开响应只含组织名/遮罩邮箱/到期时间/角色，不返回原文 email
     return ok({
