@@ -1,10 +1,64 @@
 import { describe, expect, it } from "vitest";
 import { EnvValidationError, loadEnv } from "@/lib/env";
+import { resolveDbUrl } from "@/lib/dbUrl";
 
 /** 模拟含密钥的真实连接串，用于断言错误信息不泄露值 */
 const SECRET_URL = "postgres://user:supersecret-value@127.0.0.1:5433/aiea_dev";
 
+describe("resolveDbUrl（M05 数据库口令统一与 URL 编码）", () => {
+  it("显式 DATABASE_URL 优先；不读磁盘 .env（注入场景）", () => {
+    const url = resolveDbUrl(
+      {
+        DATABASE_URL: SECRET_URL,
+        PGHOST: "db",
+        PGUSER: "u",
+        PGPASSWORD: "p",
+        PGDATABASE: "d",
+      },
+      false,
+    );
+    expect(url).toBe(SECRET_URL);
+  });
+
+  it("PG* 分量组装：口令含 URL 保留字符时正确 percent-encode", () => {
+    const url = resolveDbUrl(
+      {
+        PGHOST: "postgres",
+        PGPORT: "5432",
+        PGUSER: "aiea",
+        PGPASSWORD: "p@ss w0rd:!/#?",
+        PGDATABASE: "aiea_dev",
+      },
+      false,
+    );
+    expect(url).toBe(
+      `postgresql://aiea:${encodeURIComponent("p@ss w0rd:!/#?")}@postgres:5432/aiea_dev`,
+    );
+    // 组装结果可被 URL 构造器解析且口令还原一致
+    const parsed = new URL(url);
+    expect(decodeURIComponent(parsed.password)).toBe("p@ss w0rd:!/#?");
+    expect(parsed.hostname).toBe("postgres");
+    expect(parsed.pathname).toBe("/aiea_dev");
+  });
+
+  it("全部来源缺失（禁读 .env）返回空串，不猜测目标", () => {
+    expect(resolveDbUrl({}, false)).toBe("");
+  });
+});
+
 describe("loadEnv（TASK-001 环境变量校验）", () => {
+  it("M05：无 DATABASE_URL 时由 PG* 分量组装连接串（注入场景不读磁盘 .env）", () => {
+    const env = loadEnv([], {
+      PGHOST: "db",
+      PGUSER: "aiea",
+      PGPASSWORD: "x:y@z",
+      PGDATABASE: "aiea_dev",
+    });
+    expect(env.databaseUrl).toBe(
+      `postgresql://aiea:${encodeURIComponent("x:y@z")}@db:5432/aiea_dev`,
+    );
+  });
+
   it("最小合法配置通过，并提供既定默认值", () => {
     const env = loadEnv([], { DATABASE_URL: SECRET_URL });
     expect(env.databaseUrl).toBe(SECRET_URL);

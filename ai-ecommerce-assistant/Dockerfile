@@ -9,6 +9,8 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY prisma/schema.prisma ./prisma/schema.prisma
 COPY prisma.config.ts ./
+# prisma.config.ts 依赖连接串解析模块（M05），deps 阶段 postinstall generate 需要
+COPY src/lib/dbUrl.ts ./src/lib/dbUrl.ts
 RUN pnpm install --frozen-lockfile
 
 FROM node:24.21.0-bookworm-slim AS build

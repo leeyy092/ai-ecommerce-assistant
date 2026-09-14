@@ -4,13 +4,16 @@
  * 错误信息只包含变量名，绝不包含任何变量值（DATABASE_URL 等含密钥）。
  */
 import { z } from "zod";
+import { resolveDbUrl } from "@/lib/dbUrl";
 
+// M05：DATABASE_URL 可由 PG* 分量组装（统一数据库口令配置），故此处改为可选，
+// 缺失且无法组装时报 DATABASE_URL 缺失
 const baseSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .optional()
     .default("development"),
-  DATABASE_URL: z.string().min(1, "必填"),
+  DATABASE_URL: z.string().optional(),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).optional().default("info"),
   STORAGE_DRIVER: z.enum(["local", "oss"]).optional().default("local"),
 });
@@ -89,9 +92,13 @@ export function loadEnv(components: EnvComponent[] = [], source: VarSource = pro
     throw new EnvValidationError(invalid);
   }
 
+  // M05：连接串来源与 prisma CLI 共用——进程 DATABASE_URL → .env → PG* 分量组装
+  const databaseUrl = resolveDbUrl(source, source === (process.env as VarSource));
+  if (!databaseUrl) invalid.push("DATABASE_URL");
+
   const env: AppEnv = {
     nodeEnv: base.data.NODE_ENV,
-    databaseUrl: base.data.DATABASE_URL,
+    databaseUrl,
     logLevel: base.data.LOG_LEVEL,
     storageDriver: base.data.STORAGE_DRIVER,
   };

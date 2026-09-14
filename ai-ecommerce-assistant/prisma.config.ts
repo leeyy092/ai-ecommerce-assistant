@@ -1,22 +1,14 @@
 /**
- * Prisma 7 配置：CLI 不再自动加载 .env，这里显式读取应用根目录 .env
- * （仅取 DATABASE_URL；进程环境优先，不被 .env 覆盖）。
+ * Prisma 7 配置：CLI 不再自动加载 .env，连接串解析与应用共用 src/lib/dbUrl
+ * （进程 DATABASE_URL 优先 → .env → PG* 分量组装；M05 统一数据库口令配置）。
  */
 import path from "node:path";
-import { readFileSync } from "node:fs";
-import { parseEnv } from "node:util";
 import { defineConfig } from "prisma/config";
+import { resolveDbUrl } from "./src/lib/dbUrl";
 
 function loadDatabaseUrl(): string {
-  const fromProcess = process.env.DATABASE_URL;
-  if (fromProcess && fromProcess.length > 0) return fromProcess;
-  try {
-    const parsed = parseEnv(readFileSync(".env", "utf8")) as Record<string, string>;
-    if (parsed.DATABASE_URL) return parsed.DATABASE_URL;
-  } catch {
-    // 无 .env 时由 Prisma 报出明确错误
-  }
-  return "postgresql://localhost:5432/undefined";
+  // 全部来源缺失时保持原有兜底：CLI 连接失败并报出明确错误
+  return resolveDbUrl() || "postgresql://localhost:5432/undefined";
 }
 
 export default defineConfig({
