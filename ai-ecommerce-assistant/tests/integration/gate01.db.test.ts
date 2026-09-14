@@ -10,28 +10,24 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
-import { baseUrlFromDotenv } from "../helpers/pgMigrate";
-import { applyMigrations, resetDbSingletons } from "../helpers/pgMigrate";
-import { applyMigrationsUpTo } from "../helpers/pgMigrate";
-import { loadEnv } from "@/lib/env";
+import {
+  applyMigrations,
+  applyMigrationsUpTo,
+  createTestDatabase,
+  dropTestDatabase,
+  resetDbSingletons,
+  resolveDatabaseUrl,
+} from "../helpers/pgMigrate";
 
-process.env.DATABASE_URL = baseUrlFromDotenv();
-const baseEnv = loadEnv();
-
-const TEST_DB = "aiea_gate01_test";
-const adminUrl = baseEnv.databaseUrl.replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
-const testUrl = baseEnv.databaseUrl.replace(/\/[^/?]+(\?.*)?$/, `/${TEST_DB}$1`);
+const adminUrl = resolveDatabaseUrl().replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
+// H11：每次运行唯一命名测试库，只管理本库生命周期，不触碰集群内其他数据库
+const testUrl = await createTestDatabase(adminUrl, randomUUID().slice(0, 8));
 
 let prisma: PrismaClient;
 let admin: PrismaClient;
 
 beforeAll(async () => {
   admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
-  await admin.$executeRawUnsafe(
-    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname LIKE 'aiea_%' AND pid <> pg_backend_pid()`,
-  ).catch(() => {});
-  await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
-  await admin.$executeRawUnsafe(`CREATE DATABASE "${TEST_DB}"`);
   await applyMigrations(testUrl);
   resetDbSingletons();
   prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: testUrl }) });
@@ -39,8 +35,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await prisma?.$disconnect();
-  await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
   await admin.$disconnect();
+  await dropTestDatabase(adminUrl, testUrl);
 });
 
 describe("Gate-01 H08｜AuditLog 店铺同域强制（数据库级）", () => {
@@ -73,6 +69,144 @@ describe("Gate-01 H08｜AuditLog 店铺同域强制（数据库级）", () => {
     await expect(insert(a.org.id, a.store.id)).resolves.toBeTruthy(); // 同域
     await expect(insert(a.org.id, null)).resolves.toBeTruthy(); // 组织级（空店铺）
     await expect(insert(a.org.id, b.store.id)).rejects.toThrow(/同域校验失败|audit_log store/); // 异域
+  });
+
+  it("H08 REVIEW_4：并发交错方向 A——父行改归属未提交时插入旧组织审计引用，后者必须失败", async () => {
+    const t = randomUUID().slice(0, 8);
+    const pg = (await import("pg")).default;
+    const mk = async (tag: string) => {
+      await prisma.authUser.create({ data: { id: `auth-${tag}`, name: tag, email: `r-${tag}@example.com` } });
+      const user = await prisma.user.create({
+        data: { authUserId: `auth-${tag}`, email: `r-${tag}@example.com`, displayName: tag },
+      });
+      const org = await prisma.organization.create({ data: { id: randomUUID(), name: `R组织${tag}`, ownerUserId: user.id } });
+      const store = await prisma.store.create({
+        data: { id: randomUUID(), orgId: org.id, name: "RS", externalStoreId: `REXT-${tag}`, platform: "manual", currency: "CNY", timezone: "Asia/Shanghai" },
+      });
+      return { org, store };
+    };
+    const { org: orgA2, store: sharedStore } = await mk(`${t}a`);
+    const { org: orgB2 } = await mk(`${t}b`);
+
+    const c1 = new pg.Client({ connectionString: testUrl });
+    const c2 = new pg.Client({ connectionString: testUrl });
+    await c1.connect();
+    await c2.connect();
+    try {
+      // T1：父行改归属，暂不提交
+      await c1.query("BEGIN");
+      await c1.query("UPDATE store SET org_id=$1 WHERE id=$2", [orgB2.id, sharedStore.id]);
+      // T2：插入旧组织审计引用——RI 检查对父行取 KEY SHARE 锁，须等待 T1 提交；
+      // 先挂起 promise 再提交 T1（等待中的 RI 检查不阻塞 T1），最后断言 T2 被拒
+      await c2.query("BEGIN");
+      const auditId = randomUUID();
+      const insertPromise = c2.query(
+        `INSERT INTO audit_log (id,org_id,store_id,action,entity_type,entity_id,request_id,updated_at)
+         VALUES ($1,$2,$3,'race','probe',$4,$5,now())`,
+        [auditId, orgA2.id, sharedStore.id, auditId, auditId],
+      ).then(
+        () => "OK",
+        (e: { code?: string; message?: string }) => `${e.code ?? ""}:${e.message ?? ""}`,
+      );
+      await new Promise((r) => setTimeout(r, 300)); // 让 T2 进入父行锁等待
+      await c1.query("COMMIT");
+      const insertResult = await insertPromise;
+      expect(insertResult).toMatch(/23503|violates foreign key|fk_audit_log_store_same_domain/i);
+      await c2.query("ROLLBACK");
+
+      const cross = await prisma.$queryRaw<{ n: bigint }[]>`
+        SELECT count(*)::int AS n FROM audit_log a JOIN store s ON s.id = a.store_id WHERE a.org_id <> s.org_id`;
+      expect(Number(cross[0].n)).toBe(0);
+    } finally {
+      await c1.end().catch(() => {});
+      await c2.end().catch(() => {});
+    }
+  });
+
+  it("H08 REVIEW_4：并发交错方向 B——审计引用未提交时改父行归属，后者必须失败且引用方正常提交", async () => {
+    const t = randomUUID().slice(0, 8);
+    const pg = (await import("pg")).default;
+    const mk = async (tag: string) => {
+      await prisma.authUser.create({ data: { id: `auth-${tag}`, name: tag, email: `s-${tag}@example.com` } });
+      const user = await prisma.user.create({
+        data: { authUserId: `auth-${tag}`, email: `s-${tag}@example.com`, displayName: tag },
+      });
+      const org = await prisma.organization.create({ data: { id: randomUUID(), name: `S组织${tag}`, ownerUserId: user.id } });
+      const store = await prisma.store.create({
+        data: { id: randomUUID(), orgId: org.id, name: "SS", externalStoreId: `SEXT-${tag}`, platform: "manual", currency: "CNY", timezone: "Asia/Shanghai" },
+      });
+      return { org, store };
+    };
+    const { org: orgA2, store: sharedStore } = await mk(`${t}a`);
+    const { org: orgB2 } = await mk(`${t}b`);
+
+    const c1 = new pg.Client({ connectionString: testUrl });
+    const c2 = new pg.Client({ connectionString: testUrl });
+    await c1.connect();
+    await c2.connect();
+    try {
+      // T2：先插入同域审计引用，暂不提交
+      await c2.query("BEGIN");
+      const auditId = randomUUID();
+      await c2.query(
+        `INSERT INTO audit_log (id,org_id,store_id,action,entity_type,entity_id,request_id,updated_at)
+         VALUES ($1,$2,$3,'race','probe',$4,$5,now())`,
+        [auditId, orgA2.id, sharedStore.id, auditId, auditId],
+      );
+      // T1：父行改归属须等待 T2 提交（被引用键变更与子行 KEY SHARE 冲突），
+      // 随后被守卫/复合 FK 拒绝；先挂起 promise 再提交 T2，最后断言 T1 被拒
+      await c1.query("BEGIN");
+      const updatePromise = c1
+        .query("UPDATE store SET org_id=$1 WHERE id=$2", [orgB2.id, sharedStore.id])
+        .then(
+          () => "OK",
+          (e: { code?: string; message?: string }) => `${e.code ?? ""}:${e.message ?? ""}`,
+        );
+      await new Promise((r) => setTimeout(r, 300)); // 让 T1 进入父行锁等待
+      await c2.query("COMMIT");
+      const updateResult = await updatePromise;
+      expect(updateResult).toMatch(/组织归属变更|still referenced|23503|violates foreign key/i);
+      await c1.query("ROLLBACK");
+
+      const cross = await prisma.$queryRaw<{ n: bigint }[]>`
+        SELECT count(*)::int AS n FROM audit_log a JOIN store s ON s.id = a.store_id WHERE a.org_id <> s.org_id`;
+      expect(Number(cross[0].n)).toBe(0);
+    } finally {
+      await c1.end().catch(() => {});
+      await c2.end().catch(() => {});
+    }
+  });
+
+  it("H08 REVIEW_4：删除店铺只清 store_id、保留 org_id；M04 领域主键 UUID 约束存在", async () => {
+    const t = randomUUID().slice(0, 8);
+    await prisma.authUser.create({ data: { id: `auth-${t}`, name: t, email: `d-${t}@example.com` } });
+    const user = await prisma.user.create({
+      data: { authUserId: `auth-${t}`, email: `d-${t}@example.com`, displayName: t },
+    });
+    const org = await prisma.organization.create({ data: { id: randomUUID(), name: `D组织${t}`, ownerUserId: user.id } });
+    const store = await prisma.store.create({
+      data: { id: randomUUID(), orgId: org.id, name: "DS", externalStoreId: `DEXT-${t}`, platform: "manual", currency: "CNY", timezone: "Asia/Shanghai" },
+    });
+    const auditId = randomUUID();
+    await prisma.auditLog.create({
+      data: { id: auditId, orgId: org.id, storeId: store.id, action: "del", entityType: "probe", entityId: randomUUID(), requestId: randomUUID() },
+    });
+    await prisma.store.delete({ where: { id: store.id } });
+    const row = await prisma.auditLog.findUniqueOrThrow({ where: { id: auditId } });
+    expect(row.storeId).toBeNull();
+    expect(row.orgId).toBe(org.id);
+
+    // M04：领域表主键均带 UUID 格式 CHECK；认证表不带
+    const ck = await prisma.$queryRaw<{ n: bigint }[]>`
+      SELECT count(*)::int AS n FROM pg_constraint
+      WHERE conrelid IN ('domain_user'::regclass,'organization'::regclass,'membership'::regclass,'invitation'::regclass,'store'::regclass,'order'::regclass,'audit_log'::regclass)
+        AND contype='c' AND conname LIKE 'ck_domain_uuid_%'`;
+    expect(Number(ck[0].n)).toBe(7);
+    const authCk = await prisma.$queryRaw<{ n: bigint }[]>`
+      SELECT count(*)::int AS n FROM pg_constraint
+      WHERE conrelid IN ('user'::regclass,'session'::regclass,'account'::regclass,'verification'::regclass)
+        AND conname LIKE 'ck_domain_uuid_%'`;
+    expect(Number(authCk[0].n)).toBe(0);
   });
 });
 
@@ -153,12 +287,8 @@ describe("Gate-01 正式复核 H08/H09/M04 增补", () => {
   it("H08：升级守卫——存量跨域引用使 v2 迁移失败（拒绝静默通过）", async () => {
     const { PrismaPg } = await import("@prisma/adapter-pg");
     const { PrismaClient } = await import("@/generated/prisma/client");
-    const guardDb = "aiea_gate01_upgrade_guard";
-    const guardUrl = testUrl.replace(`/${TEST_DB}`, `/${guardDb}`);
-    const admin2 = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
-    await admin2.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${guardDb}" WITH (FORCE)`);
-    await admin2.$executeRawUnsafe(`CREATE DATABASE "${guardDb}"`);
-    await admin2.$disconnect();
+    // H11：守卫夹具库同样唯一命名、仅自管理
+    const guardUrl = await createTestDatabase(adminUrl, randomUUID().slice(0, 8));
 
     // 只应用到 v1 审计迁移（无守卫），注入坏行，再应用 v2 → 必须失败
     await applyMigrationsUpTo(guardUrl, "20260913044218_p0_audit_tenant_fk");
@@ -177,9 +307,7 @@ describe("Gate-01 正式复核 H08/H09/M04 增补", () => {
     await seed.$disconnect();
 
     await expect(applyMigrationsUpTo(guardUrl, "20260913120100_p0_audit_tenant_fk_v2")).rejects.toThrow(/跨组织店铺引用/);
-    const admin3 = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
-    await admin3.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${guardDb}" WITH (FORCE)`);
-    await admin3.$disconnect();
+    await dropTestDatabase(adminUrl, guardUrl);
   });
 
   it("H09：全量清单——领域表零 timestamp without time zone；认证四表保持原生", async () => {
