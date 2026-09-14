@@ -1,0 +1,29 @@
+Loaded Prisma config from prisma.config.ts.
+
+prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "aiea_dev", schema "public" at "postgres:5432"
+
+4 migrations found in prisma/migrations
+
+Applying migration `20260912102945_p0_init`
+Applying migration `20260912103005_p0_constraints`
+Applying migration `20260913043631_p0_domain_timestamptz`
+Applying migration `20260913044218_p0_audit_tenant_fk`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260912102945_p0_init/
+    └─ migration.sql
+  └─ 20260912103005_p0_constraints/
+    └─ migration.sql
+  └─ 20260913043631_p0_domain_timestamptz/
+    └─ migration.sql
+  └─ 20260913044218_p0_audit_tenant_fk/
+    └─ migration.sql
+
+All migrations have been successfully applied.

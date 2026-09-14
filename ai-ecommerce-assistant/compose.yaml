@@ -12,10 +12,12 @@ services:
     image: postgres:17
     environment:
       POSTGRES_USER: aiea
-      POSTGRES_PASSWORD: aiea_local_dev
+      # M05：本地开发口令可由 .env 覆盖（POSTGRES_PASSWORD）；默认值仅限本机回环开发栈
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aiea_local_dev}
       POSTGRES_DB: aiea_dev
     ports:
-      - "5433:5432"
+      # M05：仅绑定回环，避免开发库暴露到可达网络
+      - "127.0.0.1:5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -26,7 +28,6 @@ services:
 
   web:
     build: .
-    command: pnpm start
     environment:
       DATABASE_URL: postgres://aiea:aiea_local_dev@postgres:5432/aiea_dev
       # TASK-003 起启动必需（instrumentation 校验）；从 .env 注入，缺失即拒绝启动
@@ -34,7 +35,7 @@ services:
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       LOG_LEVEL: info
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
