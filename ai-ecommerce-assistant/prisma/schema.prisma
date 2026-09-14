@@ -89,6 +89,7 @@ model AuthUser {
   updatedAt     DateTime       @updatedAt
   sessions      AuthSession[]
   accounts      AuthAccount[]
+  domainUsers   User[]    @relation("DomainUserAuth")
 
   @@unique([email])
   @@map("user")
@@ -396,6 +397,7 @@ enum ActionStateStatus {
 model User {
   id          String     @id @default(uuid())
   authUserId  String     @unique @map("auth_user_id")
+  authUser    AuthUser   @relation("DomainUserAuth", fields: [authUserId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   email       String     @unique @db.VarChar(320)
   displayName String     @map("display_name") @db.VarChar(80)
   status      UserStatus @default(active)
@@ -497,15 +499,15 @@ model Store {
   currency                       String         @db.Char(3)
   timezone                       String         @db.VarChar(64)
   datasetVersion                 BigInt         @default(0) @map("dataset_version")
-  inputEvaluationAt              DateTime?      @map("input_evaluation_at")
+  inputEvaluationAt              DateTime?      @map("input_evaluation_at") @db.Timestamptz(6)
   lastEvaluationDate             DateTime?      @map("last_evaluation_date") @db.Date
   currentSnapshotVersion         BigInt?        @map("current_snapshot_version")
   rulesetVersion                 String         @default("rules-v1-init") @map("ruleset_version") @db.VarChar(80)
   currentSnapshotRulesetVersion  String?        @map("current_snapshot_ruleset_version") @db.VarChar(80)
-  currentSnapshotEvaluationAt    DateTime?      @map("current_snapshot_evaluation_at")
+  currentSnapshotEvaluationAt    DateTime?      @map("current_snapshot_evaluation_at") @db.Timestamptz(6)
   previousSnapshotVersion        BigInt?        @map("previous_snapshot_version")
   previousSnapshotRulesetVersion String?        @map("previous_snapshot_ruleset_version") @db.VarChar(80)
-  previousSnapshotEvaluationAt   DateTime?      @map("previous_snapshot_evaluation_at")
+  previousSnapshotEvaluationAt   DateTime?      @map("previous_snapshot_evaluation_at") @db.Timestamptz(6)
   snapshotStatus                 SnapshotStatus @default(ready) @map("snapshot_status")
   settings                       Json           @default("{}")
   createdAt                      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -689,7 +691,7 @@ model Order {
   rowHash           String             @map("row_hash") @db.VarChar(64)
   externalOrderId   String             @map("external_order_id") @db.VarChar(128)
   paymentStatus     OrderPaymentStatus @default(unpaid) @map("payment_status")
-  paidAt            DateTime?          @map("paid_at")
+  paidAt            DateTime?          @map("paid_at") @db.Timestamptz(6)
   orderedAt         DateTime           @map("ordered_at") @db.Timestamptz(6)
   currency          String             @db.Char(3)
   expectedItemCount Int                @map("expected_item_count")
@@ -795,7 +797,7 @@ model RefundEvent {
   afterSaleRecordId          String?        @map("after_sale_record_id")
   occurredAt                 DateTime       @map("occurred_at") @db.Timestamptz(6)
   status                     RefundStatus   @default(pending)
-  completedAt                DateTime?      @map("completed_at")
+  completedAt                DateTime?      @map("completed_at") @db.Timestamptz(6)
   refundAmount               Decimal?       @map("refund_amount") @db.Decimal(20, 6)
   refundedQuantityCumulative Int?           @map("refunded_quantity_cumulative")
   currency                   String         @db.Char(3)
@@ -1064,7 +1066,7 @@ model AIInsight {
   evidence         Json
   confidence       Json
   error            Json?
-  generatedAt      DateTime?        @map("generated_at")
+  generatedAt      DateTime?        @map("generated_at") @db.Timestamptz(6)
   createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
   rowVersion       Int              @default(1) @map("row_version")
@@ -1124,7 +1126,7 @@ model AIReport {
   confidence       Json
   insightIds       Json             @default("[]") @map("insight_ids")
   error            Json?
-  generatedAt      DateTime?        @map("generated_at")
+  generatedAt      DateTime?        @map("generated_at") @db.Timestamptz(6)
   createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
   rowVersion       Int              @default(1) @map("row_version")
@@ -1162,8 +1164,8 @@ model AIRun {
   attempts        Json            @default("[]")
   requestContext  Json            @map("request_context")
   errorCode       String?         @map("error_code") @db.VarChar(64)
-  startedAt       DateTime?       @map("started_at")
-  finishedAt      DateTime?       @map("finished_at")
+  startedAt       DateTime?       @map("started_at") @db.Timestamptz(6)
+  finishedAt      DateTime?       @map("finished_at") @db.Timestamptz(6)
   createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
   rowVersion      Int              @default(1) @map("row_version")
@@ -1198,7 +1200,7 @@ model ImportTask {
   baseDatasetVersion      BigInt           @map("base_dataset_version")
   committedDatasetVersion BigInt?          @map("committed_dataset_version")
   committedRulesetVersion String?          @map("committed_ruleset_version") @db.VarChar(80)
-  committedEvaluationAt   DateTime?        @map("committed_evaluation_at")
+  committedEvaluationAt   DateTime?        @map("committed_evaluation_at") @db.Timestamptz(6)
   rowCount                Int              @default(0) @map("row_count")
   validCount              Int              @default(0) @map("valid_count")
   errorCount              Int              @default(0) @map("error_count")
@@ -1209,8 +1211,8 @@ model ImportTask {
   errorObjectKey          String?          @map("error_object_key") @db.VarChar(512)
   outboxStatus            OutboxStatus     @default(none) @map("outbox_status")
   createdBy               String           @map("created_by")
-  confirmedAt             DateTime?        @map("confirmed_at")
-  committedAt             DateTime?        @map("committed_at")
+  confirmedAt             DateTime?        @map("confirmed_at") @db.Timestamptz(6)
+  committedAt             DateTime?        @map("committed_at") @db.Timestamptz(6)
   errorCode               String?          @map("error_code") @db.VarChar(64)
   createdAt               DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt               DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -1284,8 +1286,8 @@ model JobRun {
   attemptCount   Int             @default(0) @map("attempt_count")
   outboxStatus   JobOutboxStatus @default(pending) @map("outbox_status")
   errorCode      String?         @map("error_code") @db.VarChar(64)
-  startedAt      DateTime?       @map("started_at")
-  finishedAt     DateTime?       @map("finished_at")
+  startedAt      DateTime?       @map("started_at") @db.Timestamptz(6)
+  finishedAt     DateTime?       @map("finished_at") @db.Timestamptz(6)
   createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
   rowVersion     Int             @default(1) @map("row_version")

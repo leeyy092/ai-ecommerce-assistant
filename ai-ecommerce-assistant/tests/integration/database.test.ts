@@ -3,15 +3,15 @@
  * 流程：独立测试库 aiea_test → 空库执行 prisma migrate deploy（首次=迁移、再次=幂等）
  * → 正常链路写入 → 各类约束阻断 → P1 实体未建表断言 → 清理。
  */
-import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
-import { loadDotEnvIfPresent } from "@/lib/dotenv";
+import { baseUrlFromDotenv } from "../helpers/pgMigrate";
 import { loadEnv } from "@/lib/env";
+import { applyMigrations, resetDbSingletons } from "../helpers/pgMigrate";
 
-loadDotEnvIfPresent();
+
 const env = loadEnv();
 
 const TEST_DB = "aiea_test";
@@ -22,23 +22,19 @@ function adminClient(): PrismaClient {
   return new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
 }
 
-function runMigrateDeploy(url: string): string {
-  return execFileSync("pnpm", ["exec", "prisma", "migrate", "deploy"], {
-    encoding: "utf8",
-    env: { ...process.env, DATABASE_URL: url },
-    timeout: 120_000,
-  });
-}
 
 let prisma: PrismaClient;
 let admin: PrismaClient;
 
 beforeAll(async () => {
   admin = adminClient();
+  await admin.$executeRawUnsafe(
+    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname LIKE 'aiea_%' AND pid <> pg_backend_pid()`,
+  ).catch(() => {});
   await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
   await admin.$executeRawUnsafe(`CREATE DATABASE "${TEST_DB}"`);
-  const output = runMigrateDeploy(testUrl);
-  expect(output).toContain("prisma/migrations");
+  await applyMigrations(testUrl);
+  resetDbSingletons();
   prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: testUrl }) });
 });
 
@@ -50,6 +46,7 @@ afterAll(async () => {
 
 /** 生成一条完整可写的最小业务链（org→store→source→import→product→sku→order→order_item） */
 async function seedChain(p: PrismaClient, tag: string) {
+  await p.authUser.create({ data: { id: `auth-${tag}`, name: `Owner ${tag}`, email: `owner-${tag}@example.com` } });
   const user = await p.user.create({
     data: { authUserId: `auth-${tag}`, email: `owner-${tag}@example.com`, displayName: `Owner ${tag}` },
   });
@@ -107,12 +104,12 @@ async function seedChain(p: PrismaClient, tag: string) {
 }
 
 describe("TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL）", () => {
-  it("空库迁移部署成功，且重复部署幂等（从空库与上次迁移各验证一次；迁移数随 Gate-01 修复增至 4）", () => {
-    const output = runMigrateDeploy(testUrl);
-    expect(output).toMatch(/Already in sync|No pending migrations|applied/i);
+  it("空库迁移部署成功，且重复部署幂等（从空库与上次迁移各验证一次；迁移数随 Gate-01 修复递增）", async () => {
+    await applyMigrations(testUrl);
+  resetDbSingletons(); // 幂等重放：无待应用项
     return expect(
       prisma.$queryRawUnsafe(`SELECT count(*)::int AS n FROM "_prisma_migrations"`),
-    ).resolves.toEqual([{ n: 4 }]);
+    ).resolves.toEqual([{ n: 7 }]);
   });
 
   it("正常记录链可写入（B 组默认值与复合外键生效）", async () => {
@@ -130,6 +127,7 @@ describe("TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL）", () => 
 
   it("异租户外键被阻断：B 组织订单行引用 A 组织 SKU", async () => {
     const a = await seedChain(prisma, "aa");
+    await prisma.authUser.create({ data: { id: "auth-bb", name: "B Owner", email: "owner-bb@example.com" } });
     const bUser = await prisma.user.create({
       data: { authUserId: "auth-bb", email: "owner-bb@example.com", displayName: "B Owner" },
     });
@@ -164,6 +162,7 @@ describe("TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL）", () => 
 
   it("单 Owner 部分唯一被阻断：同组织第二个 owner 成员", async () => {
     const a = await seedChain(prisma, "one-owner");
+    await prisma.authUser.create({ data: { id: "auth-other", name: "Other", email: "other@example.com" } });
     const other = await prisma.user.create({
       data: { authUserId: "auth-other", email: "other@example.com", displayName: "Other" },
     });

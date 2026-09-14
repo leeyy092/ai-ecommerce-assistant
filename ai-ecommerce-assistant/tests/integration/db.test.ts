@@ -3,11 +3,11 @@
  * 前置：本地 PostgreSQL 17 实例已启动且 .env 的 DATABASE_URL 指向它。
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { loadDotEnvIfPresent } from "@/lib/dotenv";
+import { baseUrlFromDotenv } from "../helpers/pgMigrate";
 import { loadEnv } from "@/lib/env";
 import { createDbPool, pingDb, type DbPool } from "@/lib/db";
 
-loadDotEnvIfPresent();
+process.env.DATABASE_URL = baseUrlFromDotenv();
 const env = loadEnv();
 
 let pool: DbPool;
