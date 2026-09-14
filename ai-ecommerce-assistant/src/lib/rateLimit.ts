@@ -49,6 +49,30 @@ export async function consumeRateLimit(
   };
 }
 
+/**
+ * 只读检查当前配额（不消费）：被限时给出等待秒数；未被限时不增加计数。
+ * 用于登录包装层——仅当响应确定为 401 时才真正 consume（M02）。
+ */
+export async function peekRateLimit(
+  db: PrismaClient,
+  key: string,
+  max: number,
+  _windowSeconds: number,
+): Promise<RateLimitResult> {
+  const rows = await db.$queryRaw<{ count: number; retry_after_s: bigint | number }[]>`
+    SELECT count, CEIL(EXTRACT(EPOCH FROM (expires_at - now())))::bigint AS retry_after_s
+    FROM auth_rate_limit WHERE key = ${key} AND expires_at > now()`;
+  void _windowSeconds;
+  const row = rows[0];
+  if (!row) return { allowed: true, remaining: max, retryAfterSeconds: 0 };
+  const count = Number(row.count);
+  return {
+    allowed: count < max,
+    remaining: Math.max(0, max - count),
+    retryAfterSeconds: Math.max(0, Number(row.retry_after_s)),
+  };
+}
+
 /** 重置某 key（例如登录成功后清除失败计数） */
 export async function resetRateLimit(db: PrismaClient, key: string): Promise<void> {
   await db.authRateLimit.deleteMany({ where: { key } });

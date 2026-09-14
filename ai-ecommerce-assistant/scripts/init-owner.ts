@@ -52,12 +52,12 @@ async function main(): Promise<number> {
   const db = createPrismaClient(loadEnv());
   try {
     // auth 模块在 import 时校验认证变量，须在 .env 加载后动态引入
-    const { auth } = await import("../src/lib/auth");
+    const { getAuth } = await import("../src/lib/auth");
     const result = await initOwner(
       db,
       { orgName: org, email, displayName: name, demoMode: demo, password },
       async (mail, pass, displayName) => {
-        const created = await auth.api.signUpEmail({
+        const created = await getAuth().api.signUpEmail({
           body: { email: mail, password: pass, name: displayName },
           asResponse: false,
         });

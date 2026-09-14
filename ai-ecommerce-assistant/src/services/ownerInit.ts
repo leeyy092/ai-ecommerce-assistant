@@ -1,7 +1,7 @@
 /**
- * 初始 Owner 初始化（TASK-003；02_USER_ROLES + 08 §17.2）。
- * 输入组织名、Owner 邮箱/显示名与 demo 标记；密码只经隐藏输入/受限文件传入，禁止命令行明文。
- * 幂等：重复执行校验并返回既有身份，不重设密码、不建第二个 Owner、不凭邮箱接管已有账号。
+ * 初始 Owner 初始化（TASK-003；Gate-01 正式复核 H06 修复版）。
+ * 密码只经隐藏输入/受限文件传入；与邀请共用邮箱协调锁（identity-email:<email>）；
+ * 幂等返回前核实完整身份链，断链时以本次密码重建认证身份（owner_init_recovered）。
  */
 import type { PrismaClient } from "@/generated/prisma/client";
 import { writeAudit } from "@/services/audit";
@@ -27,17 +27,23 @@ export interface InitOwnerInput {
 }
 
 /** 桥接 better-auth 创建 Auth 身份（库负责密码哈希）；由脚本/路由层注入 */
-export type SignUpFn = (email: string, password: string, name: string) => Promise<{ authUserId: string }>;
-
-/** 删除孤儿认证身份（无领域 User）；Session/Account 经库级联清除 */
-async function purgeOrphanAuthIdentity(db: PrismaClient, authUserId: string): Promise<void> {
-  await db.authUser.delete({ where: { id: authUserId } }).catch(() => {});
-}
+export type SignUpFn = (
+  email: string,
+  password: string,
+  name: string,
+) => Promise<{ authUserId: string }>;
 
 export interface InitOwnerResult {
   orgId: string;
   userId: string;
   alreadyInitialized: boolean;
+  /** 身份链断裂后以本次密码重建（alreadyInitialized=true 且 recovered=true） */
+  recovered?: boolean;
+}
+
+/** 删除孤儿认证身份（无领域 User）；Session/Account 经库级联清除 */
+async function purgeOrphanAuthIdentity(db: PrismaClient, authUserId: string): Promise<void> {
+  await db.authUser.delete({ where: { id: authUserId } }).catch(() => {});
 }
 
 export async function initOwner(
@@ -57,45 +63,68 @@ export async function initOwner(
     throw new OwnerInitError(422, "VALIDATION_ERROR", "密码至少 8 位");
   }
 
-  const existingDomainUser = await db.user.findUnique({ where: { email } });
-  if (existingDomainUser) {
-    const ownerMembership = await db.membership.findFirst({
-      where: { userId: existingDomainUser.id, role: "owner" },
-    });
-    if (ownerMembership) {
-      // 幂等重跑：返回既有身份，不校验/不重设密码
-      return {
-        orgId: ownerMembership.orgId,
-        userId: existingDomainUser.id,
-        alreadyInitialized: true,
-      };
-    }
-    throw new OwnerInitError(
-      409,
-      "IMPORT_CONFLICT",
-      "该邮箱已是其他身份（非 Owner），不能凭初始化接管",
-    );
-  }
-
-  // H06：上次失败的孤儿 Auth 身份安全回收后重建（幂等恢复）
-  const existingAuthUser = await db.authUser.findUnique({ where: { email } });
-  if (existingAuthUser) {
-    await purgeOrphanAuthIdentity(db, existingAuthUser.id);
-  }
-
-  const created = await signUp(email, input.password, input.displayName.trim());
-
-  if (input.testHookAfterAuth) {
-    try {
-      await input.testHookAfterAuth();
-    } catch (hookError) {
-      await purgeOrphanAuthIdentity(db, created.authUserId).catch(() => {});
-      throw hookError;
-    }
-  }
-
+  let createdAuthUserId: string | null = null;
   try {
-    const result = await db.$transaction(async (tx) => {
+    return await db.$transaction(async (tx) => {
+      // H06：与邀请一致的邮箱协调锁（事务级，自动释放）
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`identity-email:${email}`})) IS NULL AS ok`;
+
+      const existing = await tx.user.findUnique({ where: { email } });
+
+      if (existing) {
+        const ownerMembership = await tx.membership.findFirst({
+          where: { userId: existing.id, role: "owner" },
+        });
+        if (!ownerMembership) {
+          throw new OwnerInitError(
+            409,
+            "IMPORT_CONFLICT",
+            "该邮箱已是其他身份（非 Owner），不能凭初始化接管",
+          );
+        }
+        // H06：幂等返回前核实完整身份链
+        const authAlive = await tx.authUser.findUnique({
+          where: { id: existing.authUserId },
+        });
+        if (authAlive) {
+          return { orgId: ownerMembership.orgId, userId: existing.id, alreadyInitialized: true };
+        }
+        // 链断裂：以本次密码重建认证身份并回接（可真实登录）
+        const rebuilt = await signUp(email, input.password, input.displayName.trim());
+        createdAuthUserId = rebuilt.authUserId;
+        await tx.user.update({
+          where: { id: existing.id },
+          data: { authUserId: rebuilt.authUserId },
+        });
+        await writeAudit(tx, {
+          orgId: ownerMembership.orgId,
+          actorUserId: existing.id,
+          action: "owner_init_recovered",
+          entityType: "user",
+          entityId: existing.id,
+          afterSummary: { reason: "broken_auth_chain_rebuilt" },
+        });
+        return {
+          orgId: ownerMembership.orgId,
+          userId: existing.id,
+          alreadyInitialized: true,
+          recovered: true,
+        };
+      }
+
+      // 历史孤儿认证身份（无领域 User）安全回收后重建
+      const orphan = await tx.authUser.findUnique({ where: { email } });
+      if (orphan) {
+        await purgeOrphanAuthIdentity(db, orphan.id);
+      }
+
+      const created = await signUp(email, input.password, input.displayName.trim());
+      createdAuthUserId = created.authUserId;
+
+      if (input.testHookAfterAuth) {
+        await input.testHookAfterAuth();
+      }
+
       const user = await tx.user.create({
         data: {
           id: crypto.randomUUID(),
@@ -123,12 +152,12 @@ export async function initOwner(
         entityId: org.id,
         afterSummary: { demoMode: input.demoMode },
       });
-      return { orgId: org.id, userId: user.id };
+      return { orgId: org.id, userId: user.id, alreadyInitialized: false };
     });
-    return { ...result, alreadyInitialized: false };
   } catch (error) {
-    // H06 补偿：领域事务失败 → 删除 Auth 身份，下次重跑干净恢复
-    await purgeOrphanAuthIdentity(db, created.authUserId).catch(() => {});
+    if (createdAuthUserId) {
+      await purgeOrphanAuthIdentity(db, createdAuthUserId).catch(() => {});
+    }
     throw error;
   }
 }

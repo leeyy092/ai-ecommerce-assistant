@@ -1,35 +1,47 @@
 /**
  * Better Auth 原生路由（/api/auth/*，08 §17.2）。
  * Gate-01 H04：公开注册关闭——HTTP 层直接拒绝匿名 sign-up；
- * 受控创建路径（初始 Owner 脚本、邀请接受）走服务端 auth.api，不经本路由，不受影响。
+ * 受控创建路径（初始 Owner 脚本、邀请接受）走服务端 getAuth().api，不经本路由，不受影响。
  * 登录防爆破：sign-in/email 外层数据库持久限流（失败 10 次/IP/分钟 → 429；成功清零）。
  */
 import { toNextJsHandler } from "better-auth/next-js";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { getPrismaClient } from "@/database/prisma";
-import { consumeRateLimit, resetRateLimit } from "@/lib/rateLimit";
+import { consumeRateLimit, peekRateLimit, resetRateLimit } from "@/lib/rateLimit";
 
 const LOGIN_FAIL_MAX = 10;
 const WINDOW_SECONDS = 60;
 
+/**
+ * M02 代理信任边界：TRUST_PROXY_HEADERS=true（默认 false）时才采信
+ * X-Forwarded-For/X-Real-IP——仅在可信反向代理之后启用；
+ * 关闭时所有直连客户端共用同一计数桶（本地/直连部署语义）。
+ * 真实反代拓扑在 TASK-029 部署验证时核验。
+ */
 function clientIp(req: NextRequest): string {
+  if (process.env.TRUST_PROXY_HEADERS !== "true") {
+    return "direct";
+  }
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0].trim();
-  return req.headers.get("x-real-ip") ?? "127.0.0.1";
+  return req.headers.get("x-real-ip") ?? "unknown";
 }
 
-const PUBLIC_SIGNUP_BLOCKED = Response.json(
-  {
-    error: {
-      code: "PUBLIC_SIGNUP_DISABLED",
-      message: "系统不提供公开注册；账号由部署初始化与管理员邀请建立",
-      retryable: false,
-      request_id: crypto.randomUUID(),
+// M03：每次拒绝都创建新 Response（复用同一 Response 会导致 body 被消费后丢失）
+function publicSignupBlocked(): Response {
+  return Response.json(
+    {
+      error: {
+        code: "PUBLIC_SIGNUP_DISABLED",
+        message: "系统不提供公开注册；账号由部署初始化与管理员邀请建立",
+        retryable: false,
+        request_id: crypto.randomUUID(),
+      },
     },
-  },
-  { status: 403 },
-);
+    { status: 403 },
+  );
+}
 
 async function withLoginRateLimit(
   handler: (req: NextRequest) => Promise<Response>,
@@ -37,15 +49,16 @@ async function withLoginRateLimit(
 ): Promise<Response> {
   const path = req.nextUrl.pathname;
   if (path.endsWith("/sign-up/email")) {
-    return PUBLIC_SIGNUP_BLOCKED;
+    return publicSignupBlocked();
   }
   if (!path.endsWith("/sign-in/email")) {
     return handler(req);
   }
 
+  // M02：只在明确结果后计数——401 计入失败、200 清零、其他（400/429/503…）不变更计数
   const db = getPrismaClient();
   const key = `login-fail:${clientIp(req)}`;
-  const check = await consumeRateLimit(db, key, LOGIN_FAIL_MAX, WINDOW_SECONDS);
+  const check = await peekRateLimit(db, key, LOGIN_FAIL_MAX, WINDOW_SECONDS);
   if (!check.allowed) {
     return Response.json(
       {
@@ -62,19 +75,26 @@ async function withLoginRateLimit(
 
   const response = await handler(req);
   if (response.status === 401) {
-    // 计入失败（consume 已 +1）；成功则清零
+    await consumeRateLimit(db, key, LOGIN_FAIL_MAX, WINDOW_SECONDS); // 计入失败
     return response;
   }
-  await resetRateLimit(db, key);
+  if (response.status === 200) {
+    await resetRateLimit(db, key); // 仅明确认证成功清零
+  }
   return response;
 }
 
-const handlers = toNextJsHandler(auth);
+// H10：处理器懒创建——next build 收集路由时不初始化认证，运行时首请求强校验环境
+let handlers: ReturnType<typeof toNextJsHandler> | null = null;
+function lazyHandlers(): ReturnType<typeof toNextJsHandler> {
+  handlers ??= toNextJsHandler(getAuth());
+  return handlers;
+}
 
 export async function GET(req: NextRequest): Promise<Response> {
-  return handlers.GET(req);
+  return lazyHandlers().GET(req);
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
-  return withLoginRateLimit(handlers.POST, req);
+  return withLoginRateLimit(lazyHandlers().POST, req);
 }

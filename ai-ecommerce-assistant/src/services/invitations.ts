@@ -225,7 +225,7 @@ export async function acceptInvitation(db: PrismaClient, input: AcceptInput): Pr
   try {
     await db.$transaction(async (tx) => {
       // 事务级咨询锁：同邮箱/同邀请的并发接受完全串行（void IS NULL 仅为可反序列化）
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`invite-email:${peek.email}`})) IS NULL AS ok`;
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`identity-email:${peek.email}`})) IS NULL AS ok`;
       await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`invite-id:${peek.id}`})) IS NULL AS ok`;
 
       // 锁内权威重读

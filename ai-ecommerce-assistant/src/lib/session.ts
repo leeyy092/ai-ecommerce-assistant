@@ -8,7 +8,7 @@
  * 禁用即时失权：全局 User.status=disabled（平台运维级）或全部成员关系失效时视为未登录。
  */
 import type { PrismaClient } from "@/generated/prisma/client";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { getPrismaClient } from "@/database/prisma";
 
 export const ACTIVE_ORG_COOKIE = "aiea_active_org";
@@ -44,7 +44,7 @@ export async function getSessionContext(
   request: Request,
   db: PrismaClient = getPrismaClient(),
 ): Promise<SessionContext | null> {
-  const session = await auth.api.getSession({ headers: request.headers });
+  const session = await getAuth().api.getSession({ headers: request.headers });
   if (!session?.user?.id) return null;
 
   const domainUser = await db.user.findUnique({

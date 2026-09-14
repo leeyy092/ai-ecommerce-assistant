@@ -4,14 +4,14 @@
  * 验收：公开注册关闭（无 signUp 入口暴露给匿名）、邀请过期/重复使用/邮箱不符均拒绝、
  * 并发两次接受仅一次成功、重复初始化不改密码、不建第二个 Owner、限流持久计数、禁用即时失权。
  */
-import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PrismaClient } from "@/generated/prisma/client";
-import { loadDotEnvIfPresent } from "@/lib/dotenv";
+import { baseUrlFromDotenv } from "../helpers/pgMigrate";
+import { applyMigrations, resetDbSingletons } from "../helpers/pgMigrate";
 import { loadEnv } from "@/lib/env";
 
-loadDotEnvIfPresent();
+process.env.DATABASE_URL = baseUrlFromDotenv();
 const baseEnv = loadEnv();
 
 const TEST_DB = "aiea_auth_test";
@@ -33,24 +33,19 @@ type Modules = typeof import("@/lib/auth") &
 let mods: Modules;
 let db: PrismaClient;
 
-async function runMigrateDeploy(url: string): Promise<void> {
-  execFileSync("pnpm", ["exec", "prisma", "migrate", "deploy"], {
-    encoding: "utf8",
-    stdio: "pipe",
-    env: { ...process.env, DATABASE_URL: url },
-    timeout: 120_000,
-  });
-}
-
 beforeAll(async () => {
   const { PrismaPg } = await import("@prisma/adapter-pg");
   const { PrismaClient } = await import("@/generated/prisma/client");
   const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
+  await admin.$executeRawUnsafe(
+    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname LIKE 'aiea_%' AND pid <> pg_backend_pid()`,
+  ).catch(() => {});
   await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
   await admin.$executeRawUnsafe(`CREATE DATABASE "${TEST_DB}"`);
   await admin.$disconnect();
 
-  await runMigrateDeploy(testUrl);
+  await applyMigrations(testUrl);
+  resetDbSingletons();
 
   // 环境就绪后再加载被测模块（auth 模块在 import 时绑定 Prisma 客户端）
   const auth = await import("@/lib/auth");
@@ -73,7 +68,7 @@ afterAll(async () => {
 });
 
 const signUpFn: import("@/services/ownerInit").SignUpFn = async (email, password, name) => {
-  const result = await mods.auth.api.signUpEmail({
+  const result = await mods.getAuth().api.signUpEmail({
     body: { email, password, name },
     asResponse: false,
   });
@@ -97,7 +92,7 @@ describe("TASK-003｜初始 Owner 与登录", () => {
     }, signUpFn);
     expect(result.alreadyInitialized).toBe(false);
 
-    const signIn = await mods.auth.api
+    const signIn = await mods.getAuth().api
       .signInEmail({ body: { email, password: "initial-pass-123" }, asResponse: false })
       .catch(() => null);
     expect(signIn?.user?.email).toBe(email);
@@ -129,14 +124,15 @@ describe("TASK-003｜初始 Owner 与登录", () => {
     expect(second.alreadyInitialized).toBe(true);
     expect(second.orgId).toBe(first.orgId);
 
-    const reLogin = await mods.auth.api
+    const reLogin = await mods.getAuth().api
       .signInEmail({ body: { email, password: "initial-pass-123" }, asResponse: false })
       .catch(() => null);
     expect(reLogin?.user?.email).toBe(email);
 
     // 数据库单 Owner 部分唯一：同组织第二个 owner 成员被拒绝
+    await db.authUser.create({ data: { id: `auth-other-${t}`, name: "他人", email: `other-${t}@example.com` } });
     const other = await db.user.create({
-      data: { authUserId: `auth-${t}`, email: `other-${t}@example.com`, displayName: "他人" },
+      data: { authUserId: `auth-other-${t}`, email: `other-${t}@example.com`, displayName: "他人" },
     });
     await expect(
       db.membership.create({ data: { orgId: first.orgId, userId: other.id, role: "owner" } }),
@@ -151,7 +147,7 @@ describe("TASK-003｜初始 Owner 与登录", () => {
       password: "initial-pass-123",
     }, signUpFn);
 
-    const signInResponse = await mods.auth.api.signInEmail({
+    const signInResponse = await mods.getAuth().api.signInEmail({
       body: { email, password: "initial-pass-123" },
       asResponse: true,
     });
@@ -188,8 +184,9 @@ describe("TASK-003｜受控邀请", () => {
   it("Operator 不能创建邀请；Owner 创建返回一次性 URL（只存哈希）", async () => {
     const t = tag();
     const owner = await ownerCtx(t);
+    await db.authUser.create({ data: { id: `auth-op-${t}`, name: "运营", email: `op-${t}@example.com` } });
     const operator = await db.user.create({
-      data: { authUserId: `auth-${t}`, email: `op-${t}@example.com`, displayName: "运营" },
+      data: { authUserId: `auth-op-${t}`, email: `op-${t}@example.com`, displayName: "运营" },
     });
     await db.membership.create({
       data: { orgId: owner.orgId, userId: operator.id, role: "operator" },

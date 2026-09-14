@@ -5,16 +5,16 @@
  * H06 输入校验无副作用 / 孤儿 Auth 身份恢复 / Auth 后故障补偿与重试
  * H07 邀请创建与审计同事务（审计故障 → 业务零提交）
  */
-import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
-import { loadDotEnvIfPresent } from "@/lib/dotenv";
+import { baseUrlFromDotenv } from "../helpers/pgMigrate";
+import { applyMigrations, resetDbSingletons } from "../helpers/pgMigrate";
 import { loadEnv } from "@/lib/env";
 
-loadDotEnvIfPresent();
+process.env.DATABASE_URL = baseUrlFromDotenv();
 const baseEnv = loadEnv();
 
 const TEST_DB = "aiea_gate01_auth_test";
@@ -28,8 +28,8 @@ process.env.BETTER_AUTH_URL = "http://127.0.0.1:3000";
 let db: PrismaClient;
 
 const signUpFn = async (email: string, password: string, name: string) => {
-  const { auth } = await import("@/lib/auth");
-  const result = await auth.api.signUpEmail({
+  const { getAuth } = await import("@/lib/auth");
+  const result = await getAuth().api.signUpEmail({
     body: { email, password, name },
     asResponse: false,
   });
@@ -42,15 +42,14 @@ function tag(): string {
 
 beforeAll(async () => {
   const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
+  await admin.$executeRawUnsafe(
+    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname LIKE 'aiea_%' AND pid <> pg_backend_pid()`,
+  ).catch(() => {});
   await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
   await admin.$executeRawUnsafe(`CREATE DATABASE "${TEST_DB}"`);
   await admin.$disconnect();
-  execFileSync("pnpm", ["exec", "prisma", "migrate", "deploy"], {
-    encoding: "utf8",
-    stdio: "pipe",
-    env: { ...process.env, DATABASE_URL: testUrl },
-    timeout: 180_000,
-  });
+  await applyMigrations(testUrl);
+  resetDbSingletons();
   const { getPrismaClient } = await import("@/database/prisma");
   db = getPrismaClient();
 });
@@ -94,9 +93,9 @@ describe("Gate-01 H04｜公开注册关闭", () => {
   });
 
   it("两条受控创建路径仍可用：服务端 auth.api.signUpEmail 正常建身份", async () => {
-    const { auth } = await import("@/lib/auth");
+    const { getAuth } = await import("@/lib/auth");
     const email = `controlled-${tag()}@example.com`;
-    const result = await auth.api.signUpEmail({
+    const result = await getAuth().api.signUpEmail({
       body: { email, password: "controlled-123", name: "受控" },
       asResponse: false,
     });
@@ -299,5 +298,84 @@ describe("Gate-01 H07｜邀请创建与审计原子", () => {
       await db.invitation.count({ where: { orgId: owner.orgId, email: `auditfail-${t}@example.com` } }),
     ).toBe(0);
     expect(await db.auditLog.count({ where: { orgId: owner.orgId, action: "invite_create" } })).toBe(0);
+  });
+});
+
+describe("Gate-01 正式复核 H06 增补｜并发与身份链", () => {
+  it("init/init 并发：一胜一幂等，AuthUser 恰 1，二者均可登录语义", async () => {
+    const t = tag();
+    const email = `race-owner-${t}@example.com`;
+    const { initOwner } = await import("@/services/ownerInit");
+    const results = await Promise.allSettled([
+      initOwner(db, { orgName: `竞A${t}`, email, displayName: "A", demoMode: false, password: "race-pass-12345" }, signUpFn),
+      initOwner(db, { orgName: `竞B${t}`, email, displayName: "B", demoMode: false, password: "race-pass-12345" }, signUpFn),
+    ]);
+    const fulfilled = results.filter((r) => r.status === "fulfilled");
+    expect(fulfilled).toHaveLength(2); // 邮箱锁串行后，后到者幂等返回
+    const ids = new Set(fulfilled.map((r) => (r as PromiseFulfilledResult<{ orgId: string }>).value.orgId));
+    expect(ids.size).toBe(1); // 同一组织，无第二 Owner
+    expect(await db.authUser.count({ where: { email } })).toBe(1);
+    expect(await db.user.count({ where: { email } })).toBe(1);
+    const { getAuth } = await import("@/lib/auth");
+    const login = await getAuth().api.signInEmail({ body: { email, password: "race-pass-12345" }, asResponse: false });
+    expect(login.user.email).toBe(email); // 真实可登录
+  });
+
+  it("init/invite 交错：邮箱锁串行，最终恰一个身份路径胜出且状态一致", async () => {
+    const t = tag();
+    const email = `mix-${t}@example.com`;
+    const { createInvitation, acceptInvitation } = await import("@/services/invitations");
+    const initOwnerFn = (await import("@/services/ownerInit")).initOwner;
+
+    const inviter = await seedOwner(`${t}-host`);
+    const created = await createInvitation(
+      { db, orgId: inviter.orgId, userId: inviter.userId, role: "owner" },
+      { email, role: "operator", baseUrl: "http://127.0.0.1:3000" },
+    );
+    const token = created.url.split("/invite/")[1];
+
+    const results = await Promise.allSettled([
+      initOwnerFn(db, { orgName: `混${t}`, email, displayName: "M", demoMode: false, password: "mix-pass-12345" }, signUpFn),
+      acceptInvitation(db, { token, displayName: "受邀", password: "mix-pass-12345", signUpNewUser: signUpFn }),
+    ]);
+    const okCount = results.filter((r) => r.status === "fulfilled").length;
+    expect(okCount).toBe(1); // 先到者胜；后到者拒绝（409），无双重身份
+    expect(await db.user.count({ where: { email } })).toBe(1);
+    expect(await db.authUser.count({ where: { email } })).toBe(1);
+  });
+
+  it("断链恢复：删除 AuthUser 模拟链断裂后重跑 init → 重建身份且能真实登录", async () => {
+    const t = tag();
+    const email = `broken-${t}@example.com`;
+    const { initOwner } = await import("@/services/ownerInit");
+    const first = await initOwner(
+      db, { orgName: `断${t}`, email, displayName: "BK", demoMode: false, password: "first-pass-12345" }, signUpFn,
+    );
+    expect(first.alreadyInitialized).toBe(false);
+
+    // 模拟链断裂（Auth 身份丢失）
+    const domainUser = await db.user.findUniqueOrThrow({ where: { email } });
+    await db.membership.updateMany({ where: { userId: domainUser.id }, data: { status: "disabled" } }).then(async () => {
+      await db.membership.updateMany({ where: { userId: domainUser.id }, data: { status: "active" } });
+    });
+    await db.authSession.deleteMany({ where: { userId: domainUser.authUserId } });
+    // FK(RESTRICT) 的删除侧检查由 "user"（AuthUser 映射表）上的内部 RI 触发器执行：禁用父表全部触发器后删除认证行，finally 恢复
+    await db.$executeRawUnsafe(`ALTER TABLE "user" DISABLE TRIGGER ALL`);
+    try {
+      await db.authUser.delete({ where: { id: domainUser.authUserId } });
+    } finally {
+      await db.$executeRawUnsafe(`ALTER TABLE "user" ENABLE TRIGGER ALL`);
+    }
+
+    const second = await initOwner(
+      db, { orgName: `断${t}`, email, displayName: "BK", demoMode: false, password: "second-pass-12345" }, signUpFn,
+    );
+    expect(second.alreadyInitialized).toBe(true);
+    expect(second.recovered).toBe(true);
+    expect(second.orgId).toBe(first.orgId);
+
+    const { getAuth } = await import("@/lib/auth");
+    const login = await getAuth().api.signInEmail({ body: { email, password: "second-pass-12345" }, asResponse: false });
+    expect(login.user.email).toBe(email);
   });
 });
