@@ -6,9 +6,17 @@
  */
 import type { NextRequest } from "next/server";
 import { CAPABILITIES, requirePermission } from "@/services/access";
-import { fail, ok, serviceFailure } from "@/lib/http";
+import { fail, ok, serviceFailure, guardWrite, internalFailure } from "@/lib/http";
 import { getPrismaClient } from "@/database/prisma";
 import { writeAudit } from "@/services/audit";
+import { z } from "zod";
+
+const OrgPatchSchema = z
+  .object({
+    name: z.string().min(1).max(100),
+    expected_version: z.number().int().positive(),
+  })
+  .strict();
 
 export async function GET(req: NextRequest) {
   try {
@@ -37,33 +45,34 @@ export async function GET(req: NextRequest) {
     }
     return ok(base);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return fail(422, "请求字段类型或取值不合法", {
+        code: "VALIDATION_ERROR",
+        fieldErrors: Object.fromEntries(error.issues.map((i) => [i.path.join("."), i.message])),
+      });
+    }
     const mapped = serviceFailure(error);
     if (mapped) return mapped;
-    throw error;
+    return internalFailure(error);
   }
 }
 
 export async function PATCH(req: NextRequest) {
   try {
+    const blocked = guardWrite(req);
+    if (blocked) return blocked;
     const ctx = await requirePermission(req, {
       capability: CAPABILITIES.manageOrgInfo,
     });
-    let body: { name?: string; expected_version?: number };
+    let parsed: unknown;
     try {
-      body = (await req.json()) as typeof body;
+      parsed = await req.json();
     } catch {
       return fail(422, "请求体不是合法 JSON");
     }
-    const name = typeof body.name === "string" ? body.name.trim() : "";
-    if (name.length < 1 || name.length > 100) {
-      return fail(422, "组织名称长度须为 1–100 个字符", {
-        fieldErrors: { name: "必填，1–100 字符" },
-      });
-    }
-    const expectedVersion = Number(body.expected_version);
-    if (!Number.isFinite(expectedVersion) || expectedVersion < 1) {
-      return fail(422, "缺少合法的 expected_version");
-    }
+    const body = OrgPatchSchema.parse(parsed);
+    const name = body.name.trim();
+    const expectedVersion = body.expected_version;
 
     const db = getPrismaClient();
     const result = await db.$transaction(async (tx) => {
@@ -90,8 +99,14 @@ export async function PATCH(req: NextRequest) {
     });
     return ok(result);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return fail(422, "请求字段类型或取值不合法", {
+        code: "VALIDATION_ERROR",
+        fieldErrors: Object.fromEntries(error.issues.map((i) => [i.path.join("."), i.message])),
+      });
+    }
     const mapped = serviceFailure(error);
     if (mapped) return mapped;
-    throw error;
+    return internalFailure(error);
   }
 }

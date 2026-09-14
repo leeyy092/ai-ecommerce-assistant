@@ -17,7 +17,8 @@ export default async function globalSetup(): Promise<void> {
       input: `${PASSWORD}\n`,
       encoding: "utf8",
       stdio: ["pipe", "pipe", "inherit"],
-      timeout: 120_000,
+      // tsx 冷启动 + Prisma/Better Auth 导入在 iCloud 同步目录下约 60s，与 webServer 并发时更慢，预留 300s
+      timeout: 300_000,
     },
   );
 }

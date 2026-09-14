@@ -4,7 +4,7 @@
  * GET：邀请列表（遮罩邮箱，不回原始 token）。
  */
 import type { NextRequest } from "next/server";
-import { ok, fail, serviceFailure } from "@/lib/http";
+import { ok, fail, serviceFailure, guardWrite, internalFailure } from "@/lib/http";
 import { getPrismaClient } from "@/database/prisma";
 import { CAPABILITIES, requirePermission, type Role } from "@/services/access";
 import { createInvitation, listInvitations } from "@/services/invitations";
@@ -15,6 +15,8 @@ const ROLES: Role[] = ["admin", "operator", "customer_service"];
 
 export async function POST(req: NextRequest) {
   try {
+    const blocked = guardWrite(req);
+    if (blocked) return blocked;
     const ctx = await requirePermission(req, { capability: CAPABILITIES.viewMembers });
 
     let body: { email?: string; role?: string };
@@ -43,7 +45,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     const mapped = serviceFailure(error);
     if (mapped) return mapped;
-    throw error;
+    return internalFailure(error);
   }
 }
 
@@ -79,6 +81,6 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     const mapped = serviceFailure(error);
     if (mapped) return mapped;
-    throw error;
+    return internalFailure(error);
   }
 }

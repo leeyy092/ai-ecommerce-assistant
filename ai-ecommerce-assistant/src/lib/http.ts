@@ -5,6 +5,7 @@
  */
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { loadEnv } from "@/lib/env";
 
 export function requestId(): string {
   return randomUUID();
@@ -51,6 +52,45 @@ export const notFound = (message = "记录不存在") => fail(404, message, { co
  * 服务层错误（AccessError/InvitationError/OwnerInitError 等 {status,code,message} 形态）
  * 统一映射为 API 错误信封；不匹配返回 null 交由调用方继续抛出。
  */
+/**
+ * M01｜业务写入口的可信来源与内容类型守卫：
+ * - 若携带 Origin 头，则必须与 BETTER_AUTH_URL 同源（浏览器跨站写全部拒绝；无 Origin 的
+ *   脚本/服务端调用放行，Cookie 仍需有效 session）；
+ * - 带请求体时 Content-Type 必须为 application/json。
+ */
+export function guardWrite(request: Request): NextResponse | null {
+  const origin = request.headers.get("origin");
+  if (origin) {
+    let trusted: string | null = null;
+    try {
+      trusted = new URL(loadEnv(["auth"]).auth?.url ?? "").origin;
+    } catch {
+      trusted = null;
+    }
+    let got: string | null = null;
+    try {
+      got = new URL(origin).origin;
+    } catch {
+      got = null;
+    }
+    if (!trusted || got !== trusted) {
+      return fail(403, "请求来源不受信任", { code: "FORBIDDEN" });
+    }
+  }
+  const contentType = request.headers.get("content-type");
+  const hasBody = request.method !== "GET" && request.method !== "HEAD";
+  if (hasBody && contentType && !contentType.toLowerCase().includes("application/json")) {
+    return fail(415, "Content-Type 必须为 application/json", { code: "UNSUPPORTED_MEDIA_TYPE" });
+  }
+  return null;
+}
+
+/** M03｜未预期异常的稳定错误信封（不回传内部细节，附 request_id 便于日志关联） */
+export function internalFailure(error: unknown): NextResponse {
+  console.error("[internal]", randomUUID(), error instanceof Error ? error.message : error);
+  return fail(503, "服务器内部错误，请稍后重试", { code: "INTERNAL_ERROR", retryable: true });
+}
+
 export function serviceFailure(error: unknown): NextResponse | null {
   if (
     error instanceof Error &&

@@ -5,9 +5,9 @@
  * 已有用户：须已登录且邮箱与受邀邮箱一致；token CAS 原子消费（并发仅一次成功）。
  */
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { getSessionContext } from "@/lib/session";
-import { fail, ok } from "@/lib/http";
+import { fail, ok, guardWrite, internalFailure } from "@/lib/http";
 import { getPrismaClient } from "@/database/prisma";
 import { acceptInvitation, InvitationError } from "@/services/invitations";
 import { consumeRateLimit } from "@/lib/rateLimit";
@@ -25,6 +25,8 @@ export async function POST(
   { params }: { params: Promise<{ idOrToken: string }> },
 ) {
   const { idOrToken } = await params;
+  const blocked = guardWrite(req);
+  if (blocked) return blocked;
   const db = getPrismaClient();
 
   // 接受端点防爆破：20 次/IP/分钟
@@ -55,7 +57,7 @@ export async function POST(
         ? { id: sessionCtx.user.id, email: sessionCtx.user.email }
         : undefined,
       signUpNewUser: async (email, password, name) => {
-        const response = await auth.api.signUpEmail({
+        const response = await getAuth().api.signUpEmail({
           body: { email, password, name },
           asResponse: true,
         });
@@ -80,7 +82,7 @@ export async function POST(
     }
     const mapped = serviceFailureOf(error);
     if (mapped) return mapped;
-    throw error;
+    return internalFailure(error);
   }
 
   const response = ok({ status: "accepted" });

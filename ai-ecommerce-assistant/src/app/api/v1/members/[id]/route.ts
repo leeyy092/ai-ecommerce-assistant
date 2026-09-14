@@ -9,9 +9,18 @@
  */
 import type { NextRequest } from "next/server";
 import { CAPABILITIES, assertMemberManageable, requirePermission, type Role } from "@/services/access";
-import { fail, ok, serviceFailure } from "@/lib/http";
+import { fail, ok, serviceFailure, guardWrite, internalFailure } from "@/lib/http";
 import { getPrismaClient } from "@/database/prisma";
 import { writeAudit } from "@/services/audit";
+import { z } from "zod";
+
+const MembersPatchSchema = z
+  .object({
+    role: z.enum(["admin", "operator", "customer_service"]).optional(),
+    status: z.enum(["active", "disabled"]).optional(),
+    expected_version: z.number().int().positive(),
+  })
+  .strict();
 
 const ASSIGNABLE_ROLES: ReadonlySet<string> = new Set(["admin", "operator", "customer_service"]);
 
@@ -36,18 +45,17 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const blocked = guardWrite(req);
+    if (blocked) return blocked;
     const ctx = await requirePermission(req, { capability: CAPABILITIES.viewMembers });
 
-    let body: { role?: string; status?: string; expected_version?: number };
+    let parsed: unknown;
     try {
-      body = (await req.json()) as typeof body;
+      parsed = await req.json();
     } catch {
       return fail(422, "请求体不是合法 JSON");
     }
-    const expectedVersion = Number(body.expected_version);
-    if (!Number.isFinite(expectedVersion) || expectedVersion < 1) {
-      return fail(422, "缺少合法的 expected_version");
-    }
+    const body = MembersPatchSchema.parse(parsed);
 
     const db = getPrismaClient();
     const { id } = await params;
@@ -72,7 +80,7 @@ export async function PATCH(
 
     const result = await db.$transaction(async (tx) => {
       const updated = await tx.membership.updateMany({
-        where: { id, orgId: ctx.orgId, rowVersion: expectedVersion },
+        where: { id, orgId: ctx.orgId, rowVersion: body.expected_version },
         data: {
           ...(body.role ? { role: body.role as "admin" | "operator" | "customer_service" } : {}),
           ...(body.status ? { status: body.status as "active" | "disabled" } : {}),
@@ -106,8 +114,14 @@ export async function PATCH(
 
     return ok({ id, ...result });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return fail(422, "请求字段类型或取值不合法", {
+        code: "VALIDATION_ERROR",
+        fieldErrors: Object.fromEntries(error.issues.map((i) => [i.path.join("."), i.message])),
+      });
+    }
     const mapped = serviceFailure(error);
     if (mapped) return mapped;
-    throw error;
+    return internalFailure(error);
   }
 }

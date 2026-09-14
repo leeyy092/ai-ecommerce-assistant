@@ -5,15 +5,15 @@
  * H03 D01 方案 A：A 组织禁用不影响 B 组织 Owner；旧会话撤销后可重新登录使用 B
  * H07 成员/组织管理写入与审计原子（DB 级注入 → 零部分提交）
  */
-import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import type { PrismaClient } from "@/generated/prisma/client";
-import { loadDotEnvIfPresent } from "@/lib/dotenv";
+import { baseUrlFromDotenv } from "../helpers/pgMigrate";
+import { applyMigrations, resetDbSingletons } from "../helpers/pgMigrate";
 import { loadEnv } from "@/lib/env";
 
-loadDotEnvIfPresent();
+process.env.DATABASE_URL = baseUrlFromDotenv();
 const baseEnv = loadEnv();
 
 const TEST_DB = "aiea_gate01_access_test";
@@ -25,7 +25,7 @@ process.env.BETTER_AUTH_SECRET ??= "test-secret-please-ignore-0123456789abcdef";
 process.env.BETTER_AUTH_URL = "http://127.0.0.1:3000";
 
 let db: PrismaClient;
-type Auth = (typeof import("@/lib/auth"))["auth"];
+type Auth = ReturnType<(typeof import("@/lib/auth"))["getAuth"]>;
 let auth: Auth;
 
 const PASSWORD = "dual-org-pass-123";
@@ -76,21 +76,22 @@ async function createUser(
 }
 
 beforeAll(async () => {
+  // 多次 signUpEmail 在共享进程下偶发超时，给足建立时间
+
   const { PrismaPg } = await import("@prisma/adapter-pg");
   const { PrismaClient } = await import("@/generated/prisma/client");
   const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
+  await admin.$executeRawUnsafe(
+    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname LIKE 'aiea_%' AND pid <> pg_backend_pid()`,
+  ).catch(() => {});
   await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
   await admin.$executeRawUnsafe(`CREATE DATABASE "${TEST_DB}"`);
   await admin.$disconnect();
-  execFileSync("pnpm", ["exec", "prisma", "migrate", "deploy"], {
-    encoding: "utf8",
-    stdio: "pipe",
-    env: { ...process.env, DATABASE_URL: testUrl },
-    timeout: 180_000,
-  });
+  await applyMigrations(testUrl);
+  resetDbSingletons();
   const { getPrismaClient } = await import("@/database/prisma");
   db = getPrismaClient();
-  ({ auth } = await import("@/lib/auth"));
+  auth = (await import("@/lib/auth")).getAuth();
 
   const t = randomUUID().slice(0, 8);
   const mkOrg = async (name: string) => {
@@ -323,18 +324,18 @@ describe("Gate-01 H07｜成员/组织管理与审计原子", () => {
     );
     try {
       const { PATCH } = await import("@/app/api/v1/members/[id]/route");
-      await expect(
-        PATCH(
-          req(`/api/v1/members/${opA.membershipId}`, dual.cookie, {
-            method: "PATCH",
-            body: JSON.stringify({
-              role: "admin",
-              expected_version: (await db.membership.findUniqueOrThrow({ where: { id: opA.membershipId } })).rowVersion,
-            }),
+      const res = await PATCH(
+        req(`/api/v1/members/${opA.membershipId}`, dual.cookie, {
+          method: "PATCH",
+          body: JSON.stringify({
+            role: "admin",
+            expected_version: (await db.membership.findUniqueOrThrow({ where: { id: opA.membershipId } })).rowVersion,
           }),
-          { params: Promise.resolve({ id: opA.membershipId }) },
-        ),
-      ).rejects.toThrow();
+        }),
+        { params: Promise.resolve({ id: opA.membershipId }) },
+      );
+      // M03：未预期服务端故障以稳定 503 信封返回，不再向上抛出
+      expect(res.status).toBe(503);
     } finally {
       await db.$executeRawUnsafe(`ALTER TABLE audit_log DROP CONSTRAINT IF EXISTS ck_inject_member_audit`);
     }
@@ -356,14 +357,14 @@ describe("Gate-01 H07｜成员/组织管理与审计原子", () => {
     try {
       const { PATCH } = await import("@/app/api/v1/organization/route");
       const org = await db.organization.findUniqueOrThrow({ where: { id: orgA } });
-      await expect(
-        PATCH(
-          req("/api/v1/organization", dual.cookie, {
-            method: "PATCH",
-            body: JSON.stringify({ name: "不该生效", expected_version: org.rowVersion }),
-          }),
-        ),
-      ).rejects.toThrow();
+      const res = await PATCH(
+        req("/api/v1/organization", dual.cookie, {
+          method: "PATCH",
+          body: JSON.stringify({ name: "不该生效", expected_version: org.rowVersion }),
+        }),
+      );
+      // M03：未预期服务端故障以稳定 503 信封返回，不再向上抛出
+      expect(res.status).toBe(503);
     } finally {
       await db.$executeRawUnsafe(`ALTER TABLE audit_log DROP CONSTRAINT IF EXISTS ck_inject_org_audit`);
     }

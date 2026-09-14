@@ -3,14 +3,14 @@
  * 双组织 × 四角色，真实会话 Cookie 直调路由 handler，验证：
  * 权限矩阵执行、跨组织资源 404、C 拒绝经营入口、禁用后旧 Cookie 401、店铺同域校验。
  */
-import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PrismaClient } from "@/generated/prisma/client";
-import { loadDotEnvIfPresent } from "@/lib/dotenv";
+import { baseUrlFromDotenv } from "../helpers/pgMigrate";
+import { applyMigrations, resetDbSingletons } from "../helpers/pgMigrate";
 import { loadEnv } from "@/lib/env";
 
-loadDotEnvIfPresent();
+process.env.DATABASE_URL = baseUrlFromDotenv();
 const baseEnv = loadEnv();
 
 const TEST_DB = "aiea_perm_test";
@@ -22,7 +22,7 @@ process.env.BETTER_AUTH_SECRET ??= "test-secret-please-ignore-0123456789abcdef";
 process.env.BETTER_AUTH_URL = "http://127.0.0.1:3000";
 
 let db: PrismaClient;
-type Auth = (typeof import("@/lib/auth"))["auth"];
+type Auth = ReturnType<(typeof import("@/lib/auth"))["getAuth"]>;
 
 interface Actor {
   userId: string;
@@ -92,19 +92,18 @@ beforeAll(async () => {
   const { PrismaPg } = await import("@prisma/adapter-pg");
   const { PrismaClient } = await import("@/generated/prisma/client");
   const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl } as never) });
+  await admin.$executeRawUnsafe(
+    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname LIKE 'aiea_%' AND pid <> pg_backend_pid()`,
+  ).catch(() => {});
   await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
   await admin.$executeRawUnsafe(`CREATE DATABASE "${TEST_DB}"`);
   await admin.$disconnect();
 
-  execFileSync("pnpm", ["exec", "prisma", "migrate", "deploy"], {
-    encoding: "utf8",
-    stdio: "pipe",
-    env: { ...process.env, DATABASE_URL: testUrl },
-    timeout: 120_000,
-  });
+  await applyMigrations(testUrl);
+  resetDbSingletons();
 
   const { getPrismaClient } = await import("@/database/prisma");
-  const { auth } = await import("@/lib/auth");
+  const auth = (await import("@/lib/auth")).getAuth();
   db = getPrismaClient();
 
   const t = randomUUID().slice(0, 8);
