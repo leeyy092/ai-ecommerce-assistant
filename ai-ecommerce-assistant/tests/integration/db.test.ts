@@ -3,11 +3,12 @@
  * 前置：本地 PostgreSQL 17 实例已启动且 .env 的 DATABASE_URL 指向它。
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { baseUrlFromDotenv } from "../helpers/pgMigrate";
+import { resolveDatabaseUrl } from "../helpers/pgMigrate";
 import { loadEnv } from "@/lib/env";
 import { createDbPool, pingDb, type DbPool } from "@/lib/db";
 
-process.env.DATABASE_URL = baseUrlFromDotenv();
+// H11：进程环境 DATABASE_URL 优先（外部注入的隔离集群不被 .env 覆盖）；本套件只做只读连通性检查
+process.env.DATABASE_URL = resolveDatabaseUrl();
 const env = loadEnv();
 
 let pool: DbPool;

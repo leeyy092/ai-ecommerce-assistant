@@ -7,16 +7,11 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
-import { baseUrlFromDotenv } from "../helpers/pgMigrate";
-import { loadEnv } from "@/lib/env";
-import { applyMigrations, resetDbSingletons } from "../helpers/pgMigrate";
+import { applyMigrations, createTestDatabase, dropTestDatabase, resetDbSingletons, resolveDatabaseUrl } from "../helpers/pgMigrate";
 
-
-const env = loadEnv();
-
-const TEST_DB = "aiea_test";
-const adminUrl = env.databaseUrl.replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
-const testUrl = env.databaseUrl.replace(/\/[^/?]+(\?.*)?$/, `/${TEST_DB}$1`);
+const adminUrl = resolveDatabaseUrl().replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
+// H11：每次运行唯一命名测试库，只管理本库生命周期，不触碰集群内其他数据库
+const testUrl = await createTestDatabase(adminUrl, randomUUID().slice(0, 8));
 
 function adminClient(): PrismaClient {
   return new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
@@ -28,11 +23,6 @@ let admin: PrismaClient;
 
 beforeAll(async () => {
   admin = adminClient();
-  await admin.$executeRawUnsafe(
-    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname LIKE 'aiea_%' AND pid <> pg_backend_pid()`,
-  ).catch(() => {});
-  await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
-  await admin.$executeRawUnsafe(`CREATE DATABASE "${TEST_DB}"`);
   await applyMigrations(testUrl);
   resetDbSingletons();
   prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: testUrl }) });
@@ -40,8 +30,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await prisma?.$disconnect();
-  await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
   await admin.$disconnect();
+  await dropTestDatabase(adminUrl, testUrl);
 });
 
 /** 生成一条完整可写的最小业务链（org→store→source→import→product→sku→order→order_item） */
@@ -109,7 +99,7 @@ describe("TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL）", () => 
   resetDbSingletons(); // 幂等重放：无待应用项
     return expect(
       prisma.$queryRawUnsafe(`SELECT count(*)::int AS n FROM "_prisma_migrations"`),
-    ).resolves.toEqual([{ n: 7 }]);
+    ).resolves.toEqual([{ n: 8 }]); // REVIEW_4：+复合FK/M04 迁移
   });
 
   it("正常记录链可写入（B 组默认值与复合外键生效）", async () => {

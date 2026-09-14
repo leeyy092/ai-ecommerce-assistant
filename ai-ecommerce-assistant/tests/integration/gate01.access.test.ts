@@ -9,16 +9,11 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import type { PrismaClient } from "@/generated/prisma/client";
-import { baseUrlFromDotenv } from "../helpers/pgMigrate";
-import { applyMigrations, resetDbSingletons } from "../helpers/pgMigrate";
-import { loadEnv } from "@/lib/env";
+import { applyMigrations, createTestDatabase, dropTestDatabase, resetDbSingletons, resolveDatabaseUrl } from "../helpers/pgMigrate";
 
-process.env.DATABASE_URL = baseUrlFromDotenv();
-const baseEnv = loadEnv();
-
-const TEST_DB = "aiea_gate01_access_test";
-const adminUrl = baseEnv.databaseUrl.replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
-const testUrl = baseEnv.databaseUrl.replace(/\/[^/?]+(\?.*)?$/, `/${TEST_DB}$1`);
+const adminUrl = resolveDatabaseUrl().replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
+// H11：每次运行唯一命名测试库，只管理本库生命周期，不触碰集群内其他数据库
+const testUrl = await createTestDatabase(adminUrl, randomUUID().slice(0, 8));
 
 process.env.DATABASE_URL = testUrl;
 process.env.BETTER_AUTH_SECRET ??= "test-secret-please-ignore-0123456789abcdef";
@@ -78,15 +73,6 @@ async function createUser(
 beforeAll(async () => {
   // 多次 signUpEmail 在共享进程下偶发超时，给足建立时间
 
-  const { PrismaPg } = await import("@prisma/adapter-pg");
-  const { PrismaClient } = await import("@/generated/prisma/client");
-  const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
-  await admin.$executeRawUnsafe(
-    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname LIKE 'aiea_%' AND pid <> pg_backend_pid()`,
-  ).catch(() => {});
-  await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
-  await admin.$executeRawUnsafe(`CREATE DATABASE "${TEST_DB}"`);
-  await admin.$disconnect();
   await applyMigrations(testUrl);
   resetDbSingletons();
   const { getPrismaClient } = await import("@/database/prisma");
@@ -152,11 +138,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await db?.$disconnect();
-  const { PrismaPg } = await import("@prisma/adapter-pg");
-  const { PrismaClient } = await import("@/generated/prisma/client");
-  const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
-  await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
-  await admin.$disconnect();
+  await dropTestDatabase(adminUrl, testUrl);
 });
 
 describe("Gate-01 H01｜活跃组织统一（双组织双角色真实会话）", () => {
