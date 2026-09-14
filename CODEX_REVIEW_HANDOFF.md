@@ -1,3 +1,75 @@
+# CODEX_REVIEW_HANDOFF｜Gate01 R3 修复完成，待 Codex 第三轮独立复审
+
+日期：2026-09-14T14:58:39+08:00；执行者：ZCode。当前 Phase 1 / TASK-004 / 待审查（Gate01 REVIEW_3 待复审） / Checkpoint=YES / 下一工具 Codex。
+
+## 复审定位信息
+
+| 项 | 值 |
+|---|---|
+| Current Branch | `phase/01-foundation` |
+| Base Branch | `main`（`2a983cc55f136abbb49c5d02b55c1cb82b6547cc`，未合并） |
+| Previous Review Commit（正式复核冻结） | `c87a141648227954725402c715063a900fa72659` |
+| Current Review Commit | `e7b5eea`（本地与远端一致，80c1342..e7b5eea 已推送） |
+| Git Diff Range | `c87a141..e7b5eea`（6 提交：47269bb 正式报告、80c1342 L01、e66e3f8/c6fc5fa/08e1793/e7b5eea 四个 fix） |
+| Project Status | TASK-004 / 待审查（Gate 标识 REVIEW_3）；Checkpoint=YES；下一工具 Codex，prompts/P07_CODE_REVIEW.md |
+| Working Tree | 管理文档写回后统一提交（chore(review): prepare gate-01 review-3 handoff）；接手时若 HEAD 变化先重定范围 |
+
+## 本轮修复摘要（ZCode 执行，待独立复核）
+
+| # | 修复 commit | 内容 |
+|---|---|---|
+| H10+M05 | e66e3f8 (TASK-001) | Dockerfile 构建链（deps COPY schema+config → build 拷贝生成客户端 → 占位 BETTER_AUTH_* → CMD node 直启）；compose 端口 127.0.0.1 + 口令 `:?required`；**真实容器全链路证据** |
+| H08/H09/M04 | c6fc5fa (TASK-002) | 三份新迁移：14 可空时间列 TIMESTAMPTZ(6)（USING AT TIME ZONE 'UTC'）、审计 v2 升级守卫 + store 父行 org_id 守卫、悬空守卫 + domain_user→"user" FK RESTRICT |
+| H06+M01/M02/M03 认证侧 | 08e1793 (TASK-003) | ownerInit 单事务 + pg_advisory_xact_lock(hashtext('identity-email:<email>')) 统一邮箱锁 + 锁内权威重查 + 断链重建/孤儿回收/补偿删除；auth 懒加载 getAuth()；rateLimit peek 预检（401 消费/200 清零/其余不清零）；TRUST_PROXY_HEADERS 边界；公开注册每次新 Response |
+| M01/M03 路由侧 | e7b5eea (TASK-004) | guardWrite（跨源 403/非 JSON 415）+ Zod 严格 schema（422 fieldErrors）+ internalFailure 稳定 503 信封，覆盖 invitations 创建/接受、members PATCH、organization PATCH、active-organization |
+
+**真实 Docker 证据**（docs/reviews/gate-01-r3-evidence/，17 文件）：本机安装 colima + compose v2；干净构建 exit 0 → compose up（web 首启 corepack EAI_AGAIN 失败留档 web-startup.log）→ 修复后重建（compose-rebuild-web.log）→ /api/health 200 → 容器内 migrate exit 0 → init-owner exit 0 → 登录 200 → /api/v1/me 200 → 公开注册双探测 403 → compose down。container-login.json 会话 token 提交前脱敏；curl cookie jar 按安全规则删除未入库。
+
+## ZCode 记录的 Tests（2026-09-14 本机）
+
+| 套件 | 结果 |
+|---|---|
+| typecheck | ✅ 0 错误（修复后复跑） |
+| unit | ✅ 14/14 |
+| integration（7 文件 53 例） | ✅ 53/53（gate01.db 7 / database 9 / auth 8 / permissions 7 / gate01.auth 10 / gate01.access 7 / db 4） |
+| build（web+worker） | ✅ exit 0 |
+| e2e | ✅ 8/8（保留一次 ECONNRESET 警告，与历轮一致） |
+| 真实容器 | ✅ 全链路见上（此前"无 Docker"缺口已由本机安装 colima 补上） |
+
+环境事实（复审须知）：本机 Prisma CLI 启动空转 ~10 分钟，测试基建改用 pg 驱动直跑迁移（tests/helpers/pgMigrate.ts）；本地 PG 09-14 12:10 被外部 smart shutdown 后关机 PANIC（iCloud 写超时），重启自动崩溃恢复成功，以上结果均在恢复后取得。
+
+## Known Issues / Follow-up 终态
+
+1. M01/M02/M03/M04/M05 本轮全部落地；唯一延期项：领域 UUID 数据库格式约束（REVIEW_2 核定——首次后续 Schema 变更或 TASK-028 前，取较早）。
+2. E2E 默认密码仅用于本地演示库 aiea_dev；旧下载地址/旧 job 重放拒绝分别属 TASK-007/013 对象。
+3. e2e 种子超时 120s→300s（tsx 冷启动 + iCloud 慢 I/O 实测 ~62s）。
+4. 仓库仍位于 iCloud 同步目录（pg_control 写超时已实证一次）；迁移出 iCloud 属基础设施事项，不阻断 Gate。
+
+## 建议 Codex 优先阅读（按 diff 顺序）
+
+下表源码、迁移与测试路径相对于应用目录 `ai-ecommerce-assistant/`；Git 与 docs 路径相对于项目根。复审还需查看范围内其余差异。
+
+| 顺序 | 文件 |
+|---|---|
+| 1 | `git log c87a141..e7b5eea --oneline` |
+| 2 | `Dockerfile`、`compose.yaml`、docs/reviews/gate-01-r3-evidence/（H10/M05 真实容器证据） |
+| 3 | `prisma/migrations/20260913120000_p0_nullable_timestamptz/`、`20260913120100_p0_audit_tenant_fk_v2/`、`20260913120200_p0_domain_user_auth_fk/`、`prisma/schema.prisma`（H08/H09/M04） |
+| 4 | `src/services/ownerInit.ts`、`src/services/invitations.ts`（H06：邮箱锁/权威重查/断链重建/补偿） |
+| 5 | `src/lib/auth.ts`（懒加载 getAuth/resetAuthForTests）、`src/lib/rateLimit.ts`（peek）、`src/app/api/auth/[...all]/route.ts`（M02/H04） |
+| 6 | `src/lib/http.ts`（guardWrite/internalFailure）、五个 v1 写路由（M01/M03） |
+| 7 | `tests/helpers/pgMigrate.ts`、`tests/helpers/setup.ts`、`vitest.config.ts`（测试基建）；`tests/integration/gate01.{db,auth,access}.test.ts`（新回归） |
+| 8 | `docs/ai-ecommerce-assistant/12_PROGRESS.md`（R3 修复执行记录）、`README.md`（R3 章节） |
+
+## 复审结论回填约定
+
+独立复审按项目协议记录 PASS / FAIL / BLOCKED 及精确代码版本、实际测试、未运行项、剩余问题。技术失败交 ZCode 修复并复审；缺证据写清补证动作；只有确需产品决策的问题才交 Owner。PASS 后仍等待 Owner 阶段放行，两者满足后才按 PHASE_PLAN 执行合并与下一 Phase。本轮不合并 main、不部署、不开始 TASK-005。
+
+---
+
+# 历史：正式复核（22时）与 REVIEW_2 结论及更早交接全文
+
+以下为先前原文；其中历史待审查段落不代表当前状态。
+
 # CODEX_REVIEW_HANDOFF｜Gate01正式复核完成，待ZCode修复
 
 日期：2026-09-13T22:31:24+08:00；Reviewer：Codex。当前Phase1 / TASK-004 / 待修复 / Checkpoint=YES / 下一工具ZCode。
@@ -45,7 +117,7 @@ M01–M04已经独立核定，不沿用ZCode整包延期建议：现有写接口
 
 # 历史交接原文（上一轮收尾，已被上方REVIEW_2结果取代）
 
-以下完整保留上轮“待复审”交接和执行者自报记录，仅供追溯，不能作为当前状态或独立通过结论。
+以下完整保留上轮"待复审"交接和执行者自报记录，仅供追溯，不能作为当前状态或独立通过结论。
 
 # CODEX_REVIEW_HANDOFF｜CODEX_REVIEW_GATE_01_REVIEW_2（第二轮复审交接）
 
@@ -75,10 +147,10 @@ M01–M04已经独立核定，不沿用ZCode整包延期建议：现有写接口
 | H10 | 73a5108 | Dockerfile deps 先 COPY prisma/schema.prisma+prisma.config.ts 再 install；compose 注入 BETTER_AUTH_SECRET/URL；docker-deps-repro.sh 等价复现 OK | 干净布局 install+generate；**真实 Docker runtime 未实测（本机无 Docker）** |
 | H08 | 3e90bf6 | 新迁移 p0_audit_tenant_fk：audit_log 同域触发器（同域/空 store 放行、异域拒绝）；选触发器而非复合外键的原因见迁移注释 | 异域 INSERT 被 DB 拒绝；空 store 合法；删除行为=单列 FK SET NULL |
 | H09 | 3e90bf6 | 新迁移 p0_domain_timestamptz：77 列 TIMESTAMPTZ(6) 显式 `USING ... AT TIME ZONE 'UTC'`（历史行均 Prisma UTC 墙钟、集群时区 Asia/Shanghai）；Auth 四表保持框架原生；auth_rate_limit 重置 | 空库+升级双路径；UTC/+08 同一时刻等值；默认值/ORM 路径 |
-| H04 | 63e16ea | `/api/auth/sign-up/email` HTTP 层 403 PUBLIC_SIGNUP_DISABLED；受控路径（初始化/邀请）走服务端 auth.api 不受影响 | 匿名 URL 拒绝且零 AuthUser；两条受控路径成功 |
-| H05 | 63e16ea | 接受邀请转发框架 signUpEmail(asResponse:true) 的完整 Set-Cookie；不再手工伪造 Cookie | E2E 双浏览器上下文：接受→受保护接口 200 |
-| H06 | 63e16ea | 输入写库前完整校验（422 零副作用）；孤儿 Auth 身份回收（幂等重试恢复）；单事务+PG 事务级咨询锁（邮箱+邀请双键）覆盖 CAS+领域+审计；Auth 创建失败/事务失败补偿删除 | 长姓名 500→422 无残留；孤儿恢复；注入失败→邀请 pending+AuthUser 0→重试成功；并发仅一成功 |
-| H07 | 63e16ea + e56be99 | 邀请创建/撤销/接受、成员 PATCH（CAS+会话撤销+审计）、organization PATCH（CAS+审计，补齐缺失审计）全部单事务 | DB 级 NOT VALID 约束注入：失败后业务/版本/审计零提交 |
+| H04 | 63c16ea | `/api/auth/sign-up/email` HTTP 层 403 PUBLIC_SIGNUP_DISABLED；受控路径（初始化/邀请）走服务端 auth.api 不受影响 | 匿名 URL 拒绝且零 AuthUser；两条受控路径成功 |
+| H05 | 63c16ea | 接受邀请转发框架 signUpEmail(asResponse:true) 的完整 Set-Cookie；不再手工伪造 Cookie | E2E 双浏览器上下文：接受→受保护接口 200 |
+| H06 | 63c16ea | 输入写库前完整校验（422 零副作用）；孤儿 Auth 身份回收（幂等重试恢复）；单事务+PG 事务级咨询锁（邮箱+邀请双键）覆盖 CAS+领域+审计；Auth 创建失败/事务失败补偿删除 | 长姓名 500→422 无残留；孤儿恢复；注入失败→邀请 pending+AuthUser 0→重试成功；并发仅一成功 |
+| H07 | 63c16ea + e56be99 | 邀请创建/撤销/接受、成员 PATCH（CAS+会话撤销+审计）、organization PATCH（CAS+审计，补齐缺失审计）全部单事务 | DB 级 NOT VALID 约束注入：失败后业务/版本/审计零提交 |
 | H01 | e56be99 | session.ts 唯一活跃组织解析（Cookie 仅在有效成员关系内选择，否则回退首个）；/me、requirePermission、organization 读写同源；active-organization 直接写响应 Set-Cookie | 同账号 A=owner/B=CS：切换后读写均为 B、CS 无预算/无 PATCH 权；伪造 Cookie 回退 |
 | H02 | e56be99 | assertRoleAssignment 校验拟授予新角色：Admin 禁授 admin；owner 永不可授予 | Admin op→admin 403 且角色不变；Owner 合法；P↔C 允许 |
 | H03 | e56be99 | D01 方案 A：禁用仅本组织 Membership.status+撤登录会话；不修改全局 User.status；其他组织可用（重登验证）；02_USER_ROLES 已同步裁决 | A 禁用不伤 B 的 Owner；旧 Cookie 401；重登 active_org=B role=owner |
@@ -107,7 +179,7 @@ M01–M04已经独立核定，不沿用ZCode整包延期建议：现有写接口
 
 ## Medium Follow-up（M01–M04：ZCode 提议延期，待复审核定）
 
-本轮不将执行者的“不阻塞”建议视为 Reviewer 放行；M03 已有局部修改，其余缺口仍须复核并明确处理时点。
+本轮不将执行者的"不阻塞"建议视为 Reviewer 放行；M03 已有局部修改，其余缺口仍须复核并明确处理时点。
 
 | # | 内容 | 状态 |
 |---|---|---|

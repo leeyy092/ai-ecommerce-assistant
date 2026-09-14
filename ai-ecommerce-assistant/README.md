@@ -956,3 +956,11 @@ pnpm vitest run tests/integration/auth.test.ts   # 认证/邀请集成测试
 - H03（D01 方案 A）：成员禁用仅更新本组织 Membership.status 并撤销登录会话；**不修改全局 User.status**，其他组织的有效成员关系不受影响，重新登录后其余组织可用。
 - H07：members PATCH（CAS+会话撤销+审计）与 organization PATCH（CAS+审计，原先无审计）单一事务。
 - 回归：gate01.access 集成 7/7（双组织双角色切换读写同源、伪造 Cookie 回退、Admin 提权 403/Owner 合法 200、P↔C 允许、A 禁用不伤 B 的 Owner 且重登可用 B、成员/组织审计故障零提交）；全套 unit 14/14、integration 46/46、e2e 8/8。
+
+### Gate-01 正式复核 R3 修复（2026-09-14，H06/H08/H09/H10 + M01–M05）
+
+- **H10 + M05（TASK-001）**：Dockerfile 修构建链——deps 先 COPY `prisma/schema.prisma`+`prisma.config.ts`，build 阶段从 deps 拷贝生成的 Prisma 客户端，构建期仅占位 `BETTER_AUTH_*`（认证改为运行时懒加载强校验，见 `src/lib/auth.ts` 的 `getAuth()`），runner 用 `node` 直启绕开容器内 corepack 无 DNS；compose 端口全部绑 `127.0.0.1`、口令 `:?required` 注入。**真实容器全链路已验证**（本机 colima + compose v2）：干净构建 → 迁移 → init-owner → 登录 200 → /me 200 → 公开注册 403，证据在 `docs/reviews/gate-01-r3-evidence/`（仓库根）。
+- **H08/H09/M04（TASK-002）**：三份新迁移——`20260913120000_p0_nullable_timestamptz`（14 个可空业务时间列转 TIMESTAMPTZ(6)，`USING ... AT TIME ZONE 'UTC'`，此后除 Auth 框架四表外全量 TIMESTAMPTZ）；`20260913120100_p0_audit_tenant_fk_v2`（升级守卫：存量跨域审计行使迁移失败；store 父行改 `org_id` 被触发器阻断）；`20260913120200_p0_domain_user_auth_fk`（悬空守卫 + `domain_user→"user"` FK RESTRICT）。
+- **H06（TASK-003）**：`ownerInit` 重写——单事务 + `pg_advisory_xact_lock(hashtext('identity-email:<email>'))` 统一邮箱锁，锁内权威重查；断链（Auth 身份丢失）走 signUp 重建 + `owner_init_recovered` 审计；孤儿回收与补偿删除 Auth 身份；`acceptInvitation` 用同一把锁。并发 init/init 一胜一幂等、init/invite 交错恰一路径胜出、断链恢复后二次密码真实登录，均有回归。
+- **M01/M02/M03/M05**：v1 写路由接入 `guardWrite`（跨源 403 / 非 JSON 415）+ Zod 严格校验（422 fieldErrors）+ `internalFailure` 稳定 503 信封；登录失败计数仅 401 消费、200 清零，peek 预检不消费；代理头仅 `TRUST_PROXY_HEADERS=true` 信任；公开注册每次新 Response。
+- **测试基建**：本机 Prisma CLI 启动空转 ~10 分钟 → `tests/helpers/pgMigrate.ts` 用 pg 驱动直跑迁移 + `resetDbSingletons`（含 Better Auth 懒单例重置）+ `baseUrlFromDotenv`；vitest singleFork/maxWorkers=1。本机全绿：typecheck 0 错、unit 14/14、integration 53/53、build exit 0、e2e 8/8。

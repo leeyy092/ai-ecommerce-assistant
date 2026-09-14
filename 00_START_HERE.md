@@ -6,62 +6,55 @@
 | 你要知道的事 | 当前记录 |
 |---|---|
 | 最终目标 | 让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动 |
-| 当前阶段 | 07 阶段审查 · Phase 1 项目地基 · Gate01 BLOCKED（技术FAIL） |
+| 当前阶段 | 07 阶段审查 · Phase 1 项目地基 · Gate01 REVIEW_3 待复审 |
 | 当前任务 | TASK-004 |
-| 当前状态 | 待修复 |
-| 上一个完成项 | Codex 同版本正式复核完成；H01/H02/H03/H04/H05/H07及D01通过，H06/H08/H09/H10仍失败 |
-| 下一步 | 交 ZCode 修复 Phase 1 的 H06/H08/H09/H10，按报告处理 Medium 并补真实 Docker 证据；新提交再交 Codex，PASS 后仍等 Owner 放行 |
-| 交给谁 | ZCode |
-| 做到什么算完成 | 4项HIGH反例与真实Docker闭环通过，保留已关闭项回归；Medium按正式报告及REVIEW_2核定处理；新冻结提交交Codex独立复审，Owner放行单列 |
-| 卡点 | H06/H08/H09/H10有本次重现反例；真实Docker未执行；核心Medium按原核定待修，M05/L01不单独阻断；无Gate PASS或Owner放行 |
+| 当前状态 | 待审查 |
+| 上一个完成项 | ZCode 完成 H06/H08/H09/H10 修复与 M01-M05/L01 处理；真实 Docker 全链路证据留档；c87a141..e7b5eea 已推送 |
+| 下一步 | Codex 第三轮独立复审 c87a141..e7b5eea（含真实容器证据核验）；PASS 后仍等 Owner 阶段放行，才可合并 main/开 Phase 2 |
+| 交给谁 | Codex |
+| 做到什么算完成 | 四项HIGH反例不复现且回归保留；真实Docker构建/启动/迁移/初始化/登录证据可核；M01-M05按核定落地；L01已清理；Medium延期项仅余UUID格式约束（首次后续Schema变更或TASK-028前） |
+| 卡点 | 待Codex第三轮复审；无Owner放行；不合并main、不部署、不开始TASK-005 |
 | 检查点 | YES |
-| 审查 | BLOCKED（本次用户格式）/技术FAIL · c87a141同版本正式复核；4 HIGH；真实Docker另缺证 |
-| 进度最后更新 | 2026-09-13T22:31:24+08:00 |
+| 审查 | 首轮BLOCKED(10H/4M)→R2 FAIL(4H)→正式复核BLOCKED(4H)→R3修复完成待复审；待审基线c87a141..e7b5eea |
+| 进度最后更新 | 2026-09-14T14:58:39+08:00 |
 
 项目绝对路径：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
 
-## 复制这一段，交给 ZCode
+## 复制这一段，交给 Codex
 
 ```text
 当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
 产品目标：让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动
 当前任务：TASK-004
-本轮动作：交 ZCode 修复 Phase 1 的 H06/H08/H09/H10，按报告处理 Medium 并补真实 Docker 证据；新提交再交 Codex，PASS 后仍等 Owner 放行
+本轮动作：Codex 第三轮独立复审 c87a141..e7b5eea（含真实容器证据核验）；PASS 后仍等 Owner 阶段放行，才可合并 main/开 Phase 2
 
-补充同版本正式复核（2026-09-13T22:31:24+08:00）：先读取 docs/reviews/CODEX_REVIEW_GATE_01_FORMAL_2026-09-13.md 和 docs/reviews/GATE_01_FORMAL_EVIDENCE_2026-09-13.json。本地/远端仍c87a141，22时独立复测再次确认4项HIGH，正式Gate=BLOCKED、技术FAIL，不是新的修复完成版本。只按报告第13节处理必须修复的H06/H08/H09/H10，保留已通过回归和D01；M01–M04沿用原技术核定。M05（本地Compose固定开发口令/发布地址）建议随H10小幅收敛；L01（根目录误留旧Schema/包配置）核对用途后处理；M05/L01不单独增加Gate阻断，不扩大P0。新修复提交后再交Codex，Owner放行独立记录。
+请接手 AI 电商运营助手的 CODEX_REVIEW_GATE_01_REVIEW_3，只做 Phase 1（TASK-001–004）的独立复审，不修改业务代码、不推进 TASK-005、不合并 main 或部署。
 
-请接手 AI 电商运营助手 Gate 01 第二轮复审后的 Phase 1 修复；只修 TASK-001–004，不开始 TASK-005、不合并 main、不部署。
+项目根目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant；总控：/Users/yuyuyu/Documents/AI-Workspace。
 
-项目根目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用目录：其下 ai-ecommerce-assistant；总控：/Users/yuyuyu/Documents/AI-Workspace。
-先显式读取 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、唯一进度 docs/ai-ecommerce-assistant/12_PROGRESS.md、09_TASKS.md、PHASE_PLAN.md、FINAL_DECISIONS.md、CODEX_REVIEW_HANDOFF.md，以及 docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_2_2026-09-13.md、GATE_01_REVIEW_2_EVIDENCE.json 和相关原合同。首轮报告与旧交接保留历史，不再按旧摘要重新处理已关闭项。
+先显式读取根目录 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md；按配置读取 docs/ai-ecommerce-assistant/12_PROGRESS.md（唯一进度）、09_TASKS.md、DEVELOPMENT_HANDOFF.md、FINAL_DECISIONS.md、PHASE_PLAN.md、CODEX_REVIEW_HANDOFF.md，以及前轮 docs/reviews/CODEX_REVIEW_GATE_01_FORMAL_2026-09-13.md、GATE_01_FORMAL_EVIDENCE_2026-09-13.json（修复依据）。按需读取角色、数据模型、API 和验收原文。
 
-当前 Phase1 / TASK-004 / 待修复 / Gate REVIEW_2 FAIL / Checkpoint=YES。分支 phase/01-foundation；本轮复审提交 c87a141648227954725402c715063a900fa72659；main=2a983cc55f136abbb49c5d02b55c1cb82b6547cc。先实查HEAD、未提交差异与其他执行者；保留上轮及本轮管理文档、报告证据，不覆盖/reset，不创建平行项目。下一次复审基线为c87a141，目标在修复结束后重新冻结。
+本次交接核对状态：Phase 1 / TASK-004 / 待审查（Gate01 REVIEW_3 待复审） / Checkpoint=YES / 下一工具 Codex。分支 phase/01-foundation；上一审查冻结 c87a141648227954725402c715063a900fa72659；本轮待审提交 e7b5eea（远端一致）；main 基线 2a983cc55f136abbb49c5d02b55c1cb82b6547cc。先重查 HEAD、分支、未提交差异及是否另有执行者；保留本轮未提交管理文档，版本变化则重定范围，不覆盖或重置。
 
-H01/H02/H03/H04/H05/H07及D01已独立通过；D01方案A无需再问：只禁当前组织Membership并撤登录会话，绝不由组织接口修改全局User.status，其他有效组织重登可用。
+审查历史：首轮 c263610 BLOCKED（10 HIGH/4 MEDIUM）→ R2 c87a141 FAIL（余 H06/H08/H09/H10）→ 正式复核同版本 BLOCKED 并出具 15 节报告。ZCode 已按 prompts/P08_FIX.md 完成修复，提交链 c87a141..e7b5eea：47269bb（正式报告）、80c1342（L01 根目录副本清理）、e66e3f8（TASK-001 H10+M05）、c6fc5fa（TASK-002 H08/H09/M04 + 测试基建）、08e1793（TASK-003 H06 + M01/M02/M03 认证侧）、e7b5eea（TASK-004 M01/M03 路由侧）。复审以 c87a141..e7b5eea 差异为主，必要时核对 main..e7b5eea 全量。不要只看交接摘要或新增回归。
 
-逐项给ACCEPT/DISCUSS/REJECT，按原TASK顺序一次一项修复：
-1. TASK-001 / H10：deps生成客户端未复制进build，干净构建缺@/generated/prisma/client；隔离补客户端后构建仍缺BETTER_AUTH_SECRET/URL。修正确认生成物和非生产构建配置，生产秘密不得入镜像；在真实Docker环境完成干净build、Web/Worker/PG、迁移、初始化和登录smoke。没有运行时则准确保留BLOCKED，不把deps复现当容器实测，不延期到029结案。
-2. TASK-002 / H08/H09及M04身份外键：审计同域必须覆盖父行变化和旧库存量；当前触发器两者都漏。Prisma7.10混合可空复合关系已由最小Schema验证可表达，需明确删除时只清store_id保留org_id的策略。14个可空领域时间列仍无时区，按报告清单补齐并用新增迁移；核对历史时区后转换，空库/旧版本升级均验证。补domain User.authUserId认证外键和明确删除策略，与H06协调；不能改写共享迁移或自动篡改审计旧行。
-3. TASK-003 / H06及M01/M02/M03：并发initOwner的孤儿回收会互删在途身份，最终Auth=0/领域User=1且重跑假幂等。初始化与邀请需统一邮箱协调、权威重查、可恢复身份链和安全补偿；验证并发初始化、初始化/邀请交错、普通重跑与实际进程中断恢复。现有v1写入口补可信Origin/Content-Type/必要CSRF；登录仅认证成功清零，400/429不清零并明确代理信任；当前端点严格对象/类型/长度/正整数expected_version和稳定错误信封，注册拒绝每次新Response。
-4. TASK-004：完成当前成员/组织/活跃组织共同写入口的M01/M03修复并回归H01/H02/H03/H07；保留D01及双组织不同角色行为，不扩RBAC/业务模块。
+重点逐项验证：H06（ownerInit 单事务 + pg_advisory_xact_lock(hashtext('identity-email:')) 统一邮箱锁、锁内权威重查、断链重建 owner_init_recovered、孤儿回收、补偿删除；并发 init/init、init/invite 交错、断链恢复真实登录）；H08（迁移 20260913120100 升级守卫拒绝存量跨域审计行、store 父行 org_id 变更被触发器阻断）；H09（迁移 20260913120000 14 列 TIMESTAMPTZ USING AT TIME ZONE 'UTC'，升级路径与 UTC/+08 等值）；H10（真实容器证据 docs/reviews/gate-01-r3-evidence/：colima+compose 干净构建 exit 0→up→migrate exit 0→init-owner exit 0→登录 200→/me 200→公开注册 403×2→down；核验 Dockerfile 构建链与 CMD node 直启、compose 127.0.0.1 端口与 :?required 口令）；已通过的 H01–H05/H07/D01 保留回归。M01（guardWrite 跨源 403/非 JSON 415）、M02（peek 预检；仅 401 消费、200 清零；TRUST_PROXY_HEADERS 边界）、M03（Zod 严格校验 422 + internalFailure 稳定 503）、M04（FK RESTRICT + 悬空守卫）按 REVIEW_2 核定验收；唯一允许的延期项仍是领域 UUID 数据库格式约束（首次后续 Schema 变更或 TASK-028 前，取较早）。D01 已裁决方案 A，不重问。
 
-Medium不是整体延期：上述M01/M02/M03和M04认证外键均在Gate01 PASS前；只有UUID数据库格式约束可延期至首次后续Schema变更或TASK-028前（二者较早），仍作为TASK-002技术债。实际部署域名/反代校验属TASK-029；不自动并入TASK-005，不修改认证框架string主键。详见报告第4节。
+环境事实：ZCode 本机 Prisma CLI 启动空转约 10 分钟，集成测试改用 tests/helpers/pgMigrate.ts 以 pg 驱动直跑迁移（singleFork + 单例重置）；该基建变更本身也在复审范围内（等价性与 _prisma_migrations 兼容性）。本地 PG 曾于 09-14 12:10 外部关机后 PANIC、自动恢复；ZCode 记录的通过结果（typecheck 0 错、unit 14/14、integration 53/53、build exit 0、e2e 8/8 保留一次 ECONNRESET）均为恢复后取得。用隔离环境完成必要验证，避免破坏已有开发数据。
 
-原套件本轮独立通过：typecheck、build、unit14/14、integration46/46、e2e8/8；这些并未覆盖所有剩余反例。按报告保存有意义的回归，特别是真实HTTP/Cookie、权限矩阵、审计状态/版本/会话一起回滚、数据库持续同域、完整时间类型清单、空库/升级和Docker闭环。测试只使用隔离数据库和临时凭据，不操作现有开发/客户数据。
+输出逐项复核依据、真实执行结果、未运行原因与剩余问题；按项目协议给出 PASS / FAIL / BLOCKED，测试、审查、Owner 放行、GitHub 同步、部署和真实试用分开记录。FAIL 交 ZCode 修复，缺证据明确补证，PASS 后仍等 Owner 放行；本轮不执行合并或新 Phase。
 
-遵守原Git授权、每TASK记录和Phase分支规则；仅提交本任务相关文件，检查敏感内容，不force push、不重写历史。不把修复自测当Codex复审PASS或Owner放行。
-
-完成后重读磁盘最新唯一进度，更新TASK表、摘要、唯一状态块、CODEX_REVIEW_HANDOFF及下一轮P07_CODE_REVIEW完整提示词；保留首轮与本轮报告，列出实际修复提交和c87a141..新提交差异。回到待审查/CODEX_REVIEW_REQUIRED、Checkpoint=YES、工具Codex；真实缺证如实标明。运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 并读回项目首页MD/HTML和总控PROJECTS.md。独立复审PASS后仍需Owner阶段放行，不能自行进入下一Phase。
+收尾重新读取磁盘最新进度，更新原 12_PROGRESS.md 的任务表、当前摘要、唯一状态块及 CODEX_REVIEW_HANDOFF.md，保留历史，设置实际下一工具/完整提示词/完成标准/Checkpoint。运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 并读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，确认一致。用户明确只读时不写回或刷新。
 ```
 
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；存在未提交或未跟踪内容。
-- 分支：phase/01-foundation；版本：c87a141648227954725402c715063a900fa72659。
+- 分支：phase/01-foundation；版本：e7b5eea508de3bf93b1c7282c395a5c7a8ef5b63。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
-- GitHub：本轮只读复核远端phase=c87a141、main=2a983cc；应用未变，前轮及本轮管理文档未提交/推送；最后核验：2026-09-13T22:31:24+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：实际git ls-remote及隔离clone核实同提交；126文件哈希与HEAD比较仅8份既有管理差异；无远端写操作。。
-- 部署：unknown（未部署；当前仍无Docker运行时）；最后核验：2026-09-13T22:31:24+08:00；地址：未记录；证据：本次隔离PG55459、Web/Worker及健康降级验证；Docker build布局两次exit1；未执行真实容器或线上部署。。
+- GitHub：phase/01-foundation 本地与远端=e7b5eea（80c1342..e7b5eea 本轮推送）；main=2a983cc 未合并；最后核验：2026-09-14T14:58:39+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：git push 后 git log origin/phase/01-foundation -1 = e7b5eea；提交均含TASK编号，未混入.env/密钥/真实数据。
+- 部署：未部署（P0无部署要求）；真实容器验证已在colima完成并留证；最后核验：2026-09-14T14:58:39+08:00；地址：未记录；证据：docs/reviews/gate-01-r3-evidence/ 全链路：build→up→migrate→init-owner→login200→me200→publicsignup403→down；compose端口已限127.0.0.1。
 
-刷新前本地快照时间：2026-09-13T22:50:59+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-14T15:04:26+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)
