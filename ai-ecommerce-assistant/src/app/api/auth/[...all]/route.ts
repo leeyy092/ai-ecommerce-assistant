@@ -8,25 +8,10 @@ import { toNextJsHandler } from "better-auth/next-js";
 import type { NextRequest } from "next/server";
 import { getAuth } from "@/lib/auth";
 import { getPrismaClient } from "@/database/prisma";
-import { consumeRateLimit, peekRateLimit, resetRateLimit } from "@/lib/rateLimit";
+import { clientIpFromRequest, consumeRateLimit, peekRateLimit, resetRateLimit } from "@/lib/rateLimit";
 
 const LOGIN_FAIL_MAX = 10;
 const WINDOW_SECONDS = 60;
-
-/**
- * M02 代理信任边界：TRUST_PROXY_HEADERS=true（默认 false）时才采信
- * X-Forwarded-For/X-Real-IP——仅在可信反向代理之后启用；
- * 关闭时所有直连客户端共用同一计数桶（本地/直连部署语义）。
- * 真实反代拓扑在 TASK-029 部署验证时核验。
- */
-function clientIp(req: NextRequest): string {
-  if (process.env.TRUST_PROXY_HEADERS !== "true") {
-    return "direct";
-  }
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
-  return req.headers.get("x-real-ip") ?? "unknown";
-}
 
 // M03：每次拒绝都创建新 Response（复用同一 Response 会导致 body 被消费后丢失）
 function publicSignupBlocked(): Response {
@@ -57,7 +42,7 @@ async function withLoginRateLimit(
 
   // M02：只在明确结果后计数——401 计入失败、200 清零、其他（400/429/503…）不变更计数
   const db = getPrismaClient();
-  const key = `login-fail:${clientIp(req)}`;
+  const key = `login-fail:${clientIpFromRequest(req)}`;
   const check = await peekRateLimit(db, key, LOGIN_FAIL_MAX, WINDOW_SECONDS);
   if (!check.allowed) {
     return Response.json(

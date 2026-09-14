@@ -10,16 +10,11 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
-import { baseUrlFromDotenv } from "../helpers/pgMigrate";
-import { applyMigrations, resetDbSingletons } from "../helpers/pgMigrate";
-import { loadEnv } from "@/lib/env";
+import { applyMigrations, createTestDatabase, dropTestDatabase, resetDbSingletons, resolveDatabaseUrl } from "../helpers/pgMigrate";
 
-process.env.DATABASE_URL = baseUrlFromDotenv();
-const baseEnv = loadEnv();
-
-const TEST_DB = "aiea_gate01_auth_test";
-const adminUrl = baseEnv.databaseUrl.replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
-const testUrl = baseEnv.databaseUrl.replace(/\/[^/?]+(\?.*)?$/, `/${TEST_DB}$1`);
+const adminUrl = resolveDatabaseUrl().replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
+// H11：每次运行唯一命名测试库，只管理本库生命周期，不触碰集群内其他数据库
+const testUrl = await createTestDatabase(adminUrl, randomUUID().slice(0, 8));
 
 process.env.DATABASE_URL = testUrl;
 process.env.BETTER_AUTH_SECRET ??= "test-secret-please-ignore-0123456789abcdef";
@@ -41,13 +36,6 @@ function tag(): string {
 }
 
 beforeAll(async () => {
-  const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
-  await admin.$executeRawUnsafe(
-    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname LIKE 'aiea_%' AND pid <> pg_backend_pid()`,
-  ).catch(() => {});
-  await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
-  await admin.$executeRawUnsafe(`CREATE DATABASE "${TEST_DB}"`);
-  await admin.$disconnect();
   await applyMigrations(testUrl);
   resetDbSingletons();
   const { getPrismaClient } = await import("@/database/prisma");
@@ -56,9 +44,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await db?.$disconnect();
-  const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) });
-  await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${TEST_DB}" WITH (FORCE)`);
-  await admin.$disconnect();
+  await dropTestDatabase(adminUrl, testUrl);
 });
 
 async function seedOwner(t: string) {
@@ -377,5 +363,165 @@ describe("Gate-01 正式复核 H06 增补｜并发与身份链", () => {
     const { getAuth } = await import("@/lib/auth");
     const login = await getAuth().api.signInEmail({ body: { email, password: "second-pass-12345" }, asResponse: false });
     expect(login.user.email).toBe(email);
+  });
+});
+
+describe("Gate-01 REVIEW_4｜邀请入口来源/输入/限流键（M01/M02/M03）", () => {
+  async function ownerCookie(t: string): Promise<{ cookie: string; orgId: string; userId: string }> {
+    const owner = await seedOwner(t);
+    const { getAuth } = await import("@/lib/auth");
+    const response = await getAuth().api.signInEmail({
+      body: { email: owner.email, password: "initial-pass-123" },
+      asResponse: true,
+    });
+    return {
+      cookie: response.headers.getSetCookie().map((c) => c.split(";")[0]).join("; "),
+      orgId: owner.orgId,
+      userId: owner.userId,
+    };
+  }
+
+  function req(path: string, init: RequestInit = {}): NextRequest {
+    return new NextRequest(`http://127.0.0.1:3000${path}`, {
+      ...init,
+      headers: new Headers(init.headers),
+    } as ConstructorParameters<typeof NextRequest>[1]);
+  }
+
+  it("M03：创建邀请 null body / 数字 email / 额外字段 → 422（不再 503）", async () => {
+    const t = tag();
+    const { cookie } = await ownerCookie(t);
+    const { POST } = await import("@/app/api/v1/invitations/route");
+
+    const nullRes = await POST(
+      req("/api/v1/invitations", { method: "POST", headers: { "content-type": "application/json", cookie }, body: "null" }),
+    );
+    expect(nullRes.status).toBe(422);
+
+    const numRes = await POST(
+      req("/api/v1/invitations", {
+        method: "POST",
+        headers: { "content-type": "application/json", cookie },
+        body: JSON.stringify({ email: 42, role: "operator" }),
+      }),
+    );
+    expect(numRes.status).toBe(422);
+
+    const extraRes = await POST(
+      req("/api/v1/invitations", {
+        method: "POST",
+        headers: { "content-type": "application/json", cookie },
+        body: JSON.stringify({ email: `m-${t}@example.com`, role: "operator", extra: 1 }),
+      }),
+    );
+    expect(extraRes.status).toBe(422);
+  });
+
+  it("M03：DELETE expected_version 小数/缺失/非数字 → 422；M01：非可信 Origin 撤销 403、无 Origin 合法撤销 200", async () => {
+    const t = tag();
+    const { cookie, orgId, userId } = await ownerCookie(t);
+    const { createInvitation } = await import("@/services/invitations");
+    const { DELETE } = await import("@/app/api/v1/invitations/[idOrToken]/route");
+
+    const mkInvitation = async (suffix: string) => {
+      const created = await createInvitation(
+        { db, orgId, userId, role: "owner" },
+        { email: `rv-${suffix}-${t}@example.com`, role: "operator", baseUrl: "http://127.0.0.1:3000" },
+      );
+      return created.id;
+    };
+
+    const decimalId = await mkInvitation("dec");
+    const decRes = await DELETE(
+      req(`/api/v1/invitations/${decimalId}?expected_version=1.1`, { method: "DELETE", headers: { cookie } }),
+      { params: Promise.resolve({ idOrToken: decimalId }) },
+    );
+    expect(decRes.status).toBe(422);
+
+    const missingId = await mkInvitation("miss");
+    const missRes = await DELETE(
+      req(`/api/v1/invitations/${missingId}`, { method: "DELETE", headers: { cookie } }),
+      { params: Promise.resolve({ idOrToken: missingId }) },
+    );
+    expect(missRes.status).toBe(422);
+
+    const badOriginId = await mkInvitation("org");
+    const originRes = await DELETE(
+      req(`/api/v1/invitations/${badOriginId}?expected_version=1`, {
+        method: "DELETE",
+        headers: { origin: "https://evil.example", cookie },
+      }),
+      { params: Promise.resolve({ idOrToken: badOriginId }) },
+    );
+    expect(originRes.status).toBe(403);
+    const stillPending = await db.invitation.findUniqueOrThrow({ where: { id: badOriginId } });
+    expect(stillPending.status).toBe("pending");
+
+    const okId = await mkInvitation("ok");
+    const okRes = await DELETE(
+      req(`/api/v1/invitations/${okId}?expected_version=1`, {
+        method: "DELETE",
+        headers: { cookie },
+      }),
+      { params: Promise.resolve({ idOrToken: okId }) },
+    );
+    expect(okRes.status).toBe(200);
+    const revoked = await db.invitation.findUniqueOrThrow({ where: { id: okId } });
+    expect(revoked.status).toBe("revoked");
+  });
+
+  it("M03：accept 非法 JSON body → 422（零副作用，邀请仍 pending）", async () => {
+    const t = tag();
+    const owner = await seedOwner(t);
+    const { createInvitation } = await import("@/services/invitations");
+    const created = await createInvitation(
+      { db, orgId: owner.orgId, userId: owner.userId, role: "owner" },
+      { email: `badjson-${t}@example.com`, role: "operator", baseUrl: "http://127.0.0.1:3000" },
+    );
+    const token = created.url.split("/invite/")[1];
+
+    const { POST } = await import("@/app/api/v1/invitations/[idOrToken]/accept/route");
+    const bad = await POST(
+      req(`/api/v1/invitations/${token}/accept`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{name:",
+      }),
+      { params: Promise.resolve({ idOrToken: token }) },
+    );
+    expect(bad.status).toBe(422);
+    const extra = await POST(
+      req(`/api/v1/invitations/${token}/accept`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: "x", unknown: 1 }),
+      }),
+      { params: Promise.resolve({ idOrToken: token }) },
+    );
+    expect(extra.status).toBe(422);
+    const stillPending = await db.invitation.findFirstOrThrow({ where: { email: `badjson-${t}@example.com` } });
+    expect(stillPending.status).toBe("pending");
+  });
+
+  it("M02：预览限流关闭代理信任时伪造 X-Forwarded-For 不能更换计数桶", async () => {
+    const t = tag();
+    const owner = await seedOwner(t);
+    const { GET } = await import("@/app/api/v1/invitations/[idOrToken]/route");
+    const token = `nonexistent-${t}`;
+
+    // 前 60 次正常（404/422 等不计成败），第 61 次起 429
+    let last = 0;
+    for (let i = 0; i < 61; i++) {
+      const res = await GET(req(`/api/v1/invitations/${token}`), { params: Promise.resolve({ idOrToken: token }) });
+      last = res.status;
+    }
+    expect(last).toBe(429);
+
+    // 伪造 XFF 换头：仍命中 direct 桶 → 429
+    const spoof = await GET(
+      req(`/api/v1/invitations/${token}`, { headers: { "x-forwarded-for": "9.9.9.9" } }),
+      { params: Promise.resolve({ idOrToken: token }) },
+    );
+    expect(spoof.status).toBe(429);
   });
 });

@@ -3,21 +3,39 @@
  * 新用户：输入完整校验后创建 Auth 身份（库哈希）；登录态采用框架返回的完整
  * Set-Cookie（签名/命名/安全属性由 Better Auth 决定），路由只转发，不手工伪造。
  * 已有用户：须已登录且邮箱与受邀邮箱一致；token CAS 原子消费（并发仅一次成功）。
+ * M03：区分合法空 body（已登录直接接受）与非法 JSON/多余字段（422）；
+ * M02：限流键走统一代理信任边界（伪造 X-Forwarded-For 不能更换计数桶）。
  */
 import type { NextRequest } from "next/server";
+import { z } from "zod";
 import { getAuth } from "@/lib/auth";
 import { getSessionContext } from "@/lib/session";
 import { fail, ok, guardWrite, internalFailure } from "@/lib/http";
 import { getPrismaClient } from "@/database/prisma";
 import { acceptInvitation, InvitationError } from "@/services/invitations";
-import { consumeRateLimit } from "@/lib/rateLimit";
+import { clientIpFromRequest, consumeRateLimit } from "@/lib/rateLimit";
 
-function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    req.headers.get("x-real-ip") ??
-    "127.0.0.1"
-  );
+// M03：接受请求体为严格对象——仅 name/password 可选字段，拒绝未知字段；
+// 具体语义校验（name 长度、password 强度/一致性）由服务层负责并返回 422
+const acceptSchema = z
+  .object({
+    name: z.string().max(200).optional(),
+    password: z.string().max(200).optional(),
+  })
+  .strict();
+
+async function parseAcceptBody(req: NextRequest): Promise<{ ok: true; body: z.infer<typeof acceptSchema> } | { ok: false }> {
+  const raw = await req.text();
+  if (raw.trim() === "") return { ok: true, body: {} }; // 合法空 body：已登录用户直接接受
+  let parsedJson: unknown;
+  try {
+    parsedJson = JSON.parse(raw);
+  } catch {
+    return { ok: false }; // 携带了请求体但不是合法 JSON
+  }
+  const parsed = acceptSchema.safeParse(parsedJson);
+  if (!parsed.success) return { ok: false };
+  return { ok: true, body: parsed.data };
 }
 
 export async function POST(
@@ -29,19 +47,18 @@ export async function POST(
   if (blocked) return blocked;
   const db = getPrismaClient();
 
-  // 接受端点防爆破：20 次/IP/分钟
-  const limit = await consumeRateLimit(db, `invite-accept:${clientIp(req)}`, 20, 60);
+  const bodyOrError = await parseAcceptBody(req);
+  if (!bodyOrError.ok) {
+    return fail(422, "请求体须为可选 name/password 的 JSON 对象", { code: "VALIDATION_ERROR" });
+  }
+  const body = bodyOrError.body;
+
+  // 接受端点防爆破：20 次/IP/分钟（M02：统一代理信任边界）
+  const limit = await consumeRateLimit(db, `invite-accept:${clientIpFromRequest(req)}`, 20, 60);
   if (!limit.allowed) {
     return fail(429, `请求过于频繁，请约 ${limit.retryAfterSeconds} 秒后重试`, {
       retryable: true,
     });
-  }
-
-  let body: { name?: string; password?: string } = {};
-  try {
-    body = (await req.json()) as { name?: string; password?: string };
-  } catch {
-    // 允许空 body（已登录用户直接接受）
   }
 
   const sessionCtx = await getSessionContext(req);

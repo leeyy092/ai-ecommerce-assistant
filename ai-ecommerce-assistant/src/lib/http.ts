@@ -26,10 +26,16 @@ export interface ApiErrorOptions {
   code?: string;
   retryable?: boolean;
   fieldErrors?: Record<string, string>;
+  /** M03：调用方已生成的 request_id（如 internalFailure 的日志 ID），日志与响应共用 */
+  requestId?: string;
   extraMeta?: Record<string, unknown>;
 }
 
-export function fail(status: number, message: string, options: ApiErrorOptions = {}): NextResponse {
+export function fail(
+  status: number,
+  message: string,
+  options: ApiErrorOptions = {},
+): NextResponse {
   return NextResponse.json(
     {
       error: {
@@ -37,7 +43,7 @@ export function fail(status: number, message: string, options: ApiErrorOptions =
         message,
         retryable: options.retryable ?? defaultRetryable(status),
         ...(options.fieldErrors ? { field_errors: options.fieldErrors } : {}),
-        request_id: requestId(),
+        request_id: options.requestId ?? requestId(),
       },
     },
     { status, headers: NO_STORE },
@@ -85,10 +91,15 @@ export function guardWrite(request: Request): NextResponse | null {
   return null;
 }
 
-/** M03｜未预期异常的稳定错误信封（不回传内部细节，附 request_id 便于日志关联） */
+/** M03｜未预期异常的稳定错误信封：日志与响应共用同一 request_id，只记录异常消息，不回传内部细节 */
 export function internalFailure(error: unknown): NextResponse {
-  console.error("[internal]", randomUUID(), error instanceof Error ? error.message : error);
-  return fail(503, "服务器内部错误，请稍后重试", { code: "INTERNAL_ERROR", retryable: true });
+  const id = requestId();
+  console.error(`[internal] request_id=${id}`, error instanceof Error ? error.message : error);
+  return fail(503, "服务器内部错误，请稍后重试", {
+    code: "INTERNAL_ERROR",
+    retryable: true,
+    requestId: id,
+  });
 }
 
 export function serviceFailure(error: unknown): NextResponse | null {

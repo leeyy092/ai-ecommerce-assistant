@@ -11,6 +11,23 @@ export interface RateLimitResult {
   retryAfterSeconds: number;
 }
 
+/**
+ * M02｜限流键的客户端标识：仅 TRUST_PROXY_HEADERS=true（默认 false）时采信
+ * X-Forwarded-For / X-Real-IP；关闭时所有直连客户端共用 "direct" 桶——伪造
+ * 代理头不能更换计数桶。真实反代拓扑验证归 TASK-029；共享桶的可用性边界
+ * （直连部署下限流按全局计数）由各入口的限额值吸收。
+ */
+export function clientIpFromRequest(req: {
+  headers: { get(name: string): string | null };
+}): string {
+  if (process.env.TRUST_PROXY_HEADERS !== "true") {
+    return "direct";
+  }
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return req.headers.get("x-real-ip") ?? "unknown";
+}
+
 interface RowShape {
   count: number;
   retry_after_s: bigint | number;

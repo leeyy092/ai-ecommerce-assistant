@@ -4,6 +4,7 @@
  * GET：邀请列表（遮罩邮箱，不回原始 token）。
  */
 import type { NextRequest } from "next/server";
+import { z } from "zod";
 import { ok, fail, serviceFailure, guardWrite, internalFailure } from "@/lib/http";
 import { getPrismaClient } from "@/database/prisma";
 import { CAPABILITIES, requirePermission, type Role } from "@/services/access";
@@ -11,7 +12,13 @@ import { createInvitation, listInvitations } from "@/services/invitations";
 import { maskEmail } from "@/lib/email";
 import { authBaseUrl } from "@/lib/auth";
 
-const ROLES: Role[] = ["admin", "operator", "customer_service"];
+// M03：严格对象校验——仅 email/role 字段，拒绝额外字段与非字符串类型
+const createSchema = z
+  .object({
+    email: z.string({ message: "email 必须为字符串" }).max(200),
+    role: z.enum(["admin", "operator", "customer_service"]),
+  })
+  .strict();
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,14 +26,19 @@ export async function POST(req: NextRequest) {
     if (blocked) return blocked;
     const ctx = await requirePermission(req, { capability: CAPABILITIES.viewMembers });
 
-    let body: { email?: string; role?: string };
+    let parsedJson: unknown;
     try {
-      body = (await req.json()) as { email?: string; role?: string };
+      parsedJson = JSON.parse(await req.text());
     } catch {
       return fail(422, "请求体不是合法 JSON");
     }
-    if (!body.email || !body.role || !ROLES.includes(body.role as Role)) {
-      return fail(422, "email 与 role（admin/operator/customer_service）必填");
+    const parsed = createSchema.safeParse(parsedJson);
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        fieldErrors[issue.path.map(String).join(".") || "_"] = issue.message;
+      }
+      return fail(422, "email 与 role（admin/operator/customer_service）必填", { fieldErrors });
     }
 
     const created = await createInvitation(
@@ -36,7 +48,7 @@ export async function POST(req: NextRequest) {
         userId: ctx.userId,
         role: ctx.role,
       },
-      { email: body.email, role: body.role as Role, baseUrl: authBaseUrl() },
+      { email: parsed.data.email, role: parsed.data.role as Role, baseUrl: authBaseUrl() },
     );
     return ok(
       { id: created.id, url: created.url, expires_at: created.expiresAt.toISOString() },

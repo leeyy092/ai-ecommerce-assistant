@@ -1,25 +1,18 @@
 /**
  * /api/v1/invitations/{idOrToken}（08 §17.2）
  * GET：公开按 token 预览（组织名/遮罩邮箱/到期时间；无内部数据；带防爆破限流）。
- * DELETE：O/A 在可管理范围内撤销（expected_version 乐观锁）。
+ * DELETE：O/A 在可管理范围内撤销（expected_version 正整数乐观锁；M01 来源守卫）。
  */
 import type { NextRequest } from "next/server";
+import { z } from "zod";
 import { CAPABILITIES, requirePermission } from "@/services/access";
-import { fail, ok, serviceFailure } from "@/lib/http";
+import { fail, ok, serviceFailure, guardWrite, internalFailure } from "@/lib/http";
 import { getPrismaClient } from "@/database/prisma";
 import {
   previewInvitationByToken,
   revokeInvitation,
 } from "@/services/invitations";
-import { consumeRateLimit } from "@/lib/rateLimit";
-
-function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    req.headers.get("x-real-ip") ??
-    "127.0.0.1"
-  );
-}
+import { clientIpFromRequest, consumeRateLimit } from "@/lib/rateLimit";
 
 export async function GET(
   req: NextRequest,
@@ -28,8 +21,8 @@ export async function GET(
   const { idOrToken } = await params;
   const db = getPrismaClient();
 
-  // 未登录 token 枚举防爆破：60 次/IP/分钟
-  const limit = await consumeRateLimit(db, `invite-preview:${clientIp(req)}`, 60, 60);
+  // 未登录 token 枚举防爆破：60 次/IP/分钟（M02：限流键走统一代理信任边界）
+  const limit = await consumeRateLimit(db, `invite-preview:${clientIpFromRequest(req)}`, 60, 60);
   if (!limit.allowed) {
     return fail(429, `请求过于频繁，请约 ${limit.retryAfterSeconds} 秒后重试`, {
       retryable: true,
@@ -48,20 +41,42 @@ export async function GET(
   } catch (error) {
     const mapped = serviceFailure(error);
     if (mapped) return mapped;
-    throw error;
+    return internalFailure(error);
   }
+}
+
+// M03：DELETE 版本参数为正整数（拒绝 0/负数/小数/非数字）
+const revokeSchema = z
+  .object({ expected_version: z.number().int().positive() })
+  .strict();
+
+function parseRevokeVersion(req: NextRequest): { version: number } | { error: string } {
+  const raw = req.nextUrl.searchParams.get("expected_version");
+  if (raw === null || raw.trim() === "") {
+    return { error: "缺少 expected_version" };
+  }
+  const parsed = revokeSchema.safeParse({ expected_version: Number(raw) });
+  if (!parsed.success || !Number.isFinite(Number(raw))) {
+    return { error: "expected_version 必须为正整数" };
+  }
+  return { version: parsed.data.expected_version };
 }
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ idOrToken: string }> },
 ) {
+  // M01：撤销属于业务写入口，纳入与创建/接受一致的可信来源守卫
+  //（无请求体 DELETE 不做 MIME 检查；无 Origin 的服务端/脚本调用放行，Cookie 仍需有效）
+  const blocked = guardWrite(req);
+  if (blocked) return blocked;
+
   try {
     const ctx = await requirePermission(req, { capability: CAPABILITIES.viewMembers });
 
-    let expectedVersion = Number(req.nextUrl.searchParams.get("expected_version"));
-    if (!Number.isFinite(expectedVersion) || expectedVersion < 1) {
-      return fail(422, "缺少合法的 expected_version");
+    const versionOrError = parseRevokeVersion(req);
+    if ("error" in versionOrError) {
+      return fail(422, versionOrError.error);
     }
 
     const { idOrToken } = await params;
@@ -73,12 +88,12 @@ export async function DELETE(
         role: ctx.role,
       },
       idOrToken,
-      expectedVersion,
+      versionOrError.version,
     );
     return ok({ status: "revoked" });
   } catch (error) {
     const mapped = serviceFailure(error);
     if (mapped) return mapped;
-    throw error;
+    return internalFailure(error);
   }
 }
