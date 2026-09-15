@@ -7,6 +7,7 @@
 | 当前任务开发 | [继续当前 TASK](P06_BUILD.md) | ZCode |
 | 到阶段 Gate | [阶段独立审查](P07_CODE_REVIEW.md) | Codex |
 | 修复审查问题 | [修复后复审](P08_FIX.md) | ZCode → Codex |
+| 技术Gate通过，等待阶段放行 | [Owner阶段验收](P09_PHASE_RELEASE.md) | Owner（用户） |
 | 首次接入、换工具或中断 | [显式启动](P13_RESUME.md) | 当前首页指定工具 |
 | 总控没有更新 | [只补齐收尾](P14_CLOSE.md) | 当前执行工具 |
 

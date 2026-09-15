@@ -1,0 +1,8 @@
+Loaded Prisma config from prisma.config.ts.
+
+-- DropForeignKey
+ALTER TABLE "audit_log" DROP CONSTRAINT "audit_log_org_id_store_id_fkey";
+
+-- AddForeignKey
+ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_org_id_store_id_fkey" FOREIGN KEY ("org_id", "store_id") REFERENCES "store"("org_id", "id") ON DELETE SET NULL ON UPDATE CASCADE;
+

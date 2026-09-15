@@ -1,0 +1,12 @@
+{
+  "running_containers": [],
+  "colima_stop_exit": 0,
+  "restore_context_exit": 0,
+  "listener_3000": false,
+  "listener_55471": false,
+  "listener_3301": false,
+  "listener_55480": false,
+  "temporary_environment_removed": true,
+  "private_env_cookie_and_database_removed": true,
+  "cleanup_at": "2026-09-14T23:31:52+08:00"
+}

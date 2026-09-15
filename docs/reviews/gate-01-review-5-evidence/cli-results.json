@@ -1,0 +1,10 @@
+{
+  "migrate-repeat": 0,
+  "helper-deploy": 0,
+  "schema-diff": 0,
+  "upgrade-good-baseline": 0,
+  "upgrade-good-forward": 0,
+  "upgrade-good-repeat": 0,
+  "upgrade-bad_uuid-baseline": 0,
+  "upgrade-bad_uuid-forward": 1
+}

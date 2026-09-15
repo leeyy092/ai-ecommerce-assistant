@@ -6,55 +6,47 @@
 | 你要知道的事 | 当前记录 |
 |---|---|
 | 最终目标 | 让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动 |
-| 当前阶段 | 07 阶段审查 · Phase 1 项目地基 · Gate01 收敛验收待复审 |
-| 当前任务 | TASK-004 |
-| 当前状态 | 待审查 |
-| 上一个完成项 | ZCode 完成 H12 连接UTC/M03 异常边界/M04 UUID 28:28/M06 upTo 边界/M07 Schema 同步；关闭矩阵交付；独立集群 65/65+容器非UTC 链路 epoch 一致 |
-| 下一步 | Codex 按 P07 收敛验收提示词独立复审 858c20a..handoff HEAD（关闭矩阵逐项+受影响边界+必要回归）；PASS 后仍等 Owner 阶段放行 |
-| 交给谁 | Codex |
-| 做到什么算完成 | 五项反例修复后不成立且同类范围核对完成；同一候选完成必要回归（65/65+官方CLI+容器双口令非UTC）；已通过项无触发原因不重开；无未关闭CRITICAL/HIGH |
-| 卡点 | 待Codex收敛复审；无Owner放行；不合并main、不部署、不开始TASK-005 |
-| 检查点 | YES |
-| 审查 | 首轮BLOCKED→R2 FAIL(4H)→R3 BLOCKED(H08/H11)→R4 BLOCKED(H12+4M)→修复完成待复审；待审基线858c20a..handoff HEAD |
-| 进度最后更新 | 2026-09-14T23:05:00+08:00 |
+| 当前阶段 | 08 任务推进 · Phase 2 数据接入基础（005–007） |
+| 当前任务 | TASK-005 |
+| 当前状态 | 进行中 |
+| 上一个完成项 | Gate 01 全链路收官：REVIEW_5 PASS 且 Owner 放行 Phase 1（32fb0d3）；已合并 main 并自 main 创建 phase/02-data-ingestion |
+| 下一步 | TASK-005 店铺与数据源配置：按 09_TASKS 原合同实现、测试、提交、更新唯一进度；完成后连续推进 006/007，007 后停在 GATE_02 交 Codex |
+| 交给谁 | ZCode |
+| 做到什么算完成 | TASK-005–007 逐项按 09_TASKS 合同实现并通过其指定检查；每 TASK 单独提交（含 TASK 编号）并更新进度；007 完成后冻结交 Codex GATE_02 复审 |
+| 卡点 | 无（Phase 内常规事项无需逐项向 Owner 确认；产品规则待决策或实质阻塞时再上报） |
+| 检查点 | NO |
+| 审查 | Gate 01 五轮全链路收官：首轮BLOCKED(10H)→R2 FAIL(4H)→R3 BLOCKED→R4 BLOCKED→R5 PASS；Owner 已放行 32fb0d3 |
+| 进度最后更新 | 2026-09-14T23:45:00+08:00 |
 
 项目绝对路径：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
 
-## 复制这一段，交给 Codex
+## 复制这一段，交给 ZCode
 
 ```text
 当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
 产品目标：让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动
-当前任务：TASK-004
-本轮动作：Codex 按 P07 收敛验收提示词独立复审 858c20a..handoff HEAD（关闭矩阵逐项+受影响边界+必要回归）；PASS 后仍等 Owner 阶段放行
+当前任务：TASK-005
+本轮动作：TASK-005 店铺与数据源配置：按 09_TASKS 原合同实现、测试、提交、更新唯一进度；完成后连续推进 006/007，007 后停在 GATE_02 交 Codex
 
-请对AI电商运营助手Gate 01下一轮修复候选做独立复审，只审Phase1/TASK-001–004，不改业务代码、不开始TASK-005、不提交/推送/合并或部署。
-项目根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用为其下ai-ecommerce-assistant。
-先读AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md及配置指定的唯一进度、任务合同、决策、阶段计划和CODEX_REVIEW_HANDOFF.md。再完整读取docs/reviews/GATE_01_CLOSURE_PLAN_2026-09-14.md、CODEX_REVIEW_GATE_01_REVIEW_4_2026-09-14.md、GATE_01_REVIEW_4_EVIDENCE_2026-09-14.json和gate-01-review-4-evidence/README.md，以及执行者本轮提交/测试证据。
-先查实际分支、HEAD、未提交差异和候选是否真的交付。前一审查冻结858c20ab9645b494840b219f0b39b01c39023291；本轮范围858c20a..实际新候选；main最后核验2a983cc。当前基线BLOCKED，HIGH H12及MEDIUM M03/M04/M06/M07。没有新的修复候选时如实报告仍待修复，不把相同版本重新跑测试当成新一轮通过。保留所有在途管理文档，不reset/clean。
+请接手 AI 电商运营助手 Phase 2（数据接入基础）开发。项目根目录 /Users/yuyuyu/Documents/ChatGPT/产品-开发，应用在其下 ai-ecommerce-assistant，总控 /Users/yuyuyu/Documents/AI-Workspace。
 
-按关闭矩阵独立验收：
-1. H12：原始SQL epoch与ORM/API绝对时刻一致；默认UTC和非UTC数据库、多连接及当前Web/Worker/脚本连接；有效邀请成功、48小时到期与报告49小时前创建的已过期邀请均拒绝且不签发会话。会话等现有时间消费者按真实驱动核查；不盲目平移历史数据、不改店铺时区。
-2. M03：当前邀请创建/预览/接受/撤销覆盖清单完整，限流/会话/服务异常稳定返回JSON/request_id；无部分提交；通过项保留。
-3. M04：28张领域表全量枚举与非法ID阻断、正常ID通过、旧库坏行守卫，框架四表和辅助表单独说明。
-4. M06：首次/重复upTo不越界、不存在目标明确失败；官方迁移接续正常。
-5. M07：真实Prisma差异不意外删除审计复合FK；不能表达的自定义SQL逐条说明维护方式；保留H08双向并发、删除及旧库守卫。
+先显式读取根目录 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、唯一进度 docs/ai-ecommerce-assistant/12_PROGRESS.md、09_TASKS.md、11_DEVELOPMENT_RULES.md、DEVELOPMENT_HANDOFF.md、PHASE_PLAN.md、FINAL_DECISIONS.md。Gate 01 已由 Owner 放行（32fb0d3，REVIEW_5 PASS）；当前分支 phase/02-data-ingestion（自 main 创建），Checkpoint=NO，Phase 内连续执行 TASK-005→007，TASK-007 完成后停在 CODEX_REVIEW_GATE_02。
 
-复审以本轮差异、五项反例和受影响边界为主。H08/H11及M01/M02/M05等已关闭项无触发原因不反复重开；涉及共同连接、迁移或测试清理时保留对应回归。必要检查由Reviewer独立运行，不能只读ZCode全绿日志。H12/M04/M07影响本轮连接与迁移，运行相称完整回归、真实容器、空库/858c20a旧库升级/重复/坏行检查；更早未改升级链可引用已冻结证据并写适用条件。不要重复无关实验，也不能为赶进度省略受影响验证。
-新问题必须给出位置、可复现证据、影响、原合同依据及本轮改动关系；真实CRITICAL/HIGH仍阻断，MEDIUM按原严重级别和期限明确核定，不临时升级风格要求或批准无期限延期。D01方案A不变，无需再问。
+约束：一次只推进一个 TASK；每个 TASK 按原合同实现、测试、以含 TASK 编号的提交、更新唯一进度；不在 main 开发、不 force push、不重写共享历史；已关闭问题（H01–H12、M01–M06、L01、D01 方案 A）不对同一版本返修；涉及 audit_log/store 迁移时遵守 M07 自定义外键维护约定（人工核对 + H08 并发/删除回归）；不扩大 P0、不换技术栈、不做无关重构；不部署。
 
-按既定15节格式输出正式报告；逐项区分PASS/FAIL/BLOCKED、已关闭、未处理、合理延期及未运行原因。无未关闭CRITICAL/HIGH、TASK合同与必要证据满足后才可技术PASS；通过后仍等Owner明确阶段放行。
-收尾重读最新12_PROGRESS.md，更新原任务表、摘要、唯一状态块和CODEX_REVIEW_HANDOFF，保留历史；按实际结果设置下一工具和提示词。执行/usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync，读回项目首页MD/HTML完整提示词和总控PROJECTS.md/HTML。用户明确只读时仅输出待写回内容。本轮不推进下一Phase。
+TASK-005 店铺与数据源配置、TASK-006 统一 Adapter 与最小黄金样本、TASK-007 文件上传、私有存储与 ImportTask——实现前读取 09_TASKS 对应合同原文、04_DATA_MODEL 实体定义、08_API_SPEC 接口契约与验收标准（10_ACCEPTANCE_CRITERIA）；数据库变更使用新增迁移（遵守既有 TIMESTAMPTZ/UUID 领域主键/复合外键约定，官方 migrate deploy 可接续）；测试沿用现有 vitest 结构与独立可丢弃集群；身份/权限/审计/错误信封复用 Phase 1 既有设施（guardWrite、requirePermission、writeAudit、internalFailure、clientIpFromRequest）。
+
+每 TASK 完成后输出固定格式汇报（TASK/状态/本次完成/修改文件/测试结果/当前 Phase/Checkpoint/下一步），更新 12_PROGRESS 并运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 读回首页与总控。遇到产品规则待决策（GPT_PRODUCT_DECISION_REQUIRED）或实质阻塞时停止并说明具体问题。
 ```
 
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；存在未提交或未跟踪内容。
-- 分支：phase/01-foundation；版本：63824079fe76c646306662a7619f141b18b4d946。
+- 分支：phase/01-foundation；版本：32fb0d3e8ad19b691cf66006638a418ca949e2a4。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
-- GitHub：phase/01-foundation 本地=a66f106/6382407+handoff 提交（推送后以 origin 为准）；main=2a983cc 未合并；最后核验：2026-09-14T23:05:00+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：提交完成后统一推送并读回 origin 确认。
-- 部署：未部署（P0 无部署要求）；真实容器非 UTC DB 场景双口令验证完成并留证；最后核验：2026-09-14T23:05:00+08:00；地址：未记录；证据：docs/reviews/gate-01-r5-evidence/：special-*/default-* 全套日志；down --volumes 清理。
+- GitHub：main=Phase 1 合并结果（32fb0d3+merge）；phase/02-data-ingestion 自 main 创建并推送；phase/01-foundation 保留；最后核验：2026-09-14T23:45:00+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：git push 后 ls-remote 核验三分支。
+- 部署：未部署（本次 Owner 指令明确不授权部署）；最后核验：2026-09-14T23:45:00+08:00；地址：未记录；证据：P0 后续 TASK-029 试点运行与运维要求另计。
 
-刷新前本地快照时间：2026-09-14T22:54:18+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-15T11:39:35+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)

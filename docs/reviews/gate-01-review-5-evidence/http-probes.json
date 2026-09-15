@@ -1,0 +1,165 @@
+{
+  "H01": {
+    "switchStatus": 200,
+    "meB": true,
+    "role": "customer_service",
+    "organizationB": true,
+    "budgetAbsent": true,
+    "patch": 403,
+    "orgAUnchanged": true,
+    "forgedFallsBackA": true
+  },
+  "H05": {
+    "accept": 200,
+    "me": 200,
+    "replay": 409
+  },
+  "H02": {
+    "adminToAdmin": 403,
+    "unchangedRole": "operator",
+    "adminToOwner": 422,
+    "operatorToCS": 200,
+    "csToOperator": 200,
+    "ownerToAdmin": 200
+  },
+  "H07member": {
+    "http": 503,
+    "json": true,
+    "statusUnchanged": true,
+    "versionUnchanged": true,
+    "oldSessionStillWorks": true,
+    "sessionsBefore": 2,
+    "sessionsAfter": 2
+  },
+  "H03_D01": {
+    "disable": 200,
+    "oldCookie": 401,
+    "globalStatus": "active",
+    "otherMembership": "active",
+    "relogin": 200,
+    "me": 200,
+    "activeB": true,
+    "role": "owner"
+  },
+  "H07org": {
+    "http": 503,
+    "nameUnchanged": true,
+    "versionUnchanged": true,
+    "auditCount": 0
+  },
+  "H07_invite_create": {
+    "http": 503,
+    "auditCount": 0,
+    "authRows": 0,
+    "domainRows": 0,
+    "invitationRows": 0
+  },
+  "H07_invite_revoke": {
+    "http": 503,
+    "auditCount": 0,
+    "invitationStatus": "pending",
+    "rowVersion": 1,
+    "authRows": 0,
+    "domainRows": 0
+  },
+  "H07_invite_accept": {
+    "http": 503,
+    "auditCount": 0,
+    "invitationStatus": "pending",
+    "rowVersion": 1,
+    "authRows": 0,
+    "domainRows": 0,
+    "retry": 200
+  },
+  "M01": {
+    "untrustedOriginStatus": 403,
+    "created": false,
+    "manualCookie": true
+  },
+  "M02": {
+    "wrong": 401,
+    "countBefore": 1,
+    "bad": 400,
+    "counterAfter": {
+      "id": "e391d7f5-6ed5-49a3-9e99-f85cbaece29b",
+      "key": "login-fail:direct",
+      "count": 1,
+      "expiresAt": "2026-09-14T15:09:21.873Z",
+      "updatedAt": "2026-09-14T15:08:21.873Z"
+    }
+  },
+  "M03": {
+    "numericNameStatus": 422,
+    "nullBodyStatus": 422,
+    "nullBodyJSON": true,
+    "fractionalVersionStatus": 422,
+    "fractionalVersionJSON": true,
+    "orgNameAfterFraction": "A"
+  },
+  "H04": {
+    "statuses": [
+      403,
+      403
+    ],
+    "json": [
+      true,
+      true
+    ],
+    "authRows": 0
+  },
+  "H06_owner_concurrent": {
+    "secondWaited": true,
+    "oneOrg": true,
+    "secondIdempotent": true,
+    "authRows": 1,
+    "domainRows": 1,
+    "login": 200
+  },
+  "M01_M03_revoke": {
+    "manualCookie": true,
+    "untrustedOriginFractionalVersion": 403,
+    "rowStatus": "pending"
+  },
+  "M03_invitation": {
+    "nullBody": 422,
+    "numericEmail": 422,
+    "unexpectedField": 422
+  },
+  "M02_invite_proxy": {
+    "trustProxyHeaders": false,
+    "sameIP": 429,
+    "forgedNewIP": 429
+  },
+  "M03_revoke_fraction_trusted": {
+    "status": 422,
+    "stillPending": true
+  },
+  "M01_no_origin_no_body": {
+    "status": 200
+  },
+  "M03_accept_body": {
+    "malformed": 422,
+    "existing_user_empty_body": 200
+  },
+  "M02_accept_proxy": {
+    "forgedNewIP": 429
+  },
+  "M03_rate_db_failure": {
+    "preview": {
+      "status": 503,
+      "json": true
+    },
+    "accept": {
+      "status": 503,
+      "json": true
+    }
+  },
+  "M03_error_request_id": {
+    "present": true,
+    "matchesWebLog": true
+  },
+  "signout": {
+    "status": 200,
+    "oldCookie": 401
+  }
+}

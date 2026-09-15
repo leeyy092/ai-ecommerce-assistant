@@ -1,3 +1,38 @@
+# Owner 阶段放行记录｜Gate 01 PASS · Phase 1 收官（2026-09-14）
+
+**Owner 于 2026-09-14 正式放行 Phase 1。** 通过版本 32fb0d3e8ad19b691cf66006638a418ca949e2a4（与 REVIEW_5 冻结一致）；TASK-001–004 全部通过；H12/M03/M04/M06/M07 已关闭不对同一版本重复返修；M07 自定义外键维护约定保留（相关迁移人工核对并过 H08 回归）；L01 留待未来 pg 主版本升级前；D01 方案 A 不变。授权动作：本记录与 Codex R5 报告/证据提交推送 → phase/01-foundation 合并 main（保留 merge commit，不 force push）→ 自 main 创建 phase/02-data-ingestion → 开始 Phase 2（TASK-005→007，一次一个 TASK），TASK-007 完成后停在 CODEX_REVIEW_GATE_02。本次不授权部署。
+
+---
+
+# CODEX_REVIEW_HANDOFF｜Gate01 REVIEW_5 PASS，等待Owner阶段放行
+
+日期：2026-09-14T23:21:42+08:00；独立Reviewer：Codex。**Phase1 / TASK-004 / 技术PASS / 待Owner阶段放行 / Checkpoint=YES。**
+
+| 项 | 本轮已验证事实 |
+|---|---|
+| 冻结/范围 | phase/01-foundation=32fb0d3e8ad19b691cf66006638a418ca949e2a4；858c20a..32fb0d3；本地/远端一致 |
+| main | 2a983cc55f136abbb49c5d02b55c1cb82b6547cc，未合并 |
+| TASK验收 | TASK-001–004全部技术PASS；TASK-005–030仍TODO |
+| 问题关闭 | H12/M03/M04/M06/M07关闭；0 CRITICAL/HIGH/MEDIUM；L01驱动升级提示不阻塞 |
+| 独立测试 | typecheck/build PASS；18/65/首次8；官方10迁移/8→10/重复/坏行拒绝；真实Docker双口令非UTC完整链路 |
+| H12 | 非UTC创建epoch差0；过期直接410无Cookie，先预览410后409；有效接受200/me200；多连接UTC，原生会话过期401 |
+| M03/M04/M06 | 限流及会话故障503 JSON/request_id且无部分提交；28领域UUID全覆盖；重复upTo不越界且缺失目标报错 |
+| M07 | 当前迁移与H08并发/删除正确；自动生成SQL不等价，保留人工维护与行为回归；仅在一次性模拟库验证其删除错误 |
+| 报告 | [正式15节报告](docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_5_2026-09-14.md)、[机器索引](docs/reviews/GATE_01_REVIEW_5_EVIDENCE_2026-09-14.json)、[复现说明](docs/reviews/gate-01-review-5-evidence/README.md) |
+| 下一步 | Owner明确阶段放行及Git/Phase2授权范围；使用[P09阶段验收提示词](prompts/P09_PHASE_RELEASE.md) |
+
+原H12“全部连接UTC”的表述按实测收窄：Worker当前原始pg健康连接仍遵从数据库默认时区，原始Date/epoch正确且不写领域时间；实际领域/认证Prisma已固定UTC，结构生成配置不是运行时认证。M07生成SQL还会改变ON UPDATE，不称等价重建；这两项说明已写正式报告。
+
+本轮无需ZCode继续阻塞修复或对相同冻结再审。Owner尚未放行，**当前不执行main合并、部署或TASK-005**。一旦存在新业务/依赖/迁移修改，本PASS只覆盖原冻结，应核对新差异。
+
+本轮只写审查/管理文件，尚未提交或推送。保留应用109跟踪文件及全部旧证据。ZCode本轮证据实际在应用子目录ai-ecommerce-assistant/docs/reviews/gate-01-r5-evidence，未移动；线上部署状态unknown，后续TASK-029仍含运维要求。
+
+---
+
+# 历史：ZCode候选交付与此前全部交接原文
+
+以下完整保留，不作为当前待修复/待技术复审状态。
+
 # CODEX_REVIEW_HANDOFF｜Gate01 REVIEW_4 修复完成（收敛候选交付），待 Codex 收敛复审
 
 日期：2026-09-14T23:05:00+08:00；执行者：ZCode。**Phase 1 / TASK-004 / 待审查（收敛验收待复审）/ Checkpoint=YES / 下一工具 Codex（prompts/P07_CODE_REVIEW.md 收敛验收提示词）。**

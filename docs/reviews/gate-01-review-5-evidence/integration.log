@@ -1,0 +1,67 @@
+
+> ai-ecommerce-assistant@0.1.0 test:integration /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r5-review-ikevfrvp/repo/ai-ecommerce-assistant
+> env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1
+
+
+ RUN  v3.2.7 /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r5-review-ikevfrvp/repo/ai-ecommerce-assistant
+
+(node:54703) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stderr | tests/integration/gate01.auth.test.ts > Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封） > M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[internal] request_id=a51c0823-8e7e-4ca6-9231-894026889d0a 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+stderr | tests/integration/gate01.auth.test.ts > Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封） > M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[internal] request_id=2e883549-d714-4ba9-8be3-26bb22960def 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+ ✓ tests/integration/gate01.auth.test.ts (17 tests) 5298ms
+   ✓ Gate-01 H05｜邀请接受后为框架真实会话 > accept 响应转发的 Set-Cookie 可建立可用登录态（getSessionContext 解析成功）  463ms
+   ✓ Gate-01 H06｜输入校验、孤儿恢复与故障补偿 > Auth 创建后领域事务失败：补偿删除 Auth 身份，邀请回 pending，重试成功  322ms
+Loaded Prisma config from prisma.config.ts.
+
+ ✓ tests/integration/gate01.db.test.ts (13 tests) 3011ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 A——父行改归属未提交时插入旧组织审计引用，后者必须失败  338ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 B——审计引用未提交时改父行归属，后者必须失败且引用方正常提交  330ms
+   ✓ Gate-01 正式复核 H08/H09/M04 增补 > H08：升级守卫——存量跨域引用使 v2 迁移失败（拒绝静默通过）  534ms
+   ✓ Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏） > M06：applyMigrationsUpTo 首次执行到目标、重复不越界、不存在目标明确失败  372ms
+   ✓ Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏） > M07：官方 migrate diff 不再净删除审计同域复合外键（重建必须同引用且配平）  922ms
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 成员 PATCH：审计故障 → 角色与版本零提交
+[internal] request_id=c2328809-55ed-47e6-b38f-8b56cd10ac05 
+Invalid `db.auditLog.create()` invocation in
+/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r5-review-ikevfrvp/repo/ai-ecommerce-assistant/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_member_audit"`
+
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 组织 PATCH：审计故障 → 名称与版本零提交
+[internal] request_id=3ec83fca-d448-4148-aed3-171f04f8b1f9 
+Invalid `db.auditLog.create()` invocation in
+/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r5-review-ikevfrvp/repo/ai-ecommerce-assistant/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_org_audit"`
+
+ ✓ tests/integration/gate01.access.test.ts (7 tests) 1471ms
+ ✓ tests/integration/auth.test.ts (8 tests) 1473ms
+ ✓ tests/integration/permissions.test.ts (7 tests) 1363ms
+ ✓ tests/integration/database.test.ts (9 tests) 883ms
+ ✓ tests/integration/db.test.ts (4 tests) 8ms
+
+ Test Files  7 passed (7)
+      Tests  65 passed (65)
+   Start at  23:03:27
+   Duration  15.75s (transform 471ms, setup 989ms, collect 894ms, tests 13.51s, environment 0ms, prepare 106ms)
+

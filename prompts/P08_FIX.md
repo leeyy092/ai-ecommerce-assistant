@@ -1,3 +1,5 @@
+> 2026-09-14最新状态：Gate01 REVIEW_5已对32fb0d3独立PASS；当前等待Owner阶段放行，使用[P09_PHASE_RELEASE.md](P09_PHASE_RELEASE.md)。以下提示词保留为历史；没有新修复范围或新候选时，不对已关闭问题重复修复/复审。
+
 # Gate 01 REVIEW_4 剩余问题修复 · ZCode
 
 以下首个text代码块为当前有效提示词；后面的原提示词完整保留，仅供历史追溯。
