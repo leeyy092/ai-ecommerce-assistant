@@ -63,6 +63,36 @@ async function main(): Promise<number> {
   logger.info("worker 运行中：数据库连接正常，心跳间隔 %dms", HEARTBEAT_INTERVAL_MS);
   beat("running", true);
 
+  // TASK-007：pg-boss 持久队列与 dispatcher——注册 validate/commit 边界
+  const { getBoss, ensureQueues, QUEUE_VALIDATE, QUEUE_COMMIT } = await import("./queue");
+  const { handleValidateTask, handleCommitTask } = await import("./handlers/imports");
+  try {
+    const boss = await getBoss();
+    await ensureQueues(boss);
+    await boss.work<{ taskId: string }>(QUEUE_VALIDATE, async (jobs) => {
+      const results = [];
+      for (const job of jobs) {
+        logger.info({ job_id: job.id, task: job.data }, "import-validate 开始");
+        const result = await handleValidateTask(job.data);
+        logger.info({ job_id: job.id, ...result }, "import-validate 完成");
+        results.push(result);
+      }
+      return results;
+    });
+    await boss.work<{ taskId: string }>(QUEUE_COMMIT, async (jobs) => {
+      for (const job of jobs) {
+        logger.warn({ job_id: job.id, task: job.data }, "import-commit 边界被触发（TASK-008 实现前不应入队）");
+        await handleCommitTask(job.data);
+      }
+    });
+    logger.info("pg-boss 队列就绪：%s / %s", QUEUE_VALIDATE, QUEUE_COMMIT);
+  } catch (error) {
+    logger.error({ err: error instanceof Error ? error.message : error }, "pg-boss 队列初始化失败");
+    beat("failed", true);
+    await pool.end().catch(() => {});
+    return 1;
+  }
+
   const heartbeat = setInterval(() => beat("running", true), HEARTBEAT_INTERVAL_MS);
 
   let stopping = false;
