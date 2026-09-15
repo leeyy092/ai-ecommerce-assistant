@@ -8,6 +8,8 @@
 # M05：PostgreSQL/Web/Worker 统一引用同一 POSTGRES_PASSWORD；Web/Worker 通过
 #       PG* 分量注入连接参数（应用侧组装连接串并对口令做 URL 编码），口令含
 #       URL 保留字符（@ : / # ? % 等）也可用，无需手工转义。
+# G2-H09：Web/Worker 挂载同一私有存储卷（.data/private），上传→Worker 解析→
+#       查询/下载→容器重启读回共享同一对象；.data 不进 Git 与镜像上下文。
 name: ai-ecommerce-assistant
 
 services:
@@ -31,7 +33,7 @@ services:
 
   web:
     build: .
-    environment: &db-conn
+    environment: &app-env
       # M05：与 postgres 服务同一口令变量；应用与 prisma CLI 经 src/lib/dbUrl 组装连接串
       PGHOST: postgres
       PGPORT: "5432"
@@ -42,6 +44,12 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required (set it in .env)}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       LOG_LEVEL: info
+      # G2-H09：私有存储运行变量（local 驱动；oss 为 TASK-007/M04 显式适配）
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      STORAGE_PRIVATE_ROOT: /app/.data/private
+    volumes:
+      # G2-H09：Web 与 Worker 共享持久私有存储卷（任务文件跨进程、跨重启可读）
+      - private-data:/app/.data/private
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
@@ -52,13 +60,10 @@ services:
     build: .
     command: node dist/jobs/worker.js
     environment:
-      # M05：与 web 相同的 PG* 分量（同一口令变量）
-      PGHOST: postgres
-      PGPORT: "5432"
-      PGUSER: aiea
-      PGPASSWORD: ${POSTGRES_PASSWORD:-aiea_local_dev}
-      PGDATABASE: aiea_dev
-      LOG_LEVEL: info
+      # G2-H09：与 Web 同一运行环境（含认证/存储变量），不再缺 auth 配置
+      <<: *app-env
+    volumes:
+      - private-data:/app/.data/private
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,3 +76,4 @@ services:
 
 volumes:
   pgdata:
+  private-data:

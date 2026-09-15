@@ -1243,6 +1243,25 @@ model ImportTask {
   @@map("import_task")
 }
 
+/// HTTP 请求幂等存档（G2-H07；08 §17.5）：Idempotency-Key 按 org/user/endpoint
+/// 隔离，保存请求 hash 与响应 24 小时；同 key 不同 body 返回 409。
+/// 与业务自然键幂等（04 §12.5）分属两层，互不替代。
+model HttpIdempotency {
+  id             String   @id @default(uuid())
+  orgId          String   @map("org_id")
+  userId         String   @map("user_id")
+  endpoint       String   @db.VarChar(128)
+  requestKey     String   @map("request_key") @db.VarChar(64)
+  requestHash    String   @map("request_hash") @db.VarChar(64)
+  responseStatus Int      @map("response_status")
+  responseBody   Json     @map("response_body")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@unique([orgId, userId, endpoint, requestKey])
+  @@index([createdAt])
+  @@map("http_idempotency")
+}
+
 model DataCoverage {
   id             String           @id @default(uuid())
   orgId          String           @map("org_id")

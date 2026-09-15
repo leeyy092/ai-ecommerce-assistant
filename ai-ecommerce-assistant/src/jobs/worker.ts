@@ -66,6 +66,7 @@ async function main(): Promise<number> {
   // TASK-007：pg-boss 持久队列与 dispatcher——注册 validate/commit 边界
   const { getBoss, ensureQueues, QUEUE_VALIDATE, QUEUE_COMMIT } = await import("./queue");
   const { handleValidateTask, handleCommitTask } = await import("./handlers/imports");
+  const { sweepDispatches } = await import("./dispatcher");
   try {
     const boss = await getBoss();
     await ensureQueues(boss);
@@ -73,7 +74,12 @@ async function main(): Promise<number> {
       const results = [];
       for (const job of jobs) {
         logger.info({ job_id: job.id, task: job.data }, "import-validate 开始");
-        const result = await handleValidateTask(job.data);
+        // pg-boss 12 work 类型未暴露 retry 计数，运行时字段存在（重试耗尽判定用）
+        const retry = job as typeof job & { retryCount?: number; retryLimit?: number };
+        const result = await handleValidateTask(job.data, {
+          retryCount: retry.retryCount,
+          retryLimit: retry.retryLimit,
+        });
         logger.info({ job_id: job.id, ...result }, "import-validate 完成");
         results.push(result);
       }
@@ -93,6 +99,14 @@ async function main(): Promise<number> {
     return 1;
   }
 
+  // G2-H08：dispatcher 周期兜底——投递丢失窗口与悬挂 validating 的恢复边界
+  const dispatchTimer = setInterval(() => {
+    void sweepDispatches().catch((error: unknown) => {
+      logger.warn({ err: error instanceof Error ? error.message : error }, "dispatcher sweep 失败（下轮重试）");
+    });
+  }, 30_000);
+  void sweepDispatches().catch(() => undefined);
+
   const heartbeat = setInterval(() => beat("running", true), HEARTBEAT_INTERVAL_MS);
 
   let stopping = false;
@@ -100,6 +114,7 @@ async function main(): Promise<number> {
     if (stopping) return;
     stopping = true;
     clearInterval(heartbeat);
+    clearInterval(dispatchTimer);
     logger.info({ signal }, "worker 收到退出信号，正在停止");
     beat("stopped", true);
     void pool.end().catch(() => {});

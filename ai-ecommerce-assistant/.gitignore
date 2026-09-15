@@ -49,77 +49,8 @@ next-env.d.ts
 /.postgres/
 /.runtime/
 
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
-
-# Prisma 生成客户端（postinstall 时从 schema 重新生成）
-/src/generated/
+# G2-H09：私有存储本地根（客户原始文件/错误清单，绝不入库）
+/.data/
 
 # Prisma 生成客户端（postinstall 时从 schema 重新生成）
 /src/generated/

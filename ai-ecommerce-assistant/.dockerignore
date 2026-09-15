@@ -4,6 +4,7 @@ dist
 .runtime
 .postgres
 .tools
+.data
 .env
 .env.*
 !.env.example
@@ -13,3 +14,4 @@ coverage
 .git
 *.md
 !README.md
+tsconfig.tsbuildinfo
