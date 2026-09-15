@@ -1,0 +1,2 @@
+store_external_id,source_updated_at,campaign_id,campaign_name,report_date,attribution_model,attribution_window_days,spend,attributed_sales,currency
+XM-DEMO-B,2026-09-11T09:00:00+08:00,AD1,杯子搜索,2026-09-01,last_click,7,100.000000,500.000000,CNY
