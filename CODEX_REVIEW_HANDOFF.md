@@ -8,7 +8,7 @@
 |---|---|
 | Current Branch | `phase/02-data-ingestion`（本地/远端一致，已推送） |
 | Base | main `4c7e95b`（未变动、未合并） |
-| **复审范围** | **`ce5f286..b2fa10f`**（9 个提交；不再使用 4e44270 当最新冻结） |
+| **复审范围** | **`ce5f286..12b1732`**（业务修复止于 b2fa10f 共 9 个提交；12b1732 为纯管理交接提交，不再使用 4e44270 当最新冻结） |
 | 上一轮审查 | ce5f286 FAIL（9H/4M/2L），报告 docs/reviews/CODEX_REVIEW_GATE_02_2026-09-15.md 及证据保留 |
 | Working Tree | 仅 Codex 报告/证据与本次管理文档更新；接手先重查 HEAD 与未提交差异 |
 | Checkpoint | YES；PASS 后仍等 Owner 明确"放行 Phase 2"；不合并 main、不部署、不开始 TASK-008 |
