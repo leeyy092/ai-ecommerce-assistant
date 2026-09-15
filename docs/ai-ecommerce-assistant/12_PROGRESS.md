@@ -20,7 +20,7 @@
   "current_task": "TASK-007",
   "status": "待审查",
   "last_completed": "ZCode 完成 GATE_02 全部修复：G2-H01–H09 关闭，M01–M04/L01–L02 逐项处理；新冻结 b2fa10f 已推送",
-  "next_action": "Codex 对 ce5f286..12b1732 独立复审（业务差异止于 b2fa10f；prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2",
+  "next_action": "Codex 对 ce5f286..实际 HEAD 独立复审（业务差异止于 b2fa10f；prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2",
   "next_owner": "Codex",
   "next_prompt": "prompts/P07_CODE_REVIEW.md",
   "acceptance": "正式报告第13节九项HIGH关闭标准逐项复核：客服投影/原子CAS/解析边界/CanonicalBatch与覆盖声明/权限链/真流式限额/幂等/失败恢复/私有容器链；M/L逐项核定；独立PASS后Owner另行放行",

@@ -10,7 +10,7 @@
 | 当前任务 | TASK-007 |
 | 当前状态 | 待审查 |
 | 上一个完成项 | ZCode 完成 GATE_02 全部修复：G2-H01–H09 关闭，M01–M04/L01–L02 逐项处理；新冻结 b2fa10f 已推送 |
-| 下一步 | Codex 对 ce5f286..12b1732 独立复审（业务差异止于 b2fa10f；prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2 |
+| 下一步 | Codex 对 ce5f286..实际 HEAD 独立复审（业务差异止于 b2fa10f；prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2 |
 | 交给谁 | Codex |
 | 做到什么算完成 | 正式报告第13节九项HIGH关闭标准逐项复核：客服投影/原子CAS/解析边界/CanonicalBatch与覆盖声明/权限链/真流式限额/幂等/失败恢复/私有容器链；M/L逐项核定；独立PASS后Owner另行放行 |
 | 卡点 | 无技术阻塞；等待Codex独立复审；未合并main、未部署、未开始TASK-008；OSS真实云端联调缺云资源如实记录（非获批延期） |
@@ -26,7 +26,7 @@
 当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
 产品目标：让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动
 当前任务：TASK-007
-本轮动作：Codex 对 ce5f286..12b1732 独立复审（业务差异止于 b2fa10f；prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2
+本轮动作：Codex 对 ce5f286..实际 HEAD 独立复审（业务差异止于 b2fa10f；prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2
 
 请接手 AI 电商运营助手 GATE_02 修复后的独立复审，范围仅 Phase 2 / TASK-005–007 的修复差异，不改业务代码、不推进 TASK-008、不合并 main、不部署。
 
@@ -56,11 +56,11 @@ M/L 核定：M01 entity_type+响应字段；M02 org+name 唯一+409；M03 .csv 4
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；存在未提交或未跟踪内容。
-- 分支：phase/02-data-ingestion；版本：da620afd1390efb0d37e5332076470e4ac07ef2c。
+- 分支：phase/02-data-ingestion；版本：b6cbe6b7ea37b38b01ec9917337cf2144e968fbc。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
 - GitHub：phase/02-data-ingestion 本地/远端=12b1732（b2fa10f 为最后业务提交；管理交接 12b1732 已推送）；main=4c7e95b 未合并；最后核验：2026-09-16T02:30:00+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：git push 输出 7616c4c..b2fa10f；实际推送记录见执行记录。
 - 部署：未部署（本轮授权不含部署）；最后核验：从未核验；地址：未记录；证据：TASK-029 试点运行与运维要求另计。
 
-刷新前本地快照时间：2026-09-16T01:41:32+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-16T01:42:26+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)
