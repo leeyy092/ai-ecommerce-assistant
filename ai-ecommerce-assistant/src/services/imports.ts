@@ -297,7 +297,7 @@ async function recordHttpIdempotency(
       },
     });
   } catch (error) {
-    if (isUniqueViolation(error, "http_idempotency_scope_key")) {
+    if (isUniqueViolation(error, "http_idempotency_org_id_user_id_endpoint_request_key_key")) {
       // 并发同 key 异 body：以数据库裁决为准
       throw new AccessError(409, "IDEMPOTENCY_CONFLICT", "同一 Idempotency-Key 已绑定不同请求内容");
     }

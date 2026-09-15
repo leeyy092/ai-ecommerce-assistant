@@ -23,7 +23,7 @@ CREATE TABLE "http_idempotency" (
     CONSTRAINT "http_idempotency_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "http_idempotency_scope_key"
+CREATE UNIQUE INDEX "http_idempotency_org_id_user_id_endpoint_request_key_key"
   ON "http_idempotency" ("org_id", "user_id", "endpoint", "request_key");
 CREATE INDEX "http_idempotency_created_at_idx" ON "http_idempotency" ("created_at");
 
