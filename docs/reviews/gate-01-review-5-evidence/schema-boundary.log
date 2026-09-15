@@ -1,0 +1,6 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+(node:55808) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"utc_default_db":{"raw_timezone":"UTC","orm_db_delta_ms":0},"current_migration_delete":{"store_null":true,"org_preserved":true},"generated_sql_simulation":{"isolated_disposable_db_only":true,"sql":"-- DropForeignKey\nALTER TABLE \"audit_log\" DROP CONSTRAINT \"audit_log_org_id_store_id_fkey\";\n\n-- AddForeignKey\nALTER TABLE \"audit_log\" ADD CONSTRAINT \"audit_log_org_id_store_id_fkey\" FOREIGN KEY (\"org_id\", \"store_id\") REFERENCES \"store\"(\"org_id\", \"id\") ON DELETE SET NULL ON UPDATE CASCADE;\n\n","delete_result":{"deleted":false,"code":"23502","column":"org_id"},"original_review_db_unchanged":true}}

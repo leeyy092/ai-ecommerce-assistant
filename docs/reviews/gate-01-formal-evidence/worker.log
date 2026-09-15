@@ -1,0 +1,3 @@
+{"level":30,"time":1789309381247,"service":"worker","msg":"worker 启动中：开始 PostgreSQL 连通检查"}
+{"level":30,"time":1789309381256,"service":"worker","msg":"worker 运行中：数据库连接正常，心跳间隔 5000ms"}
+{"level":30,"time":1789309381320,"service":"worker","signal":"SIGTERM","msg":"worker 收到退出信号，正在停止"}

@@ -1,0 +1,40 @@
+
+> ai-ecommerce-assistant@0.1.0 build /private/tmp/aiea-gate01-formal-ozou3pz0/docker-build
+> next build && pnpm build:worker
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 2.5s
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 error:
+./src/database/prisma.ts:7:1
+Error: Module not found: Can't resolve '@/generated/prisma/client'
+   5 |  */
+   6 | import { PrismaPg } from "@prisma/adapter-pg";
+>  7 | import { PrismaClient } from "@/generated/prisma/client";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { loadDotEnvIfPresent } from "@/lib/dotenv";
+   9 | import { loadEnv, type AppEnv } from "@/lib/env";
+  10 |
+
+Import map: aliased to relative './src/generated/prisma/client' inside of [project]/
+
+
+Import traces:
+  App Route:
+    ./src/database/prisma.ts
+    ./src/app/api/v1/invitations/[idOrToken]/accept/route.ts
+
+  Server Component:
+    ./src/database/prisma.ts
+    ./src/app/(auth)/invite/[token]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (./src/database/prisma.ts:7:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+ ELIFECYCLE  Command failed with exit code 1.

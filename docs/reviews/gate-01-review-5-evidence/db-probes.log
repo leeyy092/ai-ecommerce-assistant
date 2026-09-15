@@ -1,0 +1,177 @@
+(node:54913) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{
+  "H08_A": {
+    "observed_lock_wait": true,
+    "result": {
+      "ok": false,
+      "code": "23503",
+      "constraint": "audit_log_org_id_store_id_fkey"
+    },
+    "cross_org_count": 0
+  },
+  "H08_B": {
+    "observed_lock_wait": true,
+    "result": {
+      "ok": false,
+      "code": "P0001"
+    },
+    "cross_org_count": 0
+  },
+  "H08_delete": {
+    "store_null": true,
+    "org_preserved": true
+  },
+  "M04_coverage": [
+    {
+      "table_name": "action_state",
+      "constrained": true
+    },
+    {
+      "table_name": "ad_metric",
+      "constrained": true
+    },
+    {
+      "table_name": "after_sale_record",
+      "constrained": true
+    },
+    {
+      "table_name": "ai_insight",
+      "constrained": true
+    },
+    {
+      "table_name": "ai_report",
+      "constrained": true
+    },
+    {
+      "table_name": "ai_run",
+      "constrained": true
+    },
+    {
+      "table_name": "alert",
+      "constrained": true
+    },
+    {
+      "table_name": "audit_log",
+      "constrained": true
+    },
+    {
+      "table_name": "auth_rate_limit",
+      "constrained": false
+    },
+    {
+      "table_name": "customer_message",
+      "constrained": true
+    },
+    {
+      "table_name": "daily_metric",
+      "constrained": true
+    },
+    {
+      "table_name": "data_coverage",
+      "constrained": true
+    },
+    {
+      "table_name": "data_source",
+      "constrained": true
+    },
+    {
+      "table_name": "domain_user",
+      "constrained": true
+    },
+    {
+      "table_name": "import_task",
+      "constrained": true
+    },
+    {
+      "table_name": "invitation",
+      "constrained": true
+    },
+    {
+      "table_name": "job_run",
+      "constrained": true
+    },
+    {
+      "table_name": "membership",
+      "constrained": true
+    },
+    {
+      "table_name": "order",
+      "constrained": true
+    },
+    {
+      "table_name": "order_item",
+      "constrained": true
+    },
+    {
+      "table_name": "organization",
+      "constrained": true
+    },
+    {
+      "table_name": "product",
+      "constrained": true
+    },
+    {
+      "table_name": "refund_event",
+      "constrained": true
+    },
+    {
+      "table_name": "rule_config",
+      "constrained": true
+    },
+    {
+      "table_name": "rule_evaluation",
+      "constrained": true
+    },
+    {
+      "table_name": "sku",
+      "constrained": true
+    },
+    {
+      "table_name": "sku_alias",
+      "constrained": true
+    },
+    {
+      "table_name": "store",
+      "constrained": true
+    },
+    {
+      "table_name": "voc_insight",
+      "constrained": true
+    }
+  ],
+  "M04_non_uuid_job": {
+    "inserted": false,
+    "code": "P2039",
+    "message": "\nInvalid `db.jobRun.create()` invocation in\n/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r5-review-ikevfrvp/repo/ai-ecommerce-assistant/review-db.ts:24:52\n\n  21  await c1.end();await c2.end();return {observed_lock_wait,result,cross_org_count:cross};}\n  22 async function run(){await observer.connect();out.H08_A=await race('A');out.H08_B=await race('B');const {a,s}=await fixture();const audit=await db.auditLog.create({data:{orgId:a.id,storeId:s.id,action:'review',entityType:'review',entityId:randomUUID(),requestId:randomUUID()}});await db.store.delete({where:{id:s.id}});const after=await db.auditLog.findUniqueOrThrow({where:{id:audit.id}});out.H08_delete={store_null:after.storeId===null,org_preserved:after.orgId===a.id};\n  23  out.M04_coverage=(await observer.query(`SELECT c.table_name,EXISTS(SELECT 1 FROM pg_constraint k WHERE k.conrelid=(quote_ident(c.table_schema)||'.'||quote_ident(c.table_name))::regclass AND k.conname LIKE 'ck_domain_uuid_%' AND k.convalidated) AS constrained FROM information_schema.columns c WHERE c.table_schema='public' AND c.column_name='id' AND c.table_name NOT IN ('user','session','account','verification','_prisma_migrations') ORDER BY c.table_name`)).rows;\n→ 24  const f=await fixture();const job=await db.jobRun.create(\nDatabase error. Code: `23514`. Message: `new row for relation \"job_run\" violates check constraint \"ck_domain_uuid_job_run\"`"
+  },
+  "H09": [
+    {
+      "data_type": "timestamp with time zone",
+      "n": 91
+    }
+  ],
+  "M06_helper_applied": [
+    "20260912102945_p0_init",
+    "20260912103005_p0_constraints",
+    "20260913043631_p0_domain_timestamptz",
+    "20260913044218_p0_audit_tenant_fk",
+    "20260913120000_p0_nullable_timestamptz",
+    "20260913120100_p0_audit_tenant_fk_v2",
+    "20260913120200_p0_domain_user_auth_fk",
+    "20260914150000_p0_audit_store_composite_fk",
+    "20260914200000_p0_audit_fk_schema_sync",
+    "20260914210000_p0_domain_uuid_full_coverage"
+  ],
+  "M06_upto_first": [
+    "20260912102945_p0_init",
+    "20260912103005_p0_constraints",
+    "20260913043631_p0_domain_timestamptz",
+    "20260913044218_p0_audit_tenant_fk"
+  ],
+  "M06_upto_repeat": [],
+  "M06_missing": {
+    "rejected": true,
+    "message": "applyMigrationsUpTo：目标迁移 20990101_missing 不存在于 prisma/migrations"
+  }
+}

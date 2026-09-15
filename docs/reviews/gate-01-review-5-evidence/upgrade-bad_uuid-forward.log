@@ -1,0 +1,23 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "aiea_r5_upgrade_bad_uuid", schema "public" at "127.0.0.1:55471"
+
+10 migrations found in prisma/migrations
+
+Applying migration `20260914200000_p0_audit_fk_schema_sync`
+Applying migration `20260914210000_p0_domain_uuid_full_coverage`
+Error: P3018
+
+A migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve
+
+Migration name: 20260914210000_p0_domain_uuid_full_coverage
+
+Database error code: P0001
+
+Database error:
+ERROR: 表 job_run 存在 1 条非 UUID 格式的主键 id，拒绝升级；请先人工核对
+
+DbError { severity: "ERROR", parsed_severity: Some(Error), code: SqlState(EP0001), message: "表 job_run 存在 1 条非 UUID 格式的主键 id，拒绝升级；请先人工核对", detail: None, hint: None, position: None, where_: Some("PL/pgSQL function inline_code_block line 15 at RAISE"), schema: None, table: None, column: None, datatype: None, constraint: None, file: Some("pl_exec.c"), line: Some(3911), routine: Some("exec_stmt_raise") }
+
+

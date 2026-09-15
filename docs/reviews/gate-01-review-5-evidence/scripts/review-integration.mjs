@@ -1,0 +1,21 @@
+import pg from 'pg';
+import {spawn} from 'node:child_process';
+import {readFileSync,writeFileSync,createWriteStream} from 'node:fs';
+const url=new URL(process.env.DATABASE_URL);url.pathname='/postgres';
+const admin=new pg.Client({connectionString:url.toString()});await admin.connect();
+await admin.query('CREATE DATABASE aiea_review_sentinel');url.pathname='/aiea_review_sentinel';
+const sentinel=new pg.Client({connectionString:url.toString()});let connectionError=null;sentinel.on('error',e=>connectionError=e.message);await sentinel.connect();
+await sentinel.query('CREATE TABLE probe(id int primary key, value text)');
+await sentinel.query('BEGIN');await sentinel.query("INSERT INTO probe VALUES(1,'uncommitted-before-full-suite')");
+const before=(await sentinel.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
+const saved=readFileSync('.env','utf8');writeFileSync('.env',saved.replace(/^DATABASE_URL=.*$/m,'DATABASE_URL=postgresql://invalid@127.0.0.1:1/unreachable_dotenv'));
+const log=createWriteStream(process.env.REVIEW_LOG);let code;
+try {code=await new Promise((resolve,reject)=>{const child=spawn('pnpm',['test:integration'],{env:process.env,stdio:['ignore','pipe','pipe']});child.stdout.pipe(log,{end:false});child.stderr.pipe(log,{end:false});child.on('error',reject);child.on('exit',resolve)});}finally{writeFileSync('.env',saved);log.end();}
+const visibleDuring=(await sentinel.query('SELECT count(*)::int AS n FROM probe')).rows[0].n;
+await sentinel.query('COMMIT');const after=(await sentinel.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
+const independent=new pg.Client({connectionString:url.toString()});await independent.connect();
+const committedRows=(await independent.query('SELECT count(*)::int AS n FROM probe')).rows[0].n;
+const remaining=(await admin.query("SELECT datname FROM pg_database WHERE datname LIKE 'aiea_t_%' ORDER BY datname")).rows;
+const result={integration_exit:code,connectionError,same_connection:before===after,visibleDuring,committedRows,external_DATABASE_URL_wins_over_conflicting_dotenv:code===0,remaining_test_databases:remaining};
+writeFileSync(process.env.REVIEW_OUT,JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+await independent.end();await sentinel.end();await admin.end();process.exitCode=code||0;

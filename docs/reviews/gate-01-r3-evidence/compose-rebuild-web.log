@@ -1,0 +1,148 @@
+time="2026-09-14T00:26:02+08:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image aiea-gate01-web Building 
+ Image aiea-gate01-web Building 
+Sending build context to Docker daemon  524.5kBSending build context to Docker daemon  623.5kB
+Step 1/27 : FROM node:24.21.0-bookworm-slim AS deps
+ ---> 2fe369e96955
+Step 2/27 : WORKDIR /app
+ ---> Using cache
+ ---> 2e02bd64d5a6
+Step 3/27 : RUN corepack enable
+ ---> Using cache
+ ---> 48f79572ac60
+Step 4/27 : COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+ ---> Using cache
+ ---> 1b21623f1629
+Step 5/27 : COPY prisma/schema.prisma ./prisma/schema.prisma
+ ---> Using cache
+ ---> 2f999e1fbff3
+Step 6/27 : COPY prisma.config.ts ./
+ ---> Using cache
+ ---> 60654a2af868
+Step 7/27 : RUN pnpm install --frozen-lockfile
+ ---> Using cache
+ ---> 6e14e290e3b1
+Step 8/27 : FROM node:24.21.0-bookworm-slim AS build
+ ---> 2fe369e96955
+Step 9/27 : WORKDIR /app
+ ---> Using cache
+ ---> 2e02bd64d5a6
+Step 10/27 : RUN corepack enable
+ ---> Using cache
+ ---> 48f79572ac60
+Step 11/27 : COPY --from=deps /app/node_modules ./node_modules
+ ---> Using cache
+ ---> 899f6ff58255
+Step 12/27 : COPY --from=deps /app/src/generated ./src/generated
+ ---> Using cache
+ ---> 81bc617c22d8
+Step 13/27 : COPY . .
+ ---> 74c8a9547c34
+Step 14/27 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Running in 0eb35fe2c3b9
+ ---> Removed intermediate container 0eb35fe2c3b9
+ ---> fef9de102ffa
+Step 15/27 : ENV DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:5432/placeholder
+ ---> Running in 688cc5af504c
+ ---> Removed intermediate container 688cc5af504c
+ ---> 898e6625d010
+Step 16/27 : ENV BETTER_AUTH_SECRET=build-time-placeholder-not-a-secret
+ ---> Running in 3701615fd2a6
+ ---> Removed intermediate container 3701615fd2a6
+ ---> e6ebe753c157
+Step 17/27 : ENV BETTER_AUTH_URL=http://localhost:3000
+ ---> Running in 9b1bab505d41
+ ---> Removed intermediate container 9b1bab505d41
+ ---> 726a933dd460
+Step 18/27 : RUN pnpm build
+ ---> Running in fd60732435de
+[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0m
+> ai-ecommerce-assistant@0.1.0 build /app
+> next build && pnpm build:worker
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 26ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 9.9s
+  Running TypeScript ...
+  Finished TypeScript in 5.2s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/9) ...
+  Generating static pages using 1 worker (2/9) 
+  Generating static pages using 1 worker (4/9) 
+  Generating static pages using 1 worker (6/9) 
+✓ Generating static pages using 1 worker (9/9) in 105ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/[...all]
+├ ƒ /api/health
+├ ƒ /api/v1/invitations
+├ ƒ /api/v1/invitations/[idOrToken]
+├ ƒ /api/v1/invitations/[idOrToken]/accept
+├ ƒ /api/v1/me
+├ ƒ /api/v1/me/active-organization
+├ ƒ /api/v1/members
+├ ƒ /api/v1/members/[id]
+├ ƒ /api/v1/organization
+├ ƒ /invite/[token]
+└ ○ /login
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> ai-ecommerce-assistant@0.1.0 build:worker /app
+> esbuild src/jobs/worker.ts src/jobs/status.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/jobs
+
+[91m
+  dist/jobs/worker.js  1.0mb ⚠️
+  dist/jobs/status.js  2.6kb
+
+⚡ Done in 91ms
+[0m ---> Removed intermediate container fd60732435de
+ ---> 4548bb08df4a
+Step 19/27 : FROM node:24.21.0-bookworm-slim AS runner
+ ---> 2fe369e96955
+Step 20/27 : WORKDIR /app
+ ---> Using cache
+ ---> 2e02bd64d5a6
+Step 21/27 : RUN corepack enable
+ ---> Using cache
+ ---> 48f79572ac60
+Step 22/27 : ENV NODE_ENV=production
+ ---> Using cache
+ ---> 2ea6df92d1ca
+Step 23/27 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Using cache
+ ---> d89b70cca0d5
+Step 24/27 : COPY --from=build /app ./
+ ---> 583e5c765df9
+Step 25/27 : EXPOSE 3000
+ ---> Running in fc1d972e96c7
+ ---> Removed intermediate container fc1d972e96c7
+ ---> 26afaf9386c9
+Step 26/27 : CMD ["node", "node_modules/next/dist/bin/next", "start"]
+ ---> Running in 0fd98ce911e5
+ ---> Removed intermediate container 0fd98ce911e5
+ ---> 95cdcca23d79
+Step 27/27 : LABEL com.docker.compose.image.builder=classic
+ ---> Running in c020d98c458a
+ ---> Removed intermediate container c020d98c458a
+ ---> c1b07e765811
+Successfully built c1b07e765811
+Successfully tagged aiea-gate01-web:latest
+ Image aiea-gate01-web Built 
+ Image aiea-gate01-web Built 
+ Container aiea-gate01-postgres-1 Running 
+ Container aiea-gate01-web-1 Recreate 
+ Container aiea-gate01-web-1 Recreated 
+ Container aiea-gate01-postgres-1 Waiting 
+ Container aiea-gate01-postgres-1 Healthy 
+ Container aiea-gate01-web-1 Starting 
+ Container aiea-gate01-web-1 Started 

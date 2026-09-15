@@ -1,0 +1,585 @@
+{
+  "schema_version": 1,
+  "review": "CODEX_REVIEW_GATE_01_REVIEW_3",
+  "reviewer": "Codex",
+  "date": "2026-09-14",
+  "scope": "Phase 1 / TASK-001–004",
+  "git": {
+    "branch": "phase/01-foundation",
+    "head": "9a5798ccdfad1be1e60d2df4dce9f9c189f85b93",
+    "main": "2a983cc55f136abbb49c5d02b55c1cb82b6547cc",
+    "previous_review": "c87a141648227954725402c715063a900fa72659",
+    "latest_business_fix": "e7b5eea508de3bf93b1c7282c395a5c7a8ef5b63",
+    "diff": "c87a141..9a5798c",
+    "additional_review": "main...9a5798c and current Phase 1 code",
+    "start_working_tree": "clean",
+    "remote_refs": "gate-01-review-3-evidence/remote-refs.txt"
+  },
+  "verdict": {
+    "gate": "BLOCKED",
+    "technical": "FAIL",
+    "owner_release": "NOT_GRANTED",
+    "merge_main": false,
+    "start_task_005": false,
+    "deployment_performed": false
+  },
+  "tasks": {
+    "TASK-001": {
+      "result": "PASS",
+      "medium": "M05 remains nonblocking for default local startup acceptance"
+    },
+    "TASK-002": {
+      "result": "FAIL",
+      "high": [
+        "H08",
+        "H11"
+      ]
+    },
+    "TASK-003": {
+      "result": "FAIL",
+      "reason": "full dependency acceptance; core H04/H05/H06/H07 passed"
+    },
+    "TASK-004": {
+      "result": "FAIL",
+      "reason": "full dependency acceptance; H01/H02/H03/H07/D01 passed"
+    }
+  },
+  "findings": {
+    "CRITICAL": [],
+    "HIGH": [
+      "H08: concurrent audit/store tenant invariant",
+      "H11: tests terminate unrelated database connections and override isolation configuration"
+    ],
+    "MEDIUM": [
+      "M01: revoke route missing source guard",
+      "M02: invitation trusts arbitrary forwarded IP",
+      "M03: invitation validation/version/error envelope incomplete",
+      "M04: domain UUID constraint deferral trigger already reached",
+      "M05: nondefault PostgreSQL password inconsistent across Compose services",
+      "M06: custom test migration metadata incompatible with Prisma"
+    ],
+    "LOW": [],
+    "closed_original_high": [
+      "H01",
+      "H02",
+      "H03",
+      "H04",
+      "H05",
+      "H06",
+      "H07",
+      "H09",
+      "H10"
+    ],
+    "D01": "PASS: current Membership disabled; global User and other organization eligibility remain valid after re-login",
+    "L01": "CLOSED",
+    "product_decisions_required": []
+  },
+  "checks": [
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "seconds": 3.86
+    },
+    {
+      "name": "unit",
+      "command": "pnpm test",
+      "exit": 0,
+      "seconds": 3.7
+    },
+    {
+      "name": "integration",
+      "command": "pnpm test:integration",
+      "exit": 0,
+      "seconds": 10.64
+    },
+    {
+      "name": "migrate",
+      "command": "pnpm exec prisma migrate deploy",
+      "exit": 0,
+      "seconds": 2.07
+    },
+    {
+      "name": "build",
+      "command": "pnpm build",
+      "exit": 0,
+      "seconds": 15.24
+    },
+    {
+      "name": "e2e",
+      "command": "pnpm test:e2e",
+      "exit": 1,
+      "seconds": 18.55
+    },
+    {
+      "name": "e2e-corrected",
+      "command": "pnpm test:e2e",
+      "exit": 0,
+      "seconds": 7.62
+    }
+  ],
+  "http": {
+    "H01": {
+      "switchStatus": 200,
+      "meB": true,
+      "role": "customer_service",
+      "organizationB": true,
+      "budgetAbsent": true,
+      "patch": 403,
+      "orgAUnchanged": true,
+      "forgedFallsBackA": true
+    },
+    "H05": {
+      "accept": 200,
+      "me": 200,
+      "replay": 409
+    },
+    "H02": {
+      "adminToAdmin": 403,
+      "unchangedRole": "operator",
+      "adminToOwner": 422,
+      "operatorToCS": 200,
+      "csToOperator": 200,
+      "ownerToAdmin": 200
+    },
+    "H07member": {
+      "http": 503,
+      "json": true,
+      "statusUnchanged": true,
+      "versionUnchanged": true,
+      "oldSessionStillWorks": true,
+      "sessionsBefore": 2,
+      "sessionsAfter": 2
+    },
+    "H03_D01": {
+      "disable": 200,
+      "oldCookie": 401,
+      "globalStatus": "active",
+      "otherMembership": "active",
+      "relogin": 200,
+      "me": 200,
+      "activeB": true,
+      "role": "owner"
+    },
+    "H07org": {
+      "http": 503,
+      "nameUnchanged": true,
+      "versionUnchanged": true,
+      "auditCount": 0
+    },
+    "H07_invite_create": {
+      "http": 503,
+      "auditCount": 0,
+      "authRows": 0,
+      "domainRows": 0,
+      "invitationRows": 0
+    },
+    "H07_invite_revoke": {
+      "http": 500,
+      "auditCount": 0,
+      "invitationStatus": "pending",
+      "rowVersion": 1,
+      "authRows": 0,
+      "domainRows": 0
+    },
+    "H07_invite_accept": {
+      "http": 503,
+      "auditCount": 0,
+      "invitationStatus": "pending",
+      "rowVersion": 1,
+      "authRows": 0,
+      "domainRows": 0,
+      "retry": 200
+    },
+    "M01": {
+      "untrustedOriginStatus": 403,
+      "created": false,
+      "manualCookie": true
+    },
+    "M02": {
+      "wrong": 401,
+      "countBefore": 1,
+      "bad": 400,
+      "counterAfter": {
+        "id": "355fd9d0-c7e2-45cb-ba55-6083d92d04f4",
+        "key": "login-fail:direct",
+        "count": 1,
+        "expiresAt": "2026-09-14T15:56:00.911Z",
+        "updatedAt": "2026-09-14T15:55:00.911Z"
+      }
+    },
+    "M03": {
+      "numericNameStatus": 422,
+      "nullBodyStatus": 422,
+      "nullBodyJSON": true,
+      "fractionalVersionStatus": 422,
+      "fractionalVersionJSON": true,
+      "orgNameAfterFraction": "A"
+    },
+    "H04": {
+      "statuses": [
+        403,
+        403
+      ],
+      "json": [
+        true,
+        true
+      ],
+      "authRows": 0
+    },
+    "H06_owner_concurrent": {
+      "secondWaited": true,
+      "oneOrg": true,
+      "secondIdempotent": true,
+      "authRows": 1,
+      "domainRows": 1,
+      "login": 200
+    },
+    "M01_M03_revoke": {
+      "manualCookie": true,
+      "untrustedOriginFractionalVersion": 200,
+      "rowStatus": "revoked"
+    },
+    "M03_invitation": {
+      "nullBody": 503,
+      "numericEmail": 503,
+      "unexpectedField": 201
+    },
+    "M02_invite_proxy": {
+      "trustProxyHeaders": false,
+      "sameIP": 429,
+      "forgedNewIP": 404
+    },
+    "signout": {
+      "status": 200,
+      "oldCookie": 401
+    }
+  },
+  "crash_recovery": {
+    "init": {
+      "childExit": 55,
+      "beforeRetry": {
+        "auth": 1,
+        "domain": 0
+      },
+      "afterRetry": {
+        "alreadyInitialized": false,
+        "auth": 1,
+        "domain": 1,
+        "login": 200
+      }
+    },
+    "invite": {
+      "childExit": 55,
+      "beforeRetry": {
+        "auth": 1,
+        "domain": 0,
+        "status": "pending"
+      },
+      "afterRetry": {
+        "auth": 1,
+        "domain": 1,
+        "status": "accepted",
+        "login": 200
+      }
+    }
+  },
+  "database": {
+    "H08_final": {
+      "H08_concurrent": {
+        "parent_update_committed": true,
+        "insert_result": "OK",
+        "insert_waited": true,
+        "cross_org": true
+      },
+      "H09_types": [
+        {
+          "data_type": "timestamp with time zone",
+          "n": 91
+        }
+      ],
+      "H09_same_instant_delta_ms": 0
+    },
+    "H09_types": [
+      {
+        "data_type": "timestamp with time zone",
+        "n": 91
+      }
+    ],
+    "H09_same_instant_delta_ms": 0,
+    "H11_test_cleanup_scope": {
+      "executed_statement_from": "tests/integration/gate01.db.test.ts",
+      "unrelated_database": "aiea_review_sentinel",
+      "connection_error": "undefined:Connection terminated unexpectedly",
+      "unrelated_uncommitted_row_count": 0
+    },
+    "M06_helper_columns": [
+      "id",
+      "checksum",
+      "finished_at",
+      "migration_name",
+      "logs",
+      "applied_steps_count"
+    ],
+    "official_upgrade": {
+      "good": {
+        "baseline_exit": 0,
+        "forward_exit": 0,
+        "repeat_exit": 0,
+        "utc_preserved": "SET\n2026-01-01 12:00:00+00",
+        "domain_without_tz": "0"
+      },
+      "bad_audit": {
+        "baseline_exit": 0,
+        "forward_exit": 1,
+        "error_tail": "migrations\n\nApplying migration `20260913120000_p0_nullable_timestamptz`\nApplying migration `20260913120100_p0_audit_tenant_fk_v2`\nError: P3018\n\nA migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve\n\nMigration name: 20260913120100_p0_audit_tenant_fk_v2\n\nDatabase error code: P0001\n\nDatabase error:\nERROR: audit_log 存在 1 条跨组织店铺引用，拒绝升级；请先人工核对这些历史行\n\nDbError { severity: \"ERROR\", parsed_severity: Some(Error), code: SqlState(EP0001), message: \"audit_log 存在 1 条跨组织店铺引用，拒绝升级；请先人工核对这些历史行\", detail: None, hint: None, position: None, where_: Some(\"PL/pgSQL function inline_code_block line 8 at RAISE\"), schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"pl_exec.c\"), line: Some(3911), routine: Some(\"exec_stmt_raise\") }\n\n\n"
+      },
+      "bad_identity": {
+        "baseline_exit": 0,
+        "forward_exit": 1,
+        "error_tail": " migration `20260913120100_p0_audit_tenant_fk_v2`\nApplying migration `20260913120200_p0_domain_user_auth_fk`\nError: P3018\n\nA migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve\n\nMigration name: 20260913120200_p0_domain_user_auth_fk\n\nDatabase error code: P0001\n\nDatabase error:\nERROR: domain_user 存在 1 条悬空 auth_user_id，拒绝升级；请先人工核对这些身份链\n\nDbError { severity: \"ERROR\", parsed_severity: Some(Error), code: SqlState(EP0001), message: \"domain_user 存在 1 条悬空 auth_user_id，拒绝升级；请先人工核对这些身份链\", detail: None, hint: None, position: None, where_: Some(\"PL/pgSQL function inline_code_block line 7 at RAISE\"), schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"pl_exec.c\"), line: Some(3911), routine: Some(\"exec_stmt_raise\") }\n\n\n"
+      }
+    },
+    "invalid_initial_H08_probe": "db-probes.json/H08_concurrent is invalid fixture, superseded by db-race-final.json"
+  },
+  "runtime": {
+    "worker_running_status": 0,
+    "worker_exit": 0,
+    "worker_stopped_status": 1,
+    "missing-auth": {
+      "exit": 1,
+      "names_mentioned": [
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL"
+      ]
+    },
+    "missing-db": {
+      "exit": 1,
+      "names_mentioned": [
+        "DATABASE_URL"
+      ]
+    }
+  },
+  "health": {
+    "before_pg_stop": {
+      "status": 200,
+      "body": "{\"status\":\"ok\"}"
+    },
+    "review_pg_stop_exit": 0,
+    "after_pg_stop": {
+      "status": 503,
+      "body": "{\"status\":\"degraded\"}"
+    },
+    "review_web_stop_signal": "SIGTERM"
+  },
+  "docker": {
+    "first_build": {
+      "exit": 0,
+      "image": "aiea-r3-review:9a5798c",
+      "head": "9a5798c",
+      "no_cache": true,
+      "builder": "legacy"
+    },
+    "clean_context_build": {
+      "exit": 0,
+      "image": "aiea-r3-review:clean-9a5798c",
+      "source": "git archive HEAD ai-ecommerce-assistant",
+      "generated_client_in_context": false,
+      "node_modules_in_context": false,
+      "cache": "dependency layers may reuse previous no-cache build"
+    },
+    "runtime": {
+      "source": "9a5798c git archive",
+      "review_only_overrides": [
+        "unique project and image name",
+        "loopback ports 3300 and 55479",
+        "runtime auth secret/url"
+      ],
+      "steps": {
+        "up": {
+          "exit": 0,
+          "args": [
+            "up",
+            "-d",
+            "--no-build",
+            "--wait",
+            "--wait-timeout",
+            "50"
+          ]
+        },
+        "migrate": {
+          "exit": 0,
+          "args": [
+            "exec",
+            "-T",
+            "web",
+            "node",
+            "node_modules/prisma/build/index.js",
+            "migrate",
+            "deploy"
+          ]
+        },
+        "init-owner": {
+          "exit": 0,
+          "args": [
+            "exec",
+            "-T",
+            "web",
+            "node",
+            "--import",
+            "tsx",
+            "scripts/init-owner.ts",
+            "--org",
+            "Review",
+            "--email",
+            "docker-review@example.test",
+            "--name",
+            "Reviewer",
+            "--demo"
+          ]
+        },
+        "worker-status": {
+          "exit": 0,
+          "args": [
+            "exec",
+            "-T",
+            "worker",
+            "node",
+            "dist/jobs/status.js"
+          ]
+        },
+        "ps": {
+          "exit": 0,
+          "args": [
+            "ps"
+          ]
+        },
+        "down": {
+          "exit": 0,
+          "args": [
+            "down",
+            "--volumes",
+            "--remove-orphans"
+          ]
+        },
+        "custom-password-up": {
+          "exit": 0,
+          "args": [
+            "up",
+            "-d",
+            "--no-build"
+          ]
+        },
+        "custom-password-worker-status": {
+          "exit": 1,
+          "args": [
+            "exec",
+            "-T",
+            "worker",
+            "node",
+            "dist/jobs/status.js"
+          ]
+        },
+        "custom-password-logs": {
+          "exit": 0,
+          "args": [
+            "logs",
+            "--tail",
+            "35",
+            "web",
+            "worker"
+          ]
+        },
+        "custom-password-down": {
+          "exit": 0,
+          "args": [
+            "down",
+            "--volumes",
+            "--remove-orphans"
+          ]
+        }
+      },
+      "health": 200,
+      "login": {
+        "status": 200,
+        "cookieIssued": true
+      },
+      "me": {
+        "status": 200,
+        "role": "owner"
+      },
+      "public_signup": [
+        403,
+        403
+      ],
+      "custom_password_health": 503
+    }
+  },
+  "secrets_scan": {
+    "commits": 21,
+    "unique_blobs": 318,
+    "strong_pattern_candidates": [],
+    "tracked_real_env_paths": [],
+    "zcode_unredacted_token_files": [],
+    "limitations": "Pattern scan is not exhaustive; local development and synthetic test secrets remain in historical commits."
+  },
+  "unchanged_before_write": {
+    "at": "2026-09-14T16:03:56+08:00",
+    "tracked_files": 228,
+    "application_files": 81,
+    "changes_during_tests": [],
+    "historical_evidence": {
+      "gate-01-formal-evidence": {
+        "files": 44,
+        "mismatches": []
+      },
+      "gate-01-review-2-evidence": {
+        "files": 33,
+        "mismatches": []
+      }
+    }
+  },
+  "medium_disposition": {
+    "M01": "ACCEPT: finish current write-entry guards in Gate01 per prior ruling",
+    "M02": "ACCEPT: finish invitation proxy trust/counting boundary in Gate01; real deployment topology TASK-029",
+    "M03": "ACCEPT: finish current input/version/error envelope only, no new exception framework",
+    "M04": "MODIFY: auth FK closed; UUID debt trigger reached, address with next H08 migration; remains MEDIUM",
+    "M05": "ACCEPT: consistent password config and real nondefault clean-volume regression; remains MEDIUM",
+    "M06": "MODIFY: preserve official CLI migration checks and remove/limit incompatible helper; remains MEDIUM"
+  },
+  "limitations": [
+    "No business code/schema/migration/test changes in original workspace",
+    "No current API cross-organization data read reproduced; H08 is confirmed database association invariant failure",
+    "Synthetic isolated database tests only; no real customer data or production load",
+    "Historical timezone sample does not audit every real historical row",
+    "Unit/integration/E2E passing does not prove remaining adversarial cases",
+    "No commit/push/merge/deployment or Owner release; local container tests only"
+  ],
+  "report": "CODEX_REVIEW_GATE_01_REVIEW_3_2026-09-14.md",
+  "evidence_directory": "gate-01-review-3-evidence",
+  "closeout": {
+    "status": "COMPLETE",
+    "verification": "gate-01-review-3-evidence/final-verification.json",
+    "product_os_sync": {
+      "registered": 1,
+      "updated": 1,
+      "errors": [],
+      "generated_at": "2026-09-14T16:24:32+08:00"
+    },
+    "home_and_control_readback": true,
+    "original_application_files_unchanged": 81,
+    "temporary_directory_removed": true,
+    "environment_cleanup": {
+      "running_containers_before_stop": [],
+      "docker_ps_exit": 0,
+      "colima_stop_exit": 0,
+      "restore_context_exit": 0,
+      "listener_3000": false,
+      "listener_55469": false,
+      "listener_3300": false,
+      "listener_55479": false
+    },
+    "git_mutations": "No commit/push/merge; review and management files uncommitted",
+    "owner_release": "NOT_GRANTED"
+  }
+}

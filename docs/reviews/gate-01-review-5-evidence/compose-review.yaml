@@ -1,0 +1,11 @@
+services:
+  postgres:
+    command: ["postgres", "-c", "timezone=Asia/Shanghai"]
+    ports: !override
+      - "127.0.0.1:55480:5432"
+  web:
+    image: aiea-r5-review:32fb0d3
+    ports: !override
+      - "127.0.0.1:3301:3000"
+  worker:
+    image: aiea-r5-review:32fb0d3

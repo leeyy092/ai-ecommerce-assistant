@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-14T16:03:56+08:00",
+  "tracked_files": 228,
+  "application_files": 81,
+  "changes_during_tests": [],
+  "historical_evidence": {
+    "gate-01-formal-evidence": {
+      "files": 44,
+      "mismatches": []
+    },
+    "gate-01-review-2-evidence": {
+      "files": 33,
+      "mismatches": []
+    }
+  }
+}

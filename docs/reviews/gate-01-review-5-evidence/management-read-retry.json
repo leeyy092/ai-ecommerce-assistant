@@ -1,0 +1,8 @@
+{
+  "date": "2026-09-14T23:32:53+08:00",
+  "initial_buffered_read_wait": "stopped only this review QA process; separate cat read of same file succeeded",
+  "git_diff_check_initial": "15-second timeout",
+  "retry": "bounded per-file cat reads and core.fsmonitor=false on actual changed paths; all 440 hashes, history, state, report and generated-view checks passed",
+  "root_cause": "not determined",
+  "business_tests_affected": false
+}

@@ -1,0 +1,12 @@
+{
+  "copied_files": 69,
+  "redacted_files": [],
+  "excluded": [
+    "env.json",
+    ".env",
+    "Playwright error-context with synthetic password",
+    "database data",
+    "cookie jars"
+  ],
+  "business_secrets_read_or_saved": false
+}

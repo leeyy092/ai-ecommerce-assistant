@@ -1,0 +1,6 @@
+{"name": "install", "command": "pnpm install --offline --frozen-lockfile", "exit": 0, "seconds": 7.72}
+{"name": "typecheck", "command": "pnpm typecheck", "exit": 0, "seconds": 4.47}
+{"name": "unit", "command": "pnpm test", "exit": 0, "seconds": 3.83}
+{"name": "migrate", "command": "pnpm exec prisma migrate deploy", "exit": 0, "seconds": 2.17}
+{"name": "build", "command": "pnpm build", "exit": 0, "seconds": 22.29}
+{"name": "e2e", "command": "pnpm test:e2e", "exit": 0, "seconds": 9.84}

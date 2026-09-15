@@ -12,18 +12,20 @@
 - 文案/UI 小调整/小 Bug 不触发 Gate。
 - GPT_PRODUCT_DECISION_REQUIRED 状态出现时暂停等待用户决策。
 
-## 阶段划分（8 Phase / 8 Gate）
+## 阶段划分（8 Phase / 8 Gate / 8 分支）
 
-| Phase | 模块 | TASK | Gate |
-|---|---|---|---|
-| Phase 1 项目地基 | 运行环境·数据库·身份·权限 | 001–004 | CODEX_REVIEW_GATE_01 |
-| Phase 2 数据接入基础 | 店铺/数据源·统一Adapter·上传与任务 | 005–007 | CODEX_REVIEW_GATE_02 |
-| Phase 3 六类文件导入链路 | 校验·预览·原子提交 | 008–012 | CODEX_REVIEW_GATE_03 |
-| Phase 4 计算与规则引擎 | 任务编排·指标·队列·异常·快照发布 | 013–016 | CODEX_REVIEW_GATE_04 |
-| Phase 5 AI 链路 | 模型网关·VOC·建议·日报 | 017–020 | CODEX_REVIEW_GATE_05 |
-| Phase 6 Dashboard 与老板主路径 | 首页·指标页·SKU | 021–022 | CODEX_REVIEW_GATE_06 |
-| Phase 7 全功能工作台 | 客服·告警·行动·导入向导·设置 | 023–027 | CODEX_REVIEW_GATE_07 |
-| Phase 8 演示、试点与验收 | 演示包·运维·整体验收 | 028–030 | CODEX_REVIEW_GATE_08（终审） |
+Git 分支生命周期由 Zcode 自动维护（2026-09-13 Owner 授权）：main 仅保存通过 Review Gate 的稳定 Phase；每个 Phase 在独立分支开发并 push；禁止在 main 上开发、force push 或重写已共享历史；commit 必须含 TASK 编号。
+
+| Phase | 分支 | 模块 | TASK | Gate |
+|---|---|---|---|---|
+| Phase 1 项目地基 | `phase/01-foundation` | 运行环境·数据库·身份·权限 | 001–004 | CODEX_REVIEW_GATE_01 |
+| Phase 2 数据接入基础 | `phase/02-data-ingestion` | 店铺/数据源·统一Adapter·上传与任务 | 005–007 | CODEX_REVIEW_GATE_02 |
+| Phase 3 六类文件导入链路 | `phase/03-import` | 校验·预览·原子提交 | 008–012 | CODEX_REVIEW_GATE_03 |
+| Phase 4 计算与规则引擎 | `phase/04-metrics-alerts` | 任务编排·指标·队列·异常·快照发布 | 013–016 | CODEX_REVIEW_GATE_04 |
+| Phase 5 AI 链路 | `phase/05-ai` | 模型网关·VOC·建议·日报 | 017–020 | CODEX_REVIEW_GATE_05 |
+| Phase 6 Dashboard 与老板主路径 | `phase/06-dashboard` | 首页·指标页·SKU | 021–022 | CODEX_REVIEW_GATE_06 |
+| Phase 7 全功能工作台 | `phase/07-workbench` | 客服·告警·行动·导入向导·设置 | 023–027 | CODEX_REVIEW_GATE_07 |
+| Phase 8 演示、试点与验收 | `phase/08-mvp` | 演示包·运维·整体验收 | 028–030 | CODEX_REVIEW_GATE_08（终审） |
 
 ## 各 Phase 要点
 

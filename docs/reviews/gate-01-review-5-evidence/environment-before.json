@@ -1,0 +1,14 @@
+{
+  "at": "2026-09-14T23:02:15.952708+08:00",
+  "head": "32fb0d3e8ad19b691cf66006638a418ca949e2a4",
+  "tracked_files": 440,
+  "application_files": 109,
+  "docker_context": {
+    "exit": 0,
+    "output": "default\n"
+  },
+  "colima_status": {
+    "exit": 1,
+    "output": "time=\"2026-09-14T23:02:16+08:00\" level=fatal msg=\"colima is not running\"\n"
+  }
+}

@@ -1,0 +1,6 @@
+▲ Next.js 16.3.5
+- Local:         http://localhost:3001
+- Network:       http://192.168.101.10:3001
+✓ Ready in 164ms
+✓ Running next.config.ts took 35ms
+缺少或非法的启动必需环境变量：BETTER_AUTH_SECRET, BETTER_AUTH_URL。请检查 .env（参考 .env.example）或进程环境；出于安全考虑不输出变量值。

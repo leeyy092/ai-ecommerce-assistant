@@ -1,0 +1,33 @@
+
+> ai-ecommerce-assistant@0.1.0 test:integration /private/tmp/aiea-gate01-formal-ozou3pz0/repo/ai-ecommerce-assistant
+> vitest run tests/integration
+
+
+ RUN  v3.2.7 /private/tmp/aiea-gate01-formal-ozou3pz0/repo/ai-ecommerce-assistant
+
+ ✓ tests/integration/db.test.ts (4 tests) 36ms
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+ ✓ tests/integration/gate01.db.test.ts (3 tests) 6018ms
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+ ✓ tests/integration/permissions.test.ts (7 tests) 7671ms
+ ✓ tests/integration/database.test.ts (9 tests) 7332ms
+   ✓ TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL） > 空库迁移部署成功，且重复部署幂等（从空库与上次迁移各验证一次；迁移数随 Gate-01 修复增至 4）  2043ms
+ ✓ tests/integration/gate01.access.test.ts (7 tests) 7933ms
+ ✓ tests/integration/auth.test.ts (8 tests) 8012ms
+   ✓ TASK-003｜初始 Owner 与登录 > 初始化创建 Auth+领域身份并可用真实会话登录；/api 层无公开注册入口依赖  490ms
+   ✓ TASK-003｜初始 Owner 与登录 > 重复初始化幂等：不重设密码、不建第二个 Owner、不接管邮箱  312ms
+   ✓ TASK-003｜受控邀请 > 完整接受流程：新用户建 Auth+领域身份并入组织；并发两次接受仅一次成功  320ms
+ ✓ tests/integration/gate01.auth.test.ts (8 tests) 7584ms
+   ✓ Gate-01 H04｜公开注册关闭 > 匿名 POST /api/auth/sign-up/email → 403，且不创建任何 AuthUser  656ms
+   ✓ Gate-01 H05｜邀请接受后为框架真实会话 > accept 响应转发的 Set-Cookie 可建立可用登录态（getSessionContext 解析成功）  400ms
+   ✓ Gate-01 H06｜输入校验、孤儿恢复与故障补偿 > Auth 创建后领域事务失败：补偿删除 Auth 身份，邀请回 pending，重试成功  423ms
+
+ Test Files  7 passed (7)
+      Tests  46 passed (46)
+   Start at  22:18:36
+   Duration  9.48s (transform 1.04s, setup 0ms, collect 4.44s, tests 44.59s, environment 2ms, prepare 2.07s)
+

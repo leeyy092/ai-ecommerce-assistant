@@ -1,0 +1,289 @@
+▲ Next.js 16.3.5
+- Local:         http://127.0.0.1:3000
+- Network:       http://127.0.0.1:3000
+✓ Ready in 317ms
+✓ Running next.config.ts took 204ms
+[internal] request_id=dec5cab6-ace2-4e47-abdb-4c6e5a9b0b94 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_member_fail"`
+[internal] request_id=65ac06fb-3842-480e-ba1a-93861265e8ba 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_org_fail"`
+[internal] request_id=c09a1b45-ee5a-4234-9848-df9b6f2629fc 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_inv_fail"`
+[internal] request_id=85b01f93-5fb9-4fc4-a509-ed972504497e 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_inv_fail"`
+[internal] request_id=19f4a4b2-3aff-494c-ac46-f7595b06c514 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_inv_fail"`
+2026-09-14T11:02:20.564Z WARN [Better Auth]: Invalid password
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "review_rate_fault"`
+    at async t (.next/server/chunks/[root-of-the-server]__1r8-o6u._.js:1:9473)
+    at async c (.next/server/chunks/_1ftglor._.js:1:237)
+    at async Z (.next/server/chunks/_1ftglor._.js:1:4637) {
+  code: 'P2010',
+  meta: {
+    driverAdapterError: Error [DriverAdapterError]: new row for relation "auth_rate_limit" violates check constraint "review_rate_fault"
+        at b.onError (.next/server/chunks/_1b96ohm._.js:492:11811)
+        at b.performIO (.next/server/chunks/_1b96ohm._.js:492:11752)
+        at async b.queryRaw (.next/server/chunks/_1b96ohm._.js:492:8340) {
+      [cause]: [Object]
+    }
+  },
+  clientVersion: '7.10.0'
+}
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "review_rate_fault"`
+    at async t (.next/server/chunks/[root-of-the-server]__1r8-o6u._.js:1:9473)
+    at async p (.next/server/chunks/_1z_5wn-._.js:1:721)
+    at async J (.next/server/chunks/_1z_5wn-._.js:1:5032) {
+  code: 'P2010',
+  meta: {
+    driverAdapterError: Error [DriverAdapterError]: new row for relation "auth_rate_limit" violates check constraint "review_rate_fault"
+        at b.onError (.next/server/chunks/_1b96ohm._.js:492:11811)
+        at b.performIO (.next/server/chunks/_1b96ohm._.js:492:11752)
+        at async b.queryRaw (.next/server/chunks/_1b96ohm._.js:492:8340) {
+      [cause]: [Object]
+    }
+  },
+  clientVersion: '7.10.0'
+}
+error: terminating connection due to administrator command
+    at ignore-listed frames {
+  length: 116,
+  severity: 'FATAL',
+  code: '57P01',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'postgres.c',
+  line: '3318',
+  routine: 'ProcessInterrupts',
+  client: Client {
+    _events: [Object: null prototype] { error: [Function (anonymous)] },
+    _eventsCount: 1,
+    _maxListeners: undefined,
+    connectionParameters: ConnectionParameters {
+      user: 'yuyuyu',
+      database: 'aiea_review_base',
+      port: 55470,
+      host: '127.0.0.1',
+      binary: false,
+      options: undefined,
+      ssl: false,
+      sslnegotiation: undefined,
+      client_encoding: '',
+      replication: undefined,
+      isDomainSocket: false,
+      application_name: undefined,
+      fallback_application_name: undefined,
+      statement_timeout: false,
+      lock_timeout: false,
+      idle_in_transaction_session_timeout: false,
+      query_timeout: false,
+      connect_timeout: 3
+    },
+    user: 'yuyuyu',
+    database: 'aiea_review_base',
+    port: 55470,
+    host: '127.0.0.1',
+    replication: undefined,
+    _Promise: [Function: Promise],
+    _types: TypeOverrides { _types: [Object], text: {}, binary: {} },
+    _ending: true,
+    _ended: false,
+    _connecting: false,
+    _connected: true,
+    _connectionError: false,
+    _queryable: false,
+    _activeQuery: null,
+    _txStatus: 'I',
+    enableChannelBinding: false,
+    scramMaxIterations: 100000,
+    connection: Connection {
+      _events: [Object: null prototype],
+      _eventsCount: 23,
+      _maxListeners: undefined,
+      stream: [Socket],
+      _keepAlive: false,
+      _keepAliveInitialDelayMillis: 0,
+      parsedStatements: {},
+      submittedNamedStatements: {},
+      ssl: false,
+      sslNegotiation: 'postgres',
+      _ending: false,
+      _emitMessage: false,
+      _connecting: true,
+      Symbol(shapeMode): false,
+      Symbol(kCapture): false
+    },
+    _queryQueue: [],
+    _sentQueryQueue: [],
+    pipeline: false,
+    binary: false,
+    processID: 38257,
+    secretKey: 82757363,
+    ssl: false,
+    sslNegotiation: 'postgres',
+    _connectionTimeoutMillis: 3000,
+    _connectionCallback: null,
+    connectionTimeoutHandle: Timeout {
+      _idleTimeout: -1,
+      _idlePrev: null,
+      _idleNext: null,
+      _idleStart: 608360,
+      _onTimeout: undefined,
+      _timerArgs: undefined,
+      _repeat: null,
+      _destroyed: true,
+      Symbol(refed): false,
+      Symbol(kHasPrimitive): false,
+      Symbol(asyncId): 4547,
+      Symbol(triggerId): 0,
+      Symbol(kAsyncContextFrame): undefined
+    },
+    release: [Function (anonymous)],
+    readyForQuery: true,
+    hasExecuted: true,
+    _poolUseCount: 1,
+    Symbol(shapeMode): false,
+    Symbol(kCapture): false
+  }
+}
+⨯ uncaughtException:  error: terminating connection due to administrator command
+    at ignore-listed frames {
+  length: 116,
+  severity: 'FATAL',
+  code: '57P01',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'postgres.c',
+  line: '3318',
+  routine: 'ProcessInterrupts',
+  client: Client {
+    _events: [Object: null prototype] { error: [Function (anonymous)] },
+    _eventsCount: 1,
+    _maxListeners: undefined,
+    connectionParameters: ConnectionParameters {
+      user: 'yuyuyu',
+      database: 'aiea_review_base',
+      port: 55470,
+      host: '127.0.0.1',
+      binary: false,
+      options: undefined,
+      ssl: false,
+      sslnegotiation: undefined,
+      client_encoding: '',
+      replication: undefined,
+      isDomainSocket: false,
+      application_name: undefined,
+      fallback_application_name: undefined,
+      statement_timeout: false,
+      lock_timeout: false,
+      idle_in_transaction_session_timeout: false,
+      query_timeout: false,
+      connect_timeout: 3
+    },
+    user: 'yuyuyu',
+    database: 'aiea_review_base',
+    port: 55470,
+    host: '127.0.0.1',
+    replication: undefined,
+    _Promise: [Function: Promise],
+    _types: TypeOverrides { _types: [Object], text: {}, binary: {} },
+    _ending: true,
+    _ended: false,
+    _connecting: false,
+    _connected: true,
+    _connectionError: false,
+    _queryable: false,
+    _activeQuery: null,
+    _txStatus: 'I',
+    enableChannelBinding: false,
+    scramMaxIterations: 100000,
+    connection: Connection {
+      _events: [Object: null prototype],
+      _eventsCount: 23,
+      _maxListeners: undefined,
+      stream: [Socket],
+      _keepAlive: false,
+      _keepAliveInitialDelayMillis: 0,
+      parsedStatements: {},
+      submittedNamedStatements: {},
+      ssl: false,
+      sslNegotiation: 'postgres',
+      _ending: false,
+      _emitMessage: false,
+      _connecting: true,
+      Symbol(shapeMode): false,
+      Symbol(kCapture): false
+    },
+    _queryQueue: [],
+    _sentQueryQueue: [],
+    pipeline: false,
+    binary: false,
+    processID: 38257,
+    secretKey: 82757363,
+    ssl: false,
+    sslNegotiation: 'postgres',
+    _connectionTimeoutMillis: 3000,
+    _connectionCallback: null,
+    connectionTimeoutHandle: Timeout {
+      _idleTimeout: -1,
+      _idlePrev: null,
+      _idleNext: null,
+      _idleStart: 608360,
+      _onTimeout: undefined,
+      _timerArgs: undefined,
+      _repeat: null,
+      _destroyed: true,
+      Symbol(refed): false,
+      Symbol(kHasPrimitive): false,
+      Symbol(asyncId): 4547,
+      Symbol(triggerId): 0,
+      Symbol(kAsyncContextFrame): undefined
+    },
+    release: [Function (anonymous)],
+    readyForQuery: true,
+    hasExecuted: true,
+    _poolUseCount: 1,
+    Symbol(shapeMode): false,
+    Symbol(kCapture): false
+  }
+}

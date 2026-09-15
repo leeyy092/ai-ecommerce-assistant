@@ -1,0 +1,34 @@
+PrismaClientKnownRequestError: 
+Invalid `db.organization.create()` invocation in
+/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/review-db.ts:12:32
+
+   9 const au=await db.authUser.create({data:{id:'audit-'+tag,name:'audit',email:tag+'@example.test'}});
+  10 const u=await db.user.create({data:{authUserId:au.id,email:au.email,displayName:'audit'}});
+  11 const a=await db.organization.create({data:{id:randomUUID(),name:'A',ownerUserId:u.id}});
+→ 12 const b=await db.organization.create(
+Unique constraint failed on the constraint: `organization_owner_user_id_key`
+    at vn.handleRequestError (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:238:13)
+    at vn.handleAndLogRequestError (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:184:12)
+    at vn.request (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:153:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async a (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/getPrismaClient.ts:1014:24)
+    at async run (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/review-db.ts:12:10) {
+  code: 'P2002',
+  meta: {
+    driverAdapterError: DriverAdapterError: UniqueConstraintViolation
+        at PrismaPgAdapter.onError (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+adapter-pg@7.10.0/node_modules/@prisma/adapter-pg/dist/index.js:702:11)
+        at PrismaPgAdapter.performIO (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+adapter-pg@7.10.0/node_modules/@prisma/adapter-pg/dist/index.js:697:12)
+        at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+        at async PrismaPgAdapter.queryRaw (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+adapter-pg@7.10.0/node_modules/@prisma/adapter-pg/dist/index.js:631:30)
+        at async <anonymous> (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:200:28)
+        at async e.interpretNode (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:228:41)
+        at async e.interpretNode (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:273:41)
+        at async e.run (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:121:23)
+        at async e.execute (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/core/engines/client/LocalExecutor.ts:81:12)
+        at async yr.request (/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/core/engines/client/ClientEngine.ts:510:22) {
+      cause: [Object]
+    },
+    modelName: 'Organization'
+  },
+  clientVersion: '7.10.0'
+}

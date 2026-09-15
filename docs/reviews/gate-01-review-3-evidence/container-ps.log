@@ -1,0 +1,4 @@
+NAME                               IMAGE                          COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+aiea-r3-codex-9a5798c-postgres-1   postgres:17                    "docker-entrypoint.s…"   postgres   16 seconds ago   Up 15 seconds (healthy)   127.0.0.1:55479->5432/tcp
+aiea-r3-codex-9a5798c-web-1        aiea-r3-review:clean-9a5798c   "docker-entrypoint.s…"   web        16 seconds ago   Up 10 seconds             127.0.0.1:3300->3000/tcp
+aiea-r3-codex-9a5798c-worker-1     aiea-r3-review:clean-9a5798c   "docker-entrypoint.s…"   worker     16 seconds ago   Up 9 seconds (healthy)    3000/tcp

@@ -1,8 +1,13 @@
-# 本地完整栈：PostgreSQL 17 + Web + Worker（TASK-001）
-# 使用：cp .env.example .env（compose 路径可不填 DATABASE_URL，下方已注入）
+# 本地完整栈：PostgreSQL 17 + Web + Worker（TASK-001；Gate-01 H10 修复认证配置）
+# 前置：cp .env.example .env 并填写 BETTER_AUTH_SECRET（随机 64 hex）；
+#       数据库口令由 POSTGRES_PASSWORD 提供（默认值仅限本机回环开发栈）。
 # 启动：docker compose up -d --build
 # 地址：Web http://127.0.0.1:3000 ；健康检查 http://127.0.0.1:3000/api/health
 # 状态：docker compose ps（worker healthcheck 使用 dist/jobs/status.js）
+# 迁移：docker compose exec web pnpm exec prisma migrate deploy
+# M05：PostgreSQL/Web/Worker 统一引用同一 POSTGRES_PASSWORD；Web/Worker 通过
+#       PG* 分量注入连接参数（应用侧组装连接串并对口令做 URL 编码），口令含
+#       URL 保留字符（@ : / # ? % 等）也可用，无需手工转义。
 name: ai-ecommerce-assistant
 
 services:
@@ -10,10 +15,12 @@ services:
     image: postgres:17
     environment:
       POSTGRES_USER: aiea
-      POSTGRES_PASSWORD: aiea_local_dev
+      # M05：本地开发口令可由 .env 覆盖（POSTGRES_PASSWORD）；默认值仅限本机回环开发栈
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aiea_local_dev}
       POSTGRES_DB: aiea_dev
     ports:
-      - "5433:5432"
+      # M05：仅绑定回环，避免开发库暴露到可达网络
+      - "127.0.0.1:5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -24,12 +31,19 @@ services:
 
   web:
     build: .
-    command: pnpm start
-    environment:
-      DATABASE_URL: postgres://aiea:aiea_local_dev@postgres:5432/aiea_dev
+    environment: &db-conn
+      # M05：与 postgres 服务同一口令变量；应用与 prisma CLI 经 src/lib/dbUrl 组装连接串
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: aiea
+      PGPASSWORD: ${POSTGRES_PASSWORD:-aiea_local_dev}
+      PGDATABASE: aiea_dev
+      # TASK-003 起启动必需（instrumentation 校验）；从 .env 注入，缺失即拒绝启动
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required (set it in .env)}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       LOG_LEVEL: info
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,7 +52,12 @@ services:
     build: .
     command: node dist/jobs/worker.js
     environment:
-      DATABASE_URL: postgres://aiea:aiea_local_dev@postgres:5432/aiea_dev
+      # M05：与 web 相同的 PG* 分量（同一口令变量）
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: aiea
+      PGPASSWORD: ${POSTGRES_PASSWORD:-aiea_local_dev}
+      PGDATABASE: aiea_dev
       LOG_LEVEL: info
     depends_on:
       postgres:

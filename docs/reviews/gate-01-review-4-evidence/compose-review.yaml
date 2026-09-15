@@ -1,0 +1,10 @@
+services:
+  postgres:
+    ports: !override
+      - "127.0.0.1:55480:5432"
+  web:
+    image: aiea-r4-review:858c20a
+    ports: !override
+      - "127.0.0.1:3301:3000"
+  worker:
+    image: aiea-r4-review:858c20a

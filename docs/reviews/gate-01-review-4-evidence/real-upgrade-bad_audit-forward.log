@@ -1,0 +1,23 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "aiea_r4_real_upgrade_bad_audit", schema "public" at "127.0.0.1:55470"
+
+8 migrations found in prisma/migrations
+
+Applying migration `20260913120000_p0_nullable_timestamptz`
+Applying migration `20260913120100_p0_audit_tenant_fk_v2`
+Error: P3018
+
+A migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve
+
+Migration name: 20260913120100_p0_audit_tenant_fk_v2
+
+Database error code: P0001
+
+Database error:
+ERROR: audit_log 存在 1 条跨组织店铺引用，拒绝升级；请先人工核对这些历史行
+
+DbError { severity: "ERROR", parsed_severity: Some(Error), code: SqlState(EP0001), message: "audit_log 存在 1 条跨组织店铺引用，拒绝升级；请先人工核对这些历史行", detail: None, hint: None, position: None, where_: Some("PL/pgSQL function inline_code_block line 8 at RAISE"), schema: None, table: None, column: None, datatype: None, constraint: None, file: Some("pl_exec.c"), line: Some(3911), routine: Some("exec_stmt_raise") }
+
+

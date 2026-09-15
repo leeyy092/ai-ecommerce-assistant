@@ -1,0 +1,120 @@
+
+> ai-ecommerce-assistant@0.1.0 start /private/tmp/aiea-gate01-r2-0oo1wpux/snapshot/ai-ecommerce-assistant
+> next start --hostname 127.0.0.1
+
+▲ Next.js 16.3.5
+- Local:         http://127.0.0.1:3000
+- Network:       http://127.0.0.1:3000
+✓ Ready in 432ms
+✓ Running next.config.ts took 37ms
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_member_fail"`
+    at async r (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:10562)
+    at async (.next/server/chunks/ai-ecommerce-assistant_1zdtd3g._.js:1:1645)
+    at async d (.next/server/chunks/ai-ecommerce-assistant_1zdtd3g._.js:1:1247) {
+  code: 'P2039',
+  meta: {
+    modelName: 'AuditLog',
+    driverAdapterError: Error [DriverAdapterError]: new row for relation "audit_log" violates check constraint "review_member_fail"
+        at b.onError (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:11811)
+        at b.performIO (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:11752)
+        at async b.queryRaw (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:8340) {
+      [cause]: [Object]
+    }
+  },
+  clientVersion: '7.10.0'
+}
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_org_fail"`
+    at async r (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:10562)
+    at async (.next/server/chunks/[root-of-the-server]__03gixom._.js:1:2631)
+    at async d (.next/server/chunks/[root-of-the-server]__03gixom._.js:1:2383) {
+  code: 'P2039',
+  meta: {
+    modelName: 'AuditLog',
+    driverAdapterError: Error [DriverAdapterError]: new row for relation "audit_log" violates check constraint "review_org_fail"
+        at b.onError (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:11811)
+        at b.performIO (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:11752)
+        at async b.queryRaw (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:8340) {
+      [cause]: [Object]
+    }
+  },
+  clientVersion: '7.10.0'
+}
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_inv_fail"`
+    at async r (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:10562)
+    at async (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:12032)
+    at async o (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:11869)
+    at async c (.next/server/chunks/ai-ecommerce-assistant_1emkn3h._.js:1:519) {
+  code: 'P2039',
+  meta: {
+    modelName: 'AuditLog',
+    driverAdapterError: Error [DriverAdapterError]: new row for relation "audit_log" violates check constraint "review_inv_fail"
+        at b.onError (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:11811)
+        at b.performIO (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:11752)
+        at async b.queryRaw (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:8340) {
+      [cause]: [Object]
+    }
+  },
+  clientVersion: '7.10.0'
+}
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_inv_fail"`
+    at async r (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:10562)
+    at async (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:16151)
+    at async c (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:14460)
+    at async d (.next/server/chunks/ai-ecommerce-assistant_0-1w3qv._.js:1:554) {
+  code: 'P2039',
+  meta: {
+    modelName: 'AuditLog',
+    driverAdapterError: Error [DriverAdapterError]: new row for relation "audit_log" violates check constraint "review_inv_fail"
+        at b.onError (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:11811)
+        at b.performIO (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:11752)
+        at async b.queryRaw (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:8340) {
+      [cause]: [Object]
+    }
+  },
+  clientVersion: '7.10.0'
+}
+2026-09-13T08:19:45.386Z WARN [Better Auth]: Invalid password
+⨯ TypeError: Cannot read properties of null (reading 'name')
+    at d (.next/server/chunks/[root-of-the-server]__03gixom._.js:1:2115)
+    at async J (.next/server/chunks/[root-of-the-server]__03gixom._.js:1:6029)
+    at async Z (.next/server/chunks/[root-of-the-server]__03gixom._.js:1:7107)
+    at async Module.C [as handler] (.next/server/chunks/[root-of-the-server]__03gixom._.js:1:9164)
+2026-09-13T08:19:45.704Z WARN [Better Auth]: User not found
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_revoke_fail"`
+    at async r (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:10562)
+    at async (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:12990)
+    at async d (.next/server/chunks/[root-of-the-server]__06b8b1b._.js:1:12737)
+    at async c (.next/server/chunks/ai-ecommerce-assistant_0i57npn._.js:1:960) {
+  code: 'P2039',
+  meta: {
+    modelName: 'AuditLog',
+    driverAdapterError: Error [DriverAdapterError]: new row for relation "audit_log" violates check constraint "review_revoke_fail"
+        at b.onError (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:11811)
+        at b.performIO (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:11752)
+        at async b.queryRaw (.next/server/chunks/ai-ecommerce-assistant_0s2-r1p._.js:492:8340) {
+      [cause]: [Object]
+    }
+  },
+  clientVersion: '7.10.0'
+}
+ ELIFECYCLE  Command failed with exit code 143.

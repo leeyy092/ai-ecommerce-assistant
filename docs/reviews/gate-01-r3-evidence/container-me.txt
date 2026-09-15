@@ -1,0 +1,2 @@
+{"data":{"user":{"id":"692c89a2-3b68-49a3-9f64-00d8164b32a9","name":"容器Owner","email":"owner-container@gate01.local"},"memberships":[{"organization_id":"b6c3c521-3a80-4a96-a80f-516dad43cca0","organization_name":"Gate01 容器验证组织","role":"owner"}],"active_org":"b6c3c521-3a80-4a96-a80f-516dad43cca0","role":"owner","allowed_modules":["dashboard","data.metrics","data.reports","products","customer_service","alerts","ai_insights","import","settings"]},"meta":{"request_id":"1460dd1b-a990-42cf-ad8c-05802b821694"}}
+me-http=200

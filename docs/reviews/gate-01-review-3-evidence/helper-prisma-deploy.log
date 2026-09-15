@@ -1,0 +1,10 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "aiea_review_helper", schema "public" at "127.0.0.1:55469"
+
+7 migrations found in prisma/migrations
+
+Error: column "rolled_back_at" does not exist
+
+

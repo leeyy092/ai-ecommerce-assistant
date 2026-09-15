@@ -1,0 +1,11 @@
+{
+  "local_dotenv_exists": true,
+  "keys_only": [
+    "DATABASE_URL",
+    "LOG_LEVEL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL"
+  ],
+  "ignored": true,
+  "values_emitted": false
+}

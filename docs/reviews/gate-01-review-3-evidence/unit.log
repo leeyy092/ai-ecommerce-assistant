@@ -1,0 +1,15 @@
+
+> ai-ecommerce-assistant@0.1.0 test /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant
+> vitest run tests/unit
+
+
+ RUN  v3.2.7 /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant
+
+ ✓ tests/unit/env.test.ts (7 tests) 7ms
+ ✓ tests/unit/permissions.test.ts (7 tests) 2ms
+
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  15:49:07
+   Duration  1.45s (transform 168ms, setup 588ms, collect 21ms, tests 9ms, environment 0ms, prepare 693ms)
+

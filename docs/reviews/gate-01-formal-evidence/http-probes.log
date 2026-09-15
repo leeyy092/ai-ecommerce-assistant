@@ -1,0 +1,117 @@
+{
+  "H01": {
+    "switchStatus": 200,
+    "meB": true,
+    "role": "customer_service",
+    "organizationB": true,
+    "budgetAbsent": true,
+    "patch": 403,
+    "orgAUnchanged": true,
+    "forgedFallsBackA": true
+  },
+  "H05": {
+    "accept": 200,
+    "me": 200,
+    "replay": 409
+  },
+  "H02": {
+    "adminToAdmin": 403,
+    "unchangedRole": "operator",
+    "adminToOwner": 422,
+    "operatorToCS": 200,
+    "csToOperator": 200,
+    "ownerToAdmin": 200
+  },
+  "H07member": {
+    "http": 500,
+    "json": false,
+    "statusUnchanged": true,
+    "versionUnchanged": true,
+    "oldSessionStillWorks": true,
+    "sessionsBefore": 2,
+    "sessionsAfter": 2
+  },
+  "H03_D01": {
+    "disable": 200,
+    "oldCookie": 401,
+    "globalStatus": "active",
+    "otherMembership": "active",
+    "relogin": 200,
+    "me": 200,
+    "activeB": true,
+    "role": "owner"
+  },
+  "H07org": {
+    "http": 500,
+    "nameUnchanged": true,
+    "versionUnchanged": true,
+    "auditCount": 0
+  },
+  "H07_invite_create": {
+    "http": 500,
+    "auditCount": 0,
+    "authRows": 0,
+    "domainRows": 0,
+    "invitationRows": 0
+  },
+  "H07_invite_revoke": {
+    "http": 500,
+    "auditCount": 0,
+    "invitationStatus": "pending",
+    "rowVersion": 1,
+    "authRows": 0,
+    "domainRows": 0
+  },
+  "H07_invite_accept": {
+    "http": 500,
+    "auditCount": 0,
+    "invitationStatus": "pending",
+    "rowVersion": 1,
+    "authRows": 0,
+    "domainRows": 0,
+    "retry": 200
+  },
+  "M01": {
+    "untrustedOriginStatus": 201,
+    "created": true,
+    "manualCookie": true
+  },
+  "M02": {
+    "wrong": 401,
+    "countBefore": 1,
+    "bad": 400,
+    "counterAfter": null
+  },
+  "M03": {
+    "numericNameStatus": 422,
+    "nullBodyStatus": 500,
+    "nullBodyJSON": false,
+    "fractionalVersionStatus": 200,
+    "fractionalVersionJSON": true,
+    "orgNameAfterFraction": "FractionAccepted"
+  },
+  "H04": {
+    "statuses": [
+      403,
+      403
+    ],
+    "json": [
+      true,
+      false
+    ],
+    "authRows": 0
+  },
+  "H06_owner_concurrent": {
+    "firstSucceeded": true,
+    "secondSucceeded": false,
+    "authRows": 0,
+    "domainRows": 1,
+    "domainPointsToExistingAuth": false,
+    "retryAlreadyInitialized": true,
+    "relogin": 401
+  },
+  "signout": {
+    "status": 200,
+    "oldCookie": 401
+  }
+}

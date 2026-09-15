@@ -1,0 +1,231 @@
+(node:55517) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{
+  "raw_database_timezone": "Asia/Shanghai",
+  "invites": [
+    {
+      "scenario": "expired_preview",
+      "api_creation_delta_ms": 0,
+      "orm_db_delta_ms": -0.759033203125,
+      "db_expired": true,
+      "preview": 410,
+      "accept": 409,
+      "cookie_issued": false,
+      "me": null,
+      "auth_users": 0
+    },
+    {
+      "scenario": "expired_direct",
+      "api_creation_delta_ms": 0,
+      "orm_db_delta_ms": -0.06494140625,
+      "db_expired": true,
+      "accept": 410,
+      "cookie_issued": false,
+      "me": null,
+      "auth_users": 0
+    },
+    {
+      "scenario": "at_boundary_direct",
+      "api_creation_delta_ms": 0,
+      "orm_db_delta_ms": -0.294921875,
+      "db_expired": true,
+      "accept": 410,
+      "cookie_issued": false,
+      "me": null,
+      "auth_users": 0
+    },
+    {
+      "scenario": "valid_direct",
+      "api_creation_delta_ms": 0,
+      "orm_db_delta_ms": -0.846923828125,
+      "db_expired": false,
+      "accept": 200,
+      "cookie_issued": true,
+      "me": 200,
+      "auth_users": 1
+    }
+  ],
+  "pools": [
+    {
+      "connection_options": "database-default",
+      "distinct_connections": 6,
+      "rows": [
+        {
+          "pid": 55525,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55526,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55527,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55528,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55529,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55530,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "reuse": {
+        "timezone": "UTC"
+      }
+    },
+    {
+      "connection_options": "?options=-c%20timezone%3DUTC",
+      "distinct_connections": 6,
+      "rows": [
+        {
+          "pid": 55531,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55532,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55533,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55534,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55535,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55536,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "reuse": {
+        "timezone": "UTC"
+      }
+    },
+    {
+      "connection_options": "?options=-c%20timezone%3DAmerica%2FNew_York",
+      "distinct_connections": 6,
+      "rows": [
+        {
+          "pid": 55537,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55538,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55539,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55540,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55541,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "pid": 55542,
+          "timezone": "UTC",
+          "epoch_ms": "1767225600000.000000",
+          "at": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "reuse": {
+        "timezone": "UTC"
+      }
+    }
+  ],
+  "worker_health_raw_pg": {
+    "timezone": "Asia/Shanghai",
+    "epoch_ms": "1767225600000.000000",
+    "at": "2026-01-01T00:00:00.000Z",
+    "date_delta_ms": 0,
+    "purpose": "existing SELECT 1 health path; not Prisma domain writes"
+  },
+  "session_failure": [
+    {
+      "path": "/api/v1/invitations",
+      "method": "POST",
+      "status": 503,
+      "json": true,
+      "request_id": true
+    },
+    {
+      "path": "/api/v1/invitations",
+      "method": "GET",
+      "status": 503,
+      "json": true,
+      "request_id": true
+    },
+    {
+      "path": "/api/v1/invitations/invalid-token/accept",
+      "method": "POST",
+      "status": 503,
+      "json": true,
+      "request_id": true
+    },
+    {
+      "path": "/api/v1/invitations/invalid-id?expected_version=1",
+      "method": "DELETE",
+      "status": 503,
+      "json": true,
+      "request_id": true
+    }
+  ],
+  "session_failure_invitation_count_unchanged": true,
+  "auth_expiry": {
+    "valid_before": 200,
+    "expired_after": 401,
+    "session_count": 5
+  },
+  "upgraded_epoch": {
+    "epoch_ms": "1767225600000.000000"
+  }
+}

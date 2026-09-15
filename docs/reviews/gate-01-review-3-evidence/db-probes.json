@@ -1,0 +1,29 @@
+{
+  "H08_concurrent": {
+    "parent_update_committed": true,
+    "insert_result": "42P08:inconsistent types deduced for parameter $1",
+    "insert_waited": false,
+    "cross_org": false
+  },
+  "H09_types": [
+    {
+      "data_type": "timestamp with time zone",
+      "n": 91
+    }
+  ],
+  "H09_same_instant_delta_ms": 0,
+  "helper_migration_columns": [
+    "id",
+    "checksum",
+    "finished_at",
+    "migration_name",
+    "logs",
+    "applied_steps_count"
+  ],
+  "test_cleanup_scope": {
+    "executed_statement_from": "tests/integration/gate01.db.test.ts",
+    "unrelated_database": "aiea_review_sentinel",
+    "connection_error": "undefined:Connection terminated unexpectedly",
+    "unrelated_uncommitted_row_count": 0
+  }
+}

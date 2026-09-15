@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-09-13T22:32:45+08:00",
+  "report_sections": 15,
+  "valid_local_report_links": 23,
+  "application_changes": [],
+  "tracked_management_changed_this_resumption": [
+    "00_START_HERE.md",
+    "00_START_HERE.html",
+    "CODEX_REVIEW_HANDOFF.md",
+    "docs/ai-ecommerce-assistant/12_PROGRESS.md",
+    "prompts/P08_FIX.md"
+  ],
+  "entire_prior_handoff_preserved": true,
+  "prior_task_execution_history_preserved": true,
+  "task_rows": 30,
+  "later_tasks_todo": 26,
+  "ports_closed": {
+    "3000": true,
+    "3001": true,
+    "55459": true
+  },
+  "md_html_full_prompt_match": true,
+  "project_control_readback": "PASS",
+  "git_diff_check": "PASS"
+}

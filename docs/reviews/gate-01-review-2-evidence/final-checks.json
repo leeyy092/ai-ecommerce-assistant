@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-09-13T16:37:40+08:00",
+  "head": "c87a141648227954725402c715063a900fa72659",
+  "tracked_files_compared": 126,
+  "tracked_application_files_compared": 76,
+  "tracked_application_changes": [],
+  "original_tracked_files_changed_this_turn": [
+    "00_START_HERE.html",
+    "00_START_HERE.md",
+    "CODEX_REVIEW_HANDOFF.md",
+    "docs/DEPLOYMENT_STATUS.md",
+    "docs/ai-ecommerce-assistant/12_PROGRESS.md",
+    "prompts/P08_FIX.md"
+  ],
+  "old_handoff_and_fix_prompt_preserved": true,
+  "old_task_execution_and_closing_history_preserved": true,
+  "task_rows": 30,
+  "TASK_005_030": "26 TODO",
+  "state": "TASK-004 / 待修复 / ZCode / P08_FIX / Checkpoint YES / REVIEW_2 FAIL",
+  "report_local_links_valid": 7,
+  "generated_md_html_and_control_md_html_consistent": true,
+  "review_ports_closed": [
+    3000,
+    3001,
+    55449
+  ],
+  "git_diff_check": "PASS"
+}

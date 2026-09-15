@@ -1,0 +1,92 @@
+
+> ai-ecommerce-assistant@0.1.0 test:e2e /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant
+> playwright test
+
+[WebServer] (node:17292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:17313) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:17342) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/auth.spec.ts:6:5 › 登录页可打开且不暴露内部信息 (388ms)
+  ✓  2 tests/e2e/auth.spec.ts:12:5 › 错误密码显示明确错误且不进入系统 (275ms)
+[WebServer] 2026-09-14T07:49:43.276Z ERROR [Better Auth]: Error Error: aborted
+[WebServer]     at ignore-listed frames {
+[WebServer]   code: 'ECONNRESET'
+[WebServer] }
+[WebServer] # SERVER_ERROR:  Error: aborted
+[WebServer]     at ignore-listed frames {
+[WebServer]   code: 'ECONNRESET'
+[WebServer] }
+[WebServer] 2026-09-14T07:49:43.453Z ERROR [Better Auth]: Invalid origin: http://127.0.0.1:3000
+  ✘  3 tests/e2e/auth.spec.ts:21:5 › 正确密码登录成功并携带会话访问 /api/v1/me (5.4s)
+(node:17353) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 tests/e2e/auth.spec.ts:41:5 › 未登录访问 /api/v1/me 返回 401 (52ms)
+[WebServer] 2026-09-14T07:49:49.288Z ERROR [Better Auth]: Invalid origin: http://127.0.0.1:3000
+  ✘  5 tests/e2e/auth.spec.ts:46:5 › Gate-01 H05｜邀请全流程：Owner 创建 → 新浏览器接受 → 真实会话 (5.3s)
+(node:17373) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  6 tests/e2e/auth.spec.ts:90:5 › Gate-01 H04｜公开注册 URL 在浏览器路径下同样拒绝 (38ms)
+  ✓  7 tests/e2e/smoke.spec.ts:3:5 › GET /api/health 返回 200 且 body 为 {status:'ok'}（数据库在线） (18ms)
+  ✓  8 tests/e2e/smoke.spec.ts:10:5 › 基础页可打开且无业务假数据 (157ms)
+
+
+  1) tests/e2e/auth.spec.ts:21:5 › 正确密码登录成功并携带会话访问 /api/v1/me ──────────────────────────────────────
+
+    Error: expect(page).toHaveURL(expected) failed
+
+    Expected: "http://127.0.0.1:3000/"
+    Received: "http://127.0.0.1:3000/login"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveURL" with timeout 5000ms
+        14 × locator resolved to <html lang="zh-CN" class="h-full antialiased">…</html>
+           - unexpected value "http://127.0.0.1:3000/login"
+
+
+      24 |   await page.getByLabel("密码").fill(PASSWORD);
+      25 |   await page.getByRole("button", { name: "登录" }).click();
+    > 26 |   await expect(page).toHaveURL("/");
+         |                      ^
+      27 |
+      28 |   // 用页面内 fetch 携带浏览器 Cookie（与真实用户行为一致）验证会话
+      29 |   const payload = await page.evaluate(async () => {
+        at /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/tests/e2e/auth.spec.ts:26:22
+
+    Error Context: test-results/auth-正确密码登录成功并携带会话访问-api-v1-me/error-context.md
+
+  2) tests/e2e/auth.spec.ts:46:5 › Gate-01 H05｜邀请全流程：Owner 创建 → 新浏览器接受 → 真实会话 ──────────────────────
+
+    Error: expect(page).toHaveURL(expected) failed
+
+    Expected: "http://127.0.0.1:3000/"
+    Received: "http://127.0.0.1:3000/login"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveURL" with timeout 5000ms
+        14 × locator resolved to <html lang="zh-CN" class="h-full antialiased">…</html>
+           - unexpected value "http://127.0.0.1:3000/login"
+
+
+      55 |   await page.getByLabel("密码").fill(PASSWORD);
+      56 |   await page.getByRole("button", { name: "登录" }).click();
+    > 57 |   await expect(page).toHaveURL("/");
+         |                      ^
+      58 |
+      59 |   const inviteUrl = await page.evaluate(async (email) => {
+      60 |     const response = await fetch("/api/v1/invitations", {
+        at /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant/tests/e2e/auth.spec.ts:57:22
+
+    Error Context: test-results/auth-Gate-01-H05｜邀请全流程：Owner-创建-→-新浏览器接受-→-真实会话/error-context.md
+
+  2 failed
+    tests/e2e/auth.spec.ts:21:5 › 正确密码登录成功并携带会话访问 /api/v1/me ───────────────────────────────────────
+    tests/e2e/auth.spec.ts:46:5 › Gate-01 H05｜邀请全流程：Owner 创建 → 新浏览器接受 → 真实会话 ───────────────────────
+  6 passed (17.2s)
+ ELIFECYCLE  Command failed with exit code 1.

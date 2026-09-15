@@ -1,0 +1,31 @@
+
+> ai-ecommerce-assistant@0.1.0 test:e2e /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r3-review-j0wq0rck/repo/ai-ecommerce-assistant
+> playwright test
+
+[WebServer] (node:17503) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:17528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:17569) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/auth.spec.ts:6:5 › 登录页可打开且不暴露内部信息 (355ms)
+  ✓  2 tests/e2e/auth.spec.ts:12:5 › 错误密码显示明确错误且不进入系统 (300ms)
+[WebServer] 2026-09-14T07:51:01.161Z ERROR [Better Auth]: Error Error: aborted
+[WebServer]     at ignore-listed frames {
+[WebServer]   code: 'ECONNRESET'
+[WebServer] }
+[WebServer] # SERVER_ERROR:  Error: aborted
+[WebServer]     at ignore-listed frames {
+[WebServer]   code: 'ECONNRESET'
+[WebServer] }
+  ✓  3 tests/e2e/auth.spec.ts:21:5 › 正确密码登录成功并携带会话访问 /api/v1/me (747ms)
+  ✓  4 tests/e2e/auth.spec.ts:41:5 › 未登录访问 /api/v1/me 返回 401 (45ms)
+  ✓  5 tests/e2e/auth.spec.ts:46:5 › Gate-01 H05｜邀请全流程：Owner 创建 → 新浏览器接受 → 真实会话 (1.0s)
+  ✓  6 tests/e2e/auth.spec.ts:90:5 › Gate-01 H04｜公开注册 URL 在浏览器路径下同样拒绝 (7ms)
+  ✓  7 tests/e2e/smoke.spec.ts:3:5 › GET /api/health 返回 200 且 body 为 {status:'ok'}（数据库在线） (15ms)
+  ✓  8 tests/e2e/smoke.spec.ts:10:5 › 基础页可打开且无业务假数据 (141ms)
+
+  8 passed (6.6s)

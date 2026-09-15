@@ -1,0 +1,15 @@
+
+> ai-ecommerce-assistant@0.1.0 test /Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant
+> vitest run tests/unit
+
+
+ RUN  v3.2.7 /Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant
+
+ ✓ tests/unit/permissions.test.ts (7 tests) 15ms
+ ✓ tests/unit/env.test.ts (7 tests) 45ms
+
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  01:07:36
+   Duration  2.77s (transform 257ms, setup 0ms, collect 791ms, tests 59ms, environment 1ms, prepare 774ms)
+

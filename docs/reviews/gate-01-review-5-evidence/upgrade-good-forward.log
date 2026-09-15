@@ -1,0 +1,19 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "aiea_r5_upgrade_good", schema "public" at "127.0.0.1:55471"
+
+10 migrations found in prisma/migrations
+
+Applying migration `20260914200000_p0_audit_fk_schema_sync`
+Applying migration `20260914210000_p0_domain_uuid_full_coverage`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260914200000_p0_audit_fk_schema_sync/
+    └─ migration.sql
+  └─ 20260914210000_p0_domain_uuid_full_coverage/
+    └─ migration.sql
+
+All migrations have been successfully applied.

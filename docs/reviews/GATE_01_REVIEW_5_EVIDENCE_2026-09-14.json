@@ -1,0 +1,1013 @@
+{
+  "schema_version": 1,
+  "review": "CODEX_REVIEW_GATE_01_REVIEW_5",
+  "reviewer": "Codex",
+  "date": "2026-09-14",
+  "git": {
+    "branch": "phase/01-foundation",
+    "head": "32fb0d3e8ad19b691cf66006638a418ca949e2a4",
+    "previous": "858c20ab9645b494840b219f0b39b01c39023291",
+    "main": "2a983cc55f136abbb49c5d02b55c1cb82b6547cc",
+    "range": "858c20a..32fb0d3",
+    "functional_changed_files": [
+      "ai-ecommerce-assistant/prisma/migrations/20260914200000_p0_audit_fk_schema_sync/migration.sql",
+      "ai-ecommerce-assistant/prisma/migrations/20260914210000_p0_domain_uuid_full_coverage/migration.sql",
+      "ai-ecommerce-assistant/prisma/schema.prisma",
+      "ai-ecommerce-assistant/src/app/api/v1/invitations/[idOrToken]/accept/route.ts",
+      "ai-ecommerce-assistant/src/app/api/v1/invitations/[idOrToken]/route.ts",
+      "ai-ecommerce-assistant/src/database/prisma.ts",
+      "ai-ecommerce-assistant/tests/helpers/pgMigrate.ts",
+      "ai-ecommerce-assistant/tests/integration/auth.test.ts",
+      "ai-ecommerce-assistant/tests/integration/database.test.ts",
+      "ai-ecommerce-assistant/tests/integration/gate01.access.test.ts",
+      "ai-ecommerce-assistant/tests/integration/gate01.auth.test.ts",
+      "ai-ecommerce-assistant/tests/integration/gate01.db.test.ts",
+      "ai-ecommerce-assistant/tests/integration/permissions.test.ts"
+    ],
+    "zcode_evidence_changed_files": 24,
+    "started_clean": true
+  },
+  "verdict": "PASS",
+  "owner_release": false,
+  "tasks": {
+    "TASK-001": "PASS",
+    "TASK-002": "PASS",
+    "TASK-003": "PASS",
+    "TASK-004": "PASS"
+  },
+  "closed": [
+    "H12",
+    "M03",
+    "M04",
+    "M06",
+    "M07"
+  ],
+  "remaining_critical": [],
+  "remaining_high": [],
+  "remaining_medium": [],
+  "low": [
+    "L01: observed pg query-queue deprecation warning; current pinned driver passes; review before future pg major upgrade"
+  ],
+  "checks": [
+    {
+      "name": "install",
+      "command": "pnpm install --offline --frozen-lockfile",
+      "exit": 0,
+      "seconds": 7.72
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "seconds": 4.47
+    },
+    {
+      "name": "unit",
+      "command": "pnpm test",
+      "exit": 0,
+      "seconds": 3.83
+    },
+    {
+      "name": "migrate",
+      "command": "pnpm exec prisma migrate deploy",
+      "exit": 0,
+      "seconds": 2.17
+    },
+    {
+      "name": "build",
+      "command": "pnpm build",
+      "exit": 0,
+      "seconds": 22.29
+    },
+    {
+      "name": "e2e",
+      "command": "pnpm test:e2e",
+      "exit": 0,
+      "seconds": 9.84
+    }
+  ],
+  "integration": {
+    "integration_exit": 0,
+    "connectionError": null,
+    "same_connection": true,
+    "visibleDuring": 1,
+    "committedRows": 1,
+    "external_DATABASE_URL_wins_over_conflicting_dotenv": true,
+    "remaining_test_databases": []
+  },
+  "integration_count": "65/65",
+  "database": {
+    "H08_A": {
+      "observed_lock_wait": true,
+      "result": {
+        "ok": false,
+        "code": "23503",
+        "constraint": "audit_log_org_id_store_id_fkey"
+      },
+      "cross_org_count": 0
+    },
+    "H08_B": {
+      "observed_lock_wait": true,
+      "result": {
+        "ok": false,
+        "code": "P0001"
+      },
+      "cross_org_count": 0
+    },
+    "H08_delete": {
+      "store_null": true,
+      "org_preserved": true
+    },
+    "M04_coverage": [
+      {
+        "table_name": "action_state",
+        "constrained": true
+      },
+      {
+        "table_name": "ad_metric",
+        "constrained": true
+      },
+      {
+        "table_name": "after_sale_record",
+        "constrained": true
+      },
+      {
+        "table_name": "ai_insight",
+        "constrained": true
+      },
+      {
+        "table_name": "ai_report",
+        "constrained": true
+      },
+      {
+        "table_name": "ai_run",
+        "constrained": true
+      },
+      {
+        "table_name": "alert",
+        "constrained": true
+      },
+      {
+        "table_name": "audit_log",
+        "constrained": true
+      },
+      {
+        "table_name": "auth_rate_limit",
+        "constrained": false
+      },
+      {
+        "table_name": "customer_message",
+        "constrained": true
+      },
+      {
+        "table_name": "daily_metric",
+        "constrained": true
+      },
+      {
+        "table_name": "data_coverage",
+        "constrained": true
+      },
+      {
+        "table_name": "data_source",
+        "constrained": true
+      },
+      {
+        "table_name": "domain_user",
+        "constrained": true
+      },
+      {
+        "table_name": "import_task",
+        "constrained": true
+      },
+      {
+        "table_name": "invitation",
+        "constrained": true
+      },
+      {
+        "table_name": "job_run",
+        "constrained": true
+      },
+      {
+        "table_name": "membership",
+        "constrained": true
+      },
+      {
+        "table_name": "order",
+        "constrained": true
+      },
+      {
+        "table_name": "order_item",
+        "constrained": true
+      },
+      {
+        "table_name": "organization",
+        "constrained": true
+      },
+      {
+        "table_name": "product",
+        "constrained": true
+      },
+      {
+        "table_name": "refund_event",
+        "constrained": true
+      },
+      {
+        "table_name": "rule_config",
+        "constrained": true
+      },
+      {
+        "table_name": "rule_evaluation",
+        "constrained": true
+      },
+      {
+        "table_name": "sku",
+        "constrained": true
+      },
+      {
+        "table_name": "sku_alias",
+        "constrained": true
+      },
+      {
+        "table_name": "store",
+        "constrained": true
+      },
+      {
+        "table_name": "voc_insight",
+        "constrained": true
+      }
+    ],
+    "M04_non_uuid_job": {
+      "inserted": false,
+      "code": "P2039",
+      "message": "\nInvalid `db.jobRun.create()` invocation in\n/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r5-review-ikevfrvp/repo/ai-ecommerce-assistant/review-db.ts:24:52\n\n  21  await c1.end();await c2.end();return {observed_lock_wait,result,cross_org_count:cross};}\n  22 async function run(){await observer.connect();out.H08_A=await race('A');out.H08_B=await race('B');const {a,s}=await fixture();const audit=await db.auditLog.create({data:{orgId:a.id,storeId:s.id,action:'review',entityType:'review',entityId:randomUUID(),requestId:randomUUID()}});await db.store.delete({where:{id:s.id}});const after=await db.auditLog.findUniqueOrThrow({where:{id:audit.id}});out.H08_delete={store_null:after.storeId===null,org_preserved:after.orgId===a.id};\n  23  out.M04_coverage=(await observer.query(`SELECT c.table_name,EXISTS(SELECT 1 FROM pg_constraint k WHERE k.conrelid=(quote_ident(c.table_schema)||'.'||quote_ident(c.table_name))::regclass AND k.conname LIKE 'ck_domain_uuid_%' AND k.convalidated) AS constrained FROM information_schema.columns c WHERE c.table_schema='public' AND c.column_name='id' AND c.table_name NOT IN ('user','session','account','verification','_prisma_migrations') ORDER BY c.table_name`)).rows;\n→ 24  const f=await fixture();const job=await db.jobRun.create(\nDatabase error. Code: `23514`. Message: `new row for relation \"job_run\" violates check constraint \"ck_domain_uuid_job_run\"`"
+    },
+    "H09": [
+      {
+        "data_type": "timestamp with time zone",
+        "n": 91
+      }
+    ],
+    "M06_helper_applied": [
+      "20260912102945_p0_init",
+      "20260912103005_p0_constraints",
+      "20260913043631_p0_domain_timestamptz",
+      "20260913044218_p0_audit_tenant_fk",
+      "20260913120000_p0_nullable_timestamptz",
+      "20260913120100_p0_audit_tenant_fk_v2",
+      "20260913120200_p0_domain_user_auth_fk",
+      "20260914150000_p0_audit_store_composite_fk",
+      "20260914200000_p0_audit_fk_schema_sync",
+      "20260914210000_p0_domain_uuid_full_coverage"
+    ],
+    "M06_upto_first": [
+      "20260912102945_p0_init",
+      "20260912103005_p0_constraints",
+      "20260913043631_p0_domain_timestamptz",
+      "20260913044218_p0_audit_tenant_fk"
+    ],
+    "M06_upto_repeat": [],
+    "M06_missing": {
+      "rejected": true,
+      "message": "applyMigrationsUpTo：目标迁移 20990101_missing 不存在于 prisma/migrations"
+    }
+  },
+  "catalog": {
+    "uuid_checks": [
+      {
+        "relname": "action_state",
+        "conname": "ck_domain_uuid_action_state",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "ad_metric",
+        "conname": "ck_domain_uuid_ad_metric",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "after_sale_record",
+        "conname": "ck_domain_uuid_after_sale_record",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "ai_insight",
+        "conname": "ck_domain_uuid_ai_insight",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "ai_report",
+        "conname": "ck_domain_uuid_ai_report",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "ai_run",
+        "conname": "ck_domain_uuid_ai_run",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "alert",
+        "conname": "ck_domain_uuid_alert",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "audit_log",
+        "conname": "ck_domain_uuid_audit_log",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "auth_rate_limit",
+        "conname": "ck_auth_rate_limit_uuid",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "customer_message",
+        "conname": "ck_domain_uuid_customer_message",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "daily_metric",
+        "conname": "ck_domain_uuid_daily_metric",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "data_coverage",
+        "conname": "ck_domain_uuid_data_coverage",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "data_source",
+        "conname": "ck_domain_uuid_data_source",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "domain_user",
+        "conname": "ck_domain_uuid_domain_user",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "import_task",
+        "conname": "ck_domain_uuid_import_task",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "invitation",
+        "conname": "ck_domain_uuid_invitation",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "job_run",
+        "conname": "ck_domain_uuid_job_run",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "membership",
+        "conname": "ck_domain_uuid_membership",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "order",
+        "conname": "ck_domain_uuid_order",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "order_item",
+        "conname": "ck_domain_uuid_order_item",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "organization",
+        "conname": "ck_domain_uuid_organization",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "product",
+        "conname": "ck_domain_uuid_product",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "refund_event",
+        "conname": "ck_domain_uuid_refund_event",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "rule_config",
+        "conname": "ck_domain_uuid_rule_config",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "rule_evaluation",
+        "conname": "ck_domain_uuid_rule_evaluation",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "sku",
+        "conname": "ck_domain_uuid_sku",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "sku_alias",
+        "conname": "ck_domain_uuid_sku_alias",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "store",
+        "conname": "ck_domain_uuid_store",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      },
+      {
+        "relname": "voc_insight",
+        "conname": "ck_domain_uuid_voc_insight",
+        "convalidated": true,
+        "definition": "CHECK ((id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text))"
+      }
+    ],
+    "audit_foreign_keys": [
+      {
+        "conname": "audit_log_org_id_fkey",
+        "definition": "FOREIGN KEY (org_id) REFERENCES organization(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "confupdtype": "c",
+        "confdeltype": "r",
+        "confdelsetcols": null
+      },
+      {
+        "conname": "audit_log_actor_user_id_fkey",
+        "definition": "FOREIGN KEY (actor_user_id) REFERENCES domain_user(id) ON UPDATE CASCADE ON DELETE SET NULL",
+        "confupdtype": "c",
+        "confdeltype": "n",
+        "confdelsetcols": null
+      },
+      {
+        "conname": "audit_log_org_id_store_id_fkey",
+        "definition": "FOREIGN KEY (org_id, store_id) REFERENCES store(org_id, id) ON DELETE SET NULL (store_id)",
+        "confupdtype": "a",
+        "confdeltype": "n",
+        "confdelsetcols": [
+          3
+        ]
+      }
+    ]
+  },
+  "http": {
+    "H01": {
+      "switchStatus": 200,
+      "meB": true,
+      "role": "customer_service",
+      "organizationB": true,
+      "budgetAbsent": true,
+      "patch": 403,
+      "orgAUnchanged": true,
+      "forgedFallsBackA": true
+    },
+    "H05": {
+      "accept": 200,
+      "me": 200,
+      "replay": 409
+    },
+    "H02": {
+      "adminToAdmin": 403,
+      "unchangedRole": "operator",
+      "adminToOwner": 422,
+      "operatorToCS": 200,
+      "csToOperator": 200,
+      "ownerToAdmin": 200
+    },
+    "H07member": {
+      "http": 503,
+      "json": true,
+      "statusUnchanged": true,
+      "versionUnchanged": true,
+      "oldSessionStillWorks": true,
+      "sessionsBefore": 2,
+      "sessionsAfter": 2
+    },
+    "H03_D01": {
+      "disable": 200,
+      "oldCookie": 401,
+      "globalStatus": "active",
+      "otherMembership": "active",
+      "relogin": 200,
+      "me": 200,
+      "activeB": true,
+      "role": "owner"
+    },
+    "H07org": {
+      "http": 503,
+      "nameUnchanged": true,
+      "versionUnchanged": true,
+      "auditCount": 0
+    },
+    "H07_invite_create": {
+      "http": 503,
+      "auditCount": 0,
+      "authRows": 0,
+      "domainRows": 0,
+      "invitationRows": 0
+    },
+    "H07_invite_revoke": {
+      "http": 503,
+      "auditCount": 0,
+      "invitationStatus": "pending",
+      "rowVersion": 1,
+      "authRows": 0,
+      "domainRows": 0
+    },
+    "H07_invite_accept": {
+      "http": 503,
+      "auditCount": 0,
+      "invitationStatus": "pending",
+      "rowVersion": 1,
+      "authRows": 0,
+      "domainRows": 0,
+      "retry": 200
+    },
+    "M01": {
+      "untrustedOriginStatus": 403,
+      "created": false,
+      "manualCookie": true
+    },
+    "M02": {
+      "wrong": 401,
+      "countBefore": 1,
+      "bad": 400,
+      "counterAfter": {
+        "id": "e391d7f5-6ed5-49a3-9e99-f85cbaece29b",
+        "key": "login-fail:direct",
+        "count": 1,
+        "expiresAt": "2026-09-14T15:09:21.873Z",
+        "updatedAt": "2026-09-14T15:08:21.873Z"
+      }
+    },
+    "M03": {
+      "numericNameStatus": 422,
+      "nullBodyStatus": 422,
+      "nullBodyJSON": true,
+      "fractionalVersionStatus": 422,
+      "fractionalVersionJSON": true,
+      "orgNameAfterFraction": "A"
+    },
+    "H04": {
+      "statuses": [
+        403,
+        403
+      ],
+      "json": [
+        true,
+        true
+      ],
+      "authRows": 0
+    },
+    "H06_owner_concurrent": {
+      "secondWaited": true,
+      "oneOrg": true,
+      "secondIdempotent": true,
+      "authRows": 1,
+      "domainRows": 1,
+      "login": 200
+    },
+    "M01_M03_revoke": {
+      "manualCookie": true,
+      "untrustedOriginFractionalVersion": 403,
+      "rowStatus": "pending"
+    },
+    "M03_invitation": {
+      "nullBody": 422,
+      "numericEmail": 422,
+      "unexpectedField": 422
+    },
+    "M02_invite_proxy": {
+      "trustProxyHeaders": false,
+      "sameIP": 429,
+      "forgedNewIP": 429
+    },
+    "M03_revoke_fraction_trusted": {
+      "status": 422,
+      "stillPending": true
+    },
+    "M01_no_origin_no_body": {
+      "status": 200
+    },
+    "M03_accept_body": {
+      "malformed": 422,
+      "existing_user_empty_body": 200
+    },
+    "M02_accept_proxy": {
+      "forgedNewIP": 429
+    },
+    "M03_rate_db_failure": {
+      "preview": {
+        "status": 503,
+        "json": true
+      },
+      "accept": {
+        "status": 503,
+        "json": true
+      }
+    },
+    "M03_error_request_id": {
+      "present": true,
+      "matchesWebLog": true
+    },
+    "signout": {
+      "status": 200,
+      "oldCookie": 401
+    }
+  },
+  "time": {
+    "raw_database_timezone": "Asia/Shanghai",
+    "invites": [
+      {
+        "scenario": "expired_preview",
+        "api_creation_delta_ms": 0,
+        "orm_db_delta_ms": -0.759033203125,
+        "db_expired": true,
+        "preview": 410,
+        "accept": 409,
+        "cookie_issued": false,
+        "me": null,
+        "auth_users": 0
+      },
+      {
+        "scenario": "expired_direct",
+        "api_creation_delta_ms": 0,
+        "orm_db_delta_ms": -0.06494140625,
+        "db_expired": true,
+        "accept": 410,
+        "cookie_issued": false,
+        "me": null,
+        "auth_users": 0
+      },
+      {
+        "scenario": "at_boundary_direct",
+        "api_creation_delta_ms": 0,
+        "orm_db_delta_ms": -0.294921875,
+        "db_expired": true,
+        "accept": 410,
+        "cookie_issued": false,
+        "me": null,
+        "auth_users": 0
+      },
+      {
+        "scenario": "valid_direct",
+        "api_creation_delta_ms": 0,
+        "orm_db_delta_ms": -0.846923828125,
+        "db_expired": false,
+        "accept": 200,
+        "cookie_issued": true,
+        "me": 200,
+        "auth_users": 1
+      }
+    ],
+    "pools": [
+      {
+        "connection_options": "database-default",
+        "distinct_connections": 6,
+        "rows": [
+          {
+            "pid": 55525,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55526,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55527,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55528,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55529,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55530,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          }
+        ],
+        "reuse": {
+          "timezone": "UTC"
+        }
+      },
+      {
+        "connection_options": "?options=-c%20timezone%3DUTC",
+        "distinct_connections": 6,
+        "rows": [
+          {
+            "pid": 55531,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55532,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55533,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55534,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55535,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55536,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          }
+        ],
+        "reuse": {
+          "timezone": "UTC"
+        }
+      },
+      {
+        "connection_options": "?options=-c%20timezone%3DAmerica%2FNew_York",
+        "distinct_connections": 6,
+        "rows": [
+          {
+            "pid": 55537,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55538,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55539,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55540,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55541,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          },
+          {
+            "pid": 55542,
+            "timezone": "UTC",
+            "epoch_ms": "1767225600000.000000",
+            "at": "2026-01-01T00:00:00.000Z"
+          }
+        ],
+        "reuse": {
+          "timezone": "UTC"
+        }
+      }
+    ],
+    "worker_health_raw_pg": {
+      "timezone": "Asia/Shanghai",
+      "epoch_ms": "1767225600000.000000",
+      "at": "2026-01-01T00:00:00.000Z",
+      "date_delta_ms": 0,
+      "purpose": "existing SELECT 1 health path; not Prisma domain writes"
+    },
+    "session_failure": [
+      {
+        "path": "/api/v1/invitations",
+        "method": "POST",
+        "status": 503,
+        "json": true,
+        "request_id": true
+      },
+      {
+        "path": "/api/v1/invitations",
+        "method": "GET",
+        "status": 503,
+        "json": true,
+        "request_id": true
+      },
+      {
+        "path": "/api/v1/invitations/invalid-token/accept",
+        "method": "POST",
+        "status": 503,
+        "json": true,
+        "request_id": true
+      },
+      {
+        "path": "/api/v1/invitations/invalid-id?expected_version=1",
+        "method": "DELETE",
+        "status": 503,
+        "json": true,
+        "request_id": true
+      }
+    ],
+    "session_failure_invitation_count_unchanged": true,
+    "auth_expiry": {
+      "valid_before": 200,
+      "expired_after": 401,
+      "session_count": 5
+    },
+    "upgraded_epoch": {
+      "epoch_ms": "1767225600000.000000"
+    }
+  },
+  "official_cli": {
+    "migrate-repeat": 0,
+    "helper-deploy": 0,
+    "schema-diff": 0,
+    "upgrade-good-baseline": 0,
+    "upgrade-good-forward": 0,
+    "upgrade-good-repeat": 0,
+    "upgrade-bad_uuid-baseline": 0,
+    "upgrade-bad_uuid-forward": 1
+  },
+  "schema_boundary": {
+    "utc_default_db": {
+      "raw_timezone": "UTC",
+      "orm_db_delta_ms": 0
+    },
+    "current_migration_delete": {
+      "store_null": true,
+      "org_preserved": true
+    },
+    "generated_sql_simulation": {
+      "isolated_disposable_db_only": true,
+      "sql": "-- DropForeignKey\nALTER TABLE \"audit_log\" DROP CONSTRAINT \"audit_log_org_id_store_id_fkey\";\n\n-- AddForeignKey\nALTER TABLE \"audit_log\" ADD CONSTRAINT \"audit_log_org_id_store_id_fkey\" FOREIGN KEY (\"org_id\", \"store_id\") REFERENCES \"store\"(\"org_id\", \"id\") ON DELETE SET NULL ON UPDATE CASCADE;\n\n",
+      "delete_result": {
+        "deleted": false,
+        "code": "23502",
+        "column": "org_id"
+      },
+      "original_review_db_unchanged": true
+    }
+  },
+  "docker_build": {
+    "exit": 0,
+    "seconds": 386.28,
+    "context": "pure git archive 32fb0d3; no host dependencies/generated client; standard cache allowed"
+  },
+  "containers": {
+    "default": {
+      "up_exit": 0,
+      "health": 200,
+      "migrate_exit": 0,
+      "init_exit": 0,
+      "login": {
+        "status": 200,
+        "cookie_issued": true
+      },
+      "me": {
+        "status": 200,
+        "role": "owner"
+      },
+      "db-timezone_exit": 0,
+      "epoch_exit": 0,
+      "H12_create_epoch_delta_ms": 0.0,
+      "age-invite_exit": 0,
+      "H12_expired_direct": {
+        "status": 410,
+        "cookie_issued": false
+      },
+      "public_signup": [
+        403,
+        403
+      ],
+      "worker_exit": 0,
+      "ps_exit": 0,
+      "down_exit": 0
+    },
+    "special": {
+      "up_exit": 0,
+      "health": 200,
+      "migrate_exit": 0,
+      "init_exit": 0,
+      "login": {
+        "status": 200,
+        "cookie_issued": true
+      },
+      "me": {
+        "status": 200,
+        "role": "owner"
+      },
+      "db-timezone_exit": 0,
+      "epoch_exit": 0,
+      "H12_create_epoch_delta_ms": 0.0,
+      "age-invite_exit": 0,
+      "H12_expired_direct": {
+        "status": 410,
+        "cookie_issued": false
+      },
+      "public_signup": [
+        403,
+        403
+      ],
+      "worker_exit": 0,
+      "ps_exit": 0,
+      "down_exit": 0
+    }
+  },
+  "health": {
+    "before_pg_stop": 200,
+    "pg_stop_exit": 0,
+    "after_pg_stop": 503
+  },
+  "secrets_source": {
+    "new_commits": 3,
+    "reachable_unique_blobs_scanned": 420,
+    "strong_secret_pattern_candidate_blobs": [],
+    "tracked_real_env_files": [],
+    "tracked_files": 440,
+    "source_changes_during_review": [],
+    "scope_note": "synthetic fixtures and temporary development credentials are not production secrets; no claim of exhaustive semantic secret detection"
+  },
+  "limitations": [
+    "Review scoped to Phase1 only; no production data/load/online deployment/customer trial",
+    "M07 generated DROP+ADD is not semantically equivalent; isolated disposable simulation shows org_id 23502 on delete; committed migration is correct and behavior regression catches it",
+    "Worker raw pg health-only pool retains database timezone; raw Date epoch correct; current domain/auth Prisma consumers fixed UTC; schema generation config is not runtime auth",
+    "Initial reviewer HTTP wrapper lacked REVIEW_WEB_LOG; archived failure and reran identical probes with required environment, exit0",
+    "Earlier unchanged historical migration/process-exit evidence reused; current 858c20a 8-to-10 upgrade independently run",
+    "Standard Docker cache allowed; pure Git archive context; default and random special-character password tested with non-UTC database"
+  ],
+  "closeout": {
+    "status": "complete",
+    "management_writeback": true,
+    "verification": "gate-01-review-5-evidence/final-verification.json",
+    "source_files_unchanged": 109,
+    "history_preserved": true,
+    "sync": {
+      "registered": 1,
+      "updated": 1,
+      "errors": [],
+      "generated_at": "2026-09-14T23:33:51+08:00"
+    },
+    "readback": {
+      "project_markdown": true,
+      "project_html": true,
+      "control_markdown": true,
+      "control_html": true,
+      "exact_next_prompt": true
+    },
+    "temporary_environment_removed": true,
+    "business_code_modified": false,
+    "committed_pushed_merged_or_deployed": false,
+    "owner_release": false,
+    "verified_at": "2026-09-14T23:33:52+08:00"
+  }
+}

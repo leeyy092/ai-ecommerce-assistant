@@ -1,0 +1,32 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "aiea_r3_real_upgrade_good", schema "public" at "127.0.0.1:55469"
+
+7 migrations found in prisma/migrations
+
+Applying migration `20260913120000_p0_nullable_timestamptz`
+Applying migration `20260913120100_p0_audit_tenant_fk_v2`
+Applying migration `20260913120200_p0_domain_user_auth_fk`
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.10.0 -> 8.0.0-rc.15                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260913120000_p0_nullable_timestamptz/
+    └─ migration.sql
+  └─ 20260913120100_p0_audit_tenant_fk_v2/
+    └─ migration.sql
+  └─ 20260913120200_p0_domain_user_auth_fk/
+    └─ migration.sql
+
+All migrations have been successfully applied.

@@ -1,0 +1,44 @@
+{
+  "default": {
+    "up_exit": 0,
+    "health": 200,
+    "migrate_exit": 0,
+    "init_exit": 0,
+    "login": {
+      "status": 200,
+      "cookie_issued": true
+    },
+    "me": {
+      "status": 200,
+      "role": "owner"
+    },
+    "public_signup": [
+      403,
+      403
+    ],
+    "worker_exit": 0,
+    "ps_exit": 0,
+    "down_exit": 0
+  },
+  "special": {
+    "up_exit": 0,
+    "health": 200,
+    "migrate_exit": 0,
+    "init_exit": 0,
+    "login": {
+      "status": 200,
+      "cookie_issued": true
+    },
+    "me": {
+      "status": 200,
+      "role": "owner"
+    },
+    "public_signup": [
+      403,
+      403
+    ],
+    "worker_exit": 0,
+    "ps_exit": 0,
+    "down_exit": 0
+  }
+}

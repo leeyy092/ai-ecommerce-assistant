@@ -1,0 +1,15 @@
+datasource db {
+  provider = "postgresql"
+}
+model Store {
+  id String @id
+  orgId String
+  audits Audit[]
+  @@unique([orgId, id])
+}
+model Audit {
+  id String @id
+  orgId String
+  storeId String?
+  store Store? @relation(fields: [orgId, storeId], references: [orgId, id], onDelete: Restrict)
+}

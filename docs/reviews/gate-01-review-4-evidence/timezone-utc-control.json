@@ -1,0 +1,17 @@
+{
+  "postgres_timezone": "UTC",
+  "original_created_http_expires": "2026-09-16T11:08:26.374Z",
+  "original_db_epoch_ms": 1789556906374,
+  "original_http_epoch_ms": 1789556906374,
+  "expired_db_timestamp": "2026-09-14T10:08:26.381Z",
+  "expired_db_epoch_ms": 1789380506381.572,
+  "db_says_expired": true,
+  "orm_expires_at": "2026-09-14T10:08:26.381Z",
+  "orm_vs_db_delta_ms": -0.572021484375,
+  "preview_status": 410,
+  "accept_status": 409,
+  "fixture_age_hours": 49,
+  "fixture_ttl_hours": 48,
+  "accepted_cookie_issued": false,
+  "accepted_session_me_status": null
+}

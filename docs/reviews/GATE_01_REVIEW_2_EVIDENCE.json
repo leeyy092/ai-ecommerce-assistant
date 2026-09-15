@@ -1,0 +1,366 @@
+{
+  "review": "CODEX_REVIEW_GATE_01_REVIEW_2",
+  "reviewed_at": "2026-09-13T16:24:53+08:00",
+  "result": "FAIL",
+  "base_commit": "c263610541f8c8f7b41fd38c185f5feac94e8ee2",
+  "review_commit": "c87a141648227954725402c715063a900fa72659",
+  "main": "2a983cc55f136abbb49c5d02b55c1cb82b6547cc",
+  "branch": "phase/01-foundation",
+  "scope": "TASK-001–004; c263610..c87a141 and current full application snapshot",
+  "environment": {
+    "node": "24.21.0",
+    "pnpm": "10.34.5",
+    "postgresql": "17.11",
+    "isolated_pg_port": 55449,
+    "development_pg_5433_used": false,
+    "source": "git archive exact c87a141, offline frozen-lockfile install in temporary directory",
+    "docker": false,
+    "podman": false,
+    "colima": false,
+    "Docker.app": false
+  },
+  "checks": {
+    "install": "PASS offline frozen lockfile; postinstall generate executed",
+    "typecheck": "PASS",
+    "unit": "14/14 PASS",
+    "integration": "46/46 PASS",
+    "build": "PASS web+worker with complete review environment",
+    "e2e": "8/8 PASS; ECONNRESET warning retained",
+    "empty_migration": "4 applied PASS",
+    "upgrade": "2 original migrations to 4 PASS; synthetic old rows; UTC wallclock conversion verified",
+    "repeat_migrate": "PASS no pending migrations",
+    "docker_deps_layout": "PASS install+generate",
+    "docker_build_layout": "FAIL missing generated client",
+    "docker_build_with_client_supplied": "FAIL missing build-time BETTER_AUTH_SECRET/BETTER_AUTH_URL",
+    "real_docker_build_start_login": "NOT RUN; no runtime; required before H10 can close",
+    "nullable_composite_prisma_validate": "PASS 7.10.0; only validates nullable multi-field relation support, not a production migration"
+  },
+  "high_findings": {
+    "H01": "PASS",
+    "H02": "PASS",
+    "H03": "PASS",
+    "H04": "PASS signup closed; repeated response envelope issue retained as M03",
+    "H05": "PASS",
+    "H06": "FAIL concurrent initOwner orphan cleanup corrupts identity; other tested invite recovery paths PASS",
+    "H07": "PASS transactional rollback incl session revocation, create/revoke/accept and org PATCH",
+    "H08": "FAIL store parent update and preexisting mismatched audit rows evade trigger",
+    "H09": "FAIL 14 nullable domain timestamps omitted; 77 fixed columns PASS sampled",
+    "H10": "FAIL two build stage defects; actual Docker additionally BLOCKED"
+  },
+  "D01": "PASS solution A independently verified; no new product decision required",
+  "medium_dispositions": {
+    "M01": "ACCEPT fix current v1 write Origin/Content-Type/CSRF boundary within TASK-003/004 before Gate01 PASS; deployment-origin verification stays TASK-029",
+    "M02": "ACCEPT success-only reset + explicit proxy trust boundary within TASK-003 before Gate01 PASS; real proxy verification TASK-029",
+    "M03": "MODIFY current Phase1 endpoints strict object/type/length/integer version + stable error envelope + fresh signup rejection Response before Gate01 PASS; future endpoints validated in their own tasks",
+    "M04": "MODIFY authUserId foreign key and deletion/recovery semantics within TASK-002/003 before Gate01 PASS; domain UUID DB validation DEFER until first subsequent schema change or before TASK-028, whichever earlier; remains TASK-002 debt; no auth framework id migration"
+  },
+  "http_probes": {
+    "H01": {
+      "switchStatus": 200,
+      "meB": true,
+      "role": "customer_service",
+      "organizationB": true,
+      "budgetAbsent": true,
+      "patch": 403,
+      "orgAUnchanged": true,
+      "forgedFallsBackA": true
+    },
+    "H05": {
+      "accept": 200,
+      "me": 200,
+      "replay": 409
+    },
+    "H02": {
+      "adminToAdmin": 403,
+      "unchangedRole": "operator",
+      "adminToOwner": 422,
+      "operatorToCS": 200,
+      "csToOperator": 200,
+      "ownerToAdmin": 200
+    },
+    "H07member": {
+      "http": 500,
+      "json": false,
+      "statusUnchanged": true,
+      "versionUnchanged": true,
+      "oldSessionStillWorks": true,
+      "sessionsBefore": 2,
+      "sessionsAfter": 2
+    },
+    "H03_D01": {
+      "disable": 200,
+      "oldCookie": 401,
+      "globalStatus": "active",
+      "otherMembership": "active",
+      "relogin": 200,
+      "me": 200,
+      "activeB": true,
+      "role": "owner"
+    },
+    "H07org": {
+      "http": 500,
+      "nameUnchanged": true,
+      "versionUnchanged": true,
+      "auditCount": 0
+    },
+    "H07_invite_create": {
+      "http": 500,
+      "auditCount": 0,
+      "authRows": 0,
+      "domainRows": 0,
+      "invitationRows": 0
+    },
+    "H07_invite_revoke": {
+      "http": 422,
+      "auditCount": 0,
+      "invitationStatus": "pending",
+      "rowVersion": 1,
+      "authRows": 0,
+      "domainRows": 0
+    },
+    "H07_invite_accept": {
+      "http": 500,
+      "auditCount": 0,
+      "invitationStatus": "pending",
+      "rowVersion": 1,
+      "authRows": 0,
+      "domainRows": 0,
+      "retry": 200
+    },
+    "M01": {
+      "untrustedOriginStatus": 201,
+      "created": true,
+      "manualCookie": true
+    },
+    "M02": {
+      "wrong": 401,
+      "countBefore": 1,
+      "bad": 400,
+      "counterAfter": null
+    },
+    "M03": {
+      "numericNameStatus": 422,
+      "nullBodyStatus": 500,
+      "nullBodyJSON": false,
+      "fractionalVersionStatus": 200,
+      "fractionalVersionJSON": true,
+      "orgNameAfterFraction": "FractionAccepted"
+    },
+    "H04": {
+      "statuses": [
+        403,
+        403
+      ],
+      "json": [
+        true,
+        false
+      ],
+      "authRows": 0
+    },
+    "H06_owner_concurrent": {
+      "firstSucceeded": true,
+      "secondSucceeded": false,
+      "authRows": 0,
+      "domainRows": 1,
+      "domainPointsToExistingAuth": false,
+      "retryAlreadyInitialized": true,
+      "relogin": 401
+    },
+    "signout": {
+      "status": 200,
+      "oldCookie": 401
+    }
+  },
+  "supplement": {
+    "H07revoke": {
+      "http": 500,
+      "status": "pending",
+      "rowVersion": 1,
+      "auditCount": 0
+    },
+    "H06processExit": {
+      "exit": 55,
+      "authBeforeRetry": 1,
+      "domainBeforeRetry": 0,
+      "invitationBeforeRetry": "pending",
+      "authAfterRetry": 1,
+      "domainAfterRetry": 1,
+      "invitationAfterRetry": "accepted"
+    },
+    "H06existingConcurrency": {
+      "results": [
+        200,
+        409
+      ],
+      "memberships": 1
+    },
+    "H09ormTimestamp": {
+      "actual": "2026-01-01T12:00:00.000Z",
+      "expected": "2026-01-01T12:00:00.000Z",
+      "equal": true
+    }
+  },
+  "database_probes": {
+    "remaining_domain_timestamp_without_timezone": [
+      {
+        "table_name": "ai_insight",
+        "column_name": "generated_at"
+      },
+      {
+        "table_name": "ai_report",
+        "column_name": "generated_at"
+      },
+      {
+        "table_name": "ai_run",
+        "column_name": "finished_at"
+      },
+      {
+        "table_name": "ai_run",
+        "column_name": "started_at"
+      },
+      {
+        "table_name": "import_task",
+        "column_name": "committed_at"
+      },
+      {
+        "table_name": "import_task",
+        "column_name": "committed_evaluation_at"
+      },
+      {
+        "table_name": "import_task",
+        "column_name": "confirmed_at"
+      },
+      {
+        "table_name": "job_run",
+        "column_name": "finished_at"
+      },
+      {
+        "table_name": "job_run",
+        "column_name": "started_at"
+      },
+      {
+        "table_name": "order",
+        "column_name": "paid_at"
+      },
+      {
+        "table_name": "refund_event",
+        "column_name": "completed_at"
+      },
+      {
+        "table_name": "store",
+        "column_name": "current_snapshot_evaluation_at"
+      },
+      {
+        "table_name": "store",
+        "column_name": "input_evaluation_at"
+      },
+      {
+        "table_name": "store",
+        "column_name": "previous_snapshot_evaluation_at"
+      }
+    ],
+    "domain_timezone_types": [
+      {
+        "data_type": "timestamp with time zone",
+        "count": 77
+      },
+      {
+        "data_type": "timestamp without time zone",
+        "count": 14
+      }
+    ],
+    "audit_parent_change_leaves_cross_org": true,
+    "audit_store_delete_preserves_org_and_nulls_store": true,
+    "fixed_created_at_default_equal": true,
+    "unfixed_input_evaluation_same_instant_delta_hours": "8.0000000000000000",
+    "nonuuid_and_missing_auth_accepted": true
+  },
+  "upgrade_probes": {
+    "forward_deploy_exit": 0,
+    "repeat_deploy_exit": 0,
+    "migration_count": "4",
+    "utc_wallclock_preserved": true,
+    "existing_cross_org_audit_survives_upgrade": true
+  },
+  "runtime_probes": {
+    "workerRunningExit": 0,
+    "workerStoppedExit": 1,
+    "workerMissingDbExit": 1,
+    "workerMissingDbNamed": true,
+    "webMissingAuthExit": 1,
+    "webMissingAuthNamed": true,
+    "health": {
+      "status": 200,
+      "body": {
+        "status": "ok"
+      }
+    }
+  },
+  "health_pg_stopped": {
+    "status": 503,
+    "body": {
+      "status": "degraded"
+    }
+  },
+  "limits": [
+    "HTTP Origin negative probe supplied Cookie manually; not a browser exploit claim",
+    "Owner concurrency used shipped testHookAfterAuth to control interleaving; real Better Auth + PostgreSQL, no mocked identity writes",
+    "H07 revoke initial body version request returned 422 before fault; corrected query-version probe is authoritative in supplement.json",
+    "No real Docker engine, Linux image build, deployment, customer data or model calls",
+    "Temporary dependency preparation attempts hit incomplete module/command availability; excluded as environment failures; after independent offline install full integration/build rerun passed",
+    "No source edits in original application; all review harness code in temporary snapshot and evidence only"
+  ],
+  "owner_release": "NOT GIVEN; review FAIL",
+  "github": {
+    "checked_at": "2026-09-13T16:24:53+08:00",
+    "remote_phase": "c87a141648227954725402c715063a900fa72659",
+    "remote_main": "2a983cc55f136abbb49c5d02b55c1cb82b6547cc",
+    "new_review_documents_pushed": false,
+    "visibility": "unknown"
+  },
+  "deployment": "unknown; no deployment performed",
+  "cleanup": {
+    "review_web_stopped": true,
+    "review_worker_stopped": true,
+    "review_pg_stopped": true,
+    "fault_constraints_remaining": 0,
+    "temporary_directory_removed": true,
+    "temporary_credentials_removed": true
+  },
+  "evidence_directory": "gate-01-review-2-evidence",
+  "final_source_audit": {
+    "checked_at": "2026-09-13T16:37:40+08:00",
+    "head": "c87a141648227954725402c715063a900fa72659",
+    "tracked_files_compared": 126,
+    "tracked_application_files_compared": 76,
+    "tracked_application_changes": [],
+    "original_tracked_files_changed_this_turn": [
+      "00_START_HERE.html",
+      "00_START_HERE.md",
+      "CODEX_REVIEW_HANDOFF.md",
+      "docs/DEPLOYMENT_STATUS.md",
+      "docs/ai-ecommerce-assistant/12_PROGRESS.md",
+      "prompts/P08_FIX.md"
+    ],
+    "old_handoff_and_fix_prompt_preserved": true,
+    "old_task_execution_and_closing_history_preserved": true,
+    "task_rows": 30,
+    "TASK_005_030": "26 TODO",
+    "state": "TASK-004 / 待修复 / ZCode / P08_FIX / Checkpoint YES / REVIEW_2 FAIL",
+    "report_local_links_valid": 7,
+    "generated_md_html_and_control_md_html_consistent": true,
+    "review_ports_closed": [
+      3000,
+      3001,
+      55449
+    ],
+    "git_diff_check": "PASS"
+  },
+  "product_os_final_sync": {
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-13T16:38:50+08:00",
+    "readback": "PASS project MD/HTML, control MD/HTML, full prompt and state consistent"
+  }
+}

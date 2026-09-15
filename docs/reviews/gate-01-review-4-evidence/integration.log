@@ -1,0 +1,45 @@
+
+> ai-ecommerce-assistant@0.1.0 test:integration /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r4-review-w_8wd2xf/repo/ai-ecommerce-assistant
+> env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1
+
+
+ RUN  v3.2.7 /private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r4-review-w_8wd2xf/repo/ai-ecommerce-assistant
+
+ ✓ tests/integration/gate01.auth.test.ts (15 tests) 3403ms
+ ✓ tests/integration/gate01.db.test.ts (10 tests) 1842ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 A——父行改归属未提交时插入旧组织审计引用，后者必须失败  341ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 B——审计引用未提交时改父行归属，后者必须失败且引用方正常提交  328ms
+   ✓ Gate-01 正式复核 H08/H09/M04 增补 > H08：升级守卫——存量跨域引用使 v2 迁移失败（拒绝静默通过）  635ms
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 成员 PATCH：审计故障 → 角色与版本零提交
+[internal] request_id=78d72434-5575-4e47-9295-9ae3038277f5 
+Invalid `db.auditLog.create()` invocation in
+/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r4-review-w_8wd2xf/repo/ai-ecommerce-assistant/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_member_audit"`
+
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 组织 PATCH：审计故障 → 名称与版本零提交
+[internal] request_id=0ac24c2b-c59d-457c-950d-2c63ef7f0f18 
+Invalid `db.auditLog.create()` invocation in
+/private/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-r4-review-w_8wd2xf/repo/ai-ecommerce-assistant/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_org_audit"`
+
+ ✓ tests/integration/gate01.access.test.ts (7 tests) 1530ms
+ ✓ tests/integration/auth.test.ts (8 tests) 1547ms
+ ✓ tests/integration/permissions.test.ts (7 tests) 1506ms
+ ✓ tests/integration/database.test.ts (9 tests) 635ms
+ ✓ tests/integration/db.test.ts (4 tests) 11ms
+
+ Test Files  7 passed (7)
+      Tests  60 passed (60)
+   Start at  18:57:56
+   Duration  11.93s (transform 290ms, setup 592ms, collect 611ms, tests 10.47s, environment 0ms, prepare 67ms)
+

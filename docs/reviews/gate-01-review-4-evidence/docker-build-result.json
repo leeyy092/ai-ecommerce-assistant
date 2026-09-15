@@ -1,0 +1,8 @@
+{
+  "exit": 0,
+  "source": "git archive 858c20a ai-ecommerce-assistant",
+  "node_modules_in_context": false,
+  "generated_client_in_context": false,
+  "cache": "standard Docker layer cache allowed",
+  "image": "aiea-r4-review:858c20a"
+}

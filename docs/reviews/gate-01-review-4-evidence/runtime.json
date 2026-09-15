@@ -1,0 +1,13 @@
+{
+  "worker_running_status": 0,
+  "worker_exit": 0,
+  "worker_stopped_status": 1,
+  "missing-auth": {
+    "exit": 1,
+    "missing_variable_names_only_in_error": true
+  },
+  "missing-db": {
+    "exit": 1,
+    "missing_variable_names_only_in_error": true
+  }
+}

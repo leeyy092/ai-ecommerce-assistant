@@ -1,0 +1,6 @@
+{
+  "docker_context": "default",
+  "colima": "time=\"2026-09-14T18:56:12+08:00\" level=fatal msg=\"colima is not running\"",
+  "tracked_files": 328,
+  "application_files": 83
+}
