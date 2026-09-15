@@ -1,3 +1,70 @@
+# CODEX_REVIEW_HANDOFF｜CODEX_REVIEW_GATE_02（Phase 2 待复审交接）
+
+日期：2026-09-15T13:20:00+08:00；执行者：ZCode。**Phase 2 / TASK-005–007 完成 / GATE_02 待复审 / Checkpoint=YES / 下一工具 Codex（prompts/P07_CODE_REVIEW.md）。**
+
+## 复审定位信息
+
+| 项 | 值 |
+|---|---|
+| Current Branch | `phase/02-data-ingestion` |
+| Base Branch | `main`（Phase 1 合并结果 `4c7e95b`，Owner 放行 Phase 1 后未再变动） |
+| 复审范围 | **`4c7e95b..6d1928c`**（f51ed41 TASK-005 → 7583ed7 TASK-006 → 6d1928c TASK-007 + 交接提交） |
+| Phase 1 基线 | 32fb0d3（REVIEW_5 PASS，Owner 已放行；H01–H12/M01–M06 关闭，不重开） |
+| Working Tree | handoff 提交后 clean；接手先核对 HEAD 与未提交差异 |
+| Checkpoint | YES；不合并 main、不部署、不开始 TASK-008；PASS 后等 Owner 阶段放行 |
+
+## TASK-005 店铺与数据源配置（f51ed41）
+
+- `POST/GET /api/v1/stores`、`PATCH /api/v1/stores/{id}`、`POST/GET /api/v1/data-sources`（合同：09_TASKS TASK-005；契约：08_API_SPEC 31–35 行）。
+- 验收要点：**事实锁**（order/product/customer_message/ad_metric/after_sale/refund 任一行存在 → currency/timezone PATCH 409 STORE_CONFIG_LOCKED，改名/归档不受限）；demo_mode 继承组织；409 同名/同外部标识；**platform 仅标签**（响应无 connected/provider 字段）；归档店拒绝数据源（409 STORE_ARCHIVED）；mock 源仅演示店（409 MOCK_SOURCE_DEMO_ONLY）；namespace 唯一；GET data-sources 按角色裁剪（C 仅 customer_messages）+ mapping_version=mapping-v1 + coverage 按日摘要 + last_import_at；store_create/store_update/data_source_create 同事务审计。
+
+## TASK-006 统一 Adapter 与最小黄金样本（7583ed7）
+
+- `src/adapters/contracts.ts`：六类标准记录 + DataAdapter 契约 + 纯解析校验（external id 字符串保留前导零、numeric(20,6) 字符串精度、RFC4180 CSV：BOM/CRLF/quoted 逗号换行/双引号转义/空值→null）；csv 与 mock 走**同一解析路径**（mock 对象行按同表头序列化后解析）——一致性由构造保证。
+- 黄金样本：`tests/fixtures/golden/store-a|b` 六类 CSV（04_DATA_MODEL §12.8：A/XM-DEMO-A、B/XM-DEMO-B，CNY、Asia/Shanghai、namespace=mock_demo、source_updated_at 统一）+ `mock-golden.ts` + `templates/` 六类表头模板。
+- 业务语义校验：paid_at≥ordered_at、非 paid 无 paid_at、case 行禁退款字段、succeeded 退款必填 completed_at/金额/累计件数、STORE_MISMATCH 整文件拒绝、unsupported 类型/缺列/空文件明确报错。
+- 验收：Mock 不直接写页面（纯函数无 DB/HTTP）；同一逻辑数据 CSV/Mock 标准记录一致（11 组逐字段断言）；ID 前导零保留。禁止项遵守：无 Excel 解析器、无直连业务库。
+
+## TASK-007 文件上传、私有存储与 ImportTask（6d1928c）
+
+- 私有存储 `src/storage`：私有根 `.data/private`（客户消息不进 public）；路径遍历防护；HMAC 签名下载（键+过期，恒时比较）；STORAGE_DRIVER=oss 显式拒绝。
+- `POST /api/v1/imports`（multipart）：角色文件类型限制（canImport：C 仅 customer_messages，订单 403 FILE_KIND_FORBIDDEN）；有界缓冲+流式 SHA256/行数统计，**超 20MB/10 万行立即中止**（422）；**幂等**（同 store+源+类型+内容哈希复用任务）；mock 源拒上传；归档店拒绝；任务+审计同事务。
+- `GET /api/v1/imports/{id}` 查询；`GET /api/v1/imports/{id}/file` 签名下载（未签名/过期 403）。
+- pg-boss 12 最小持久队列：import-validate（真实 handler：Adapter 解析 → valid/error 计数 → 错误明细写私有 errors 对象 → 状态 preview_ready/failed）；import-commit（显式拒绝边界——TASK-008 实现前不冒充已提交）；worker.ts 注册（批处理数组语义）。
+- guardWrite：multipart/form-data 为合法上传形态放行（Origin 同源检查不变）。
+
+## ZCode 记录的 Tests（最终候选，独立非 UTC 集群 + /tmp 工作副本）
+
+| 套件 | 结果 |
+|---|---|
+| typecheck | ✅ 0 错误 |
+| unit | ✅ 49/49（+31 Adapter 契约） |
+| integration | ✅ **82/82**（9 文件；+8 stores、+9 imports） |
+| web/worker build | ✅ exit 0（imports 三路由入产物；esbuild import.meta.url shim 固化于 build:worker） |
+| worker 冒烟 | ✅ 队列就绪（import-validate/import-commit） |
+| e2e | ✅ 8/8 |
+| 官方迁移 | 无新增迁移（Phase 2 无 Schema 变更；10 迁移链与守卫引用 Gate 01 收敛已冻结证据） |
+
+执行偏差如实记录：pg-boss 12 work handler 为批处理数组语义（初版单 Job 编译失败已改）；esbuild cjs bundle 与 Prisma 生成客户端 import.meta.url 冲突以 banner+define shim 修复并冒烟验证；guardWrite 为上传放行 multipart（差异说明如上）。
+
+## 建议 Codex 优先阅读
+
+| 顺序 | 文件（相对 ai-ecommerce-assistant/） |
+|---|---|
+| 1 | `git log 4c7e95b..6d1928c --oneline`；`src/services/stores.ts`、`src/services/dataSources.ts`（事实锁/裁剪/审计） |
+| 2 | `src/app/api/v1/stores/**`、`src/app/api/v1/data-sources/route.ts`（guardWrite+requirePermission+Zod 信封一致性） |
+| 3 | `src/adapters/contracts.ts` + `tests/fixtures/golden/**` + `tests/unit/adapters.test.ts`（黄金样本一致性/边界） |
+| 4 | `src/storage/index.ts`、`src/services/imports.ts`、`src/app/api/v1/imports/**`（超限/幂等/签名下载/私有根） |
+| 5 | `src/jobs/queue.ts`、`src/jobs/handlers/imports.ts`、`src/jobs/worker.ts`、`package.json build:worker`（pg-boss 边界与 esbuild shim） |
+| 6 | `tests/integration/stores.test.ts`、`tests/integration/imports.test.ts`（23 例新回归） |
+| 7 | `docs/ai-ecommerce-assistant/12_PROGRESS.md`（TASK-005/006/007 执行记录） |
+
+## 复审结论回填约定
+
+独立复审按项目协议记录 PASS/FAIL/BLOCKED + 精确版本 + 实际测试 + 未运行项。FAIL 交 ZCode 修复；缺证据写明补证；PASS 后仍等 Owner 阶段放行。不合并 main、不部署、不开始 TASK-008/Phase 3。
+
+---
+
 # Owner 阶段放行记录｜Gate 01 PASS · Phase 1 收官（2026-09-14）
 
 **Owner 于 2026-09-14 正式放行 Phase 1。** 通过版本 32fb0d3e8ad19b691cf66006638a418ca949e2a4（与 REVIEW_5 冻结一致）；TASK-001–004 全部通过；H12/M03/M04/M06/M07 已关闭不对同一版本重复返修；M07 自定义外键维护约定保留（相关迁移人工核对并过 H08 回归）；L01 留待未来 pg 主版本升级前；D01 方案 A 不变。授权动作：本记录与 Codex R5 报告/证据提交推送 → phase/01-foundation 合并 main（保留 merge commit，不 force push）→ 自 main 创建 phase/02-data-ingestion → 开始 Phase 2（TASK-005→007，一次一个 TASK），TASK-007 完成后停在 CODEX_REVIEW_GATE_02。本次不授权部署。

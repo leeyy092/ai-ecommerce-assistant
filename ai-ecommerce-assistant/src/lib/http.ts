@@ -86,7 +86,10 @@ export function guardWrite(request: Request): NextResponse | null {
   const contentType = request.headers.get("content-type");
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
   if (hasBody && contentType && !contentType.toLowerCase().includes("application/json")) {
-    return fail(415, "Content-Type 必须为 application/json", { code: "UNSUPPORTED_MEDIA_TYPE" });
+    // 文件上传入口（multipart/form-data）为合法业务形态；Origin 同源检查已在上文覆盖
+    if (!contentType.toLowerCase().includes("multipart/form-data")) {
+      return fail(415, "Content-Type 必须为 application/json", { code: "UNSUPPORTED_MEDIA_TYPE" });
+    }
   }
   return null;
 }
