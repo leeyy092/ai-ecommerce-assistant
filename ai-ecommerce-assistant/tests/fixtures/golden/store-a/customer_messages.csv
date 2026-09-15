@@ -1,4 +1,4 @@
 store_external_id,source_updated_at,external_message_id,external_conversation_id,message_at,external_sku_id,message_text,is_complaint,channel,language
 XM-DEMO-A,2026-09-11T09:00:00+08:00,M1,C1,2026-09-01T11:00:00+08:00,S1,杯盖漏水，想申请退款,true,platform_chat,zh-CN
 XM-DEMO-A,2026-09-11T09:00:00+08:00,M2,C1,2026-09-01T11:05:00+08:00,S1,退款什么时候到账,false,platform_chat,zh-CN
-XM-DEMO-A,2026-09-11T09:00:00+08:00,M3,C2,2026-09-01T12:00:00+08:00,S2,可以装热水吗,,platform_chat,zh-CN
+XM-DEMO-A,2026-09-11T09:00:00+08:00,M3,C2,2026-09-01T12:00:00+08:00,S2,可以装热水吗,false,platform_chat,zh-CN

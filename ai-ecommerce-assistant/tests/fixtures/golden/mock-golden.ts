@@ -43,7 +43,7 @@ export const mockGoldenA: MockDataset = {
   customer_messages: [
     { store_external_id: GOLDEN_STORE_A_EXTERNAL_ID, source_updated_at: TS, external_message_id: "M1", external_conversation_id: "C1", message_at: "2026-09-01T11:00:00+08:00", external_sku_id: "S1", message_text: "杯盖漏水，想申请退款", is_complaint: "true", channel: "platform_chat", language: "zh-CN" },
     { store_external_id: GOLDEN_STORE_A_EXTERNAL_ID, source_updated_at: TS, external_message_id: "M2", external_conversation_id: "C1", message_at: "2026-09-01T11:05:00+08:00", external_sku_id: "S1", message_text: "退款什么时候到账", is_complaint: "false", channel: "platform_chat", language: "zh-CN" },
-    { store_external_id: GOLDEN_STORE_A_EXTERNAL_ID, source_updated_at: TS, external_message_id: "M3", external_conversation_id: "C2", message_at: "2026-09-01T12:00:00+08:00", external_sku_id: "S2", message_text: "可以装热水吗", is_complaint: null, channel: "platform_chat", language: "zh-CN" },
+    { store_external_id: GOLDEN_STORE_A_EXTERNAL_ID, source_updated_at: TS, external_message_id: "M3", external_conversation_id: "C2", message_at: "2026-09-01T12:00:00+08:00", external_sku_id: "S2", message_text: "可以装热水吗", is_complaint: "false", channel: "platform_chat", language: "zh-CN" },
   ],
   after_sales: [
     { store_external_id: GOLDEN_STORE_A_EXTERNAL_ID, source_updated_at: TS, record_type: "case", external_record_id: "AS1", external_order_id: "O1", external_order_item_id: "L1", related_case_id: null, occurred_at: "2026-09-02T09:00:00+08:00", status: "closed", completed_at: null, refund_amount: null, refunded_quantity_cumulative: null, currency: null, reason_code: "quality", reason_text: null },

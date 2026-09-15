@@ -31,7 +31,8 @@ export async function handleValidateTask(data: ValidateJobData): Promise<{ statu
   await db.importTask.update({ where: { id: task.id }, data: { status: "validating" } });
 
   const text = await getObjectText(task.rawObjectKey);
-  const result = getAdapter("csv").parse(task.sourceKind, { storeExternalId: store.externalStoreId, sourceUpdatedAt: task.createdAt }, text);
+  // G2-H03：来源更新时间必须来自文件本身；缺失即行级错误，服务端不补造默认时间
+  const result = getAdapter("csv").parse(task.sourceKind, { storeExternalId: store.externalStoreId }, text);
 
   const valid = result.records.length;
   const errors = result.errors.length;
