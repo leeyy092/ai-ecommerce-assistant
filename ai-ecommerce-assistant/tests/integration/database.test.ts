@@ -108,7 +108,7 @@ describe("TASK-002｜P0 数据库与约束迁移（真实 PostgreSQL）", () => 
   resetDbSingletons(); // 幂等重放：无待应用项
     return expect(
       prisma.$queryRawUnsafe(`SELECT count(*)::int AS n FROM "_prisma_migrations"`),
-    ).resolves.toEqual([{ n: 10 }]); // REVIEW_4/5：+复合FK、UUID 全量、FK Schema 同步
+    ).resolves.toEqual([{ n: 12 }]); // REVIEW_4/5：+复合FK、UUID 全量、FK Schema 同步；GATE_02：+店铺同名唯一、导入认领/HTTP幂等
   });
 
   it("正常记录链可写入（B 组默认值与复合外键生效）", async () => {

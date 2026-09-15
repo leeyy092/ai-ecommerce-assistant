@@ -90,7 +90,8 @@ describe("Gate-01 H08｜AuditLog 店铺同域强制（数据库级）", () => {
       });
       const org = await prisma.organization.create({ data: { id: randomUUID(), name: `R组织${tag}`, ownerUserId: user.id } });
       const store = await prisma.store.create({
-        data: { id: randomUUID(), orgId: org.id, name: "RS", externalStoreId: `REXT-${tag}`, platform: "manual", currency: "CNY", timezone: "Asia/Shanghai" },
+        // 名称按 tag 区分：G2-M02 起 (org_id, name) 唯一，跨组织迁移夹具不能同名
+        data: { id: randomUUID(), orgId: org.id, name: `RS-${tag}`, externalStoreId: `REXT-${tag}`, platform: "manual", currency: "CNY", timezone: "Asia/Shanghai" },
       });
       return { org, store };
     };
