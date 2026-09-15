@@ -14,7 +14,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "next build && pnpm build:worker",
+    "build": "next build && pnpm build:worker && pnpm build:scripts",
     "start": "next start",
     "build:worker": "esbuild src/jobs/worker.ts src/jobs/status.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/jobs --external:ali-oss --external:proxy-agent --banner:js=\"var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;\" --define:import.meta.url=__aieaImportMetaUrl",
     "worker:dev": "tsx src/jobs/worker.ts",
@@ -23,7 +23,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run tests/unit",
     "test:integration": "env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "build:scripts": "esbuild scripts/init-owner.ts scripts/reset-owner-password.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/scripts --external:ali-oss --external:proxy-agent --banner:js=\"var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;\" --define:import.meta.url=__aieaImportMetaUrl"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.0",

@@ -4,7 +4,11 @@
 # 启动：docker compose up -d --build
 # 地址：Web http://127.0.0.1:3000 ；健康检查 http://127.0.0.1:3000/api/health
 # 状态：docker compose ps（worker healthcheck 使用 dist/jobs/status.js）
-# 迁移：docker compose exec web pnpm exec prisma migrate deploy
+# 迁移：容器内无 pnpm（corepack 需联网），在宿主对暴露的 PG 端口执行：
+#   DATABASE_URL=postgresql://aiea:<POSTGRES_PASSWORD>@127.0.0.1:5433/aiea_dev \
+#     pnpm exec prisma migrate deploy
+# 初始化 Owner（镜像内含 dist/scripts bundle，无 pnpm 依赖）：
+#   docker compose exec -T web sh -c "printf '%s' '<密码>' | node dist/scripts/init-owner.js --org 组织 --email a@b.c --name 显示名"
 # M05：PostgreSQL/Web/Worker 统一引用同一 POSTGRES_PASSWORD；Web/Worker 通过
 #       PG* 分量注入连接参数（应用侧组装连接串并对口令做 URL 编码），口令含
 #       URL 保留字符（@ : / # ? % 等）也可用，无需手工转义。
