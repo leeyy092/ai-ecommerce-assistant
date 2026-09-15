@@ -1,3 +1,47 @@
+# Gate 02 独立复审 FAIL · Phase 2 修复 · ZCode 当前接手提示词
+
+2026-09-15：Codex 已独立复审 ce5f286，结论 **FAIL**（9 HIGH / 4 MEDIUM / 2 LOW）。下一步为修复，不是阶段放行；当前 Phase 2 / TASK-007 / 待修复 / Checkpoint=YES。首个 text 代码块为当前完整提示词，下方历史内容不代表当前状态。
+
+```text
+请接手 AI 电商运营助手 CODEX_REVIEW_GATE_02 独立复审后的 Phase 2 修复，只处理 TASK-005–007。本次不授权 TASK-008、不合并 main、不部署、不扩大 P0、不更换技术栈、不重构无关模块。
+
+项目根目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发
+应用目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant
+总控目录：/Users/yuyuyu/Documents/AI-Workspace
+
+先显式读取 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、唯一进度 docs/ai-ecommerce-assistant/12_PROGRESS.md、CODEX_REVIEW_HANDOFF.md、09_TASKS.md TASK-005–007、08_API_SPEC、04_DATA_MODEL 第11/12部分、02_USER_ROLES、11_DEVELOPMENT_RULES、DEVELOPMENT_HANDOFF、PHASE_PLAN、FINAL_DECISIONS。
+完整读取本轮正式报告 docs/reviews/CODEX_REVIEW_GATE_02_2026-09-15.md、机器索引 docs/reviews/GATE_02_EVIDENCE_2026-09-15.json、gate-02-evidence/README.md 及各项 probes/scripts；不要仅按本提示词摘要修复。
+
+实际审查冻结：phase/02-data-ingestion = ce5f28699910e19310b790d31a6e8871a78b5e58；main = 4c7e95b925c2b04aa2c1116979678cac7af091f2。先重查 HEAD、分支、未提交内容与是否另有执行者。保留 Codex 本轮报告/证据、原未提交管理说明、进度/交接/提示词及生成视图；不 reset/clean、不覆盖历史。修复后复审范围为 ce5f286..新冻结提交，不能继续用 4e44270 当最新冻结。Git 提交/推送沿用项目已有授权，仅纳入当前相关文件，敏感检查后记录真实本地/远端状态；不把管理同步当作推送。
+
+先逐项记录 ACCEPT / DISCUSS / REJECT 与合同依据和对应 TASK；可在原合同内自主修复，不增加等待 Owner 批准技术盘点的节点。不要每改一个函数就交回。按 TASK-005 → TASK-006 → TASK-007 一次一个 TASK：先在隔离副本复现失败，再对同一消费者的成功、拒绝、并发和恢复边界一起检查；修复后保留有意义的断言。
+
+必须修复的 HIGH（完整位置、样本、证据与关闭标准见正式报告第4/13节）：
+G2-H01（005）：data-sources coverage/last_import_at 真正按角色类型裁剪；多版本取有效行再汇总；from/to 右开和合法日期/90天边界。反例为 C 与 Owner 都得到订单+消息历史累计 227；当前有效 Owner 应124、C应4。
+G2-H02（005）：expected_version 原子 CAS/锁。真实行锁并发同版本现在两次200，应恰好一次成功一次409；审计/事实锁同事务不回退。
+G2-H03（006）：纯解析按六类合同处理金额/整数上界、严格时间/日历、必填/可选列、合法CSV。不得用任务创建时间补造 source_updated_at；防止9007199254740993变成9007199254740992；采用既定 csv-parse，不添加Excel解析器。TASK-008跨行/外键全量校验留原任务。
+G2-H04（006）：落实 typed CanonicalBatch 的服务端store/namespace/adapter版本/checksum/coverage元数据；独立展开两店规范覆盖声明；黄金 A M3=false，B 缺失保持null；同时验证规范oracle与CSV/Mock一致性。不得把两个入口共享同一错误期望当正确。
+G2-H05（007）：上传/查询/下载/Worker 统一按当前组织、店铺、来源、有效身份与类型权限；P合法类型及C消息可查询下载，C订单仍禁止；禁用/降权后旧任务和链接拒绝。不要简单删除鉴权。
+G2-H06（007）：真实 HTTP 请求流在20MB/10万CSV逻辑记录超限时立即取消，不等待multipart结束；增量hash/计数并清理失败文件；quoted换行不误算多行。保留真实分块HTTP反例。
+G2-H07（007）：并发同内容返回同任务；读取真正的HTTP Idempotency-Key，按org/user/endpoint和request hash处理，同key异body409；请求幂等与最终mapping/adapter/coverage业务幂等分开。
+G2-H08（007）：修复文件写入、队列投递和Worker重试三个失败窗口；不得复用空rawObjectKey任务；投递失败可补偿；重试不能把validating直接当completed；进程中断后可恢复或有明确失败终态。只做007最小可靠队列，不提前做013聚合发布。
+G2-H09（007）：Web/Worker共享持久私有存储，运行变量明确；.data/private不进入Git与镜像上下文；真实隔离Compose跑上传→Worker解析→查询下载→重启读回，用合成canary证明镜像无私有内容；不部署。
+
+MEDIUM/LOW逐项处理并记录，不整体升级HIGH也不自行隐藏延期：M01按既定entity_type输入映射和响应字段修正（本轮上传201/超限422已被接受，不强改旧表状态码）；M02同名创建并发/改名保护；M03 CSV格式/严格UTF-8和F10上传限流，不捏造“11次”为规格阈值；M04 OSS仍未实现，延期未批准，按原合同补齐或提交明确Owner延期选择。L01清理两份未使用“ 2.ts”副本，L02默认下载有效期与5分钟约定对齐。详细核定以报告第5/6节为准。
+
+Phase 1 已由 Owner 放行，不重开 H01–H12/M01–M06/D01 等已关闭项；D01只禁当前Membership、不改全局User.status不重问。M07自定义audit_log复合外键维护约定持续有效；新修复若需迁移，只新增迁移、人工核对生成差异并跑相关H08回归，不重写历史。Phase 1历史L01 pg升级前提醒与本轮G2-L01是不同编号。
+接受已有pg-boss批数组handler、esbuild import.meta.url shim与guardWrite同源multipart兼容；不为执行偏差重新换框架。当前built Worker正常解析/错误对象/commit拒绝已独立通过，保持回归。
+
+验证只用新建/tmp Git归档副本、独立可丢弃PG17集群与本次文件/随机测试凭据，避免iCloud主副本node_modules驱逐挂死。证据scripts是探针收集器，exit0不等于产品PASS；将反例做成有明确期望的现有测试。每项记录“合同→覆盖对象→修复前失败→修复提交→修复后通过→残余范围”。阶段末候选跑typecheck、unit、integration、web/worker build、e2e及本轮新增边界/容器验证，不在同一未变化版本无意义重复全套。真实OSS账号联调缺资源如实记录，不伪造。
+
+完成后重读最新唯一进度，更新TASK表、当前摘要、唯一状态块与CODEX_REVIEW_HANDOFF，保留全部历史；逐项列本轮ID的修复和证据，明确新冻结提交及ce5f286..新提交差异。更新P07首个text块为新冻结的完整复审提示词。维持Phase2/TASK-007/待审查/CODEX_REVIEW_REQUIRED/GATE_02/Checkpoint=YES，下一工具Codex；未完成不得写DONE/PASS。
+按协议运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync，读回项目00_START_HERE.md/.html与总控00_CONTROL_CENTER/PROJECTS.md，核对任务、工具、提示词与状态一致。Codex独立PASS后仍须Owner明确说“放行 Phase 2”，才有资格按新授权合并/创建下一分支；本提示词不授权这些操作。
+```
+
+---
+
+## 历史：此前 P08 全文（已过期，仅供追溯）
+
 > 2026-09-14最新状态：Gate01 REVIEW_5已对32fb0d3独立PASS；当前等待Owner阶段放行，使用[P09_PHASE_RELEASE.md](P09_PHASE_RELEASE.md)。以下提示词保留为历史；没有新修复范围或新候选时，不对已关闭问题重复修复/复审。
 
 # Gate 01 REVIEW_4 剩余问题修复 · ZCode

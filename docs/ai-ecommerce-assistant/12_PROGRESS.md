@@ -4,11 +4,11 @@
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase 2 / TASK-005–007 全部完成 / CODEX_REVIEW_GATE_02 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
+**Phase 2 / TASK-007 / CODEX_REVIEW_GATE_02 复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
 
-2026-09-15：Phase 2（数据接入基础）三个 TASK 按合同完成——TASK-005 店铺与数据源配置（f51ed41）、TASK-006 统一 Adapter 与最小黄金样本（7583ed7）、TASK-007 文件上传/私有存储/ImportTask/pg-boss 队列（6d1928c）。handoff 冻结 4e44270。最终候选验证：typecheck 0 错、unit 49/49、integration **82/82**（+23 新回归）、web/worker build exit 0、worker 队列就绪冒烟、e2e 8/8（独立非 UTC 集群）。修复自测通过不代表 Gate 通过；Codex GATE_02 PASS 后仍须 Owner 阶段放行。
+2026-09-16：ZCode 按 P08 完成本轮全部修复，新冻结 **b2fa10f**（phase/02-data-ingestion 本地/远端一致），复审范围 **ce5f286..b2fa10f**。G2-H01–H09 全部关闭，M01/M02/M03/M04/L01/L02 逐项处理（M04 补齐可测试 OSS 适配，真实云端联调缺资源如实记录，未自行宣布延期获批）。最终候选独立验证：typecheck 0 错、unit 67/67、integration 97/97（9 文件）、web/worker/scripts build exit 0、e2e 8/8、官方空库 12 迁移、migrate diff 仅剩 M07 已知差异；H09 真实隔离 Compose 文件链路（canary 不进镜像→上传→Worker 校验→签名下载→重启读回）通过。测试自测通过不等于 Gate 通过；Codex 独立 PASS 后仍等 Owner 明确"放行 Phase 2"。
 
-**2026-09-14 Owner 正式放行 Phase 1**：通过版本 32fb0d3e8ad19b691cf66006638a418ca949e2a4（与 REVIEW_5 PASS 冻结一致；TASK-001–004 全部通过，H12/M03/M04/M06/M07 关闭）。授权并已执行：放行记录与 R5 报告/证据入库推送；phase/01-foundation 合并 main（保留 merge commit，不 force push）；自稳定 main 创建 phase/02-data-ingestion；开始 Phase 2（TASK-005→007，一次一个 TASK）。约束：不在 main 开发；M07 自定义外键维护约定保留（相关迁移人工核对并过 H08 回归）；L01 留待未来 pg 主版本升级前；D01 方案 A 不变；不扩大 P0、不换技术栈、不做无关重构；TASK-007 完成后停在 GATE_02；本次不授权部署。
+**Phase 1 已由 Owner 放行并合并 main（32fb0d3），不重开**。D01 方案 A、M07 自定义外键维护约定持续有效。本轮不合并 main、不部署、不开始 TASK-008。
 
 <!-- PRODUCT_OS_STATE_BEGIN -->
 ```json
@@ -16,48 +16,49 @@
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动",
-  "stage": "07 阶段审查 · Phase 2 数据接入基础 · GATE_02 待复审",
+  "stage": "07 阶段审查 · Phase 2 数据接入基础 · GATE_02 复修完成待复审",
   "current_task": "TASK-007",
   "status": "待审查",
-  "last_completed": "Phase 2 完成（TASK-005 f51ed41 / TASK-006 7583ed7 / TASK-007 6d1928c）；冻结 4e44270 待 GATE_02 复审；Phase 1 已 Owner 放行并合并 main",
-  "next_action": "Codex GATE_02 独立复审（TASK-005–007：店铺/数据源配置、统一 Adapter 黄金样本、上传/私有存储/ImportTask/pg-boss 边界）；PASS 后仍等 Owner 阶段放行",
+  "last_completed": "ZCode 完成 GATE_02 全部修复：G2-H01–H09 关闭，M01–M04/L01–L02 逐项处理；新冻结 b2fa10f 已推送",
+  "next_action": "Codex 对 ce5f286..b2fa10f 独立复审（prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2",
   "next_owner": "Codex",
   "next_prompt": "prompts/P07_CODE_REVIEW.md",
-  "acceptance": "三 TASK 合同验收达成：事实锁/归档拒绝/角色裁剪；CSV与Mock标准记录一致/前导零；超限停止/C 不传订单/重复同任务/私有存储+签名下载/pg-boss 边界；82/82+49/49+build+e2e 8/8；复审 PASS 后等 Owner",
-  "blockers": "待 Codex GATE_02 复审；无 Owner 放行；不合并 main、不部署、不开始 TASK-008",
+  "acceptance": "正式报告第13节九项HIGH关闭标准逐项复核：客服投影/原子CAS/解析边界/CanonicalBatch与覆盖声明/权限链/真流式限额/幂等/失败恢复/私有容器链；M/L逐项核定；独立PASS后Owner另行放行",
+  "blockers": "无技术阻塞；等待Codex独立复审；未合并main、未部署、未开始TASK-008；OSS真实云端联调缺云资源如实记录（非获批延期）",
   "checkpoint": "YES",
-  "review": "Gate 01 五轮全链路收官：首轮BLOCKED(10H)→R2 FAIL(4H)→R3 BLOCKED→R4 BLOCKED→R5 PASS；Owner 已放行 32fb0d3",
-  "updated_at": "2026-09-15T13:20:00+08:00",
-  "updated_by": "ZCode · Phase 2 完成冻结（GATE_02 待审）",
+  "review": "GATE_02 首轮 FAIL（ce5f286，9H/4M/2L）已按 P08 修复；新冻结 b2fa10f，范围 ce5f286..b2fa10f；待独立复审",
+  "updated_at": "2026-09-16T02:30:00+08:00",
+  "updated_by": "ZCode · GATE_02 修复轮收尾",
   "evidence": [
-    "Phase 2 提交：f51ed41(005)/7583ed7(006)/6d1928c(007)；冻结 4e44270（含交接），复审范围 4c7e95b..4e44270",
-    "docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_5_2026-09-14.md（Phase 1 PASS 报告，历史）",
-    "CODEX_REVIEW_HANDOFF.md 顶部 Owner 放行记录（32fb0d3；约束与授权范围原文）",
-    "Git：phase/01-foundation → main（--no-ff 保留 merge commit）；phase/02-data-ingestion 自 main 创建",
-    "M07 自定义 FK 维护约定与 H08 并发/删除回归在后续涉及迁移时执行；L01 留待 pg 主版本升级前"
+    "docs/reviews/CODEX_REVIEW_GATE_02_2026-09-15.md（原FAIL报告）与本轮修复提交链 5690395..b2fa10f",
+    "最终候选验证：typecheck 0错、unit 67/67、integration 97/97、build(web/worker/scripts) 0、e2e 8/8、官方空库12迁移",
+    "migrate diff 仅剩 M07 已知 audit_log 复合外键重建差异；H08 套件随 integration 全套通过",
+    "H09 真实隔离 Compose（colima 全新构建）：canary 不进镜像、上传→Worker preview_ready→签名下载 200 内容一致→重启 web/worker 后再次下载一致",
+    "2026-09-16 凌晨宿主磁盘满触发 iCloud .git 数据文件驱逐，brctl download 物化恢复，全部提交完整并已推送（事件见执行记录）"
   ],
   "github": {
-    "status": "phase/02-data-ingestion 本地=4e44270（已推送，以 origin 为准）；main=Phase 1 合并 4c7e95b 未再合并",
+    "status": "phase/02-data-ingestion 本地/远端=b2fa10f（已推送）；main=4c7e95b 未合并；管理文档本轮变更待 Codex 接手核对",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
-    "verified_at": "2026-09-14T23:45:00+08:00",
-    "evidence": "git push 后 ls-remote 核验三分支"
+    "verified_at": "2026-09-16T02:30:00+08:00",
+    "evidence": "git push 输出 7616c4c..b2fa10f；实际推送记录见执行记录"
   },
   "deployment": {
-    "status": "未部署（本次 Owner 指令明确不授权部署）",
+    "status": "未部署（本轮授权不含部署）",
     "url": "",
-    "verified_at": "2026-09-14T23:45:00+08:00",
-    "evidence": "P0 后续 TASK-029 试点运行与运维要求另计"
+    "verified_at": "",
+    "evidence": "TASK-029 试点运行与运维要求另计"
   }
 }
 ```
 <!-- PRODUCT_OS_STATE_END -->
 
-## 当前 Git 与交接状态（2026-09-14T23:45:00+08:00）
+## 当前 Git 与交接状态（2026-09-16T02:30:00+08:00）
 
-- **Owner 放行记录**：Phase 1 通过版本 32fb0d3e8ad19b691cf66006638a418ca949e2a4（REVIEW_5 PASS）；放行原文与授权范围见 CODEX_REVIEW_HANDOFF.md 顶部。
-- main ← phase/01-foundation（32fb0d3，--no-ff 保留 merge commit，已推送）；**phase/02-data-ingestion 自合并后 main 创建并推送**；phase/01-foundation 按约定保留。
-- Phase 2 范围：TASK-005 店铺与数据源配置 → TASK-006 统一 Adapter 与最小黄金样本 → TASK-007 文件上传、私有存储与 ImportTask；一次一个 TASK，007 完成后停在 CODEX_REVIEW_GATE_02。
-- 当前 TASK：TASK-005 IN_PROGRESS；Checkpoint=NO（Phase 内连续执行）；本次不授权部署。
+- 分支 phase/02-data-ingestion；本地/远端 = **b2fa10f**（已推送，push 记录 7616c4c..b2fa10f）；main = 4c7e95b 未合并。
+- 本轮修复提交链（ce5f286..b2fa10f）：5690395 TASK-005（H01/H02/M02）→ 286527d 依赖 → 1c8909c TASK-006（H03/H04）→ 13c95e4 L01 → 36e7764 TASK-007（H05–H09/M01/M03/M04/L02）→ da6de14 测试适配 → 9263890 ali-oss 构建外置 → 7616c4c build:scripts → b2fa10f 索引名对齐。
+- 新增迁移 2 个（共 12）：20260915110000 store(org_id,name) 唯一；20260915120000 import_task 部分唯一认领索引 + http_idempotency 表（部分索引/UUID CHECK 为自定义 SQL，沿 M07 式维护约定：migrate diff 的 DROP 建议不得直接应用）。未触碰 audit_log 外键，无需 H08 行为回归重跑；H08 套件已随 integration 全套通过。
+- Schema 新约束触发 Phase 1 两处测试适配（报告 §14 约定）：gate01.db H08 夹具店铺按 tag 改名（避开新唯一索引，断言不变）；database.test 迁移计数 10→12。
+- 当前 TASK-007 / 待审查 / Codex / P07 / Checkpoint=YES；TASK-005–007 因待独立复审保持 BLOCKED，不预写 DONE。
 
 ## 历史结论（2026-09-12 恢复时，当前以状态块与任务表为准）
 
@@ -87,12 +88,10 @@
 | TASK-001 | 可启动的应用与验证环境 | DONE | 无前置开发任务 | REVIEW_5 PASS：锁定安装/构建与真实容器双口令非UTC完整链路、Worker/健康降级通过 |
 | TASK-002 | P0数据库与约束迁移 | DONE | TASK-001 | REVIEW_5 PASS：H12绝对时刻/M04领域28表/M06目标边界/M07维护约定通过；10迁移/8→10/坏行与H08并发删除通过 |
 | TASK-003 | 登录、初始Owner与受控邀请 | DONE | TASK-002 | REVIEW_5 PASS：过期邀请拒绝无会话、有效接受可用；M03限流/会话故障信封及身份/回滚通过 |
-| TASK-004 | 组织隔离与固定权限服务 | DONE | TASK-003 | REVIEW_5 PASS：四角色/组织隔离/D01与依赖验收通过；等待Owner阶段放行，不进入005 |
-| TASK-005 | 店铺与数据源配置 | DONE | TASK-004 | 2026-09-14：stores/dataSources 服务+三路由+8 例集成回归；事实锁 409/mock 演示限制/归档拒绝/角色裁剪；integration 73/73、unit 18/18、build 通过（提交 f51ed41） |
-| TASK-006 | 统一Adapter与最小黄金样本 | DONE | TASK-005 | 2026-09-14：adapters 契约+csv/mock 同一标准记录流+黄金 fixtures+31 例契约测试；unit 49/49、integration 73/73（提交见 git log） |
-| TASK-005 | 店铺与数据源配置 | TODO | TASK-004 | 未执行 |
-| TASK-006 | 统一Adapter与最小黄金样本 | DONE | TASK-005 | 2026-09-14：adapters 契约+黄金 fixtures+31 例契约测试；unit 49/49（7583ed7） |
-| TASK-007 | 文件上传、私有存储与ImportTask | TODO | TASK-006 | 未执行 |
+| TASK-004 | 组织隔离与固定权限服务 | DONE | TASK-003 | REVIEW_5 PASS；2026-09-14 Owner已放行Phase1并合并main；本轮新增文件/Worker消费者问题归TASK-007，不重开旧结论 |
+| TASK-005 | 店铺与数据源配置 | BLOCKED | TASK-004 | G2-H01/H02/M02 已修复（5690395）：有效版本汇总+角色裁剪+右开90天、原子CAS恰一成功一409、同名唯一索引；13例回归+并发CAS/覆盖摘要新回归通过；待独立复审保持BLOCKED |
+| TASK-006 | 统一Adapter与最小黄金样本 | BLOCKED | TASK-005 | G2-H03/H04 已修复（286527d+1c8909c）：csv-parse 严格语法、数值/时间/必填边界、来源时间不补造、CanonicalBatch 合同、覆盖声明 fixture、A M3=false 规范 oracle 三层校验；unit 67/67；待独立复审保持BLOCKED |
+| TASK-007 | 文件上传、私有存储与ImportTask | BLOCKED | TASK-006 | G2-H05–H09/M01/M03/M04/L02 已修复（36e7764..b2fa10f）：类型权限链、真流式限额、原子认领+HTTP幂等、失败恢复+dispatcher、私有卷+打包排除、OSS 可测试适配；imports 19/19、H09 隔离 Compose 链路通过；待独立复审保持BLOCKED |
 | TASK-008 | 字段映射、全量校验与预览 | TODO | TASK-007 | 未执行 |
 | TASK-009 | 原子提交内核与商品主数据 | TODO | TASK-008 | 未执行 |
 | TASK-010 | 订单头与订单行导入 | TODO | TASK-009 | 未执行 |
@@ -122,9 +121,9 @@
 | 项目 | 当前状态 | 达成时需要的证据 |
 |---|---|---|
 | 应用可启动 | REVIEW_5本地与真实容器双口令非UTC完整链路通过 | 线上部署与真实试点仍属后续独立验收 |
-| 六类CSV导入 | 未开发/未执行 | 全链路导入与错误/幂等验证 |
+| 六类CSV导入 | 已有Phase2上传/解析候选，GATE_02 FAIL；业务提交未开始 | 修复本轮缺陷；后续TASK-008起完成全链路 |
 | 指标与规则正确 | 未开发/未执行 | 黄金案例手算与实际PG结果一致 |
-| 角色隔离 | REVIEW_5当前接口权限、D01、H08同域及H12邀请时效通过 | 未来文件/Job/AI在所属TASK验证，Owner阶段放行尚待确认 |
+| 角色隔离 | Phase1已通过并获放行；Phase2新增摘要/文件/Worker权限FAIL | 关闭G2-H01/H05，后续AI等按所属TASK验收 |
 | AI联网质量 | 未执行 | 固定模型、脱敏测试集、分类与事实引用指标 |
 | 首页三分钟任务 | 未执行 | 目标角色观察记录，不能用截图替代 |
 | 性能/恢复 | 未执行 | 指定规模p95/p99、备份恢复记录 |
@@ -498,3 +497,90 @@ R5 收尾实际核验（2026-09-14T22:53:30+08:00）：Product OS sync 返回 re
 - Product OS：写回后运行 sync 并读回首页/总控，结果见下条。
 
 GATE_02 收尾实际核验（2026-09-15T13:22:00+08:00）：Product OS sync 返回 registered=1、updated=1、errors=[]；读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，均为 TASK-007 / 待审查（GATE_02 待复审）/ Codex / P07_CODE_REVIEW / Checkpoint=YES，复审范围 4c7e95b..4e44270 一致。
+
+管理差异说明（2026-09-15T13:26:00+08:00，未提交保留）：GATE_02 冻结为 4e44270（含 Phase 2 交接与 P07 复审提示词）；其后 ce5f286 为纯管理修正（把范围描述 6d1928c 纠正为 4e44270 并 sync 读回），无业务代码变化。按交接约定，Codex 接手时以实际 HEAD 重定范围：复审差异 4c7e95b..HEAD（=4c7e95b..4e44270 + ce5f286 管理修正）。本段及其后管理差异按协议保留未提交，不 reset、不覆盖。
+
+## 2026-09-15T19:57:56+08:00 · CODEX_REVIEW_GATE_02 独立复审完成（Codex）
+
+- 结论：FAIL，TASK-005/006/007均FAIL；9 HIGH、4 MEDIUM、2 LOW，无CRITICAL。正式报告与机器索引见 docs/reviews/CODEX_REVIEW_GATE_02_2026-09-15.md、GATE_02_EVIDENCE_2026-09-15.json；关闭标准固定在报告第13节。
+- 实际验证：Git归档ce5f286、独立PG17.11（Asia/Shanghai默认）、Node24.21.0/pnpm10.34.5；锁定离线安装+generate、typecheck、unit49/49、integration82/82、官方10迁移、Web/Worker build、e2e8/8均通过；补充Adapter/HTTP/PG并发/真分块/队列故障反例失败。built Worker正常解析与私有错误文件/commit拒绝通过。未运行真实Docker整链/OSS云端/部署或真实客户试点，未将旧证据冒充本轮运行。
+- H01客服摘要包含订单历史统计；H02同版本并发两次成功；H03数值时间/必填解析；H04manifest和黄金样本；H05查询下载/Worker撤权；H06真请求流未限额且误算物理行；H07并发/HTTP幂等；H08落盘投递重试永久遗留；H09私有存储运行/打包配置。每项证据与影响详见正式报告，不在进度另造一套验收定义。
+- 核定：pg-boss批数组、esbuild shim、guardWrite同源multipart兼容ACCEPT；M01–M04逐项未关闭，OSS延期未批准；后续mapping/提交/聚合/UI按原TASK合理延期；D01方案A/M07维护不变，Phase1已关闭结论保留。
+- 已保留初始两行管理差异。清理任务表TASK005/006重复行及TASK007旧TODO，004补正Owner已放行，旧导航/旧行在下方历史摘录及原始.before中保留；这不是重新执行或抹除历史。
+- 本轮未修改原应用/测试/Schema/依赖、未提交/推送/合并/部署；当前TASK007/待修复/ZCode/P08/CheckpointYES；修复后回Codex，独立PASS后仍等Owner明确“放行 Phase 2”。
+
+### 本轮收尾前的旧当前摘要与任务行（历史，不作为当前状态）
+
+原始完整文件含接手时在途说明见 gate-02-evidence/12_PROGRESS.md.before，SHA见机器索引。以下保留被替换的过期导航与任务行，防止把文档纠正误解为历史结果删除。
+
+```text
+## 当前导航（唯一进度的一部分）
+
+**Phase 2 / TASK-005–007 全部完成 / CODEX_REVIEW_GATE_02 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
+
+2026-09-15：Phase 2（数据接入基础）三个 TASK 按合同完成——TASK-005 店铺与数据源配置（f51ed41）、TASK-006 统一 Adapter 与最小黄金样本（7583ed7）、TASK-007 文件上传/私有存储/ImportTask/pg-boss 队列（6d1928c）。handoff 冻结 4e44270。最终候选验证：typecheck 0 错、unit 49/49、integration **82/82**（+23 新回归）、web/worker build exit 0、worker 队列就绪冒烟、e2e 8/8（独立非 UTC 集群）。修复自测通过不代表 Gate 通过；Codex GATE_02 PASS 后仍须 Owner 阶段放行。
+
+**2026-09-14 Owner 正式放行 Phase 1**：通过版本 32fb0d3e8ad19b691cf66006638a418ca949e2a4（与 REVIEW_5 PASS 冻结一致；TASK-001–004 全部通过，H12/M03/M04/M06/M07 关闭）。授权并已执行：放行记录与 R5 报告/证据入库推送；phase/01-foundation 合并 main（保留 merge commit，不 force push）；自稳定 main 创建 phase/02-data-ingestion；开始 Phase 2（TASK-005→007，一次一个 TASK）。约束：不在 main 开发；M07 自定义外键维护约定保留（相关迁移人工核对并过 H08 回归）；L01 留待未来 pg 主版本升级前；D01 方案 A 不变；不扩大 P0、不换技术栈、不做无关重构；TASK-007 完成后停在 GATE_02；本次不授权部署。
+
+## 当前 Git 与交接状态（2026-09-14T23:45:00+08:00）
+
+- **Owner 放行记录**：Phase 1 通过版本 32fb0d3e8ad19b691cf66006638a418ca949e2a4（REVIEW_5 PASS）；放行原文与授权范围见 CODEX_REVIEW_HANDOFF.md 顶部。
+- main ← phase/01-foundation（32fb0d3，--no-ff 保留 merge commit，已推送）；**phase/02-data-ingestion 自合并后 main 创建并推送**；phase/01-foundation 按约定保留。
+- Phase 2 范围：TASK-005 店铺与数据源配置 → TASK-006 统一 Adapter 与最小黄金样本 → TASK-007 文件上传、私有存储与 ImportTask；一次一个 TASK，007 完成后停在 CODEX_REVIEW_GATE_02。
+- 当前 TASK：TASK-005 IN_PROGRESS；Checkpoint=NO（Phase 内连续执行）；本次不授权部署。
+
+历史原行：| TASK-004 | 组织隔离与固定权限服务 | DONE | TASK-003 | REVIEW_5 PASS：四角色/组织隔离/D01与依赖验收通过；等待Owner阶段放行，不进入005 |
+历史原行：| TASK-005 | 店铺与数据源配置 | DONE | TASK-004 | 2026-09-14：stores/dataSources 服务+三路由+8 例集成回归；事实锁 409/mock 演示限制/归档拒绝/角色裁剪；integration 73/73、unit 18/18、build 通过（提交 f51ed41） |
+历史原行：| TASK-006 | 统一Adapter与最小黄金样本 | DONE | TASK-005 | 2026-09-14：adapters 契约+csv/mock 同一标准记录流+黄金 fixtures+31 例契约测试；unit 49/49、integration 73/73（提交见 git log） |
+历史原行：| TASK-005 | 店铺与数据源配置 | TODO | TASK-004 | 未执行 |
+历史原行：| TASK-006 | 统一Adapter与最小黄金样本 | DONE | TASK-005 | 2026-09-14：adapters 契约+黄金 fixtures+31 例契约测试；unit 49/49（7583ed7） |
+历史原行：| TASK-007 | 文件上传、私有存储与ImportTask | TODO | TASK-006 | 未执行 |
+```
+
+### GATE_02 收尾与视图读回（2026-09-15）
+
+- Product OS sync 实际成功（registered=1、updated=1、errors=[]），项目首页Markdown/HTML与总控PROJECTS均为TASK-007 / 待修复 / ZCode / GATE_02 FAIL；首页完整提示词与P08首个text块核对。
+- 本轮独立Web/Worker及PG已停止，本次integration私有文件已清理，55572/3322/3000均已释放。证据保留，临时副本/凭据/测试Cookie在归档后清除；最终记录见gate-02-evidence/cleanup.json与final-verification.json。
+- 当前任务表30项唯一：001–004 DONE，005–007 BLOCKED（明确缺陷），008–030 TODO。历史任务行在历史摘录中标识，不作为第二份进度。
+- 仅管理文件/报告/证据与生成视图发生本轮变更；应用146跟踪文件及全部旧审查证据保持开始SHA256；无提交/推送/合并main/部署或TASK-008推进。
+
+---
+
+## GATE_02 修复轮执行记录（2026-09-15/16 · ZCode）
+
+### 修复链与复审范围
+
+- 审查冻结 ce5f286 → 新冻结 **b2fa10f**（phase/02-data-ingestion，已推送 origin）。复审范围 **ce5f286..b2fa10f**，共 9 个提交：5690395（TASK-005：H01/H02/M02）、286527d（依赖锁定）、1c8909c（TASK-006：H03/H04）、13c95e4（L01）、36e7764（TASK-007：H05–H09/M01/M03/M04/L02）、da6de14（Phase1 测试适配）、9263890（ali-oss 构建外置）、7616c4c（build:scripts）、b2fa10f（索引名对齐）。
+
+### 逐项修复与验证（原反例 → 修复 → 验证）
+
+- **G2-H01（005）**：coverage 原样 sum/count 且不分角色 → DISTINCT ON 取每 (来源,类型,渠道,日期) 最高 dataset_version 后在可见类型内汇总；last_import_at 按角色可见类型过滤；from/to 严格日历校验（422 不再 503）、右开区间、90 天上限。反例 227/kinds=4 修复为 Owner 124/kinds=2、C 4/kinds=1；多版本/角色/边界回归入 stores.test.ts。
+- **G2-H02（005）**：先读后无条件 update → 版本条件进入 UPDATE WHERE（同授权域）原子裁决，事实锁在持行锁后判定、失败随事务回滚。并发同版本 PATCH 恰好 200+409、row_version 只前进一次、审计恰 1 条（新回归）。
+- **G2-M02（005）**：新增迁移 20260915110000 store(org_id,name) 唯一（Schema 同步 @@unique）；P2002 映射 409 STORE_NAME_EXISTS/STORE_EXISTS；并发同名创建恰一 201（新回归）。
+- **G2-H03（006）**：手写 CSV 解析 → 既定 csv-parse（未闭合引号/列数不匹配整文件拒绝）；金额整数部分≤14 位（numeric(20,6)）；整数 Number.isSafeInteger 前置（9007199254740993 拒绝不舍入）；时间强制 RFC3339 带时区+真实日历（2026-02-30、无时区拒绝）；source_updated_at 必填不补造（Worker 不再传 task.createdAt）；必填枚举空值拒绝（不再默认 active）；可选列缺列合法；退款 completed_at<occurred_at 拒绝；重复表头拒绝。全部反例转为 adapters.test.ts 断言。
+- **G2-H04（006）**：新增 CanonicalBatch typed 合同（04 §11.2：source_kind/source_namespace/store_id 服务端赋值/adapter_version/raw_checksum/records/row_errors/coverage_declaration）+ createCanonicalBatch 纯装配与声明校验；Worker 校验 handler 为消费点。黄金样本 A M3=false（04:686）、B M1 保持 null；新增两店独立覆盖声明 fixture（12.8:701）与手写规范 oracle；测试改为 CSV≡oracle 且 Mock≡oracle 三层。
+- **G2-H05（007）**：任务查询/文件下载由 manageSettings 改为全员基础权限+canImport(role, sourceKind)（C 消息可查询/下载、C 订单 403、P 订单任务可读、跨组织 404 保留）；Worker 执行前重查发起人有效 Membership 与类型权限，失权任务终态 failed UPLOAD_PERMISSION_REVOKED（撤权/降权回归）。
+- **G2-H06（007）**：formData 全量缓冲 → busboy 流式 multipart；字节与 CSV 逻辑记录（csv-parse 流）限额在接收链路即时生效，超限销毁上游立即响应；deferred 接管晚到文件部分；quoted 换行按逻辑记录（50,001 条/100,003 物理行不再误拒，新回归）。真实分块流测试：请求体永不结束仍能在限额处 422（消费量区间断言）。
+- **G2-H07（007）**：部分唯一索引 import_task_active_content_key（新迁移）原子认领——并发 4×同内容恰一任务（新回归）；HTTP Idempotency-Key 从请求头读取，新表 http_idempotency 按 org/user/endpoint 存档 24h，同 key 同 body 重放首次 201、异 body 409 IDEMPOTENCY_CONFLICT、并发冲突以库裁决；multipart 字段不再冒充请求幂等；uploadRequestKey 改随机 32hex（去除 Date.now）。
+- **G2-H08（007）**：文件先落位再建账（rawObjectKey 恒非空；落盘失败不产生任何任务、重试建全新任务——ENOTDIR 注入回归）；建账失败清理孤儿对象；投递失败保持 uploaded+outbox=pending 不冒充成功，新增最小 dispatcher（PART16 指定路径）周期补投并标 dispatched（补投回归）；悬挂 validating 超 10 分钟落 failed VALIDATE_INTERRUPTED；文件缺失终态 SOURCE_FILE_MISSING、重试耗尽 VALIDATE_FAILED；终态重投幂等跳过。
+- **G2-H09（007）**：compose web/worker 共享 private-data 持久卷挂载 /app/.data/private；worker 环境与 web 对齐（含认证/存储变量）；.gitignore/.dockerignore 精确排除 .data；storageRoot 移除无端 auth 环境依赖。**真实隔离 Compose 链路通过**（colima 全新构建，HEAD 7616c4c 归档）：预埋 canary .data/private/raw/canary-secret.txt 构建后镜像内 find=0 且 grep 无命中；栈启动健康 200 → 官方 12 迁移 → dist bundle init-owner → 登录 200 → 建店/源 → entity_type 上传 201 → Worker preview_ready → 签名下载 200 内容一致 → 重启 web/worker 后再次下载 200 内容一致 → down -v。
+- **M01**：entity_type 为合同输入（source_kind 内部别名）；响应补 filename/bytes。状态码沿用本轮已接受的 201/422。**M02**：随 H02 唯一索引+409 映射关闭。**M03**：仅 .csv 扩展名（415 UNSUPPORTED_FILE_TYPE）、严格 UTF-8（422 INVALID_ENCODING，非法字节不静默替换）、F10 上传限流（复用数据库固定窗口设施，20 次/分钟/用户桶，阈值与邀请接受同量级；测试可经 UPLOAD_RATE_LIMIT_PER_MIN 覆写）。**M04**：补齐可测试 OSS 适配（合同指定 ali-oss 6.23；注入 client 单测 put/get/stream/move/signatureUrl；serverExternalPackages+esbuild external 运行时解析）；**真实 OSS 账号联调未执行（缺云资源），如实记录为剩余范围，未自行宣布延期获批，交 Owner/Codex 裁定**。**L01**：删除 "auth 2.ts"/"dbUrl 2.ts"（13c95e4）。**L02**：signDownload 默认 300 秒并加断言。
+
+### 最终候选验证（b2fa10f，/tmp 归档副本 + 一次性 PG17.11 集群 @55573，Node 24.21.0）
+
+- typecheck 0 错；unit **67/67**（4 文件）；integration **97/97**（9 文件）；build（next build + worker + scripts）exit 0；e2e **8/8**；官方空库 migrate deploy 12 迁移通过；prisma migrate diff（migrations↔schema）仅剩 M07 已知 audit_log 复合外键重建差异（约定内不得应用）。
+- H09 Compose 全链路在 HEAD 7616c4c 归档上执行通过；b2fa10f 相对 7616c4c 仅迁移 SQL 索引名与 service 内索引名常量字符串，不影响容器链路行为，如实记录未重复整套容器验证。
+
+### 新增依赖与执行偏差（本轮新增，交 Codex 核定）
+
+- csv-parse 5.6.0：11:88 既定 CSV 选型（替换手写解析器）。busboy 1.6.0：流式 multipart 最小适配库（零传递依赖；H06 不整体缓冲的必要组件）。ali-oss 6.23.0 + @types：11:87 合同指定 SDK（M04）。
+- http_idempotency 新表 + import_task 部分唯一索引为自定义 SQL 迁移（Prisma 不可表达部分索引）：沿 M07 式维护约定，未来 migrate diff 的 DROP 建议不得直接应用；本次 diff 已核仅剩 audit_log 已知差异。
+- 容器内 pnpm exec 需 corepack 联网（EAI_AGAIN 实测）：新增 build:scripts 将 init-owner/reset-owner-password 打包 dist/scripts，镜像内以 node 直启，不依赖运行时网络；compose 注释更新为宿主侧迁移执行。
+
+### 环境事件（如实记录）
+
+- 2026-09-16 凌晨宿主数据盘满（228G 盘余 0；colima VM 磁盘扩张为诱因），触发 iCloud 对 .git 数据文件驱逐（dataless 读取超时，git 短暂报 not a git repository）。经 `brctl download` 物化恢复后 git 完整：8 个修复提交与工作区全部无损；随即推送 ce5f286..b2fa10f 至 origin 保护。docker prune+fstrim 释放空间后磁盘恢复 25G 可用。本轮所有测试/构建照旧在 /tmp 副本执行，未在 iCloud 主副本跑工具链。
+
+### 本轮边界
+
+- 未合并 main、未部署、未开始 TASK-008；Phase 1 已关闭项除上述两处 Schema 触发的测试适配外未触碰；下一责任人 Codex（P07 首个 text 块为完整复审提示词），PASS 后仍等 Owner 明确"放行 Phase 2"。
