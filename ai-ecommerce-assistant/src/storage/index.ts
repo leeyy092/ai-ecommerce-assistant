@@ -106,7 +106,8 @@ function streamToBuffer(content: NodeJS.ReadableStream, maxBytes: number): Promi
 export async function putObject(key: string, content: NodeJS.ReadableStream): Promise<{ key: string; bytes: number }> {
   if (useOss()) {
     const buffer = await streamToBuffer(content, 64 * 1024 * 1024);
-    await getOssClient().put(key, buffer);
+    const client = await getOssClient();
+    await client.put(key, buffer);
     return { key, bytes: buffer.length };
   }
   const full = resolveKey(key);
@@ -131,7 +132,7 @@ export function getObjectStream(key: string): NodeJS.ReadableStream {
     // getStream 为异步 API：以惰性流包装，错误经 error 事件冒泡
     const lazy = new Readable({ read() {} });
     void getOssClient()
-      .getStream(key)
+      .then((client) => client.getStream(key))
       .then(({ stream }) => {
         stream.on("data", (c: Buffer) => lazy.push(c));
         stream.on("end", () => lazy.push(null));
@@ -146,7 +147,8 @@ export function getObjectStream(key: string): NodeJS.ReadableStream {
 /** 读小对象全文（validate handler 用；20MB 上限内） */
 export async function getObjectText(key: string): Promise<string> {
   if (useOss()) {
-    const { content } = await getOssClient().get(key);
+    const client = await getOssClient();
+    const { content } = await client.get(key);
     return content.toString("utf8");
   }
   const { readFile } = await import("node:fs/promises");
@@ -156,7 +158,8 @@ export async function getObjectText(key: string): Promise<string> {
 export async function objectExists(key: string): Promise<boolean> {
   if (useOss()) {
     try {
-      await getOssClient().head(key);
+      const client = await getOssClient();
+      await client.head(key);
       return true;
     } catch {
       return false;
@@ -173,7 +176,7 @@ export async function objectExists(key: string): Promise<boolean> {
 /** 原子移动（同驱动内；local 为 rename，oss 为 copy+delete）——上传落位用 */
 export async function moveObject(fromKey: string, toKey: string): Promise<void> {
   if (useOss()) {
-    const client = getOssClient();
+    const client = await getOssClient();
     await client.copy(toKey, fromKey);
     await client.delete(fromKey);
     return;
@@ -186,7 +189,8 @@ export async function moveObject(fromKey: string, toKey: string): Promise<void> 
 
 export async function deleteObject(key: string): Promise<void> {
   if (useOss()) {
-    await getOssClient().delete(key).catch(() => undefined);
+    const client = await getOssClient();
+    await client.delete(key).catch(() => undefined);
     return;
   }
   await unlink(resolveKey(key)).catch(() => undefined);

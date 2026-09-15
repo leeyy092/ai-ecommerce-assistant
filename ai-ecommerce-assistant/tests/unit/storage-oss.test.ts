@@ -87,8 +87,8 @@ describe("M04｜OSS 适配（可测试；真实云端联调未执行）", () => 
     expect(fake.objects.has("tmp/u1.csv")).toBe(false);
   });
 
-  it("签名 URL 使用合同 5 分钟有效期", () => {
-    const client = getOssClient();
+  it("签名 URL 使用合同 5 分钟有效期", async () => {
+    const client = await getOssClient();
     const url = ossSignedUrl(client, "raw/t3/source.csv", 300);
     expect(url).toContain("raw/t3/source.csv");
     expect(fake.signed[0]).toEqual({ key: "raw/t3/source.csv", expires: 300 });
