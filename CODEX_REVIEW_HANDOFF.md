@@ -8,7 +8,7 @@
 |---|---|
 | Current Branch | `phase/02-data-ingestion` |
 | Base Branch | `main`（Phase 1 合并结果 `4c7e95b`，Owner 放行 Phase 1 后未再变动） |
-| 复审范围 | **`4c7e95b..6d1928c`**（f51ed41 TASK-005 → 7583ed7 TASK-006 → 6d1928c TASK-007 + 交接提交） |
+| 复审范围 | **`4c7e95b..4e44270`**（f51ed41 TASK-005 → 7583ed7 TASK-006 → 6d1928c TASK-007 + 交接提交） |
 | Phase 1 基线 | 32fb0d3（REVIEW_5 PASS，Owner 已放行；H01–H12/M01–M06 关闭，不重开） |
 | Working Tree | handoff 提交后 clean；接手先核对 HEAD 与未提交差异 |
 | Checkpoint | YES；不合并 main、不部署、不开始 TASK-008；PASS 后等 Owner 阶段放行 |
@@ -51,7 +51,7 @@
 
 | 顺序 | 文件（相对 ai-ecommerce-assistant/） |
 |---|---|
-| 1 | `git log 4c7e95b..6d1928c --oneline`；`src/services/stores.ts`、`src/services/dataSources.ts`（事实锁/裁剪/审计） |
+| 1 | `git log 4c7e95b..4e44270 --oneline`；`src/services/stores.ts`、`src/services/dataSources.ts`（事实锁/裁剪/审计） |
 | 2 | `src/app/api/v1/stores/**`、`src/app/api/v1/data-sources/route.ts`（guardWrite+requirePermission+Zod 信封一致性） |
 | 3 | `src/adapters/contracts.ts` + `tests/fixtures/golden/**` + `tests/unit/adapters.test.ts`（黄金样本一致性/边界） |
 | 4 | `src/storage/index.ts`、`src/services/imports.ts`、`src/app/api/v1/imports/**`（超限/幂等/签名下载/私有根） |

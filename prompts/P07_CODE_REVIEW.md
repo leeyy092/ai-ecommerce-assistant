@@ -7,7 +7,7 @@
 
 先显式读取根目录 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md；按配置读取 docs/ai-ecommerce-assistant/12_PROGRESS.md（唯一进度）、09_TASKS.md（TASK-005–007 合同原文）、DEVELOPMENT_HANDOFF.md、FINAL_DECISIONS.md、PHASE_PLAN.md、CODEX_REVIEW_HANDOFF.md（顶部 GATE_02 交接与关闭约定）。Phase 1 基线：REVIEW_5 PASS、Owner 已放行 32fb0d3；其已关闭问题（H01–H12、M01–M06、D01 方案 A）不重开，仅当本轮改动触发相关边界时核对对应回归。
 
-本次交接核对状态：Phase 2 / TASK-005–007 完成 / GATE_02 待复审 / Checkpoint=YES。分支 phase/02-data-ingestion；main 基线 4c7e95b（Phase 1 合并结果）；复审差异 **4c7e95b..6d1928c**（f51ed41 TASK-005 店铺与数据源、7583ed7 TASK-006 统一 Adapter 与黄金样本、6d1928c TASK-007 上传/私有存储/ImportTask/pg-boss）。先重查 HEAD、分支、未提交差异及是否另有执行者；版本变化则重定范围。
+本次交接核对状态：Phase 2 / TASK-005–007 完成 / GATE_02 待复审 / Checkpoint=YES。分支 phase/02-data-ingestion；main 基线 4c7e95b（Phase 1 合并结果）；复审差异 **4c7e95b..4e44270**（f51ed41 TASK-005 店铺与数据源、7583ed7 TASK-006 统一 Adapter 与黄金样本、6d1928c TASK-007 上传/私有存储/ImportTask/pg-boss）。先重查 HEAD、分支、未提交差异及是否另有执行者；版本变化则重定范围。
 
 重点逐项验证：
 1. TASK-005：店铺创建/列表/改名/归档（08_API_SPEC 31–35 行契约）；事实锁——注入任一事实行后 PATCH currency/timezone 必须 409 STORE_CONFIG_LOCKED 且改名/归档不受限；demo_mode 继承组织；409 同名/同外部标识；platform 仅标签（响应无 connected/provider 字段）；归档店拒绝数据源；mock 源仅演示店；GET data-sources 按角色裁剪（C 仅 customer_messages）+ mapping_version + coverage 摘要 + last_import_at；store_create/store_update/data_source_create 审计同事务。

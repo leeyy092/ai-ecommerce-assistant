@@ -9,7 +9,7 @@
 | 当前阶段 | 07 阶段审查 · Phase 2 数据接入基础 · GATE_02 待复审 |
 | 当前任务 | TASK-007 |
 | 当前状态 | 待审查 |
-| 上一个完成项 | Gate 01 全链路收官：REVIEW_5 PASS 且 Owner 放行 Phase 1（32fb0d3）；已合并 main 并自 main 创建 phase/02-data-ingestion |
+| 上一个完成项 | Phase 2 完成（TASK-005 f51ed41 / TASK-006 7583ed7 / TASK-007 6d1928c）；冻结 4e44270 待 GATE_02 复审；Phase 1 已 Owner 放行并合并 main |
 | 下一步 | Codex GATE_02 独立复审（TASK-005–007：店铺/数据源配置、统一 Adapter 黄金样本、上传/私有存储/ImportTask/pg-boss 边界）；PASS 后仍等 Owner 阶段放行 |
 | 交给谁 | Codex |
 | 做到什么算完成 | 三 TASK 合同验收达成：事实锁/归档拒绝/角色裁剪；CSV与Mock标准记录一致/前导零；超限停止/C 不传订单/重复同任务/私有存储+签名下载/pg-boss 边界；82/82+49/49+build+e2e 8/8；复审 PASS 后等 Owner |
@@ -34,7 +34,7 @@
 
 先显式读取根目录 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md；按配置读取 docs/ai-ecommerce-assistant/12_PROGRESS.md（唯一进度）、09_TASKS.md（TASK-005–007 合同原文）、DEVELOPMENT_HANDOFF.md、FINAL_DECISIONS.md、PHASE_PLAN.md、CODEX_REVIEW_HANDOFF.md（顶部 GATE_02 交接与关闭约定）。Phase 1 基线：REVIEW_5 PASS、Owner 已放行 32fb0d3；其已关闭问题（H01–H12、M01–M06、D01 方案 A）不重开，仅当本轮改动触发相关边界时核对对应回归。
 
-本次交接核对状态：Phase 2 / TASK-005–007 完成 / GATE_02 待复审 / Checkpoint=YES。分支 phase/02-data-ingestion；main 基线 4c7e95b（Phase 1 合并结果）；复审差异 **4c7e95b..6d1928c**（f51ed41 TASK-005 店铺与数据源、7583ed7 TASK-006 统一 Adapter 与黄金样本、6d1928c TASK-007 上传/私有存储/ImportTask/pg-boss）。先重查 HEAD、分支、未提交差异及是否另有执行者；版本变化则重定范围。
+本次交接核对状态：Phase 2 / TASK-005–007 完成 / GATE_02 待复审 / Checkpoint=YES。分支 phase/02-data-ingestion；main 基线 4c7e95b（Phase 1 合并结果）；复审差异 **4c7e95b..4e44270**（f51ed41 TASK-005 店铺与数据源、7583ed7 TASK-006 统一 Adapter 与黄金样本、6d1928c TASK-007 上传/私有存储/ImportTask/pg-boss）。先重查 HEAD、分支、未提交差异及是否另有执行者；版本变化则重定范围。
 
 重点逐项验证：
 1. TASK-005：店铺创建/列表/改名/归档（08_API_SPEC 31–35 行契约）；事实锁——注入任一事实行后 PATCH currency/timezone 必须 409 STORE_CONFIG_LOCKED 且改名/归档不受限；demo_mode 继承组织；409 同名/同外部标识；platform 仅标签（响应无 connected/provider 字段）；归档店拒绝数据源；mock 源仅演示店；GET data-sources 按角色裁剪（C 仅 customer_messages）+ mapping_version + coverage 摘要 + last_import_at；store_create/store_update/data_source_create 审计同事务。
@@ -52,11 +52,11 @@
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；存在未提交或未跟踪内容。
-- 分支：phase/02-data-ingestion；版本：6d1928cce68fd6b7f4758676e4e50f019c1d37da。
+- 分支：phase/02-data-ingestion；版本：4e4427033d686c9b25ef8c05117b0b473e8551dc。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
-- GitHub：phase/02-data-ingestion 本地=6d1928c（推送后以 origin 为准）；main=Phase 1 合并 4c7e95b 未再合并；最后核验：2026-09-14T23:45:00+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：git push 后 ls-remote 核验三分支。
+- GitHub：phase/02-data-ingestion 本地=4e44270（已推送，以 origin 为准）；main=Phase 1 合并 4c7e95b 未再合并；最后核验：2026-09-14T23:45:00+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：git push 后 ls-remote 核验三分支。
 - 部署：未部署（本次 Owner 指令明确不授权部署）；最后核验：2026-09-14T23:45:00+08:00；地址：未记录；证据：P0 后续 TASK-029 试点运行与运维要求另计。
 
-刷新前本地快照时间：2026-09-15T13:01:16+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-15T13:02:15+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)

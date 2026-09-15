@@ -6,7 +6,7 @@
 
 **Phase 2 / TASK-005–007 全部完成 / CODEX_REVIEW_GATE_02 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
 
-2026-09-15：Phase 2（数据接入基础）三个 TASK 按合同完成——TASK-005 店铺与数据源配置（f51ed41）、TASK-006 统一 Adapter 与最小黄金样本（7583ed7）、TASK-007 文件上传/私有存储/ImportTask/pg-boss 队列（6d1928c）。冻结候选 bb0fbb9+6d1928c+handoff。最终候选验证：typecheck 0 错、unit 49/49、integration **82/82**（+23 新回归）、web/worker build exit 0、worker 队列就绪冒烟、e2e 8/8（独立非 UTC 集群）。修复自测通过不代表 Gate 通过；Codex GATE_02 PASS 后仍须 Owner 阶段放行。
+2026-09-15：Phase 2（数据接入基础）三个 TASK 按合同完成——TASK-005 店铺与数据源配置（f51ed41）、TASK-006 统一 Adapter 与最小黄金样本（7583ed7）、TASK-007 文件上传/私有存储/ImportTask/pg-boss 队列（6d1928c）。handoff 冻结 4e44270。最终候选验证：typecheck 0 错、unit 49/49、integration **82/82**（+23 新回归）、web/worker build exit 0、worker 队列就绪冒烟、e2e 8/8（独立非 UTC 集群）。修复自测通过不代表 Gate 通过；Codex GATE_02 PASS 后仍须 Owner 阶段放行。
 
 **2026-09-14 Owner 正式放行 Phase 1**：通过版本 32fb0d3e8ad19b691cf66006638a418ca949e2a4（与 REVIEW_5 PASS 冻结一致；TASK-001–004 全部通过，H12/M03/M04/M06/M07 关闭）。授权并已执行：放行记录与 R5 报告/证据入库推送；phase/01-foundation 合并 main（保留 merge commit，不 force push）；自稳定 main 创建 phase/02-data-ingestion；开始 Phase 2（TASK-005→007，一次一个 TASK）。约束：不在 main 开发；M07 自定义外键维护约定保留（相关迁移人工核对并过 H08 回归）；L01 留待未来 pg 主版本升级前；D01 方案 A 不变；不扩大 P0、不换技术栈、不做无关重构；TASK-007 完成后停在 GATE_02；本次不授权部署。
 
@@ -19,7 +19,7 @@
   "stage": "07 阶段审查 · Phase 2 数据接入基础 · GATE_02 待复审",
   "current_task": "TASK-007",
   "status": "待审查",
-  "last_completed": "Gate 01 全链路收官：REVIEW_5 PASS 且 Owner 放行 Phase 1（32fb0d3）；已合并 main 并自 main 创建 phase/02-data-ingestion",
+  "last_completed": "Phase 2 完成（TASK-005 f51ed41 / TASK-006 7583ed7 / TASK-007 6d1928c）；冻结 4e44270 待 GATE_02 复审；Phase 1 已 Owner 放行并合并 main",
   "next_action": "Codex GATE_02 独立复审（TASK-005–007：店铺/数据源配置、统一 Adapter 黄金样本、上传/私有存储/ImportTask/pg-boss 边界）；PASS 后仍等 Owner 阶段放行",
   "next_owner": "Codex",
   "next_prompt": "prompts/P07_CODE_REVIEW.md",
@@ -30,14 +30,14 @@
   "updated_at": "2026-09-15T13:20:00+08:00",
   "updated_by": "ZCode · Phase 2 完成冻结（GATE_02 待审）",
   "evidence": [
-    "Phase 2 提交：f51ed41(005)/7583ed7(006)/6d1928c(007)，复审范围 4c7e95b..6d1928c",
+    "Phase 2 提交：f51ed41(005)/7583ed7(006)/6d1928c(007)；冻结 4e44270（含交接），复审范围 4c7e95b..4e44270",
     "docs/reviews/CODEX_REVIEW_GATE_01_REVIEW_5_2026-09-14.md（Phase 1 PASS 报告，历史）",
     "CODEX_REVIEW_HANDOFF.md 顶部 Owner 放行记录（32fb0d3；约束与授权范围原文）",
     "Git：phase/01-foundation → main（--no-ff 保留 merge commit）；phase/02-data-ingestion 自 main 创建",
     "M07 自定义 FK 维护约定与 H08 并发/删除回归在后续涉及迁移时执行；L01 留待 pg 主版本升级前"
   ],
   "github": {
-    "status": "phase/02-data-ingestion 本地=6d1928c（推送后以 origin 为准）；main=Phase 1 合并 4c7e95b 未再合并",
+    "status": "phase/02-data-ingestion 本地=4e44270（已推送，以 origin 为准）；main=Phase 1 合并 4c7e95b 未再合并",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
     "verified_at": "2026-09-14T23:45:00+08:00",
     "evidence": "git push 后 ls-remote 核验三分支"
@@ -494,7 +494,7 @@ R5 收尾实际核验（2026-09-14T22:53:30+08:00）：Product OS sync 返回 re
 - TASK-007（6d1928c）：私有存储适配器（.data/private 根、路径遍历防护、HMAC 签名下载、oss 显式拒绝）；POST /api/v1/imports（multipart：角色文件类型限制 C 仅 customer_messages/订单 403；20MB/10 万行超限即中止；幂等同任务；mock 源 422；归档店 409）；GET /api/v1/imports/{id} 与 /{id}/file（无签名/过期 403）；pg-boss 12 队列 import-validate（真实解析统计+私有错误对象）/import-commit（显式拒绝边界）；worker.ts 注册；guardWrite 放行 multipart（Origin 检查不变）。
 - 最终候选验证：typecheck 0 错；unit 49/49；integration 82/82（+9 imports，0 未捕获）；web build exit 0（/api/v1/imports 三路由入产物）；worker build + 队列就绪冒烟（import-validate/import-commit）；e2e 8/8（独立非 UTC 集群）。全部在 /tmp 工作副本 + 5434 独立集群执行（主副本 iCloud 驱逐规避）。
 - 执行偏差如实记录：pg-boss 12 work handler 为批处理数组语义（初版单 Job 编译失败已改）；esbuild cjs bundle 与 Prisma 生成客户端的 import.meta.url 冲突以 banner+define shim 修复（已固化 build:worker 脚本并冒烟验证）。
-- 冻结：TASK-007 提交 6d1928c；GATE_02 复审范围 **4c7e95b..6d1928c**（三 TASK + 交接）。已停开发，等待 Codex 独立复审；PASS 后仍等 Owner 阶段放行；不合并 main、不部署、不开始 TASK-008。
+- 冻结：TASK-007 提交 6d1928c；handoff 冻结 4e44270；GATE_02 复审范围 **4c7e95b..4e44270**。已停开发，等待 Codex 独立复审；PASS 后仍等 Owner 阶段放行；不合并 main、不部署、不开始 TASK-008。
 - Product OS：写回后运行 sync 并读回首页/总控，结果见下条。
 
-GATE_02 收尾实际核验（2026-09-15T13:22:00+08:00）：Product OS sync 返回 registered=1、updated=1、errors=[]；读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，均为 TASK-007 / 待审查（GATE_02 待复审）/ Codex / P07_CODE_REVIEW / Checkpoint=YES，复审范围 4c7e95b..6d1928c 一致。
+GATE_02 收尾实际核验（2026-09-15T13:22:00+08:00）：Product OS sync 返回 registered=1、updated=1、errors=[]；读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，均为 TASK-007 / 待审查（GATE_02 待复审）/ Codex / P07_CODE_REVIEW / Checkpoint=YES，复审范围 4c7e95b..4e44270 一致。
