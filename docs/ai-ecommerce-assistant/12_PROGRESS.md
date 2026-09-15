@@ -4,7 +4,7 @@
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase 2 / TASK-005 店铺与数据源配置 / IN_PROGRESS / Checkpoint=NO（Phase 内连续执行 005→007）/ 下一 Gate：CODEX_REVIEW_GATE_02（TASK-007 完成后停）。**
+**Phase 2 / TASK-006 统一 Adapter 与最小黄金样本 / IN_PROGRESS / Checkpoint=NO（Phase 内连续执行 006→007）/ 下一 Gate：CODEX_REVIEW_GATE_02（TASK-007 完成后停）。**
 
 **2026-09-14 Owner 正式放行 Phase 1**：通过版本 32fb0d3e8ad19b691cf66006638a418ca949e2a4（与 REVIEW_5 PASS 冻结一致；TASK-001–004 全部通过，H12/M03/M04/M06/M07 关闭）。授权并已执行：放行记录与 R5 报告/证据入库推送；phase/01-foundation 合并 main（保留 merge commit，不 force push）；自稳定 main 创建 phase/02-data-ingestion；开始 Phase 2（TASK-005→007，一次一个 TASK）。约束：不在 main 开发；M07 自定义外键维护约定保留（相关迁移人工核对并过 H08 回归）；L01 留待未来 pg 主版本升级前；D01 方案 A 不变；不扩大 P0、不换技术栈、不做无关重构；TASK-007 完成后停在 GATE_02；本次不授权部署。
 
@@ -15,10 +15,10 @@
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动",
   "stage": "08 任务推进 · Phase 2 数据接入基础（005–007）",
-  "current_task": "TASK-005",
+  "current_task": "TASK-006",
   "status": "进行中",
   "last_completed": "Gate 01 全链路收官：REVIEW_5 PASS 且 Owner 放行 Phase 1（32fb0d3）；已合并 main 并自 main 创建 phase/02-data-ingestion",
-  "next_action": "TASK-005 店铺与数据源配置：按 09_TASKS 原合同实现、测试、提交、更新唯一进度；完成后连续推进 006/007，007 后停在 GATE_02 交 Codex",
+  "next_action": "TASK-006 统一 Adapter 与最小黄金样本：按 09_TASKS 原合同实现、测试、提交、更新唯一进度；完成后推进 007，007 后停在 GATE_02 交 Codex",
   "next_owner": "ZCode",
   "next_prompt": "prompts/P10_PHASE2_BUILD.md",
   "acceptance": "TASK-005–007 逐项按 09_TASKS 合同实现并通过其指定检查；每 TASK 单独提交（含 TASK 编号）并更新进度；007 完成后冻结交 Codex GATE_02 复审",
@@ -85,6 +85,7 @@
 | TASK-002 | P0数据库与约束迁移 | DONE | TASK-001 | REVIEW_5 PASS：H12绝对时刻/M04领域28表/M06目标边界/M07维护约定通过；10迁移/8→10/坏行与H08并发删除通过 |
 | TASK-003 | 登录、初始Owner与受控邀请 | DONE | TASK-002 | REVIEW_5 PASS：过期邀请拒绝无会话、有效接受可用；M03限流/会话故障信封及身份/回滚通过 |
 | TASK-004 | 组织隔离与固定权限服务 | DONE | TASK-003 | REVIEW_5 PASS：四角色/组织隔离/D01与依赖验收通过；等待Owner阶段放行，不进入005 |
+| TASK-005 | 店铺与数据源配置 | DONE | TASK-004 | 2026-09-14：stores/dataSources 服务+三路由+8 例集成回归；事实锁 409/mock 演示限制/归档拒绝/角色裁剪；integration 73/73、unit 18/18、build 通过（提交 f51ed41） |
 | TASK-005 | 店铺与数据源配置 | TODO | TASK-004 | 未执行 |
 | TASK-006 | 统一Adapter与最小黄金样本 | TODO | TASK-005 | 未执行 |
 | TASK-007 | 文件上传、私有存储与ImportTask | TODO | TASK-006 | 未执行 |
@@ -464,3 +465,12 @@ R5 收尾实际核验（2026-09-14T22:53:30+08:00）：Product OS sync 返回 re
 - 放行收尾实际执行：核对 HEAD=32fb0d3=origin/phase/01-foundation；Codex R5 报告/证据、P09、管理文档更新提交并推送 phase 分支；`git merge --no-ff` 合并入 main 并推送；自 main 创建 phase/02-data-ingestion 并推送；三分支 ls-remote 核验。未把任何未审业务改动带入。
 - TASK-005 开工：读取 09_TASKS.md TASK-005 合同、DEVELOPMENT_HANDOFF、04_DATA_MODEL（store/data_source 实体）、08_API_SPEC 对应接口；实现按合同完成后单独提交并更新本进度。
 - Product OS：本记录写回后运行 sync 并读回首页/总控，结果见下条。
+
+
+## 2026-09-15T12:30:00+08:00 · TASK-005 店铺与数据源配置（DONE）
+
+- 合同：09_TASKS TASK-005（依赖 TASK-004）：导入前固定店铺/时区/币种/来源命名空间；输出创建/列表/改名/归档店铺、创建 csv|mock 数据源、数据源覆盖摘要查询；验收=事实后不得换币种时区、mock 源不能绑真实店、归档店拒绝新导入、无平台连接假象；测试=设置 API 集成、C 仅消息源字段。禁止触碰真实平台 OAuth/API 与汇率换算（未触碰）。
+- 实现：src/services/stores.ts、src/services/dataSources.ts；路由 /api/v1/stores（GET/POST）、/api/v1/stores/{id}（PATCH）、/api/v1/data-sources（GET/POST）。要点：demo_mode 继承组织；platform 仅标签（响应无 connected/provider 字段）；首笔事实（任一事实表行）后 currency/timezone PATCH 返回 409 STORE_CONFIG_LOCKED（改名/归档不受限）；mock 源仅演示店（409 MOCK_SOURCE_DEMO_ONLY）；归档店拒绝新数据源（409 STORE_ARCHIVED）；namespace 唯一（409）；data-sources 列表按角色裁剪实体（C 仅 customer_messages）+ mapping_version=mapping-v1 + 按日 coverage 摘要与 last_import_at；store_create/store_update/data_source_create 同事务审计。
+- 测试（独立可丢弃集群 + /tmp 工作副本）：stores.test.ts 8/8；全量 integration 73/73（+8）；unit 18/18；typecheck 0 错；build exit 0（新路由入产物）。
+- 提交：f51ed41（phase/02-data-ingestion）。环境备注：主工作副本 node_modules 再次被 iCloud 驱逐致 tsc 挂死，工具链按既定策略切 /tmp 副本执行。
+- Product OS：sync 见下条核验。
