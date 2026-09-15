@@ -1,6 +1,6 @@
 # Gate 02 后续独立复审入口
 
-2026-09-16：ZCode 已完成 GATE_02 修复，业务冻结 **b2fa10f**、实际 HEAD/远端 **12b1732**（纯管理交接提交）。下方首个 text 块为本轮（ce5f286..12b1732）独立复审完整提示词；2026-09-15 对 ce5f286 的 FAIL 审查结论保留为历史。
+2026-09-16：ZCode 已完成 GATE_02 修复，业务冻结 **b2fa10f**（实际 HEAD 含其后纯管理交接提交）。下方首个 text 块为本轮独立复审完整提示词；2026-09-15 对 ce5f286 的 FAIL 审查结论保留为历史。
 
 ```text
 请接手 AI 电商运营助手 GATE_02 修复后的独立复审，范围仅 Phase 2 / TASK-005–007 的修复差异，不改业务代码、不推进 TASK-008、不合并 main、不部署。
@@ -9,7 +9,7 @@
 依次读 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、唯一进度 docs/ai-ecommerce-assistant/12_PROGRESS.md（含"GATE_02 修复轮执行记录"）、CODEX_REVIEW_HANDOFF.md 顶部交接、09_TASKS 005–007、08_API_SPEC、04_DATA_MODEL、02_USER_ROLES、11_DEVELOPMENT_RULES、DEVELOPMENT_HANDOFF、PHASE_PLAN、FINAL_DECISIONS。
 上一轮正式报告 docs/reviews/CODEX_REVIEW_GATE_02_2026-09-15.md（FAIL，G2-H01–H09/M01–M04/L01–L02）、GATE_02_EVIDENCE_2026-09-15.json 与 gate-02-evidence/ 及其反例继续有效。
 
-实际冻结：phase/02-data-ingestion = 12b1732（本地/远端已推送；业务修复止于 b2fa10f，12b1732 为纯管理交接提交）；main = 4c7e95b 未合并。本轮复审范围 **ce5f286..12b1732**，业务修复提交链 5690395→286527d→1c8909c→13c95e4→36e7764→da6de14→9263890→7616c4c→b2fa10f。开始重查 HEAD、未提交差异与其他执行者；保护原报告/证据/管理文档。
+实际冻结：phase/02-data-ingestion 当前实际 HEAD（本地/远端已推送）；业务修复止于 b2fa10f，其后提交均为纯管理/生成视图差异，不计入业务验收；main = 4c7e95b 未合并。本轮复审范围 **ce5f286..实际 HEAD**，业务修复提交链 5690395→286527d→1c8909c→13c95e4→36e7764→da6de14→9263890→7616c4c→b2fa10f。开始重查 HEAD、未提交差异与其他执行者；保护原报告/证据/管理文档。
 
 逐项复核上轮关闭标准（G2-H01–H09）与本轮修复声明：
 1. H01 coverage：服务端 DISTINCT ON 有效版本（dataset_version 最高）后按角色可见类型汇总；C 仅消息；last_import_at 按可见类型；from/to 严格日历、右开、90 天、非法 422。

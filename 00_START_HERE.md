@@ -15,7 +15,7 @@
 | 做到什么算完成 | 正式报告第13节九项HIGH关闭标准逐项复核：客服投影/原子CAS/解析边界/CanonicalBatch与覆盖声明/权限链/真流式限额/幂等/失败恢复/私有容器链；M/L逐项核定；独立PASS后Owner另行放行 |
 | 卡点 | 无技术阻塞；等待Codex独立复审；未合并main、未部署、未开始TASK-008；OSS真实云端联调缺云资源如实记录（非获批延期） |
 | 检查点 | YES |
-| 审查 | GATE_02 首轮 FAIL（ce5f286，9H/4M/2L）已按 P08 修复；业务冻结 b2fa10f、实际 HEAD 12b1732（纯管理），范围 ce5f286..12b1732；待独立复审 |
+| 审查 | GATE_02 首轮 FAIL（ce5f286，9H/4M/2L）已按 P08 修复；业务冻结 b2fa10f，其后均为纯管理提交；待独立复审 |
 | 进度最后更新 | 2026-09-16T02:30:00+08:00 |
 
 项目绝对路径：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
@@ -34,7 +34,7 @@
 依次读 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、唯一进度 docs/ai-ecommerce-assistant/12_PROGRESS.md（含"GATE_02 修复轮执行记录"）、CODEX_REVIEW_HANDOFF.md 顶部交接、09_TASKS 005–007、08_API_SPEC、04_DATA_MODEL、02_USER_ROLES、11_DEVELOPMENT_RULES、DEVELOPMENT_HANDOFF、PHASE_PLAN、FINAL_DECISIONS。
 上一轮正式报告 docs/reviews/CODEX_REVIEW_GATE_02_2026-09-15.md（FAIL，G2-H01–H09/M01–M04/L01–L02）、GATE_02_EVIDENCE_2026-09-15.json 与 gate-02-evidence/ 及其反例继续有效。
 
-实际冻结：phase/02-data-ingestion = 12b1732（本地/远端已推送；业务修复止于 b2fa10f，12b1732 为纯管理交接提交）；main = 4c7e95b 未合并。本轮复审范围 **ce5f286..12b1732**，业务修复提交链 5690395→286527d→1c8909c→13c95e4→36e7764→da6de14→9263890→7616c4c→b2fa10f。开始重查 HEAD、未提交差异与其他执行者；保护原报告/证据/管理文档。
+实际冻结：phase/02-data-ingestion 当前实际 HEAD（本地/远端已推送）；业务修复止于 b2fa10f，其后提交均为纯管理/生成视图差异，不计入业务验收；main = 4c7e95b 未合并。本轮复审范围 **ce5f286..实际 HEAD**，业务修复提交链 5690395→286527d→1c8909c→13c95e4→36e7764→da6de14→9263890→7616c4c→b2fa10f。开始重查 HEAD、未提交差异与其他执行者；保护原报告/证据/管理文档。
 
 逐项复核上轮关闭标准（G2-H01–H09）与本轮修复声明：
 1. H01 coverage：服务端 DISTINCT ON 有效版本（dataset_version 最高）后按角色可见类型汇总；C 仅消息；last_import_at 按可见类型；from/to 严格日历、右开、90 天、非法 422。
@@ -56,11 +56,11 @@ M/L 核定：M01 entity_type+响应字段；M02 org+name 唯一+409；M03 .csv 4
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；存在未提交或未跟踪内容。
-- 分支：phase/02-data-ingestion；版本：12b173243f50aa2fd7bde97696f20df425e5a55a。
+- 分支：phase/02-data-ingestion；版本：da620afd1390efb0d37e5332076470e4ac07ef2c。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
 - GitHub：phase/02-data-ingestion 本地/远端=12b1732（b2fa10f 为最后业务提交；管理交接 12b1732 已推送）；main=4c7e95b 未合并；最后核验：2026-09-16T02:30:00+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：git push 输出 7616c4c..b2fa10f；实际推送记录见执行记录。
 - 部署：未部署（本轮授权不含部署）；最后核验：从未核验；地址：未记录；证据：TASK-029 试点运行与运维要求另计。
 
-刷新前本地快照时间：2026-09-16T01:40:35+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-16T01:41:32+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)

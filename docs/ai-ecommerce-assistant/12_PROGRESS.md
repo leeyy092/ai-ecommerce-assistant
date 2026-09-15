@@ -6,7 +6,7 @@
 
 **Phase 2 / TASK-007 / CODEX_REVIEW_GATE_02 复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
 
-2026-09-16：ZCode 按 P08 完成本轮全部修复，业务修复止于 **b2fa10f**，管理交接提交后实际 HEAD/远端为 **12b1732**（纯管理差异），复审范围 **ce5f286..12b1732**。G2-H01–H09 全部关闭，M01/M02/M03/M04/L01/L02 逐项处理（M04 补齐可测试 OSS 适配，真实云端联调缺资源如实记录，未自行宣布延期获批）。最终候选独立验证：typecheck 0 错、unit 67/67、integration 97/97（9 文件）、web/worker/scripts build exit 0、e2e 8/8、官方空库 12 迁移、migrate diff 仅剩 M07 已知差异；H09 真实隔离 Compose 文件链路（canary 不进镜像→上传→Worker 校验→签名下载→重启读回）通过。测试自测通过不等于 Gate 通过；Codex 独立 PASS 后仍等 Owner 明确"放行 Phase 2"。
+2026-09-16：ZCode 按 P08 完成本轮全部修复，业务修复止于 **b2fa10f**；复审范围 **ce5f286..当前实际 HEAD**（业务修复止于 b2fa10f；其后 12b1732/da620af 及可能的后继提交均为纯管理/生成视图差异，不计入业务验收）。G2-H01–H09 全部关闭，M01/M02/M03/M04/L01/L02 逐项处理（M04 补齐可测试 OSS 适配，真实云端联调缺资源如实记录，未自行宣布延期获批）。最终候选独立验证：typecheck 0 错、unit 67/67、integration 97/97（9 文件）、web/worker/scripts build exit 0、e2e 8/8、官方空库 12 迁移、migrate diff 仅剩 M07 已知差异；H09 真实隔离 Compose 文件链路（canary 不进镜像→上传→Worker 校验→签名下载→重启读回）通过。测试自测通过不等于 Gate 通过；Codex 独立 PASS 后仍等 Owner 明确"放行 Phase 2"。
 
 **Phase 1 已由 Owner 放行并合并 main（32fb0d3），不重开**。D01 方案 A、M07 自定义外键维护约定持续有效。本轮不合并 main、不部署、不开始 TASK-008。
 
@@ -26,7 +26,7 @@
   "acceptance": "正式报告第13节九项HIGH关闭标准逐项复核：客服投影/原子CAS/解析边界/CanonicalBatch与覆盖声明/权限链/真流式限额/幂等/失败恢复/私有容器链；M/L逐项核定；独立PASS后Owner另行放行",
   "blockers": "无技术阻塞；等待Codex独立复审；未合并main、未部署、未开始TASK-008；OSS真实云端联调缺云资源如实记录（非获批延期）",
   "checkpoint": "YES",
-  "review": "GATE_02 首轮 FAIL（ce5f286，9H/4M/2L）已按 P08 修复；业务冻结 b2fa10f、实际 HEAD 12b1732（纯管理），范围 ce5f286..12b1732；待独立复审",
+  "review": "GATE_02 首轮 FAIL（ce5f286，9H/4M/2L）已按 P08 修复；业务冻结 b2fa10f，其后均为纯管理提交；待独立复审",
   "updated_at": "2026-09-16T02:30:00+08:00",
   "updated_by": "ZCode · GATE_02 修复轮收尾",
   "evidence": [
@@ -59,6 +59,7 @@
 - 新增迁移 2 个（共 12）：20260915110000 store(org_id,name) 唯一；20260915120000 import_task 部分唯一认领索引 + http_idempotency 表（部分索引/UUID CHECK 为自定义 SQL，沿 M07 式维护约定：migrate diff 的 DROP 建议不得直接应用）。未触碰 audit_log 外键，无需 H08 行为回归重跑；H08 套件已随 integration 全套通过。
 - Schema 新约束触发 Phase 1 两处测试适配（报告 §14 约定）：gate01.db H08 夹具店铺按 tag 改名（避开新唯一索引，断言不变）；database.test 迁移计数 10→12。
 - 当前 TASK-007 / 待审查 / Codex / P07 / Checkpoint=YES；TASK-005–007 因待独立复审保持 BLOCKED，不预写 DONE。
+- 管理提交自引用说明：交接/更正提交（12b1732、da620af 及后继）均为纯管理/生成视图差异，复审以「ce5f286..实际 HEAD、业务止于 b2fa10f」口径执行，不再逐个更正哈希。
 
 ## 历史结论（2026-09-12 恢复时，当前以状态块与任务表为准）
 
