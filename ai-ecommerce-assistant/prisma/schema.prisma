@@ -541,6 +541,7 @@ model Store {
 
   @@unique([orgId, id])
   @@unique([orgId, externalStoreId])
+  @@unique([orgId, name])
   @@index([orgId, status])
   @@index([snapshotStatus])
   @@map("store")

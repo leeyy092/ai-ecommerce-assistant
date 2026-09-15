@@ -380,3 +380,150 @@ describe("TASK-005｜数据源", () => {
     expect(cross.status).toBe(404);
   });
 });
+
+// ---------------------------------------------------------------------------
+// GATE_02 修复回归（docs/reviews/CODEX_REVIEW_GATE_02_2026-09-15.md §4/§5）：
+// G2-H01 覆盖摘要角色裁剪与有效版本、G2-H02 原子版本锁、G2-M02 同名原子保护。
+// ---------------------------------------------------------------------------
+
+describe("GATE_02 修复回归｜G2-H02 原子版本锁与 G2-M02 同名保护", () => {
+  let casStoreId: string;
+
+  beforeAll(async () => {
+    const { POST } = await import("@/app/api/v1/stores/route");
+    const res = await POST(
+      req("/api/v1/stores", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: "CAS店", external_store_id: "ext-cas", platform: "manual", currency: "CNY", timezone: "UTC" }),
+      }, owner.cookie),
+    );
+    casStoreId = ((await res.json()) as { data: { id: string } }).data.id;
+  });
+
+  it("G2-H02：两个同 expected_version 并发 PATCH 恰好一成功一 409，row_version 只前进一次", async () => {
+    const { PATCH } = await import("@/app/api/v1/stores/[id]/route");
+    const v = (await db.store.findUniqueOrThrow({ where: { id: casStoreId } })).rowVersion;
+    const patch = (name: string) =>
+      PATCH(
+        req(`/api/v1/stores/${casStoreId}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name, expected_version: v }),
+        }, owner.cookie),
+        { params: Promise.resolve({ id: casStoreId }) },
+      );
+    const [r1, r2] = await Promise.all([patch("CAS-A"), patch("CAS-B")]);
+    expect([r1.status, r2.status].sort()).toEqual([200, 409]);
+    const store = await db.store.findUniqueOrThrow({ where: { id: casStoreId } });
+    expect(store.rowVersion).toBe(v + 1);
+    // 审计与更新同事务：恰好 1 条成功审计（失败方整体回滚，无孤立审计）
+    const audits = await db.auditLog.count({ where: { action: "store_update", entityId: casStoreId } });
+    expect(audits).toBe(1);
+  });
+
+  it("G2-M02：改名撞已有名称 409 STORE_NAME_EXISTS（不再静默覆盖）", async () => {
+    const { PATCH } = await import("@/app/api/v1/stores/[id]/route");
+    const v = (await db.store.findUniqueOrThrow({ where: { id: casStoreId } })).rowVersion;
+    const res = await PATCH(
+      req(`/api/v1/stores/${casStoreId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: "旗舰店", expected_version: v }),
+      }, owner.cookie),
+      { params: Promise.resolve({ id: casStoreId }) },
+    );
+    expect(res.status).toBe(409);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe("STORE_NAME_EXISTS");
+  });
+
+  it("G2-M02：并发创建同名店铺（不同外部标识）仅一个 201，其余 409", async () => {
+    const { POST } = await import("@/app/api/v1/stores/route");
+    const mk = (ext: string) =>
+      POST(
+        req("/api/v1/stores", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name: "并发同名店", external_store_id: ext, platform: "manual", currency: "CNY", timezone: "UTC" }),
+        }, owner.cookie),
+      );
+    const results = await Promise.all([mk("par-1"), mk("par-2"), mk("par-3")]);
+    expect(results.filter((r) => r.status === 201).length).toBe(1);
+    expect(results.filter((r) => r.status === 409).length).toBe(2);
+    expect(await db.store.count({ where: { orgId, name: "并发同名店" } })).toBe(1);
+  });
+});
+
+describe("GATE_02 修复回归｜G2-H01 数据源覆盖摘要", () => {
+  let covStoreId: string;
+  let covSourceId: string;
+
+  beforeAll(async () => {
+    const s = await db.store.create({
+      data: { orgId, name: "覆盖店", externalStoreId: "ext-cov", platform: "manual", currency: "CNY", timezone: "UTC" },
+    });
+    covStoreId = s.id;
+    const ds = await db.dataSource.create({
+      data: { orgId, storeId: covStoreId, sourceNamespace: "ns-cov", name: "覆盖源", adapterKind: "csv" },
+    });
+    covSourceId = ds.id;
+    const task = await db.importTask.create({
+      data: {
+        orgId, storeId: covStoreId, dataSourceId: covSourceId, sourceKind: "orders",
+        originalFilename: "o.csv", rawObjectKey: "raw/cov.csv", fileSha256: randomUUID(),
+        uploadRequestKey: `up-${randomUUID().slice(0, 8)}`, baseDatasetVersion: 0n, createdBy: owner.userId,
+      },
+    });
+    // G2-H01 反例：orders v1=100 / v2=120，messages v1=3 / v2=4（同日同渠道历史多版本）
+    const day = new Date("2026-09-01T00:00:00Z");
+    const rows = [
+      { sourceKind: "orders" as const, datasetVersion: 1n, recordCount: 100n },
+      { sourceKind: "orders" as const, datasetVersion: 2n, recordCount: 120n },
+      { sourceKind: "customer_messages" as const, datasetVersion: 1n, recordCount: 3n },
+      { sourceKind: "customer_messages" as const, datasetVersion: 2n, recordCount: 4n },
+    ];
+    for (const r of rows) {
+      await db.dataCoverage.create({
+        data: {
+          orgId, storeId: covStoreId, dataSourceId: covSourceId, sourceKind: r.sourceKind,
+          coverageDate: day, status: "complete", recordCount: r.recordCount,
+          datasetVersion: r.datasetVersion, importTaskId: task.id,
+        },
+      });
+    }
+  });
+
+  it("O 只按当前有效版本汇总（124、kinds=2）；C 仅消息（4、kinds=1）且 last_import_at 按可见类型过滤", async () => {
+    const { GET } = await import("@/app/api/v1/data-sources/route");
+    type Item = { id: string; coverage: { date: string; source_kinds: number; record_count: number }[]; last_import_at: string | null };
+    const ownerView = await GET(req(`/api/v1/data-sources?store_id=${covStoreId}`, {}, owner.cookie));
+    const ownerMine = ((await ownerView.json()) as { data: { items: Item[] } }).data.items.find((i) => i.id === covSourceId);
+    expect(ownerMine?.coverage).toEqual([{ date: "2026-09-01", source_kinds: 2, record_count: 124 }]);
+    expect(ownerMine?.last_import_at).not.toBeNull();
+
+    const csView = await GET(req(`/api/v1/data-sources?store_id=${covStoreId}`, {}, cs.cookie));
+    const csMine = ((await csView.json()) as { data: { items: Item[] } }).data.items.find((i) => i.id === covSourceId);
+    expect(csMine?.coverage).toEqual([{ date: "2026-09-01", source_kinds: 1, record_count: 4 }]);
+    // 该来源只有 orders 导入任务，对 C 不可见 → last_import_at 为 null
+    expect(csMine?.last_import_at).toBeNull();
+  });
+
+  it("to 右开区间；from>to、非法日期、跨度超 90 天均 422（不再 503）", async () => {
+    const { GET } = await import("@/app/api/v1/data-sources/route");
+    type Item = { id: string; coverage: unknown[] };
+    const incl = await GET(req(`/api/v1/data-sources?store_id=${covStoreId}&from=2026-09-01&to=2026-09-02`, {}, owner.cookie));
+    expect(((await incl.json()) as { data: { items: Item[] } }).data.items.find((i) => i.id === covSourceId)?.coverage.length).toBe(1);
+
+    const excl = await GET(req(`/api/v1/data-sources?store_id=${covStoreId}&from=2026-09-01&to=2026-09-01`, {}, owner.cookie));
+    expect(((await excl.json()) as { data: { items: Item[] } }).data.items.find((i) => i.id === covSourceId)?.coverage).toEqual([]);
+
+    const bad = await GET(req(`/api/v1/data-sources?store_id=${covStoreId}&from=not-a-date`, {}, owner.cookie));
+    expect(bad.status).toBe(422);
+    const impossible = await GET(req(`/api/v1/data-sources?store_id=${covStoreId}&from=2026-02-30`, {}, owner.cookie));
+    expect(impossible.status).toBe(422);
+    const order = await GET(req(`/api/v1/data-sources?store_id=${covStoreId}&from=2026-09-05&to=2026-09-01`, {}, owner.cookie));
+    expect(order.status).toBe(422);
+    const long = await GET(req(`/api/v1/data-sources?store_id=${covStoreId}&from=2026-01-01&to=2026-09-15`, {}, owner.cookie));
+    expect(long.status).toBe(422);
+  });
+});

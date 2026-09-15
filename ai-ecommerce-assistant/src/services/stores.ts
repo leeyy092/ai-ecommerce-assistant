@@ -8,7 +8,7 @@
  * - 归档店铺拒绝新建数据源（后续导入同样拒绝）；
  * - mock 数据源只能绑定演示店铺。
  */
-import type { Prisma, PrismaClient } from "@/generated/prisma/client";
+import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import { AccessError, type AuthContext } from "@/services/access";
 import { writeAudit } from "@/services/audit";
 
@@ -61,6 +61,32 @@ export interface CreateStoreInput {
   timezone: string;
 }
 
+/**
+ * G2-M02：数据库唯一冲突 → 稳定 409（并发路径由唯一索引原子裁决，预查询仅友好提示）。
+ * driver-adapter 下约束标识在 meta.driverAdapterError.cause.constraint.index（如
+ * store_org_id_name_key），兼容读取 meta.target；按索引名判别冲突来源。
+ */
+function mapUniqueViolation(error: unknown): AccessError | null {
+  const code = (error as { code?: unknown } | null)?.code;
+  if (code !== "P2002") return null;
+  const meta = (error as { meta?: Record<string, unknown> | null }).meta ?? {};
+  const cause = (
+    (meta.driverAdapterError as { cause?: { constraint?: { index?: string } } } | undefined)
+      ?.cause ?? {}
+  ).constraint;
+  const target = [meta.target, cause?.index]
+    .filter((part) => part !== undefined)
+    .map((part) => String(part))
+    .join(",");
+  if (target.includes("name")) {
+    return new AccessError(409, "STORE_NAME_EXISTS", "同名店铺已存在");
+  }
+  if (target.includes("external_store_id")) {
+    return new AccessError(409, "STORE_EXISTS", "相同外部店铺标识已存在");
+  }
+  return null;
+}
+
 export async function createStore(
   ctx: StoresContext,
   input: CreateStoreInput,
@@ -72,52 +98,45 @@ export async function createStore(
   if (!isValidTimezone(input.timezone)) {
     throw new AccessError(422, "VALIDATION_ERROR", "timezone 必须为合法 IANA 时区");
   }
-  return ctx.db.$transaction(async (tx) => {
-    const sameName = await tx.store.findFirst({
-      where: { orgId: ctx.orgId, name: input.name },
-      select: { id: true },
-    });
-    if (sameName) {
-      throw new AccessError(409, "STORE_NAME_EXISTS", "同名店铺已存在");
-    }
-    const sameExternal = await tx.store.findFirst({
-      where: { orgId: ctx.orgId, externalStoreId: input.externalStoreId },
-      select: { id: true },
-    });
-    if (sameExternal) {
-      throw new AccessError(409, "STORE_EXISTS", "相同外部店铺标识已存在");
-    }
-    const org = await tx.organization.findUniqueOrThrow({
-      where: { id: ctx.orgId },
-      select: { demoMode: true },
-    });
-    const created = await tx.store.create({
-      data: {
+  try {
+    return await ctx.db.$transaction(async (tx) => {
+      const org = await tx.organization.findUniqueOrThrow({
+        where: { id: ctx.orgId },
+        select: { demoMode: true },
+      });
+      const created = await tx.store.create({
+        data: {
+          orgId: ctx.orgId,
+          name: input.name,
+          externalStoreId: input.externalStoreId,
+          platform: input.platform,
+          currency,
+          timezone: input.timezone,
+          demoMode: org.demoMode,
+        },
+      });
+      await writeAudit(tx, {
         orgId: ctx.orgId,
-        name: input.name,
-        externalStoreId: input.externalStoreId,
-        platform: input.platform,
-        currency,
-        timezone: input.timezone,
-        demoMode: org.demoMode,
-      },
+        storeId: created.id,
+        actorUserId: ctx.userId,
+        action: "store_create",
+        entityType: "store",
+        entityId: created.id,
+        afterSummary: {
+          name: input.name,
+          platform: input.platform,
+          currency,
+          timezone: input.timezone,
+        },
+      });
+      return { id: created.id };
     });
-    await writeAudit(tx, {
-      orgId: ctx.orgId,
-      storeId: created.id,
-      actorUserId: ctx.userId,
-      action: "store_create",
-      entityType: "store",
-      entityId: created.id,
-      afterSummary: {
-        name: input.name,
-        platform: input.platform,
-        currency,
-        timezone: input.timezone,
-      },
-    });
-    return { id: created.id };
-  });
+  } catch (error) {
+    // G2-M02：并发同名/同外部标识 → 唯一索引原子拒绝（409），不再依赖事务外预查询
+    const mapped = mapUniqueViolation(error);
+    if (mapped) throw mapped;
+    throw error;
+  }
 }
 
 /** 店铺列表投影：无任何经营数值字段（平台只是标签，无连接状态） */
@@ -173,94 +192,104 @@ export async function updateStore(
   storeId: string,
   input: UpdateStoreInput,
 ): Promise<Record<string, unknown>> {
-  return ctx.db.$transaction(async (tx) => {
-    const store = await tx.store.findFirst({
-      where: { orgId: ctx.orgId, id: storeId },
+  const currency = input.currency !== undefined ? input.currency.toUpperCase() : undefined;
+  if (currency !== undefined && !/^[A-Z]{3}$/.test(currency)) {
+    throw new AccessError(422, "VALIDATION_ERROR", "currency 必须为 3 位字母（ISO 4217）");
+  }
+  if (input.timezone !== undefined && !isValidTimezone(input.timezone)) {
+    throw new AccessError(422, "VALIDATION_ERROR", "timezone 必须为合法 IANA 时区");
+  }
+
+  try {
+    return await ctx.db.$transaction(async (tx) => {
+      const store = await tx.store.findFirst({
+        where: { orgId: ctx.orgId, id: storeId },
+      });
+      if (!store) {
+        throw new AccessError(404, "NOT_FOUND", "店铺不存在");
+      }
+
+      // G2-H02：版本条件与授权域进入同一条 UPDATE 的 WHERE——并发同版本请求在行锁
+      // 释放后重评谓词必然只命中一个，另一个 count=0 → 409，不再出现双 200 覆盖。
+      const nextSettings =
+        input.requiredChannels !== undefined
+          ? { ...((store.settings as Record<string, unknown>) ?? {}), required_channels: input.requiredChannels }
+          : (store.settings as Record<string, unknown>);
+      const cas = await tx.store.updateMany({
+        where: { orgId: ctx.orgId, id: storeId, rowVersion: input.expectedVersion },
+        data: {
+          name: input.name ?? store.name,
+          status: input.status ?? store.status,
+          currency: currency ?? store.currency,
+          timezone: input.timezone ?? store.timezone,
+          settings: nextSettings as Prisma.InputJsonValue,
+          rowVersion: { increment: 1 },
+        },
+      });
+      if (cas.count === 0) {
+        throw new AccessError(409, "VERSION_CONFLICT", "配置版本已变化，请刷新后重试");
+      }
+
+      // 事实锁在已持有行锁后判定；失败随事务回滚（更新与审计一并回退）
+      const touchesLocked = input.currency !== undefined || input.timezone !== undefined;
+      if (touchesLocked && (await storeHasFacts(tx, storeId))) {
+        throw new AccessError(
+          409,
+          "STORE_CONFIG_LOCKED",
+          "已存在业务事实，币种与时区不可变更",
+        );
+      }
+
+      await writeAudit(tx, {
+        orgId: ctx.orgId,
+        storeId: store.id,
+        actorUserId: ctx.userId,
+        action: "store_update",
+        entityType: "store",
+        entityId: store.id,
+        beforeSummary: {
+          name: store.name,
+          status: store.status,
+          currency: store.currency,
+          timezone: store.timezone,
+        },
+        afterSummary: {
+          name: input.name ?? store.name,
+          status: input.status ?? store.status,
+          currency: currency ?? store.currency,
+          timezone: input.timezone ?? store.timezone,
+        },
+      });
+
+      const updated = await tx.store.findUniqueOrThrow({
+        where: { id: store.id },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          currency: true,
+          timezone: true,
+          settings: true,
+          rowVersion: true,
+        },
+      });
+      return {
+        id: updated.id,
+        name: updated.name,
+        status: updated.status,
+        currency: updated.currency,
+        timezone: updated.timezone,
+        required_channels:
+          (updated.settings as Record<string, unknown>)?.required_channels ?? null,
+        row_version: updated.rowVersion,
+      };
     });
-    if (!store) {
-      throw new AccessError(404, "NOT_FOUND", "店铺不存在");
-    }
-    if (store.rowVersion !== input.expectedVersion) {
-      throw new AccessError(409, "VERSION_CONFLICT", "配置版本已变化，请刷新后重试");
-    }
-
-    const touchesLocked = input.currency !== undefined || input.timezone !== undefined;
-    if (touchesLocked && (await storeHasFacts(tx, storeId))) {
-      throw new AccessError(
-        409,
-        "STORE_CONFIG_LOCKED",
-        "已存在业务事实，币种与时区不可变更",
-      );
-    }
-    if (input.currency !== undefined && !/^[A-Za-z]{3}$/.test(input.currency)) {
-      throw new AccessError(422, "VALIDATION_ERROR", "currency 必须为 3 位字母（ISO 4217）");
-    }
-    if (input.timezone !== undefined && !isValidTimezone(input.timezone)) {
-      throw new AccessError(422, "VALIDATION_ERROR", "timezone 必须为合法 IANA 时区");
-    }
-
-    const nextSettings =
-      input.requiredChannels !== undefined
-        ? { ...((store.settings as Record<string, unknown>) ?? {}), required_channels: input.requiredChannels }
-        : (store.settings as Record<string, unknown>);
-    void (nextSettings as Prisma.InputJsonValue);
-
-    await tx.store.update({
-      where: { id: store.id },
-      data: {
-        name: input.name ?? store.name,
-        status: input.status ?? store.status,
-        currency: input.currency?.toUpperCase() ?? store.currency,
-        timezone: input.timezone ?? store.timezone,
-        settings: nextSettings as Prisma.InputJsonValue,
-        rowVersion: { increment: 1 },
-      },
-    });
-
-    await writeAudit(tx, {
-      orgId: ctx.orgId,
-      storeId: store.id,
-      actorUserId: ctx.userId,
-      action: "store_update",
-      entityType: "store",
-      entityId: store.id,
-      beforeSummary: {
-        name: store.name,
-        status: store.status,
-        currency: store.currency,
-        timezone: store.timezone,
-      },
-      afterSummary: {
-        name: input.name ?? store.name,
-        status: input.status ?? store.status,
-        currency: input.currency?.toUpperCase() ?? store.currency,
-        timezone: input.timezone ?? store.timezone,
-      },
-    });
-
-    const updated = await tx.store.findUniqueOrThrow({
-      where: { id: store.id },
-      select: {
-        id: true,
-        name: true,
-        status: true,
-        currency: true,
-        timezone: true,
-        settings: true,
-        rowVersion: true,
-      },
-    });
-    return {
-      id: updated.id,
-      name: updated.name,
-      status: updated.status,
-      currency: updated.currency,
-      timezone: updated.timezone,
-      required_channels:
-        (updated.settings as Record<string, unknown>)?.required_channels ?? null,
-      row_version: updated.rowVersion,
-    };
-  });
+  } catch (error) {
+    // G2-M02：改名撞唯一索引 → 409（并发改名保护）
+    const mapped = mapUniqueViolation(error);
+    if (mapped) throw mapped;
+    throw error;
+  }
 }
 
 export type { AuthContext };
