@@ -7,10 +7,10 @@
 |---|---|
 | 最终目标 | 让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动 |
 | 当前阶段 | 08 任务推进 · Phase 2 数据接入基础（005–007） |
-| 当前任务 | TASK-006 |
+| 当前任务 | TASK-007 |
 | 当前状态 | 进行中 |
 | 上一个完成项 | Gate 01 全链路收官：REVIEW_5 PASS 且 Owner 放行 Phase 1（32fb0d3）；已合并 main 并自 main 创建 phase/02-data-ingestion |
-| 下一步 | TASK-006 统一 Adapter 与最小黄金样本：按 09_TASKS 原合同实现、测试、提交、更新唯一进度；完成后推进 007，007 后停在 GATE_02 交 Codex |
+| 下一步 | TASK-007 文件上传、私有存储与 ImportTask：按 09_TASKS 原合同实现、测试、提交；完成后冻结候选、更新交接，停在 CODEX_REVIEW_GATE_02 交 Codex |
 | 交给谁 | ZCode |
 | 做到什么算完成 | TASK-005–007 逐项按 09_TASKS 合同实现并通过其指定检查；每 TASK 单独提交（含 TASK 编号）并更新进度；007 完成后冻结交 Codex GATE_02 复审 |
 | 卡点 | 无（Phase 内常规事项无需逐项向 Owner 确认；产品规则待决策或实质阻塞时再上报） |
@@ -25,8 +25,8 @@
 ```text
 当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
 产品目标：让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动
-当前任务：TASK-006
-本轮动作：TASK-006 统一 Adapter 与最小黄金样本：按 09_TASKS 原合同实现、测试、提交、更新唯一进度；完成后推进 007，007 后停在 GATE_02 交 Codex
+当前任务：TASK-007
+本轮动作：TASK-007 文件上传、私有存储与 ImportTask：按 09_TASKS 原合同实现、测试、提交；完成后冻结候选、更新交接，停在 CODEX_REVIEW_GATE_02 交 Codex
 
 请接手 AI 电商运营助手 Phase 2（数据接入基础）开发。项目根目录 /Users/yuyuyu/Documents/ChatGPT/产品-开发，应用在其下 ai-ecommerce-assistant，总控 /Users/yuyuyu/Documents/AI-Workspace。
 
@@ -42,11 +42,11 @@ TASK-005 店铺与数据源配置、TASK-006 统一 Adapter 与最小黄金样�
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；存在未提交或未跟踪内容。
-- 分支：phase/02-data-ingestion；版本：f51ed415d8d7d40cb37e854aff25454747782652。
+- 分支：phase/02-data-ingestion；版本：7583ed70f3903738c30906d6c8fba64db2f74c3f。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
 - GitHub：main=Phase 1 合并结果（32fb0d3+merge）；phase/02-data-ingestion 自 main 创建并推送；phase/01-foundation 保留；最后核验：2026-09-14T23:45:00+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：git push 后 ls-remote 核验三分支。
 - 部署：未部署（本次 Owner 指令明确不授权部署）；最后核验：2026-09-14T23:45:00+08:00；地址：未记录；证据：P0 后续 TASK-029 试点运行与运维要求另计。
 
-刷新前本地快照时间：2026-09-15T12:24:16+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-15T12:36:04+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)
