@@ -1,3 +1,20 @@
+# P07 · GATE_02 REVIEW 2 复修完成后的独立复审入口
+
+2026-09-16：ZCode 已完成 REVIEW 2 剩余修复并推送（0882e06 → eee45c1 → a6f141f）。下方首个 text 块为本轮（072f9ba..实际 HEAD）独立复审完整提示词；REVIEW 2 审查结论保留为历史。
+
+```text
+请接手 AI 电商运营助手下一轮 GATE_02 独立复审。只审 Phase 2 / TASK-005–007 的修复差异，不改业务代码，不推进 TASK-008、不合并 main、不部署。
+根目录 /Users/yuyuyu/Documents/ChatGPT/产品-开发；应用目录 /Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant；总控 /Users/yuyuyu/Documents/AI-Workspace。
+依次读取根目录AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、docs/ai-ecommerce-assistant/12_PROGRESS.md、CODEX_REVIEW_HANDOFF.md，以及 /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md、/Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/GATE_02_REVIEW_2_EVIDENCE_2026-09-16.json、/Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/gate-02-review-2-evidence/README.md 和 /Users/yuyuyu/Documents/ChatGPT/产品-开发/prompts/P08_FIX.md。合同与决策仍为docs/ai-ecommerce-assistant/09_TASKS.md、08_API_SPEC.md、04_DATA_MODEL.md、02_USER_ROLES.md、11_DEVELOPMENT_RULES.md以及根目录FINAL_DECISIONS.md、PHASE_PLAN.md、DEVELOPMENT_HANDOFF.md。
+REVIEW 2 = FAIL（冻结072f9ba、业务b2fa10f）。ZCode 已完成剩余修复并推送：0882e06（M05 默认90天窗口）→ eee45c1（H03 非法偏移行级错误 + H04 coverage channel 规范枚举/default-case-refund 配对）→ a6f141f（H05 Worker 补查全局 User.status=disabled；H06 spool 空行跳过+解析错误即中止+唯一清理出口；H07 HTTP 存档与任务同事务原子提交+内容复用绑定 key 存档+idempotencyKey 不复制 HTTP Key+重放按存档状态；H08 写流错误创建时接管+所有权清理+work includeMetadata 真实 retry 元数据；M04 本地 spool 独立临时域+promoteSpoolObject 打通 OSS 调用链）。本轮复审范围 **072f9ba..实际 HEAD**；先核对磁盘实际HEAD、工作树与执行者；管理差异另列，保留旧报告与未提交工作。每项修复均先落 before 红色回归再修根因，断言保留在 tests/unit/adapters.test.ts、tests/integration/imports.test.ts、tests/integration/stores.test.ts。
+按报告§13关闭标准把有效反例与已通过正常路径实际重跑。仅在/tmp归档+新建一次性PG17验证；不得拿ZCode日志或旧探针exit0代替结果。H02/H09及M01–M03/L01–L02已关闭，只有本轮触发相关边界才扩大回归；H01安全部分关闭，默认90日剩余转M05；M04本机OSS调用链必须验证，真实云端验证限定延期另列；Phase1已关闭项不重开，D01不重问。
+按15节输出新的PASS/FAIL/BLOCKED正式报告及机器证据索引，保留历史。重读最新进度后更新任务表、当前摘要、唯一状态块、交接与对应下一提示词；执行/usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync并读回首页md/html和总控PROJECTS。测试、独立审查、Owner放行、GitHub同步、部署分开记录。PASS后仍等Owner明确“放行 Phase 2”。
+```
+
+---
+
+## 历史提示词（保留原文）
+
 # Gate 02 后续独立复审入口
 
 2026-09-16：ZCode 已完成 GATE_02 修复，业务冻结 **b2fa10f**（实际 HEAD 含其后纯管理交接提交）。下方首个 text 块为本轮独立复审完整提示词；2026-09-15 对 ce5f286 的 FAIL 审查结论保留为历史。

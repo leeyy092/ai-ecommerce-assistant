@@ -1,3 +1,54 @@
+# P08 · GATE_02 REVIEW 2 剩余修复（当前）
+
+更新：2026-09-16T14:15:25+08:00。下一工具 ZCode；完整复制下面首个 text 块。
+
+```text
+你现在担任 AI 电商运营助手主开发 ZCode。只修复 Phase 2 / TASK-005–007 的 GATE_02 REVIEW 2 剩余问题，一次一个 TASK。不要开始 TASK-008、合并 main、部署、扩大 P0、换栈或重开 Phase 1 已关闭项。
+
+项目根目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发
+应用目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant
+总控目录：/Users/yuyuyu/Documents/AI-Workspace
+
+按顺序完整读取以下本地文件；请自行查阅文件，不要求 Owner 再搬运正文：
+1. /Users/yuyuyu/Documents/ChatGPT/产品-开发/AGENTS.md
+2. /Users/yuyuyu/Documents/ChatGPT/产品-开发/.product-os.json
+3. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/STATE_PROTOCOL.md
+4. /Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.md
+5. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/ai-ecommerce-assistant/12_PROGRESS.md（唯一进度，先看当前导航和最新执行记录）
+6. /Users/yuyuyu/Documents/ChatGPT/产品-开发/CODEX_REVIEW_HANDOFF.md（最上方为 REVIEW 2 当前交接）
+7. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md（完整15节，特别是§4/§5/§13）
+8. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/GATE_02_REVIEW_2_EVIDENCE_2026-09-16.json
+9. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/gate-02-review-2-evidence/README.md（断言、脚本、复现顺序与环境限制）
+10. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/CODEX_REVIEW_GATE_02_2026-09-15.md（历史基准；未被覆盖）
+11. 合同文件：
+- /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/ai-ecommerce-assistant/09_TASKS.md
+- /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/ai-ecommerce-assistant/08_API_SPEC.md
+- /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/ai-ecommerce-assistant/04_DATA_MODEL.md
+- /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/ai-ecommerce-assistant/02_USER_ROLES.md
+- /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/ai-ecommerce-assistant/11_DEVELOPMENT_RULES.md
+12. /Users/yuyuyu/Documents/ChatGPT/产品-开发/DEVELOPMENT_HANDOFF.md、/Users/yuyuyu/Documents/ChatGPT/产品-开发/PHASE_PLAN.md、/Users/yuyuyu/Documents/ChatGPT/产品-开发/FINAL_DECISIONS.md。
+
+当前独立审查结论 FAIL：6 HIGH（G2-H03–H08）与2 MEDIUM（G2-M04/M05）。当前审查 HEAD=072f9ba7cebe523832a739b3b3f19fcb1b305c2f；最后业务b2fa10f；main=4c7e95b。先检查实际HEAD/分支/未提交差异及是否另有执行者。Codex报告、证据、进度与生成视图是授权保留的管理差异，不能reset、clean或覆盖；版本变化先重新界定范围。
+
+先把本轮有效反例做成有期望值的失败回归，再修根因。顺序：TASK-005处理M05默认90天窗口；TASK-006处理H03非法偏移与H04规范channel；TASK-007集中处理H05完整撤权、H06计数与清理、H07 HTTP幂等原子性、H08文件/任务提交边界与写流/队列失败，以及M04 OSS实际调用链。H07/H08的同一事务根因一次修复，不重复制造两套机制。
+
+已通过：H02原子CAS与审计回滚、H09真实Docker共享私有卷链，M01–M03与L01–L02；H01原客服投影和版本累计风险已关闭，日期剩余降为M05。保留正常路径，修复涉及这些边界时才做相应回归；不要把所有旧项重开。
+
+M04：本机spool→OSS读取→落位/清理存在实际NoSuchKey，必须接通并用注入式对象服务验证；只有真实云端账号/桶权限/网络联调可留到TASK-029或部署前，不能把本机代码问题说成缺资源。M05为MEDIUM不单独阻塞阶段，处理状态需明确。
+
+验证在 /tmp 冻结归档副本+本次可丢弃PG17集群执行，不在iCloud主副本跑node_modules/tsc/Prisma。原iCloud/磁盘与Docker网络事件按环境记录。禁止写全量业务提交/mapping/聚合/UI来补本轮问题；D01方案A不重问、M07自定义SQL维护约定继续。
+
+完成每个TASK记录代码提交、期望/实际、反例与正常回归。最后对同一候选独立执行typecheck/unit/integration/web+worker+scripts build/e2e；若改容器/存储/Worker，重验私有canary与真实Compose文件链；迁移变动按协议回归。不得以脚本exit0或自测全绿宣布Gate通过。
+
+收尾重读最新12_PROGRESS，更新任务表/当前摘要/唯一状态块；逐项给PASS/FAIL/BLOCKED/未运行原因，写清最新业务冻结与后继管理差异，保留全部历史。更新CODEX_REVIEW_HANDOFF及P07首个text块，下一工具Codex，Checkpoint=YES。按项目Git生命周期处理本任务相关提交与候选推送，禁止合并main/force push；本轮复审修复范围072f9ba..新实际HEAD。
+运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync，读回项目00_START_HERE.md/.html与总控00_CONTROL_CENTER/PROJECTS.md；sync不等于审查或Owner放行。
+修完停在GATE_02。Codex独立PASS后，Owner仍需另行明确说“放行 Phase 2”。
+```
+
+---
+
+## 历史提示词（保留原文，不作当前执行入口）
+
 # Gate 02 独立复审 FAIL · Phase 2 修复 · ZCode 当前接手提示词
 
 2026-09-15：Codex 已独立复审 ce5f286，结论 **FAIL**（9 HIGH / 4 MEDIUM / 2 LOW）。下一步为修复，不是阶段放行；当前 Phase 2 / TASK-007 / 待修复 / Checkpoint=YES。首个 text 代码块为当前完整提示词，下方历史内容不代表当前状态。

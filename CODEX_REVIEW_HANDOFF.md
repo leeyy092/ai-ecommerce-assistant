@@ -1,3 +1,66 @@
+# CODEX_REVIEW_GATE_02 · REVIEW 2 复修完成交接（当前）
+
+更新时间：2026-09-16T16:40:00+08:00；执行者：ZCode。**Phase 2 / TASK-007 / REVIEW 2 剩余问题复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex（prompts/P07_CODE_REVIEW.md 首个 text 块）。**
+
+## 复审定位信息
+
+| 项 | 值 |
+|---|---|
+| Current Branch | `phase/02-data-ingestion`（本地/远端 = a6f141f，已推送 072f9ba..a6f141f） |
+| Base | main `4c7e95b`（未变动、未合并） |
+| **复审范围** | **`072f9ba..实际 HEAD`**（业务修复 3 个提交：0882e06 → eee45c1 → a6f141f；本轮管理文档差异为纯管理，不计业务验收） |
+| 上轮审查 | REVIEW 2 = FAIL（冻结 072f9ba，剩 6H+2M），报告 docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md 及 gate-02-review-2-evidence/ 保留 |
+| Checkpoint | YES；PASS 后仍等 Owner 明确"放行 Phase 2"；不合并 main、不部署、不开始 TASK-008 |
+
+## 逐项修复（每项先落 before 红色回归再修根因，断言保留）
+
+- **H03**：validateTimestamp 校验偏移值（hh≤23、mm≤59）+ Date 解析失败转稳定行错误——+24:00/+08:99/-30:00 产生 INVALID_DATETIME，不再向 Worker 抛 RangeError。
+- **H04**：CoverageChannel 收紧为 default/case/refund 并按 source_kind 配对（after_sales→case|refund，其余→default）；组合键 "orders/default" 不再被 createCanonicalBatch 接受；coverage-golden 两店声明改规范 channel，oracle 三层校验保持。
+- **H05**：Worker 执行前联合检查领域 User.status=disabled（对照 src/lib/session.ts HTTP 侧同款边界）+ Membership + 类型权限；全局禁用者遗留任务终态 UPLOAD_PERMISSION_REVOKED；不改 D01。
+- **H06**：spool 解析选项与 Worker 一致（skip_empty_lines，空行不再破坏计数）；解析错误=计数不可信即中止（422 INVALID_CSV）；清理完成后再响应，所有拒绝路径（缺字段/类型/角色/扩展名/编码/超限）统一走唯一清理出口不留临时文件。
+- **H07**：HTTP 存档与任务建账同事务原子提交（并发同 key 异 body 整体回滚后按已存档裁决：同 hash 重放首次响应、异 hash 409 且无残留任务）；内容复用也绑定 key 存档（同 key 同 body 200/异 body 409）；重放按存档首次状态返回；ImportTask.idempotencyKey 不再复制 HTTP Key（业务幂等键属 TASK-008 按 04 §12.5 生成），修复跨用户/24h 误 503。
+- **H08**：写流错误在 createWriteStream 时即接管（EACCES/ENOSPC 503 可控返回不逃逸进程）；409/失败路径只清理未被有效任务拥有的文件（无文件任务不再产生）；worker 改 { includeMetadata: true } 取真实 retryLimit/retryCount（不再类型强转）。
+- **M04**：本地 spool 独立临时域（storage.localTempPath/deleteLocalTemp），严格 UTF-8 读取直读本地文件；新增 promoteSpoolObject 把 spool 提升进驱动域（local rename / oss 本地读流→put→清本地）；注入式调用链测试覆盖 put/落位/签名下载/清理。真实云账号联调按 REVIEW 2 §5 核定留至 TASK-029/部署前（当前仅启用 local；不宣布 OSS 可生产使用）。
+- **M05**：无 from/to 默认最近 90 天（UTC 今日右开端点），单边沿用钳制；101 日 fixture 断言无/单边均 ≤90 天。
+
+## ZCode 记录的最终候选验证（a6f141f）
+
+| 套件 | 结果 |
+|---|---|
+| typecheck | ✅ 0 错 |
+| unit | ✅ 69/69 |
+| integration | ✅ **106/106**（9 文件；imports 重写 20 例、stores 14 例含 M05 回归） |
+| build（web+worker+scripts） | ✅ exit 0 |
+| e2e | ✅ 8/8 |
+| before 证据 | REVIEW 2 反例回归修复前全红（3 unit + 7 integration），已随本轮运行日志留档 |
+
+## 边界与状态
+
+- 本轮未合并 main、未部署、未开始 TASK-008；上轮已通过项（H01 主风险/H02/H09、M01–M03、L01–L02）未触碰，未新增迁移、未改依赖。
+- 管理提交自引用口径沿用：复审以「072f9ba..实际 HEAD、业务修复止于 a6f141f」执行，其后管理提交不计业务验收。
+
+---
+
+# CODEX_REVIEW_GATE_02 · REVIEW 2 独立复审结论与修复交接（历史：REVIEW 2 审查结论）
+
+更新时间：2026-09-16T14:15:25+08:00；Reviewer：Codex。**FAIL（历史：该轮剩余问题已由 ZCode 复修，见最上方交接）；Phase 2 / TASK-007 / Checkpoint=YES。**
+
+- 正式15节报告：[REVIEW 2](docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md)；[机器索引](docs/reviews/GATE_02_REVIEW_2_EVIDENCE_2026-09-16.json)；[断言与复现顺序](docs/reviews/gate-02-review-2-evidence/README.md)。
+- 给ZCode的完整提示词：`/Users/yuyuyu/Documents/ChatGPT/产品-开发/prompts/P08_FIX.md` 首个 text 块，已列全部绝对路径，请自行读取报告与证据。
+- 审查范围 ce5f286..072f9ba，最后业务 b2fa10f；分支 phase/02-data-ingestion 本地/远端均072f9ba，main4c7e95b。后继6文件仅管理差异。本轮报告与管理写回未提交/推送，先检查实际HEAD/工作树，全部历史保留。
+- **剩余6 HIGH：H03异常时区RangeError；H04 coverage channel不符规范；H05 Worker漏全局User禁用；H06空行绕过10万行与拒绝文件残留；H07 HTTP Key域/24h/复用/原子存档；H08提交后误删raw、写流错误逃逸、重试元数据缺失。** 可执行标准在报告第13节。
+- **剩余2 MEDIUM：M04 OSS本地spool与远端读取/清理断裂；M05缺from/to时返回101日。** H01原HIGH角色与历史累计风险已修，日期小项降级转M05。M04只有真实云账号验证可留到TASK-029/部署前，本机调用链故障不能延期成“缺资源”。
+- 已关闭：H02、H09、M01–M03、L01–L02；其他已通过正常路径也保留。仅新改动触发时扩大回归，避免无理由重复返修。
+- 本轮独立：typecheck0、unit67/67、integration97/97、Web/Worker/scripts build0、e2e8/8、官方空库12迁移与10→12/重复deploy通过；migrate diff仅M07已知外键，未应用。真实Docker镜像canary排除及隔离Compose上传→Worker→签名下载→重启读回PASS。新增预期断言FAIL；自测全绿不等于Gate通过。
+- 验证全部位于/tmp归档+本次新PG17集群；iCloud dataless与Docker pull网络问题、探针装置修正如实记录。未在主工作副本跑工具链；未改业务代码、Schema、测试、依赖。
+- Phase1与D01方案A保持关闭，M07自定义外键与新增部分索引维护约定继续；不实现TASK-008 mapping/提交/聚合/UI。
+- 下一轮由ZCode完成本轮剩余修复后冻结候选，交Codex审072f9ba..新实际HEAD。**当前禁止合并main、部署或开始TASK-008；独立PASS后仍须Owner明确“放行 Phase 2”。**
+- Product OS实际sync/读回/临时资源清理记录见 `docs/reviews/gate-02-review-2-evidence/final-verification.json`；刷新不构成放行。
+
+---
+
+## 历史：以下为接手时ZCode完整交接（修复声称不代表独立通过）
+
 # CODEX_REVIEW_GATE_02 · 复修完成交接（当前）
 
 更新时间：2026-09-16T02:30:00+08:00；执行者：ZCode。**Phase 2 / TASK-007 / GATE_02 复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex（prompts/P07_CODE_REVIEW.md 首个 text 块）。**

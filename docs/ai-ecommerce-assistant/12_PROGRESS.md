@@ -1,14 +1,14 @@
 # 开发进度与交接
 
-版本：v1.1 · 2026-09-12（含当晚 iCloud 事故恢复记录）。本文是项目唯一进度真源，规则中提到的progress.md均指此文件。
+本文为唯一进度真源；原执行记录与各轮审查历史保留，当前以本节、任务表和唯一状态块为准。
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase 2 / TASK-007 / CODEX_REVIEW_GATE_02 复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
+**Phase 2 / TASK-007 / GATE_02 REVIEW 2 剩余问题复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
 
-2026-09-16：ZCode 按 P08 完成本轮全部修复，业务修复止于 **b2fa10f**；复审范围 **ce5f286..当前实际 HEAD**（业务修复止于 b2fa10f；其后 12b1732/da620af 及可能的后继提交均为纯管理/生成视图差异，不计入业务验收）。G2-H01–H09 全部关闭，M01/M02/M03/M04/L01/L02 逐项处理（M04 补齐可测试 OSS 适配，真实云端联调缺资源如实记录，未自行宣布延期获批）。最终候选独立验证：typecheck 0 错、unit 67/67、integration 97/97（9 文件）、web/worker/scripts build exit 0、e2e 8/8、官方空库 12 迁移、migrate diff 仅剩 M07 已知差异；H09 真实隔离 Compose 文件链路（canary 不进镜像→上传→Worker 校验→签名下载→重启读回）通过。测试自测通过不等于 Gate 通过；Codex 独立 PASS 后仍等 Owner 明确"放行 Phase 2"。
+2026-09-16（复修）：ZCode 按 P08 完成 REVIEW 2 剩余修复并推送。业务提交链 **0882e06（M05 默认90天窗口）→ eee45c1（H03 非法偏移 + H04 规范 channel）→ a6f141f（H05 全局禁用检查 + H06 计数/清理 + H07 幂等原子化 + H08 所有权/写流/retry 元数据 + M04 OSS 调用链）**；复审范围 **072f9ba..实际 HEAD**。每项均先落有期望值的失败回归（before 全红存档于本轮运行日志）再修根因。
 
-**Phase 1 已由 Owner 放行并合并 main（32fb0d3），不重开**。D01 方案 A、M07 自定义外键维护约定持续有效。本轮不合并 main、不部署、不开始 TASK-008。
+最终候选独立验证：typecheck 0 错、unit 69/69、integration 106/106（9 文件）、build（web/worker/scripts）exit 0、e2e 8/8。上轮已通过项（H01 主风险/H02/H09、M01–M03、L01–L02）未触碰。测试自测通过不等于 Gate 通过；Codex 独立 PASS 后仍等 Owner 明确说“放行 Phase 2”。本轮不合并 main、不部署、不开始 TASK-008。
 
 <!-- PRODUCT_OS_STATE_BEGIN -->
 ```json
@@ -16,31 +16,32 @@
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动",
-  "stage": "07 阶段审查 · Phase 2 数据接入基础 · GATE_02 复修完成待复审",
+  "stage": "07 阶段审查 · Phase 2 数据接入基础 · GATE_02 REVIEW 2 复修完成待复审",
   "current_task": "TASK-007",
   "status": "待审查",
-  "last_completed": "ZCode 完成 GATE_02 全部修复：G2-H01–H09 关闭，M01–M04/L01–L02 逐项处理；新冻结 b2fa10f 已推送",
-  "next_action": "Codex 对 ce5f286..实际 HEAD 独立复审（业务差异止于 b2fa10f；prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2",
+  "last_completed": "ZCode 完成 REVIEW 2 剩余修复：0882e06/eee45c1/a6f141f 三个业务提交（M05、H03/H04、H05–H08+M04）已推送",
+  "next_action": "Codex 对 072f9ba..实际 HEAD 独立复审（重点复核 H03–H08/M04/M05 关闭标准，prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2",
   "next_owner": "Codex",
   "next_prompt": "prompts/P07_CODE_REVIEW.md",
-  "acceptance": "正式报告第13节九项HIGH关闭标准逐项复核：客服投影/原子CAS/解析边界/CanonicalBatch与覆盖声明/权限链/真流式限额/幂等/失败恢复/私有容器链；M/L逐项核定；独立PASS后Owner另行放行",
-  "blockers": "无技术阻塞；等待Codex独立复审；未合并main、未部署、未开始TASK-008；OSS真实云端联调缺云资源如实记录（非获批延期）",
+  "acceptance": "REVIEW 2 报告第13节六项 HIGH 关闭标准逐项复核（非法偏移/规范channel/全局禁用/空行与清理/幂等原子/写流与retry元数据）；M04 本地调用链与 M05 90天窗口；测试通过、独立PASS、Owner放行分开记录",
+  "blockers": "无技术阻塞；等待 Codex 独立复审；真实 OSS 云账号联调按 REVIEW 2 §5 核定留至 TASK-029/部署前（本机调用链已接通）；未合并main、未部署、未开始TASK-008",
   "checkpoint": "YES",
-  "review": "GATE_02 首轮 FAIL（ce5f286，9H/4M/2L）已按 P08 修复；业务冻结 b2fa10f，其后均为纯管理提交；待独立复审",
-  "updated_at": "2026-09-16T02:30:00+08:00",
-  "updated_by": "ZCode · GATE_02 修复轮收尾",
+  "review": "REVIEW 2 = FAIL（072f9ba，剩6H+2M）已按 P08 修复完毕；新业务冻结 a6f141f，复审范围 072f9ba..实际 HEAD；待独立复审",
+  "updated_at": "2026-09-16T16:40:00+08:00",
+  "updated_by": "ZCode · GATE_02 REVIEW 2 剩余修复",
   "evidence": [
-    "docs/reviews/CODEX_REVIEW_GATE_02_2026-09-15.md（原FAIL报告）与本轮修复提交链 5690395..b2fa10f",
-    "最终候选验证：typecheck 0错、unit 67/67、integration 97/97、build(web/worker/scripts) 0、e2e 8/8、官方空库12迁移",
-    "migrate diff 仅剩 M07 已知 audit_log 复合外键重建差异；H08 套件随 integration 全套通过",
-    "H09 真实隔离 Compose（colima 全新构建）：canary 不进镜像、上传→Worker preview_ready→签名下载 200 内容一致→重启 web/worker 后再次下载一致",
-    "2026-09-16 凌晨宿主磁盘满触发 iCloud .git 数据文件驱逐，brctl download 物化恢复，全部提交完整并已推送（事件见执行记录）"
+    "docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md",
+    "docs/reviews/GATE_02_REVIEW_2_EVIDENCE_2026-09-16.json",
+    "docs/reviews/gate-02-review-2-evidence/README.md",
+    "独立 typecheck=0 / unit=69/69 / integration=106/106 / build=0 / e2e=8/8；REVIEW 2 反例 before 断言全红→修复后转绿",
+    "独立新增断言 FAIL：异常时区、coverage channel、Worker全局禁用、空行超限、幂等原子性、写流错误、OSS调用链、默认日期无界",
+    "真实 Docker 构建/canary/隔离Compose上传→Worker→签名下载→重启读回通过；非部署；历史证据保留"
   ],
   "github": {
-    "status": "phase/02-data-ingestion 本地/远端=12b1732（b2fa10f 为最后业务提交；管理交接 12b1732 已推送）；main=4c7e95b 未合并",
+    "status": "候选本地/远端 phase/02-data-ingestion=a6f141f（已推送 072f9ba..a6f141f）；main=4c7e95b 未合并；管理写回随交接提交",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
-    "verified_at": "2026-09-16T02:30:00+08:00",
-    "evidence": "git push 输出 7616c4c..b2fa10f；实际推送记录见执行记录"
+    "verified_at": "2026-09-16T14:15:32+08:00",
+    "evidence": "本轮 git ls-remote 与实际 HEAD 核对一致；见 docs/reviews/gate-02-review-2-evidence/git-final-baseline.json"
   },
   "deployment": {
     "status": "未部署（本轮授权不含部署）",
@@ -52,10 +53,31 @@
 ```
 <!-- PRODUCT_OS_STATE_END -->
 
-## 当前 Git 与交接状态（2026-09-16T02:30:00+08:00）
+## 当前 Git 与交接状态
 
-- 分支 phase/02-data-ingestion；本地/远端 = **12b1732**（b2fa10f 为最后业务提交，12b1732 为管理交接提交，均已推送）；main = 4c7e95b 未合并。
-- 本轮修复提交链（ce5f286..b2fa10f）：5690395 TASK-005（H01/H02/M02）→ 286527d 依赖 → 1c8909c TASK-006（H03/H04）→ 13c95e4 L01 → 36e7764 TASK-007（H05–H09/M01/M03/M04/L02）→ da6de14 测试适配 → 9263890 ali-oss 构建外置 → 7616c4c build:scripts → b2fa10f 索引名对齐。
+- 核验 2026-09-16T16:40:00+08:00：分支 phase/02-data-ingestion，本地/远端=a6f141f（推送记录 072f9ba..a6f141f）；main=4c7e95b 未合并。
+- 修复提交 0882e06/eee45c1/a6f141f 均含「反例回归 before 红 → 修复后绿」证据；上轮通过项未触碰。
+- 下一责任人 Codex，P07_CODE_REVIEW 首个 text 块；Checkpoint=YES；PASS 后仍等 Owner 放行 Phase 2。
+
+# 开发进度与交接
+
+版本：v1.1 · 2026-09-12（含当晚 iCloud 事故恢复记录）。本文是项目唯一进度真源，规则中提到的progress.md均指此文件。
+
+## 历史接手摘要（ZCode 自述；本轮独立结论见最上方）
+
+**Phase 2 / TASK-007 / CODEX_REVIEW_GATE_02 复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
+
+2026-09-16：ZCode 按 P08 完成本轮全部修复，业务修复止于 **b2fa10f**；复审范围 **ce5f286..当前实际 HEAD**（业务修复止于 b2fa10f；其后 12b1732/da620af 及可能的后继提交均为纯管理/生成视图差异，不计入业务验收）。G2-H01–H09 全部关闭，M01/M02/M03/M04/L01/L02 逐项处理（M04 补齐可测试 OSS 适配，真实云端联调缺资源如实记录，未自行宣布延期获批）。最终候选独立验证：typecheck 0 错、unit 67/67、integration 97/97（9 文件）、web/worker/scripts build exit 0、e2e 8/8、官方空库 12 迁移、migrate diff 仅剩 M07 已知差异；H09 真实隔离 Compose 文件链路（canary 不进镜像→上传→Worker 校验→签名下载→重启读回）通过。测试自测通过不等于 Gate 通过；Codex 独立 PASS 后仍等 Owner 明确"放行 Phase 2"。
+
+**Phase 1 已由 Owner 放行并合并 main（32fb0d3），不重开**。D01 方案 A、M07 自定义外键维护约定持续有效。本轮不合并 main、不部署、不开始 TASK-008。
+
+
+
+## 历史接手 Git 与交接状态（2026-09-16T02:30:00+08:00）
+
+- 分支 phase/02-data-ingestion；本地/远端 = **a6f141f**（本轮业务冻结，已推送 072f9ba..a6f141f）；main = 4c7e95b 未合并。
+- REVIEW 2 修复提交链（072f9ba..a6f141f）：0882e06（M05）→ eee45c1（H03/H04）→ a6f141f（H05–H08+M04）。上轮业务冻结 b2fa10f 及管理交接 12b1732/da620af/b6cbe6b/072f9ba 保留为历史。
+- 复审范围 072f9ba..实际 HEAD（本轮管理文档差异为纯管理，不计业务验收）。
 - 新增迁移 2 个（共 12）：20260915110000 store(org_id,name) 唯一；20260915120000 import_task 部分唯一认领索引 + http_idempotency 表（部分索引/UUID CHECK 为自定义 SQL，沿 M07 式维护约定：migrate diff 的 DROP 建议不得直接应用）。未触碰 audit_log 外键，无需 H08 行为回归重跑；H08 套件已随 integration 全套通过。
 - Schema 新约束触发 Phase 1 两处测试适配（报告 §14 约定）：gate01.db H08 夹具店铺按 tag 改名（避开新唯一索引，断言不变）；database.test 迁移计数 10→12。
 - 当前 TASK-007 / 待审查 / Codex / P07 / Checkpoint=YES；TASK-005–007 因待独立复审保持 BLOCKED，不预写 DONE。
@@ -90,9 +112,9 @@
 | TASK-002 | P0数据库与约束迁移 | DONE | TASK-001 | REVIEW_5 PASS：H12绝对时刻/M04领域28表/M06目标边界/M07维护约定通过；10迁移/8→10/坏行与H08并发删除通过 |
 | TASK-003 | 登录、初始Owner与受控邀请 | DONE | TASK-002 | REVIEW_5 PASS：过期邀请拒绝无会话、有效接受可用；M03限流/会话故障信封及身份/回滚通过 |
 | TASK-004 | 组织隔离与固定权限服务 | DONE | TASK-003 | REVIEW_5 PASS；2026-09-14 Owner已放行Phase1并合并main；本轮新增文件/Worker消费者问题归TASK-007，不重开旧结论 |
-| TASK-005 | 店铺与数据源配置 | BLOCKED | TASK-004 | G2-H01/H02/M02 已修复（5690395）：有效版本汇总+角色裁剪+右开90天、原子CAS恰一成功一409、同名唯一索引；13例回归+并发CAS/覆盖摘要新回归通过；待独立复审保持BLOCKED |
-| TASK-006 | 统一Adapter与最小黄金样本 | BLOCKED | TASK-005 | G2-H03/H04 已修复（286527d+1c8909c）：csv-parse 严格语法、数值/时间/必填边界、来源时间不补造、CanonicalBatch 合同、覆盖声明 fixture、A M3=false 规范 oracle 三层校验；unit 67/67；待独立复审保持BLOCKED |
-| TASK-007 | 文件上传、私有存储与ImportTask | BLOCKED | TASK-006 | G2-H05–H09/M01/M03/M04/L02 已修复（36e7764..b2fa10f）：类型权限链、真流式限额、原子认领+HTTP幂等、失败恢复+dispatcher、私有卷+打包排除、OSS 可测试适配；imports 19/19、H09 隔离 Compose 链路通过；待独立复审保持BLOCKED |
+| TASK-005 | 店铺与数据源配置 | BLOCKED | TASK-004 | REVIEW 2 M05 已修复（0882e06）：无/单边日期默认 90 天窗口，101 日 fixture 断言 ≤90；其余上轮已通过；待独立复审保持 BLOCKED |
+| TASK-006 | 统一Adapter与最小黄金样本 | BLOCKED | TASK-005 | REVIEW 2 H03/H04 已修复（eee45c1）：非法偏移行级错误不抛出；channel 规范枚举按 kind 配对；oracle 三层校验保持；待独立复审保持 BLOCKED |
+| TASK-007 | 文件上传、私有存储与ImportTask | BLOCKED | TASK-006 | REVIEW 2 H05–H08+M04 已修复（a6f141f）：全局 User 禁用检查、空行计数/唯一清理出口、HTTP 存档同事务原子+复用绑定、写流接管/retry 元数据、本地 spool 与驱动域分离；imports 20 例全绿；待独立复审保持 BLOCKED |
 | TASK-008 | 字段映射、全量校验与预览 | TODO | TASK-007 | 未执行 |
 | TASK-009 | 原子提交内核与商品主数据 | TODO | TASK-008 | 未执行 |
 | TASK-010 | 订单头与订单行导入 | TODO | TASK-009 | 未执行 |
@@ -585,3 +607,23 @@ GATE_02 收尾实际核验（2026-09-15T13:22:00+08:00）：Product OS sync 返�
 ### 本轮边界
 
 - 未合并 main、未部署、未开始 TASK-008；Phase 1 已关闭项除上述两处 Schema 触发的测试适配外未触碰；下一责任人 Codex（P07 首个 text 块为完整复审提示词），PASS 后仍等 Owner 明确"放行 Phase 2"。
+
+
+## 2026-09-16T14:15:25+08:00 · Codex GATE_02 REVIEW 2 独立复审（当前最新执行记录）
+
+- 基线 ce5f286，接手/收尾前 HEAD 072f9ba，最后业务 b2fa10f；远端核验一致；其后6文件纯管理差异。保留全部旧报告、证据和执行者自述，不用旧首页覆盖新状态。
+- 正式结论 FAIL：H03–H08 六项HIGH；M04/M05两项MEDIUM；无CRITICAL与未关闭LOW。报告 docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md；机器索引 docs/reviews/GATE_02_REVIEW_2_EVIDENCE_2026-09-16.json；证据 docs/reviews/gate-02-review-2-evidence/README.md。
+- 在本次新建 /tmp Git 归档副本与一次性 PG17.11 非UTC集群实际执行：typecheck0；unit67/67；integration97/97；build(web/worker/scripts)0；e2e8/8；官方空库12迁移、旧10→12、重复deploy0；diff仅M07已知audit_log外键。旧schema升级为空业务库，不声称覆盖生产数据清洗。
+- 实际新建隔离Compose项目，构建镜像不含.data私有canary；Owner bundle初始化→登录→上传201→Worker preview_ready→签名下载内容一致→重启Web/Worker后查询下载仍一致，PASS。该本地测试不是部署。
+- 独立反例及关闭标准在报告§4/§5/§13。M04本机调用链NoSuchKey且留本地临时文件，不能以缺云资源跳过；仅真实云账号资源联调可留至TASK-029/部署前验证，非Owner放行。
+- 环境与装置偏差分别保留：iCloud .git pack/原Node dataless、下载同版本Node并核对SHA；Docker buildx缺失使用legacy builder，Postgres pull EOF改同官方镜像FROM路径；Compose Origin/等待就绪、探针CJS/enum/短观察窗修正后重跑。均不计业务缺陷。
+- 写回前应用152文件与旧Gate02证据72文件SHA核对无变；其他旧历史dataless文件跳过全文重读，保留原位且Git无跟踪差异。具体见pre-write-integrity.json，不声称未读取的旧历史字节已重新核验。
+- 未改应用代码/Schema/迁移/测试/依赖，未提交推送/合并/部署，Phase1关闭项与D01不变。下一工具ZCode/P08，修完再交Codex。Owner仍未放行Phase2。
+- 本轮临时资源清理、Product OS sync和首页/总控读回以 docs/reviews/gate-02-review-2-evidence/final-verification.json 为实际记录；sync本身不推动Gate。
+
+
+### 2026-09-16T14:21:09+08:00 · REVIEW 2 收尾读回
+
+- Product OS sync 实际返回 registered=1、updated=1、errors=[]（2026-09-16T14:19:50+08:00）；项目首页md/html与总控PROJECTS读回为TASK-007/待修复/ZCode/REVIEW 2 FAIL/Checkpoint=YES，首页完整提示词对应P08首个text块。
+- 本次独立PG集群已停止；Compose容器/卷及本次镜像已删除，Docker资源清单归零。最终归档、临时目录清理和业务文件不变验证见本轮final-verification.json。
+- 本地审查与管理写回尚未提交推送；远端候选072f9ba与main4c7e95b保持，无Owner阶段放行、合并或部署。
