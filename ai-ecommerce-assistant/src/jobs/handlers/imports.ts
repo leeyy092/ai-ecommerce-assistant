@@ -62,12 +62,23 @@ export async function handleValidateTask(
     return { status: "failed", valid: 0, errors: 0 };
   }
 
-  // G2-H05：执行前重查发起人当前有效身份与类型权限（禁用/降权 → 终态拒绝）
-  const membership = await db.membership.findFirst({
-    where: { orgId: task.orgId, userId: task.createdBy },
-    select: { status: true, role: true },
-  });
-  if (!membership || membership.status !== "active" || !canImport(membership.role, task.sourceKind)) {
+  // G2-H05：执行前重查发起人当前有效身份与类型权限（禁用/降权 → 终态拒绝）。
+  // G2-R2-H05：与 HTTP 侧 src/lib/session.ts 同款边界——全局领域 User.status=disabled
+  // （平台运维级禁用）同样视为失权，Membership active 也不能豁免；不改 D01 方案 A。
+  const [membership, uploader] = await Promise.all([
+    db.membership.findFirst({
+      where: { orgId: task.orgId, userId: task.createdBy },
+      select: { status: true, role: true },
+    }),
+    db.user.findUnique({ where: { id: task.createdBy }, select: { status: true } }),
+  ]);
+  const identityRevoked =
+    !membership ||
+    membership.status !== "active" ||
+    !uploader ||
+    uploader.status === "disabled" ||
+    !canImport(membership.role, task.sourceKind);
+  if (identityRevoked) {
     await db.importTask.updateMany({
       where: { id: task.id, status: { in: ["uploaded", "validating"] } },
       data: { status: "failed", errorCode: "UPLOAD_PERMISSION_REVOKED" },

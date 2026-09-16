@@ -66,25 +66,30 @@ async function main(): Promise<number> {
   // TASK-007：pg-boss 持久队列与 dispatcher——注册 validate/commit 边界
   const { getBoss, ensureQueues, QUEUE_VALIDATE, QUEUE_COMMIT } = await import("./queue");
   const { handleValidateTask, handleCommitTask } = await import("./handlers/imports");
+  type ValidateOutcome = Awaited<ReturnType<typeof handleValidateTask>>;
   const { sweepDispatches } = await import("./dispatcher");
   try {
     const boss = await getBoss();
     await ensureQueues(boss);
-    await boss.work<{ taskId: string }>(QUEUE_VALIDATE, async (jobs) => {
-      const results = [];
-      for (const job of jobs) {
-        logger.info({ job_id: job.id, task: job.data }, "import-validate 开始");
-        // pg-boss 12 work 类型未暴露 retry 计数，运行时字段存在（重试耗尽判定用）
-        const retry = job as typeof job & { retryCount?: number; retryLimit?: number };
-        const result = await handleValidateTask(job.data, {
-          retryCount: retry.retryCount,
-          retryLimit: retry.retryLimit,
-        });
-        logger.info({ job_id: job.id, ...result }, "import-validate 完成");
-        results.push(result);
-      }
-      return results;
-    });
+    await boss.work<{ taskId: string }, ValidateOutcome[], { includeMetadata: true }>(
+      QUEUE_VALIDATE,
+      // G2-R2-H08：includeMetadata 使作业携带 retryLimit/retryCount 真实元数据，
+      // 重试耗尽判定不再依赖类型强转（默认批数据不含这些字段）
+      { includeMetadata: true },
+      async (jobs) => {
+        const results = [];
+        for (const job of jobs) {
+          logger.info({ job_id: job.id, task: job.data }, "import-validate 开始");
+          const result = await handleValidateTask(job.data, {
+            retryCount: job.retryCount,
+            retryLimit: job.retryLimit,
+          });
+          logger.info({ job_id: job.id, ...result }, "import-validate 完成");
+          results.push(result);
+        }
+        return results;
+      },
+    );
     await boss.work<{ taskId: string }>(QUEUE_COMMIT, async (jobs) => {
       for (const job of jobs) {
         logger.warn({ job_id: job.id, task: job.data }, "import-commit 边界被触发（TASK-008 实现前不应入队）");

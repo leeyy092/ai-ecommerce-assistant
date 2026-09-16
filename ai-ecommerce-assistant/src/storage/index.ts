@@ -43,6 +43,44 @@ function resolveKey(key: string): string {
   return full;
 }
 
+/**
+ * 本地 spool 临时域路径（G2-R2-M04）：tmp/ 下的上传中转文件属于本地临时域，
+ * 不经驱动对象域——无论当前驱动是 local 还是 oss，spool 的写入/直读/清理
+ * 都只发生在本地磁盘；只有提升（promoteSpoolObject）才进入驱动对象域。
+ */
+export function localTempPath(key: string): string {
+  const root = storageRoot();
+  const full = path.resolve(root, key);
+  if (full !== root && !full.startsWith(root + path.sep)) {
+    throw new Error(`非法本地临时键：${key}`);
+  }
+  return full;
+}
+
+/** 清理本地 spool 临时文件（幂等；不影响驱动对象域） */
+export async function deleteLocalTemp(key: string): Promise<void> {
+  await unlink(localTempPath(key)).catch(() => undefined);
+}
+
+/**
+ * 把本地 spool 临时文件提升为正式对象：
+ * local 驱动为同盘 rename；oss 驱动为本地读流 → put 远端 → 删本地临时。
+ * 失败时保留本地临时文件，由调用方清理语义处置。
+ */
+export async function promoteSpoolObject(localKey: string, toKey: string): Promise<void> {
+  if (!useOss()) {
+    const from = localTempPath(localKey);
+    const to = resolveKey(toKey);
+    await mkdir(path.dirname(to), { recursive: true });
+    await rename(from, to);
+    return;
+  }
+  const client = await getOssClient();
+  const buffer = await streamToBuffer(createReadStream(localTempPath(localKey)), 64 * 1024 * 1024);
+  await client.put(toKey, buffer);
+  await unlink(localTempPath(localKey)).catch(() => undefined);
+}
+
 function signingKey(): string {
   // 下载签名的密钥与应用认证秘密同源；缺失时仅本地开发允许回退默认值
   try {

@@ -2,16 +2,21 @@
  * 导入任务服务（TASK-007；08 §imports）。
  *
  * G2-H06：上传走真实流式接收——字节上限/CSV 逻辑记录（csv-parse 流）增量统计，
- *   超限立即中止上游并清理半截文件；quoted 换行按单条逻辑记录计数（不按物理行）。
+ *   超限立即中止上游并清理半截文件；quoted 换行按单条逻辑记录计数；空行按
+ *   Worker 同款语义跳过；计数一旦不可信（解析错误）即中止，不接受未计数的余流。
  * G2-H07：内容幂等由数据库部分唯一索引原子认领（并发同内容恰一任务，败者复用）；
- *   HTTP Idempotency-Key 按 org/user/endpoint 隔离存档 24h，同 key 异 body 409，
- *   与业务自然键幂等（TASK-008 起）分属两层。
- * G2-H08：文件先落位、任务后建账（rawObjectKey 非空恒成立）；投递失败保持
- *   uploaded+outbox=pending 由 Worker dispatcher 兜底补投；落位后建账失败清理孤儿对象。
+ *   HTTP Idempotency-Key 按 org/user/endpoint 隔离，存档与任务建账同事务原子提交
+ *   （并发冲突整体回滚，按已存档请求裁决），同 key 异 body 409，重放返回首次响应；
+ *   业务幂等键（04 §12.5）在 mapping/提交阶段生成，不复制 HTTP Key。
+ * G2-H08：文件先落位、任务后建账（rawObjectKey 非空恒成立）；任何失败路径只清理
+ *   尚未被有效任务拥有的文件；投递失败保持 uploaded+outbox=pending 由 Worker
+ *   dispatcher 兜底补投。
  * G2-H05：查询/下载按当前角色可导入类型鉴权（C 仅消息，订单 403）。
+ * G2-R2-M04：本地 spool 是独立临时域——写入/严格读取/清理都只发生在本地磁盘，
+ *   只有提升（promoteSpoolObject）进入当前驱动对象域（local rename / oss put）。
  */
 import { createHash, randomUUID } from "node:crypto";
-import { createWriteStream } from "node:fs";
+import { createReadStream, createWriteStream } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { once } from "node:events";
@@ -19,7 +24,7 @@ import { Readable } from "node:stream";
 import { parse as csvParseStream } from "csv-parse";
 import { AccessError, canImport, type Role } from "@/services/access";
 import { writeAudit } from "@/services/audit";
-import { deleteObject, getObjectStream, moveObject, storageRoot } from "@/storage";
+import { deleteLocalTemp, localTempPath, promoteSpoolObject } from "@/storage";
 import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 
 export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024; // 20MB
@@ -52,6 +57,10 @@ function sha256(text: string): string {
   return createHash("sha256").update(text).digest("hex");
 }
 
+/** 数据库唯一索引名（G2-R2-H07/H08：冲突裁决与所有权清理的依据） */
+const IDX_ACTIVE_CONTENT = "import_task_active_content_key";
+const IDX_HTTP_IDEM = "http_idempotency_org_id_user_id_endpoint_request_key_key";
+
 /** 唯一冲突判别（driver-adapter 形态：constraint.index / meta.target） */
 function isUniqueViolation(error: unknown, indexName: string): boolean {
   const err = error as { code?: unknown; meta?: Record<string, unknown> } | null;
@@ -73,19 +82,19 @@ export interface SpooledUpload {
 }
 
 /**
- * 把上传文件流落入私有存储临时对象，同时增量计算 SHA256 与 CSV 逻辑记录数。
- * 超出字节/行上限：销毁上游流（HTTP 层立即响应，不等 multipart 结束）并清理半截文件。
+ * 把上传文件流落入本地 spool 临时文件，同时增量计算 SHA256 与 CSV 逻辑记录数。
+ * - 字节/行上限：立即销毁上游（HTTP 先于 multipart 结束响应）并清理半截文件；
+ * - 解析选项与 Worker parseCsv 一致（空行跳过；quoted 换行按单条记录）；
+ * - 解析错误 = 计数不可信 → 直接中止（G2-R2-H06：不接受未计数的余流）；
+ * - 写流错误（EACCES/ENOSPC 等）在创建时即接管（G2-R2-H08），可控返回不逃逸进程。
  * onAbort 在任何中止路径被调用（调用方用于销毁请求流，防止 busboy 等待剩余输入）。
- * csv-parse 语法错误在解析阶段（Worker）细报；此处仅按逻辑记录计数，错误后停止计数
- * （低估不放过超限文件，最终由校验失败兜底）。
  */
 export async function spoolUpload(
   fileStream: NodeJS.ReadableStream,
   onAbort?: () => void,
 ): Promise<SpooledUpload> {
   const tempKey = `tmp/upload-${randomUUID()}.csv`;
-  const root = storageRoot();
-  const tempPath = path.resolve(root, tempKey);
+  const tempPath = localTempPath(tempKey);
   try {
     await mkdir(path.dirname(tempPath), { recursive: true });
   } catch {
@@ -101,35 +110,38 @@ export async function spoolUpload(
     let bytes = 0;
     let records = 0;
 
-    const parser = csvParseStream();
+    const parser = csvParseStream({ skip_empty_lines: true });
     const writeStream = createWriteStream(tempPath);
-    let countingAlive = true;
 
     const cleanup = () => {
       writeStream.destroy();
       parser.destroy?.();
-      void deleteObject(tempKey).catch(() => undefined);
     };
     const fail = (error: AccessError) => {
       if (settled) return;
       settled = true;
-      countingAlive = false;
       // G2-H06：立即销毁上游（HTTP 响应先于 multipart 结束）
       (fileStream as Readable).destroy?.(error);
       onAbort?.();
       cleanup();
-      reject(error);
+      // G2-R2-H06：清理完成后再响应，保证拒绝路径不留临时文件
+      void deleteLocalTemp(tempKey).finally(() => reject(error));
     };
+
+    // G2-R2-H08：写流错误在创建时即接管——EACCES/ENOSPC 可控返回，不逃逸进程
+    writeStream.on("error", (error: Error) => {
+      fail(new AccessError(503, "STORAGE_WRITE_FAILED", `写入临时存储失败：${error.message}`));
+    });
+    // G2-R2-H06：解析错误 = 逻辑行计数不可信 → 中止上传，而非停止计数继续接收
+    parser.on("error", (error: Error) => {
+      fail(new AccessError(422, "INVALID_CSV", `CSV 解析错误，已停止接收：${error.message}`));
+    });
 
     parser.on("data", () => {
       records += 1;
       if (records - 1 > MAX_UPLOAD_ROWS) {
         fail(new AccessError(422, "TOO_MANY_ROWS", `数据行超过 ${MAX_UPLOAD_ROWS} 行上限`));
       }
-    });
-    parser.on("error", () => {
-      // 语法错误交由 Worker 校验阶段给出逐行明细；此处仅停止计数
-      countingAlive = false;
     });
 
     fileStream.on("data", (chunk: Buffer | string) => {
@@ -141,9 +153,8 @@ export async function spoolUpload(
         fail(new AccessError(422, "FILE_TOO_LARGE", `文件超过 ${MAX_UPLOAD_BYTES} 字节上限，已停止接收`));
         return;
       }
-      // 逻辑记录计数：手动喂给 csv-parse（quoted 换行按单条记录）；不再 pipe，
-      // 避免 busboy 文件流销毁时与 pipe 管线交互产生跨流错误
-      if (countingAlive) parser.write(buf);
+      // 逻辑记录计数：手动喂给 csv-parse（quoted 换行按单条记录）
+      parser.write(buf);
     });
     fileStream.on("error", (error: Error) => {
       if (!settled) {
@@ -156,7 +167,7 @@ export async function spoolUpload(
       void (async () => {
         if (settled) return;
         try {
-          if (countingAlive) parser.end();
+          parser.end();
           await once(writeStream, "finish");
           settled = true;
           resolve({
@@ -200,8 +211,9 @@ export interface UploadResult {
   rowCount: number;
   bytes: number;
   reused: boolean;
-  /** HTTP Idempotency-Key 重放（返回首次响应，状态码保持 201） */
+  /** HTTP Idempotency-Key 重放：按存档的首次响应状态返回 */
   replayed?: boolean;
+  replayStatus?: number;
 }
 
 async function assertUploadContext(ctx: ImportsContext, input: UploadInput): Promise<void> {
@@ -242,18 +254,14 @@ async function findReusableTask(ctx: ImportsContext, input: UploadInput) {
   });
 }
 
-/**
- * G2-H07：HTTP 请求幂等——同 key 同 body 返回首次响应；同 key 异 body 409。
- * 与内容幂等（部分唯一索引认领）分属两层；存档 24 小时（过期行惰性清理）。
- */
-async function checkHttpIdempotency(
-  ctx: ImportsContext,
-  input: UploadInput,
-  requestKey: string | null,
-  requestHash: string,
-): Promise<UploadResult | null> {
-  if (!requestKey) return null;
-  const existing = await ctx.db.httpIdempotency.findUnique({
+interface HttpArchive {
+  requestHash: string;
+  responseStatus: number;
+  responseBody: unknown;
+}
+
+async function readHttpArchive(ctx: ImportsContext, input: UploadInput, requestKey: string): Promise<HttpArchive | null> {
+  const row = await ctx.db.httpIdempotency.findUnique({
     where: {
       orgId_userId_endpoint_requestKey: {
         orgId: ctx.orgId,
@@ -263,51 +271,67 @@ async function checkHttpIdempotency(
       },
     },
   });
-  if (!existing) return null;
-  if (Date.now() - existing.createdAt.getTime() > 24 * 3600 * 1000) {
-    await ctx.db.httpIdempotency.delete({ where: { id: existing.id } }).catch(() => undefined);
+  if (!row) return null;
+  if (Date.now() - row.createdAt.getTime() > 24 * 3600 * 1000) {
+    // 24 小时语义：过期存档即时清理并可复用（08 §17.5）
+    await ctx.db.httpIdempotency.delete({ where: { id: row.id } }).catch(() => undefined);
     return null;
   }
-  if (existing.requestHash !== requestHash) {
-    throw new AccessError(409, "IDEMPOTENCY_CONFLICT", "同一 Idempotency-Key 已绑定不同请求内容");
-  }
-  const body = existing.responseBody as unknown as { data: UploadResult };
-  return { ...body.data, reused: true, replayed: true };
+  return { requestHash: row.requestHash, responseStatus: row.responseStatus, responseBody: row.responseBody };
 }
 
-async function recordHttpIdempotency(
+/** 把本请求响应写入 HTTP 幂等存档；唯一冲突交调用方按已存档请求裁决 */
+async function insertHttpArchive(
+  db: Prisma.TransactionClient | PrismaClient,
   ctx: ImportsContext,
   input: UploadInput,
-  requestKey: string | null,
+  requestKey: string,
+  requestHash: string,
+  status: number,
+  result: UploadResult,
+): Promise<void> {
+  await db.httpIdempotency.create({
+    data: {
+      id: randomUUID(),
+      orgId: ctx.orgId,
+      userId: ctx.userId,
+      endpoint: input.endpoint,
+      requestKey,
+      requestHash,
+      responseStatus: status,
+      responseBody: { data: result } as unknown as Prisma.InputJsonValue,
+    },
+  });
+}
+
+/**
+ * G2-R2-H07：内容复用时同样绑定本 key 的存档（否则后续同 key 异 body 无法 409）。
+ * 冲突：hash 相同 → 静默（同一语义请求）；不同 → 409。
+ * 非冲突写入失败 → 抛出（存档失败不得无保护地成功返回）。
+ */
+async function bindHttpArchiveForReuse(
+  ctx: ImportsContext,
+  input: UploadInput,
+  requestKey: string,
   requestHash: string,
   result: UploadResult,
 ): Promise<void> {
-  if (!requestKey) return;
   try {
-    await ctx.db.httpIdempotency.create({
-      data: {
-        id: randomUUID(),
-        orgId: ctx.orgId,
-        userId: ctx.userId,
-        endpoint: input.endpoint,
-        requestKey,
-        requestHash,
-        responseStatus: 201,
-        responseBody: { data: result } as unknown as Prisma.InputJsonValue,
-      },
-    });
+    await insertHttpArchive(ctx.db, ctx, input, requestKey, requestHash, 200, result);
   } catch (error) {
-    if (isUniqueViolation(error, "http_idempotency_org_id_user_id_endpoint_request_key_key")) {
-      // 并发同 key 异 body：以数据库裁决为准
+    if (isUniqueViolation(error, IDX_HTTP_IDEM)) {
+      const archived = await readHttpArchive(ctx, input, requestKey);
+      if (archived && archived.requestHash === requestHash) return;
       throw new AccessError(409, "IDEMPOTENCY_CONFLICT", "同一 Idempotency-Key 已绑定不同请求内容");
     }
-    // 存档失败不阻断主流程（幂等档是加速与防重试手段，非任务存在性依据）
+    throw error;
   }
 }
 
 /**
- * 从 spool 临时对象建账：上下文校验 → HTTP 幂等 → 内容认领（原子）→
- * moveObject 落位 → 任务+审计同事务。任何失败路径不产生"空文件可复用任务"。
+ * 从 spool 临时文件建账：上下文校验 → HTTP 幂等重放 → 内容认领（原子）→
+ * 本地 spool 提升为正式对象 → 任务+审计+HTTP 存档同一事务。
+ * 任何失败路径不产生"无文件任务"，只清理尚未被有效任务拥有的文件。
  */
 export async function createImportTaskFromSpool(
   ctx: ImportsContext,
@@ -323,16 +347,23 @@ export async function createImportTaskFromSpool(
     `${ctx.orgId}:${ctx.userId}:${input.endpoint}:${input.storeId}:${input.dataSourceId}:${input.sourceKind}:${input.filename}:${input.sha256}`,
   );
 
-  const replay = await checkHttpIdempotency(ctx, input, requestKey, requestHash);
-  if (replay) {
-    await deleteObject(tempKey).catch(() => undefined);
-    return replay;
+  // 快速路径：已有存档（同 hash 重放；异 hash 409；过期视为无存档）
+  if (requestKey) {
+    const archived = await readHttpArchive(ctx, input, requestKey);
+    if (archived) {
+      if (archived.requestHash !== requestHash) {
+        throw new AccessError(409, "IDEMPOTENCY_CONFLICT", "同一 Idempotency-Key 已绑定不同请求内容");
+      }
+      const body = archived.responseBody as { data: UploadResult };
+      await deleteLocalTemp(tempKey);
+      return { ...body.data, reused: true, replayed: true, replayStatus: archived.responseStatus };
+    }
   }
 
   const existing = await findReusableTask(ctx, input);
   if (existing) {
-    await deleteObject(tempKey).catch(() => undefined);
-    return {
+    // 内容复用：绑定本 key 存档（G2-R2-H07），失败/冲突按存档语义处理
+    const result: UploadResult = {
       id: existing.id,
       status: existing.status,
       fileSha256: existing.fileSha256,
@@ -340,12 +371,17 @@ export async function createImportTaskFromSpool(
       bytes: input.bytes,
       reused: true,
     };
+    if (requestKey) {
+      await bindHttpArchiveForReuse(ctx, input, requestKey, requestHash, result);
+    }
+    await deleteLocalTemp(tempKey);
+    return result;
   }
 
-  // G2-H08 窗口1 修复：文件先落位到最终键，任务建账带完整 rawObjectKey
+  // G2-H08 窗口1 修复：本地 spool 先提升为正式对象，任务建账带完整 rawObjectKey
   const taskId = randomUUID();
   const rawKey = `raw/${taskId}/source.csv`;
-  await moveObject(tempKey, rawKey);
+  await promoteSpoolObject(tempKey, rawKey);
   try {
     const created = await ctx.db.$transaction(async (tx) => {
       const task = await tx.importTask.create({
@@ -360,7 +396,10 @@ export async function createImportTaskFromSpool(
           rawObjectKey: rawKey,
           fileSha256: input.sha256,
           uploadRequestKey: randomUUID().replace(/-/g, ""),
-          idempotencyKey: input.httpKey && input.httpKey.length <= 64 ? input.httpKey : null,
+          // G2-R2-H07：业务幂等键（org/store/source/kind/sha/mapping/adapter/coverage
+          // 规范化哈希）属 mapping/提交阶段（04 §12.5），不复制 HTTP Key，
+          // 避免借 org/store 唯一约束长期占用并使跨用户同 key 误 503
+          idempotencyKey: null,
           baseDatasetVersion: 0n,
           rowCount: input.dataRows,
           outboxStatus: "pending",
@@ -380,9 +419,21 @@ export async function createImportTaskFromSpool(
           row_count: input.dataRows,
         },
       });
+      if (requestKey) {
+        // G2-R2-H07/H08：HTTP 存档与任务建账同事务——并发冲突整体回滚，
+        // 不产生"已建任务但存档失败/409"的不一致
+        await insertHttpArchive(tx, ctx, input, requestKey, requestHash, 201, {
+          id: task.id,
+          status: task.status,
+          fileSha256: input.sha256,
+          rowCount: input.dataRows,
+          bytes: input.bytes,
+          reused: false,
+        });
+      }
       return task;
     });
-    const result: UploadResult = {
+    return {
       id: created.id,
       status: created.status,
       fileSha256: input.sha256,
@@ -390,15 +441,17 @@ export async function createImportTaskFromSpool(
       bytes: input.bytes,
       reused: false,
     };
-    await recordHttpIdempotency(ctx, input, requestKey, requestHash, result);
-    return result;
   } catch (error) {
-    if (isUniqueViolation(error, "import_task_active_content_key")) {
-      // G2-H07：并发同内容——败者复用胜者任务，清理自己落位的对象
+    // 此时 rawKey 尚未被任何已提交任务拥有（事务失败/回滚）：删除安全且必须执行，
+    // 否则恢复器/重试会接手一个无文件任务（G2-R2-H08）
+    const { deleteObject } = await import("@/storage");
+    await deleteObject(rawKey).catch(() => undefined);
+    await deleteLocalTemp(tempKey);
+    if (isUniqueViolation(error, IDX_ACTIVE_CONTENT)) {
+      // G2-H07：并发同内容——败者复用胜者任务（并按存档语义绑定本 key）
       const winner = await findReusableTask(ctx, input);
-      await deleteObject(rawKey).catch(() => undefined);
       if (winner) {
-        return {
+        const result: UploadResult = {
           id: winner.id,
           status: winner.status,
           fileSha256: winner.fileSha256,
@@ -406,26 +459,37 @@ export async function createImportTaskFromSpool(
           bytes: input.bytes,
           reused: true,
         };
+        if (requestKey) {
+          await bindHttpArchiveForReuse(ctx, input, requestKey, requestHash, result);
+        }
+        return result;
       }
-    } else {
-      // 建账失败：不留孤儿对象（G2-H08）
-      await deleteObject(rawKey).catch(() => undefined);
+      throw error;
+    }
+    if (requestKey && isUniqueViolation(error, IDX_HTTP_IDEM)) {
+      // G2-R2-H07：并发同 key 异 body——本事务已回滚（无任务残留），按已存档请求裁决
+      const archived = await readHttpArchive(ctx, input, requestKey);
+      if (archived && archived.requestHash === requestHash) {
+        const body = archived.responseBody as { data: UploadResult };
+        return { ...body.data, reused: true, replayed: true, replayStatus: archived.responseStatus };
+      }
+      throw new AccessError(409, "IDEMPOTENCY_CONFLICT", "同一 Idempotency-Key 已绑定不同请求内容");
     }
     throw error;
   }
 }
 
-/** 清理临时对象（幂等；不存在时静默） */
+/** 清理本地 spool 临时文件（幂等；不影响驱动对象域） */
 export async function deleteObjectSafe(key: string): Promise<void> {
-  await deleteObject(key).catch(() => undefined);
+  await deleteLocalTemp(key);
 }
 
-/** 读取已 spool 的对象并做严格 UTF-8 校验（M03：非法字节 422，不静默替换） */
+/** 读取本地 spool 临时文件并做严格 UTF-8 校验（M03：非法字节 422，不静默替换）。
+ *  G2-R2-M04：spool 属本地临时域，直读本地文件，不经驱动对象域。 */
 export async function readSpooledTextStrict(tempKey: string): Promise<string> {
-  const stream = getObjectStream(tempKey);
   const chunks: Buffer[] = [];
-  for await (const chunk of stream as AsyncIterable<Buffer | string>) {
-    chunks.push(typeof chunk === "string" ? Buffer.from(chunk, "utf8") : chunk);
+  for await (const chunk of createReadStream(localTempPath(tempKey)) as AsyncIterable<Buffer>) {
+    chunks.push(chunk);
   }
   const buffer = Buffer.concat(chunks);
   try {

@@ -11,7 +11,7 @@ import { Readable } from "node:stream";
 import Busboy from "busboy";
 import { ok, fail, serviceFailure, guardWrite, internalFailure } from "@/lib/http";
 import { getPrismaClient } from "@/database/prisma";
-import { CAPABILITIES, requirePermission, canImport } from "@/services/access";
+import { AccessError, CAPABILITIES, requirePermission, canImport } from "@/services/access";
 import {
   createImportTaskFromSpool,
   deleteObjectSafe,
@@ -128,24 +128,23 @@ export async function POST(req: NextRequest) {
     // M01：entity_type 为合同输入字段；source_kind 作为内部别名兼容
     const kindRaw = fields["entity_type"] ?? fields["source_kind"] ?? "";
     if (!storeId || !dataSourceId || !kindRaw) {
-      return fail(422, "store_id、data_source_id、entity_type 必填");
+      // G2-R2-H06：校验失败统一抛错——外层唯一清理出口保证不留本地临时文件
+      throw new AccessError(422, "VALIDATION_ERROR", "store_id、data_source_id、entity_type 必填");
     }
     if (!received.fileMeta) {
-      return fail(422, "缺少上传文件 file");
+      throw new AccessError(422, "VALIDATION_ERROR", "缺少上传文件 file");
     }
     const fileMeta = received.fileMeta;
     if (!isSourceKind(kindRaw)) {
-      return fail(422, `entity_type 不支持：${kindRaw}`, {
-        fieldErrors: { entity_type: `仅支持 ${SOURCE_KINDS.join("/")}` },
-      });
+      throw Object.assign(new AccessError(422, "VALIDATION_ERROR", `entity_type 不支持：${kindRaw}`), { fieldErrors: { entity_type: `仅支持 ${SOURCE_KINDS.join("/")}` } });
     }
     // 角色文件类型限制（02_USER_ROLES：C 仅客户消息）
     if (!canImport(ctx.role, kindRaw)) {
-      return fail(403, "当前角色不能上传该类型文件", { code: "FILE_KIND_FORBIDDEN" });
+      throw new AccessError(403, "FILE_KIND_FORBIDDEN", "当前角色不能上传该类型文件");
     }
     // M03：明确文件类型策略——仅 CSV（.csv 扩展名），不带 Excel 解析器
     if (!/\.csv$/i.test(fileMeta.filename)) {
-      return fail(415, "仅支持 CSV 文件（.csv 扩展名）", { code: "UNSUPPORTED_FILE_TYPE" });
+      throw new AccessError(415, "UNSUPPORTED_FILE_TYPE", "仅支持 CSV 文件（.csv 扩展名）");
     }
 
     // M03：严格 UTF-8（非法字节 422，不做静默替换）
@@ -190,8 +189,8 @@ export async function POST(req: NextRequest) {
         filename: fileMeta.filename,
         bytes: spooled.bytes,
       },
-      // 重放保持首次响应状态（201）；无 Idempotency-Key 的内容复用返回 200
-      { status: result.replayed || !result.reused ? 201 : 200 },
+      // 重放按存档首次状态返回（201/200）；无 Idempotency-Key 的内容复用返回 200
+      { status: result.replayStatus ?? (result.reused ? 200 : 201) },
     );
   } catch (error) {
     // 校验/建账失败：清理已 spool 的临时对象（落位成功后 delete 无副作用）

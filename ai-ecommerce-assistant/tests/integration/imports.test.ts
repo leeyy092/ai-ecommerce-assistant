@@ -15,7 +15,7 @@ import { NextRequest } from "next/server";
 import type { PrismaClient } from "@/generated/prisma/client";
 import { applyMigrations, createTestDatabase, dropTestDatabase, resetDbSingletons, resolveDatabaseUrl } from "../helpers/pgMigrate";
 import { FILE_HEADERS } from "@/adapters/contracts";
-import { setStorageRoot } from "@/storage";
+import { setStorageRoot, storageRoot } from "@/storage";
 
 const adminUrl = resolveDatabaseUrl().replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
 const testUrl = await createTestDatabase(adminUrl, randomUUID().slice(0, 8));
@@ -568,5 +568,223 @@ describe("TASK-007｜签名下载与 validate/恢复边界", () => {
   it("commit 边界：显式拒绝（TASK-008 实现），不冒充已提交", async () => {
     const { handleCommitTask } = await import("@/jobs/handlers/imports");
     await expect(handleCommitTask({ taskId })).rejects.toThrow(/TASK-008/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GATE_02 REVIEW 2 修复回归（docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md §4/§5/§13）
+// ---------------------------------------------------------------------------
+
+describe("GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04", () => {
+  async function uploadHeader(cookie: string, k: string, c: string): Promise<Response> {
+    const { POST } = await import("@/app/api/v1/imports/route");
+    const form = new FormData();
+    form.set("store_id", storeId);
+    form.set("data_source_id", dataSourceId);
+    form.set("entity_type", "products");
+    form.set("file", csvFile("p.csv", c));
+    return POST(req("/api/v1/imports", { method: "POST", body: form, headers: { "idempotency-key": k } }, cookie));
+  }
+
+  function privateTmpFileCount(): number {
+    const { readdirSync } = require("node:fs") as typeof import("node:fs");
+    try {
+      return readdirSync(join(storageRoot(), "tmp")).length;
+    } catch {
+      return 0;
+    }
+  }
+
+  it("G2-R2-H05：领域全局 User 禁用（Membership 仍 active）→ 未终态任务终态拒绝", async () => {
+    const member = await seedUser(`udis-${randomUUID().slice(0, 6)}`, "customer_service", orgId);
+    const t = await makeTask(member.cookie, "customer_messages", "store_external_id,source_updated_at,external_message_id,external_conversation_id,message_at,external_sku_id,message_text,is_complaint,channel,language\nIMP-1,2026-09-11T01:00:00Z,MU1,CU1,2026-09-01T11:00:00Z,,全局禁用,,platform_chat,zh-CN");
+    // 平台运维级禁用（对照 src/lib/session.ts 的 HTTP 侧同款规则）：全局 User.status=disabled
+    await db.user.update({ where: { id: member.userId }, data: { status: "disabled" } });
+
+    const { handleValidateTask } = await import("@/jobs/handlers/imports");
+    const result = await handleValidateTask({ taskId: t.id });
+    expect(result.status).toBe("failed");
+    const row = await db.importTask.findUniqueOrThrow({ where: { id: t.id } });
+    expect(row.status).toBe("failed");
+    expect(row.errorCode).toBe("UPLOAD_PERMISSION_REVOKED");
+    expect(row.validCount).toBe(0);
+  });
+
+  it("G2-R2-H06：空行前缀+100001 条数据仍拒绝（422 TOO_MANY_ROWS），计数不因空行停摆", async () => {
+    const header = "store_external_id,source_updated_at,external_order_id,external_order_item_id,external_sku_id,quantity,item_paid_amount,currency";
+    const rows: string[] = [header, ""];
+    for (let i = 0; i < 100_001; i++) {
+      rows.push(`IMP-1,2026-09-11T01:00:00Z,O${i},L1,S1,1,10.000000,CNY`);
+    }
+    const res = await upload(operator.cookie, { kind: "order_items", filename: "blank.csv", content: rows.join("\n") });
+    expect(res.status).toBe(422);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe("TOO_MANY_ROWS");
+    expect(privateTmpFileCount()).toBe(0);
+  }, 120_000);
+
+  it("G2-R2-H06：字段缺失/类型不支持/角色拒绝/扩展名拒绝不留临时文件", async () => {
+    const before = privateTmpFileCount();
+    const forbidden = await upload(cs.cookie, { kind: "orders", content: PRODUCTS_CSV });
+    expect(forbidden.status).toBe(403);
+    const badExt = await upload(owner.cookie, { kind: "products", filename: "data.xlsx", content: PRODUCTS_CSV });
+    expect(badExt.status).toBe(415);
+    const badKind = await upload(owner.cookie, { kind: "not_a_kind", content: PRODUCTS_CSV });
+    expect(badKind.status).toBe(422);
+    expect(privateTmpFileCount()).toBe(before);
+  });
+
+  it("G2-R2-H07：已有内容+新 key 复用并绑定存档——同 key 同 body 200、异 body 409", async () => {
+    const key = `idem2-${randomUUID().slice(0, 12)}`;
+    const content = PRODUCTS_CSV.replace("CUP-RED", "CUP-R2A");
+    // 前置：无 Idempotency-Key 的首次上传，使内容已存在
+    const seed = await upload(owner.cookie, { kind: "products", content });
+    expect(seed.status).toBe(201);
+    const first = await uploadHeader(owner.cookie, key, content);
+    expect(first.status).toBe(200); // 已有内容 → 复用（200），同时绑定本 key 的存档
+    const firstId = ((await first.json()) as { data: { id: string } }).data.id;
+    const second = await uploadHeader(owner.cookie, key, content);
+    expect(second.status).toBe(200);
+    expect(((await second.json()) as { data: { id: string } }).data.id).toBe(firstId);
+    const conflict = await uploadHeader(owner.cookie, key, content.replace("CUP-R2A", "CUP-R2B"));
+    expect(conflict.status).toBe(409);
+    expect(((await conflict.json()) as { error: { code: string } }).error.code).toBe("IDEMPOTENCY_CONFLICT");
+  });
+
+  it("G2-R2-H07：Key 按用户隔离；并发同 key 异 body 恰一 201 一 409，且无无文件任务", async () => {
+    const sharedKey = `shared-${randomUUID().slice(0, 10)}`;
+    const contentA = PRODUCTS_CSV.replace("CUP-RED", "CUP-UA");
+    const contentB = PRODUCTS_CSV.replace("CUP-RED", "CUP-UB");
+    // 跨用户同 key 各自独立成功
+    const ua = await uploadHeader(owner.cookie, sharedKey, contentA);
+    const ub = await uploadHeader(operator.cookie, sharedKey, contentB);
+    expect(ua.status).toBe(201);
+    expect(ub.status).toBe(201);
+
+    // 并发同 key 异 body：恰一 201 一 409；落库任务恰 1 个且其文件真实存在
+    const raceKey = `race-${randomUUID().slice(0, 10)}`;
+    const c1 = PRODUCTS_CSV.replace("CUP-RED", "CUP-RC1");
+    const c2 = PRODUCTS_CSV.replace("CUP-RED", "CUP-RC2");
+    const [r1, r2] = await Promise.all([
+      uploadHeader(operator.cookie, raceKey, c1),
+      uploadHeader(operator.cookie, raceKey, c2),
+    ]);
+    expect([r1.status, r2.status].sort()).toEqual([201, 409]);
+    const okBody = r1.status === 201 ? r1 : r2;
+    const loserContent = r1.status === 201 ? c2 : c1;
+    const okId = ((await okBody.json()) as { data: { id: string } }).data.id;
+    const okTask = await db.importTask.findUniqueOrThrow({ where: { id: okId } });
+    const { objectExists } = await import("@/storage");
+    expect(await objectExists(okTask.rawObjectKey)).toBe(true);
+    // 败者不得留下任何任务（尤其无文件任务）
+    expect(await db.importTask.count({ where: { orgId, fileSha256: createHash("sha256").update(loserContent).digest("hex") } })).toBe(0);
+  });
+
+  it("G2-R2-H07：存档写入失败 → 上传不无保护成功（503），无任务残留", async () => {
+    await db.$executeRaw`ALTER TABLE http_idempotency RENAME COLUMN request_hash TO request_hash_broken`;
+    let status = 0;
+    try {
+      const { POST } = await import("@/app/api/v1/imports/route");
+      const form = new FormData();
+      form.set("store_id", storeId);
+      form.set("data_source_id", dataSourceId);
+      form.set("entity_type", "products");
+      form.set("file", csvFile("p.csv", PRODUCTS_CSV.replace("CUP-RED", "CUP-BROKEN")));
+      status = (await POST(req("/api/v1/imports", { method: "POST", body: form, headers: { "idempotency-key": `broken-${randomUUID().slice(0, 10)}` } }, owner.cookie))).status;
+    } finally {
+      await db.$executeRaw`ALTER TABLE http_idempotency RENAME COLUMN request_hash_broken TO request_hash`;
+    }
+    expect(status).toBe(503);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: createHash("sha256").update(PRODUCTS_CSV.replace("CUP-RED", "CUP-BROKEN")).digest("hex") } })).toBe(0);
+  });
+
+  it("G2-R2-H08：tmp 目录不可写（写流 EACCES）→ 503 可控返回，无任务、不崩溃", { timeout: 120_000 }, async () => {
+    const { chmodSync, mkdirSync, existsSync } = await import("node:fs");
+    const { storageRoot } = await import("@/storage");
+    const tmpDir = join(storageRoot(), "tmp");
+    if (!existsSync(tmpDir)) mkdirSync(tmpDir, { recursive: true });
+    chmodSync(tmpDir, 0o555);
+    let status = 0;
+    try {
+      const { POST } = await import("@/app/api/v1/imports/route");
+      const form = new FormData();
+      form.set("store_id", storeId);
+      form.set("data_source_id", dataSourceId);
+      form.set("entity_type", "products");
+      form.set("file", csvFile("p.csv", PRODUCTS_CSV.replace("CUP-RED", "CUP-EACCES")));
+      status = (await POST(req("/api/v1/imports", { method: "POST", body: form }, owner.cookie))).status;
+    } finally {
+      chmodSync(tmpDir, 0o755);
+    }
+    expect([500, 503]).toContain(status);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: createHash("sha256").update(PRODUCTS_CSV.replace("CUP-RED", "CUP-EACCES")).digest("hex") } })).toBe(0);
+  });
+
+  it("G2-R2-M04：OSS 驱动调用链——本地 spool 直读、落位走远端 put、本地临时清理", async () => {
+    // 注入内存对象服务；STORAGE_DRIVER=oss 下完整走真实 route→spool→读取→建账→落位
+    const objects = new Map<string, Buffer>();
+    const putKeys: string[] = [];
+    const fake = {
+      put: async (key: string, buffer: Buffer) => {
+        putKeys.push(key);
+        objects.set(key, buffer);
+        return {};
+      },
+      get: async (key: string) => {
+        const content = objects.get(key);
+        if (!content) throw Object.assign(new Error("NoSuchKey"), { code: "NoSuchKey" });
+        return { content };
+      },
+      getStream: async (key: string) => {
+        const { content } = await (fake as { get(key: string): Promise<{ content: Buffer }> }).get(key);
+        const { PassThrough } = await import("node:stream");
+        const pt = new PassThrough();
+        pt.end(content);
+        return { stream: pt };
+      },
+      head: async (key: string) => {
+        if (!objects.has(key)) throw new Error("NoSuchKey");
+        return {};
+      },
+      delete: async (key: string) => {
+        objects.delete(key);
+        return {};
+      },
+      copy: async (toKey: string, fromKey: string) => {
+        const content = objects.get(fromKey);
+        if (!content) throw new Error("NoSuchKey");
+        objects.set(toKey, content);
+        return {};
+      },
+    };
+    const { setOssClientForTests } = await import("@/storage/oss");
+    setOssClientForTests(fake as never);
+    const savedDriver = process.env.STORAGE_DRIVER;
+    process.env.STORAGE_DRIVER = "oss";
+    try {
+      const res = await upload(owner.cookie, { kind: "products", content: PRODUCTS_CSV.replace("CUP-RED", "CUP-OSS") });
+      expect(res.status).toBe(201);
+      const body = (await res.json()) as { data: { id: string; file_sha256: string } };
+      const task = await db.importTask.findUniqueOrThrow({ where: { id: body.data.id } });
+      // 原文件已落位到注入的远端对象服务
+      expect(objects.has(task.rawObjectKey)).toBe(true);
+      expect(putKeys).toContain(task.rawObjectKey);
+      expect(objects.get(task.rawObjectKey)!.toString()).toBe(PRODUCTS_CSV.replace("CUP-RED", "CUP-OSS"));
+      // 本地 tmp 已清理
+      expect(privateTmpFileCount()).toBe(0);
+      // 签名下载在 OSS 驱动下读取远端对象
+      const { GET: fileGet } = await import("@/app/api/v1/imports/[id]/file/route");
+      const { signDownload } = await import("@/storage");
+      const sig = signDownload(task.rawObjectKey);
+      const dl = await fileGet(
+        req(`/api/v1/imports/${task.id}/file?expires=${sig.expiresAt}&signature=${sig.signature}`, {}, owner.cookie),
+        { params: Promise.resolve({ id: task.id }) },
+      );
+      expect(dl.status).toBe(200);
+      expect(await dl.text()).toBe(PRODUCTS_CSV.replace("CUP-RED", "CUP-OSS"));
+    } finally {
+      if (savedDriver === undefined) delete process.env.STORAGE_DRIVER;
+      else process.env.STORAGE_DRIVER = savedDriver;
+      setOssClientForTests(undefined);
+    }
   });
 });
