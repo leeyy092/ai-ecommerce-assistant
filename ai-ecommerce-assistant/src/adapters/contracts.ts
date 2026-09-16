@@ -312,8 +312,9 @@ export function validateInteger(
 }
 
 /**
- * timestamptz（G2-H03）：必须为 RFC3339 且带时区（Z 或 ±hh:mm），
- * 并做真实日历校验——无时区的含糊时间与 2026-02-30 一类日期拒绝。
+ * timestamptz（G2-H03）：必须为 RFC3339 且带时区（Z 或 ±hh:mm，偏移值合法：
+ * 小时 ≤23、分钟 ≤59），并做真实日历校验——无时区的含糊时间、2026-02-30、
+ * +24:00/+08:99 一类非法偏移一律产生行级错误，绝不抛出异常。
  */
 const RFC3339_RE =
   /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/;
@@ -331,11 +332,41 @@ export function validateTimestamp(
   }
   const text = String(value).trim();
   const m = RFC3339_RE.exec(text);
-  if (!m || !isRealCalendarDate(Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6]))) {
-    errors.push({ row, column, code: "INVALID_DATETIME", message: `${column} 必须为 RFC3339 且带时区（如 2026-09-01T10:00:00+08:00）：${text}` });
+  const invalid = (): void => {
+    errors.push({
+      row,
+      column,
+      code: "INVALID_DATETIME",
+      message: `${column} 必须为 RFC3339 且带合法时区偏移（如 2026-09-01T10:00:00+08:00）：${text}`,
+    });
+  };
+  if (!m) {
+    invalid();
     return null;
   }
-  return new Date(text).toISOString();
+  // G2-R2-H03：时区偏移值本身必须合法（正则允许 +24:00/+08:99，这里按字段校验）
+  const tz = m[8];
+  if (tz !== "Z") {
+    const offH = Number(tz.slice(1, 3));
+    const offM = Number(tz.slice(4, 6));
+    if (!(offH <= 23 && offM <= 59)) {
+      invalid();
+      return null;
+    }
+  }
+  if (
+    !isRealCalendarDate(Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6]))
+  ) {
+    invalid();
+    return null;
+  }
+  const d = new Date(text);
+  if (Number.isNaN(d.getTime())) {
+    // 防御：任何解析失败都转为稳定行错误，不向调用方抛 RangeError
+    invalid();
+    return null;
+  }
+  return d.toISOString();
 }
 
 function isRealCalendarDate(y: number, mo: number, d: number, h: number, mi: number, s: number): boolean {
@@ -722,12 +753,25 @@ export const ADAPTER_VERSION = "adapter-v1";
 /**
  * 覆盖声明单项（04 §12.1：source_kind/channel/from/to/status/explicit_zero_dates）。
  * status 仅允许用户声明 complete/partial；missing 是"没有声明"的系统状态。
- * after_sales 需按 case/refund 分别声明（channel 承载子通道）。
+ * channel 为规范枚举（G2-R2-H04；04_DATA_MODEL:402）：after_sales 用 case/refund
+ * 区分售后子流，其余五类一律 default——"orders/default" 一类 source_kind/channel
+ * 组合键属于 Store.settings.required_channels（04:464），不是本声明的 channel。
  */
+export type CoverageChannel = "default" | "case" | "refund";
+
+const KIND_CHANNELS: Record<FileKind, readonly CoverageChannel[]> = {
+  products: ["default"],
+  orders: ["default"],
+  order_items: ["default"],
+  ads: ["default"],
+  customer_messages: ["default"],
+  after_sales: ["case", "refund"],
+};
+
 export interface CoverageDeclarationItem {
   source_kind: FileKind;
-  /** orders/default、after_sales/case 等（04 §10.7 渠道命名） */
-  channel: string;
+  /** 规范渠道：default / case / refund（按 source_kind 配对，见 KIND_CHANNELS） */
+  channel: CoverageChannel;
   /** 本地日期（含） */
   from: string;
   /** 本地日期（不含，右开） */
@@ -790,8 +834,11 @@ export function createCanonicalBatch<K extends FileKind>(args: {
     if (!isFileKind(item.source_kind)) {
       throw new Error(`coverage_declaration.source_kind 非法：${String(item.source_kind)}`);
     }
-    if (!item.channel || item.channel.length > 64) {
-      throw new Error(`coverage_declaration.channel 非法：${String(item.channel)}`);
+    if (!(KIND_CHANNELS[item.source_kind] as readonly string[]).includes(item.channel)) {
+      // G2-R2-H04：channel 必须为规范枚举并与 source_kind 合法配对
+      throw new Error(
+        `coverage_declaration.channel 非法：${item.source_kind} 仅允许 ${KIND_CHANNELS[item.source_kind].join("/")}，收到 ${String(item.channel)}`,
+      );
     }
     if (item.status !== "complete" && item.status !== "partial") {
       throw new Error(`coverage_declaration.status 仅允许 complete/partial：${String(item.status)}`);

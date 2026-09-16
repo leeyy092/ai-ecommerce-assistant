@@ -39,22 +39,22 @@ const A_MSG_DAYS = new Set(["2026-09-01"]);
 
 /** A 店覆盖声明（12.8 :701：逐渠道独立展开，含逐日显式零事件） */
 export const goldenCoverageA: CoverageDeclarationItem[] = [
-  { source_kind: "orders", channel: "orders/default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_ORDER_DAYS) },
-  { source_kind: "order_items", channel: "order_items/default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_ORDER_DAYS) },
-  { source_kind: "customer_messages", channel: "customer_messages/default", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] },
-  { source_kind: "ads", channel: "ads/default", from: "2026-09-01", to: "2026-09-03", status: "complete", explicit_zero_dates: [] },
-  { source_kind: "after_sales", channel: "after_sales/case", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_CASE_DAYS) },
-  { source_kind: "after_sales", channel: "after_sales/refund", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_REFUND_DAYS) },
-  { source_kind: "products", channel: "products/catalog", from: "2026-09-11", to: "2026-09-12", status: "complete", explicit_zero_dates: [] },
+  { source_kind: "orders", channel: "default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_ORDER_DAYS) },
+  { source_kind: "order_items", channel: "default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_ORDER_DAYS) },
+  { source_kind: "customer_messages", channel: "default", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] },
+  { source_kind: "ads", channel: "default", from: "2026-09-01", to: "2026-09-03", status: "complete", explicit_zero_dates: [] },
+  { source_kind: "after_sales", channel: "case", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_CASE_DAYS) },
+  { source_kind: "after_sales", channel: "refund", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_REFUND_DAYS) },
+  { source_kind: "products", channel: "default", from: "2026-09-11", to: "2026-09-12", status: "complete", explicit_zero_dates: [] },
 ];
 
 /** B 店覆盖声明（case/refund 全区间明确零事件；广告/消息仅 09-01） */
 export const goldenCoverageB: CoverageDeclarationItem[] = [
-  { source_kind: "orders", channel: "orders/default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, B_ORDER_DAYS) },
-  { source_kind: "order_items", channel: "order_items/default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, B_ORDER_DAYS) },
-  { source_kind: "customer_messages", channel: "customer_messages/default", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] },
-  { source_kind: "ads", channel: "ads/default", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] },
-  { source_kind: "after_sales", channel: "after_sales/case", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, new Set()) },
-  { source_kind: "after_sales", channel: "after_sales/refund", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, new Set()) },
-  { source_kind: "products", channel: "products/catalog", from: "2026-09-11", to: "2026-09-12", status: "complete", explicit_zero_dates: [] },
+  { source_kind: "orders", channel: "default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, B_ORDER_DAYS) },
+  { source_kind: "order_items", channel: "default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, B_ORDER_DAYS) },
+  { source_kind: "customer_messages", channel: "default", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] },
+  { source_kind: "ads", channel: "default", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] },
+  { source_kind: "after_sales", channel: "case", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, new Set()) },
+  { source_kind: "after_sales", channel: "refund", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, new Set()) },
+  { source_kind: "products", channel: "default", from: "2026-09-11", to: "2026-09-12", status: "complete", explicit_zero_dates: [] },
 ];

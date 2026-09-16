@@ -239,6 +239,17 @@ describe("TASK-006｜边界与拒绝", () => {
     }
   });
 
+  it("G2-R2-H03：非法时区偏移（+24:00/+08:99）产生行级错误且不抛出", () => {
+    const line = FILE_LINE.orders;
+    for (const bad of ["2026-09-01T10:00:00+24:00", "2026-09-01T10:00:00+08:99", "2026-09-01T10:00:00-30:00"]) {
+      const result = parseStandardFile("orders", `${line}\nXM-DEMO-A,2026-09-11T01:00:00Z,O1,paid,${bad},2026-09-01T10:00:00Z,CNY,1`, { storeExternalId: "XM-DEMO-A" });
+      expect(result.records).toEqual([]);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].code).toBe("INVALID_DATETIME");
+      expect(result.errors[0].column).toBe("ordered_at");
+    }
+  });
+
   it("G2-H03：report_date 不存在日历日期拒绝（2026-02-30）", () => {
     const csv = `${FILE_LINE.ads}\nXM-DEMO-A,2026-09-11T01:00:00Z,AD1,杯子搜索,2026-02-30,last_click,7,40.000000,100.000000,CNY`;
     const result = parseStandardFile("ads", csv, { storeExternalId: "XM-DEMO-A" });
@@ -342,23 +353,26 @@ describe("G2-H04｜CanonicalBatch 合同与覆盖声明", () => {
     expect(() => createCanonicalBatch({ sourceKind: "customer_messages", sourceNamespace: "ns", storeId: "", adapterKind: "csv", rawChecksum: sha("x"), parse: { kind: "customer_messages", records: [], errors: [] } })).toThrow();
     // 坏 checksum / 坏声明区间同样拒绝
     expect(() => createCanonicalBatch({ sourceKind: "customer_messages", sourceNamespace: "ns", storeId: "s", adapterKind: "csv", rawChecksum: "not-sha", parse: { kind: "customer_messages", records: [], errors: [] } })).toThrow();
-    expect(() => createCanonicalBatch({ sourceKind: "customer_messages", sourceNamespace: "ns", storeId: "s", adapterKind: "csv", rawChecksum: sha("x"), parse: { kind: "customer_messages", records: [], errors: [] }, coverageDeclaration: [{ source_kind: "customer_messages", channel: "c", from: "2026-09-02", to: "2026-09-02", status: "complete", explicit_zero_dates: [] }] })).toThrow();
-    expect(() => createCanonicalBatch({ sourceKind: "customer_messages", sourceNamespace: "ns", storeId: "s", adapterKind: "csv", rawChecksum: sha("x"), parse: { kind: "customer_messages", records: [], errors: [] }, coverageDeclaration: [{ source_kind: "customer_messages", channel: "c", from: "2026-02-30", to: "2026-03-01", status: "complete", explicit_zero_dates: [] }] })).toThrow();
+    expect(() => createCanonicalBatch({ sourceKind: "customer_messages", sourceNamespace: "ns", storeId: "s", adapterKind: "csv", rawChecksum: sha("x"), parse: { kind: "customer_messages", records: [], errors: [] }, coverageDeclaration: [{ source_kind: "customer_messages", channel: "orders/default" as never, from: "2026-09-02", to: "2026-09-02", status: "complete", explicit_zero_dates: [] }] })).toThrow();
+    expect(() => createCanonicalBatch({ sourceKind: "customer_messages", sourceNamespace: "ns", storeId: "s", adapterKind: "csv", rawChecksum: sha("x"), parse: { kind: "customer_messages", records: [], errors: [] }, coverageDeclaration: [{ source_kind: "customer_messages", channel: "orders/default" as never, from: "2026-02-30", to: "2026-03-01", status: "complete", explicit_zero_dates: [] }] })).toThrow();
   });
 
   it("两店覆盖声明独立展开：A 零事件日与事件日对应数据分布；B case/refund 全区间零事件", () => {
     const a = goldenCoverageA.find((c) => c.source_kind === "orders")!;
+    expect(a.channel).toBe("default"); // G2-R2-H04：规范 channel 枚举，不是组合键
     expect(a.explicit_zero_dates).toEqual([
       "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08", "2026-09-09",
     ]); // 09-01/09-10 有订单，不声明零
 
-    const bCase = goldenCoverageB.find((c) => c.channel === "after_sales/case")!;
-    const bRefund = goldenCoverageB.find((c) => c.channel === "after_sales/refund")!;
+    const bCase = goldenCoverageB.find((c) => c.channel === "case")!;
+    const bRefund = goldenCoverageB.find((c) => c.channel === "refund")!;
+    expect(bCase.source_kind).toBe("after_sales");
     expect(bCase.explicit_zero_dates).toHaveLength(10); // 09-01..09-10 全部显式零
     expect(bRefund.explicit_zero_dates).toEqual(bCase.explicit_zero_dates);
 
-    const aCase = goldenCoverageA.find((c) => c.channel === "after_sales/case")!;
-    const aRefund = goldenCoverageA.find((c) => c.channel === "after_sales/refund")!;
+    const aCase = goldenCoverageA.find((c) => c.channel === "case")!;
+    const aRefund = goldenCoverageA.find((c) => c.channel === "refund")!;
+    expect(aCase.source_kind).toBe("after_sales");
     expect(aCase.explicit_zero_dates).toContain("2026-09-01");
     expect(aCase.explicit_zero_dates).not.toContain("2026-09-02"); // AS1 当日
     expect(aRefund.explicit_zero_dates).toContain("2026-09-02");
@@ -372,6 +386,18 @@ describe("G2-H04｜CanonicalBatch 合同与覆盖声明", () => {
     const bAds = goldenCoverageB.find((c) => c.source_kind === "ads")!;
     expect([aAds.from, aAds.to]).toEqual(["2026-09-01", "2026-09-03"]);
     expect([bAds.from, bAds.to]).toEqual(["2026-09-01", "2026-09-02"]);
+  });
+
+  it("G2-R2-H04：channel 必须为规范枚举并与 kind 合法配对（组合键不再被接受）", () => {
+    const shaX = sha("x");
+    const base = { sourceKind: "orders" as const, sourceNamespace: "ns", storeId: "s", adapterKind: "csv" as const, rawChecksum: shaX, parse: { kind: "orders" as const, records: [], errors: [] } };
+    // 组合键（orders/default）不再接受
+    expect(() => createCanonicalBatch({ ...base, coverageDeclaration: [{ source_kind: "orders", channel: "orders/default" as never, from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] }] })).toThrow();
+    // after_sales 缺 case/refund 配对非法
+    expect(() => createCanonicalBatch({ ...base, sourceKind: "after_sales", parse: { kind: "after_sales", records: [], errors: [] }, coverageDeclaration: [{ source_kind: "after_sales", channel: "default" as never, from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] }] })).toThrow();
+    // 合法：orders→default；after_sales→case 与 refund
+    expect(() => createCanonicalBatch({ ...base, coverageDeclaration: [{ source_kind: "orders", channel: "default", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] }] })).not.toThrow();
+    expect(() => createCanonicalBatch({ ...base, sourceKind: "after_sales", parse: { kind: "after_sales", records: [], errors: [] }, coverageDeclaration: [{ source_kind: "after_sales", channel: "case", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] }] })).not.toThrow();
   });
 
   it("黄金批次：A M3=false 与 B M1=null 进入批次 records（不得自动 false）", () => {
