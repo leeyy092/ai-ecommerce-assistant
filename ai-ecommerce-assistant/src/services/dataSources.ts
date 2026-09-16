@@ -134,6 +134,13 @@ export async function listDataSources(
   let to: string | undefined;
   if (opts.from !== undefined) from = parseIsoDate(opts.from, "from");
   if (opts.to !== undefined) to = parseIsoDate(opts.to, "to");
+  if (from === undefined && to === undefined) {
+    // G2-M05：无参数同样受 90 天上限约束——默认最近 90 天（UTC 今日为右开端点），
+    // 防止默认查询随历史增长无界
+    const todayKey = Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`);
+    to = new Date(todayKey + DAY_MS).toISOString().slice(0, 10);
+    from = new Date(todayKey - 89 * DAY_MS).toISOString().slice(0, 10);
+  }
   if (from !== undefined && to !== undefined) {
     // 右开区间 [from, to)：from==to 为合法空区间；to<from 才是非法
     if (dateKey(to) < dateKey(from)) {

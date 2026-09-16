@@ -527,3 +527,61 @@ describe("GATE_02 修复回归｜G2-H01 数据源覆盖摘要", () => {
     expect(long.status).toBe(422);
   });
 });
+
+// ---------------------------------------------------------------------------
+// GATE_02 REVIEW 2 回归｜G2-M05：无/单边日期也执行 90 天上限（08:13 单次最多 90 天）
+// ---------------------------------------------------------------------------
+
+describe("GATE_02 REVIEW 2 回归｜G2-M05 默认 90 天窗口", () => {
+  let winStoreId: string;
+  let winSourceId: string;
+
+  beforeAll(async () => {
+    const s = await db.store.create({
+      data: { orgId, name: "窗口店", externalStoreId: "ext-win", platform: "manual", currency: "CNY", timezone: "UTC" },
+    });
+    winStoreId = s.id;
+    const ds = await db.dataSource.create({
+      data: { orgId, storeId: winStoreId, sourceNamespace: "ns-win", name: "窗口源", adapterKind: "csv" },
+    });
+    winSourceId = ds.id;
+    const task = await db.importTask.create({
+      data: {
+        orgId, storeId: winStoreId, dataSourceId: winSourceId, sourceKind: "orders",
+        originalFilename: "w.csv", rawObjectKey: "raw/win.csv", fileSha256: randomUUID(),
+        uploadRequestKey: `up-${randomUUID().slice(0, 8)}`, baseDatasetVersion: 0n, createdBy: owner.userId,
+      },
+    });
+    // 100 个连续日期（UTC 昨天往前）+ 1 个更早日期，共 101 日
+    const base = new Date();
+    base.setUTCHours(0, 0, 0, 0);
+    for (let i = 0; i < 100; i++) {
+      const day = new Date(base.getTime() - i * 86_400_000);
+      await db.dataCoverage.create({
+        data: { orgId, storeId: winStoreId, dataSourceId: winSourceId, sourceKind: "orders", coverageDate: day, status: "complete", recordCount: 1n, datasetVersion: 1n, importTaskId: task.id },
+      });
+    }
+    await db.dataCoverage.create({
+      data: { orgId, storeId: winStoreId, dataSourceId: winSourceId, sourceKind: "orders", coverageDate: new Date(base.getTime() - 200 * 86_400_000), status: "complete", recordCount: 1n, datasetVersion: 1n, importTaskId: task.id },
+    });
+  });
+
+  it("G2-R2-M05：无 from/to 返回 ≤90 天；from-only 与 to-only 均有界", async () => {
+    const { GET } = await import("@/app/api/v1/data-sources/route");
+    const readDates = async (query: string): Promise<string[]> => {
+      const view = await GET(req(`/api/v1/data-sources?store_id=${winStoreId}${query}`, {}, owner.cookie));
+      expect(view.status).toBe(200);
+      const items = ((await view.json()) as { data: { items: { id: string; coverage: { date: string }[] }[] } }).data.items;
+      return items.find((i) => i.id === winSourceId)!.coverage.map((c) => c.date);
+    };
+    const none = await readDates("");
+    expect(none.length).toBeLessThanOrEqual(90);
+    // 默认窗口应为最近 90 天（含今天），不含 200 天前
+    expect(none).not.toContain(new Date(Date.now() - 200 * 86_400_000).toISOString().slice(0, 10));
+
+    const fromOnly = await readDates("&from=2020-01-01");
+    expect(fromOnly.length).toBeLessThanOrEqual(90);
+    const toOnly = await readDates("&to=2030-01-01");
+    expect(toOnly.length).toBeLessThanOrEqual(90);
+  });
+});
