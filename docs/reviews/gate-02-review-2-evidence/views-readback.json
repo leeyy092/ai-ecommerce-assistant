@@ -1,0 +1,20 @@
+{
+  "at": "2026-09-16T14:26:41.423779+08:00",
+  "checks": {
+    "mdFullPrompt": true,
+    "htmlFullPrompt": true,
+    "mdTask": true,
+    "mdStatus": true,
+    "mdOwner": true,
+    "mdCheckpoint": true,
+    "htmlState": true,
+    "controlState": true,
+    "frozenHeadRecordedInBoth": true
+  },
+  "gitSnapshotLines": [
+    "- Git：本地 Git 待核实（命令不可用或超时）；待核实。",
+    "- 分支：待核实；版本：待核实。"
+  ],
+  "localGitSnapshotAvailable": false,
+  "note": "Task/status/owner/full prompt/checkpoint match. Product OS Git status subprocess timed out; actual HEAD/branch and remote refs verified separately. Hash in prompt does not mean automatic local Git snapshot succeeded."
+}

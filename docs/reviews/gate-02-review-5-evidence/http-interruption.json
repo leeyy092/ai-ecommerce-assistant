@@ -1,0 +1,11 @@
+{
+  "name": "http-interruption",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "exec",
+    "tsx",
+    "review-http-interruption.ts"
+  ],
+  "exit": 0,
+  "seconds": 1.64
+}

@@ -1,0 +1,11 @@
+{
+  "name": "docker-info",
+  "args": [
+    "docker",
+    "info",
+    "--format",
+    "{{json .ServerVersion}}"
+  ],
+  "exit": 0,
+  "seconds": 0.25
+}

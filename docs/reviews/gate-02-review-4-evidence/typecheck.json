@@ -1,0 +1,13 @@
+{
+  "name": "typecheck",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsc",
+    "--noEmit",
+    "--incremental",
+    "false"
+  ],
+  "exit": 0,
+  "seconds": 8.57
+}

@@ -1,0 +1,377 @@
+[
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 A/products CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 A/orders CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 A/order_items CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 A/ads CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 A/customer_messages CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 A/after_sales CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 B/products CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 B/orders CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 B/order_items CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 B/ads CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 B/customer_messages CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 B/after_sales CSV normative oracle",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 numeric 20,6 upper boundary",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 unsafe integer refused",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 timestamp invalid 2026-02-30T00:00:00Z",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 timestamp invalid 2026-09-01T00:00:00",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 timestamp invalid 09/01/26",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 timestamp invalid 2026-09-01T00:00:00+24:00",
+    "status": "FAIL"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 timestamp invalid 2026-09-01T00:00:00+08:99",
+    "status": "FAIL"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 source time missing no invented value",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 optional columns may be omitted",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 blank required enum rejected",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 duplicate header refused",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 unclosed quote refused",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H03 STORE_MISMATCH whole file rejection",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 complaint normative distinction",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 independent explicit zeros match case refund dates",
+    "status": "PASS"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 coverage channel matches data contract enum default/case/refund",
+    "status": "FAIL"
+  },
+  {
+    "file": "adapter-assertions.json",
+    "name": "H04 batch metadata stable",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "M01 normal entity_type and response fields",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H07 sequential content reuse",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H05 current role query matrix",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H05 L02 signed download and isolation",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H01 effective coverage role projection",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H01 date validation and exclusive end",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H02 row lock concurrent CAS",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "M02 concurrent name uniqueness",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H07 concurrent same bytes one task",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H07 ordinary HTTP replay and conflict",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H07 reusable content binds a new HTTP key",
+    "status": "FAIL"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H07 key isolation across users",
+    "status": "FAIL"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H07 expiration allows a new request after 24h",
+    "status": "FAIL"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H08 HTTP ledger failure cannot report unprotected success",
+    "status": "FAIL"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H06 rejected type cleans spool",
+    "status": "FAIL"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H06 forbidden role cleans spool",
+    "status": "FAIL"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "M03 strict UTF8",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H06 quoted newline logical count",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H06 blank-line CSV cannot bypass 100000 rows",
+    "status": "FAIL"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "H05 revoked session query and download",
+    "status": "PASS"
+  },
+  {
+    "file": "http-assertions.json",
+    "name": "M03 default rate bucket enforces 20 per minute",
+    "status": "PASS"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "H08 built Worker normal parse",
+    "status": "PASS"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "H05 disabled Membership rejected",
+    "status": "PASS"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "H05 downgrade rejected",
+    "status": "PASS"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "H05 disabled global user rejected",
+    "status": "FAIL"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "H08 missing source terminal",
+    "status": "PASS"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "H08 malformed header private errors",
+    "status": "PASS"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "H08 terminal replay keeps preview version",
+    "status": "PASS"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "H08 dispatcher lost dispatch reaches ready",
+    "status": "PASS"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "H08 interrupted validation finalizes",
+    "status": "PASS"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "H08 retry exhausted immediately finalizes task",
+    "status": "FAIL"
+  },
+  {
+    "file": "worker-assertions.json",
+    "name": "commit explicitly refused no fact writes",
+    "status": "PASS"
+  },
+  {
+    "file": "recovery-assertions.json",
+    "name": "H07 H08 concurrent long HTTP key conflict must not commit an objectless second task",
+    "status": "FAIL"
+  },
+  {
+    "file": "oss-assertions.json",
+    "name": "M04 isolated object adapter put/get/move works",
+    "status": "PASS"
+  },
+  {
+    "file": "oss-assertions.json",
+    "name": "M04 actual spool then strict read works with OSS",
+    "status": "FAIL"
+  },
+  {
+    "file": "oss-assertions.json",
+    "name": "M04 failed upload cleanup removes local temporary object",
+    "status": "FAIL"
+  },
+  {
+    "file": "extra-assertions.json",
+    "name": "H02 audit failure rolls back CAS update",
+    "status": "PASS"
+  },
+  {
+    "file": "extra-assertions.json",
+    "name": "H01 omitted date bounds still obey 90 day maximum",
+    "status": "FAIL"
+  },
+  {
+    "file": "wire-longwait-assertions.json",
+    "name": "H06 true HTTP incomplete multipart byte boundary",
+    "status": "PASS"
+  },
+  {
+    "file": "wire-longwait-assertions.json",
+    "name": "H06 true HTTP incomplete multipart record boundary",
+    "status": "PASS"
+  },
+  {
+    "file": "compose-assertions.json",
+    "name": "Compose init-owner bundle login",
+    "status": "PASS"
+  },
+  {
+    "file": "compose-assertions.json",
+    "name": "Compose upload 201",
+    "status": "PASS"
+  },
+  {
+    "file": "compose-assertions.json",
+    "name": "Compose Worker consumes shared raw file",
+    "status": "PASS"
+  },
+  {
+    "file": "compose-assertions.json",
+    "name": "Compose signed download exact content",
+    "status": "PASS"
+  },
+  {
+    "file": "compose-assertions.json",
+    "name": "Compose restart readback query and file",
+    "status": "PASS"
+  },
+  {
+    "file": "write-error-assertions.json",
+    "name": "H08 write stream EACCES with open input handled without process crash",
+    "status": "FAIL"
+  }
+]

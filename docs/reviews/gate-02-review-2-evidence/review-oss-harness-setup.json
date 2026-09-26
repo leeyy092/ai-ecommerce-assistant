@@ -1,0 +1,11 @@
+{
+  "name": "review-oss",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-oss.ts"
+  ],
+  "exit": 1,
+  "seconds": 0.6
+}

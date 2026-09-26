@@ -1,0 +1,10 @@
+diff --git a/docs/ai-ecommerce-assistant/12_PROGRESS.md b/docs/ai-ecommerce-assistant/12_PROGRESS.md
+index 6de4619..113a214 100644
+--- a/docs/ai-ecommerce-assistant/12_PROGRESS.md
++++ b/docs/ai-ecommerce-assistant/12_PROGRESS.md
+@@ -498,3 +498,5 @@ R5 收尾实际核验（2026-09-14T22:53:30+08:00）：Product OS sync 返回 re
+ - Product OS：写回后运行 sync 并读回首页/总控，结果见下条。
+ 
+ GATE_02 收尾实际核验（2026-09-15T13:22:00+08:00）：Product OS sync 返回 registered=1、updated=1、errors=[]；读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，均为 TASK-007 / 待审查（GATE_02 待复审）/ Codex / P07_CODE_REVIEW / Checkpoint=YES，复审范围 4c7e95b..4e44270 一致。
++
++管理差异说明（2026-09-15T13:26:00+08:00，未提交保留）：GATE_02 冻结为 4e44270（含 Phase 2 交接与 P07 复审提示词）；其后 ce5f286 为纯管理修正（把范围描述 6d1928c 纠正为 4e44270 并 sync 读回），无业务代码变化。按交接约定，Codex 接手时以实际 HEAD 重定范围：复审差异 4c7e95b..HEAD（=4c7e95b..4e44270 + ce5f286 管理修正）。本段及其后管理差异按协议保留未提交，不 reset、不覆盖。

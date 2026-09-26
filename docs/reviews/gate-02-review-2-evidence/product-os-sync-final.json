@@ -1,0 +1,10 @@
+{
+  "exit": 0,
+  "seconds": 14.65,
+  "result": {
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-16T14:25:37+08:00"
+  }
+}

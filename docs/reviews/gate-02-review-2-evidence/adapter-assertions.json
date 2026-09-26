@@ -1,0 +1,273 @@
+[
+  {
+    "name": "H04 A/products CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 A/orders CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 A/order_items CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 A/ads CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 A/customer_messages CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 A/after_sales CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 B/products CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 B/orders CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 B/order_items CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 B/ads CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 B/customer_messages CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H04 B/after_sales CSV normative oracle",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H03 numeric 20,6 upper boundary",
+    "expected": [
+      0,
+      1
+    ],
+    "actual": [
+      0,
+      1
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H03 unsafe integer refused",
+    "expected": 1,
+    "actual": 1,
+    "status": "PASS"
+  },
+  {
+    "name": "H03 timestamp invalid 2026-02-30T00:00:00Z",
+    "expected": {
+      "errors": 1,
+      "throws": false
+    },
+    "actual": {
+      "errors": 1,
+      "throws": false
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H03 timestamp invalid 2026-09-01T00:00:00",
+    "expected": {
+      "errors": 1,
+      "throws": false
+    },
+    "actual": {
+      "errors": 1,
+      "throws": false
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H03 timestamp invalid 09/01/26",
+    "expected": {
+      "errors": 1,
+      "throws": false
+    },
+    "actual": {
+      "errors": 1,
+      "throws": false
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H03 timestamp invalid 2026-09-01T00:00:00+24:00",
+    "expected": {
+      "errors": 1,
+      "throws": false
+    },
+    "actual": {
+      "errors": 0,
+      "throws": true
+    },
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   errors: 0,\n+   throws: true\n-   errors: 1,\n-   throws: false\n  }\n"
+  },
+  {
+    "name": "H03 timestamp invalid 2026-09-01T00:00:00+08:99",
+    "expected": {
+      "errors": 1,
+      "throws": false
+    },
+    "actual": {
+      "errors": 0,
+      "throws": true
+    },
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   errors: 0,\n+   throws: true\n-   errors: 1,\n-   throws: false\n  }\n"
+  },
+  {
+    "name": "H03 source time missing no invented value",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H03 optional columns may be omitted",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H03 blank required enum rejected",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H03 duplicate header refused",
+    "expected": "DUPLICATE_COLUMN",
+    "actual": "DUPLICATE_COLUMN",
+    "status": "PASS"
+  },
+  {
+    "name": "H03 unclosed quote refused",
+    "expected": "INVALID_CSV",
+    "actual": "INVALID_CSV",
+    "status": "PASS"
+  },
+  {
+    "name": "H03 STORE_MISMATCH whole file rejection",
+    "expected": [
+      0,
+      "STORE_MISMATCH"
+    ],
+    "actual": [
+      0,
+      "STORE_MISMATCH"
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H04 complaint normative distinction",
+    "expected": [
+      false,
+      null
+    ],
+    "actual": [
+      false,
+      null
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H04 independent explicit zeros match case refund dates",
+    "expected": [
+      [
+        "2026-09-01",
+        "2026-09-03",
+        "2026-09-04",
+        "2026-09-05",
+        "2026-09-06",
+        "2026-09-07",
+        "2026-09-08",
+        "2026-09-09",
+        "2026-09-10"
+      ],
+      [
+        "2026-09-01",
+        "2026-09-02",
+        "2026-09-05",
+        "2026-09-06",
+        "2026-09-07",
+        "2026-09-08",
+        "2026-09-10"
+      ],
+      10,
+      10
+    ],
+    "actual": [
+      [
+        "2026-09-01",
+        "2026-09-03",
+        "2026-09-04",
+        "2026-09-05",
+        "2026-09-06",
+        "2026-09-07",
+        "2026-09-08",
+        "2026-09-09",
+        "2026-09-10"
+      ],
+      [
+        "2026-09-01",
+        "2026-09-02",
+        "2026-09-05",
+        "2026-09-06",
+        "2026-09-07",
+        "2026-09-08",
+        "2026-09-10"
+      ],
+      10,
+      10
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H04 coverage channel matches data contract enum default/case/refund",
+    "expected": true,
+    "actual": false,
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n\nfalse !== true\n"
+  },
+  {
+    "name": "H04 batch metadata stable",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  }
+]

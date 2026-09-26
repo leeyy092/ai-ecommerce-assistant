@@ -1,0 +1,9 @@
+{
+  "name": "build",
+  "args": [
+    "pnpm",
+    "build"
+  ],
+  "exit": 0,
+  "seconds": 16.86
+}

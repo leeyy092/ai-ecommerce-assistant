@@ -1,0 +1,23 @@
+(node:55205) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+M01 normal entity_type and response fields PASS
+H07 sequential content reuse PASS
+H05 current role query matrix PASS
+H05 L02 signed download and isolation PASS
+H01 effective coverage role projection PASS
+H01 date validation and exclusive end PASS
+H02 row lock concurrent CAS PASS
+M02 concurrent name uniqueness PASS
+H07 concurrent same bytes one task PASS
+H07 ordinary HTTP replay and conflict PASS
+H07 reusable content binds a new HTTP key FAIL
+H07 key isolation across users FAIL
+H07 expiration allows a new request after 24h FAIL
+H08 HTTP ledger failure cannot report unprotected success FAIL
+H06 rejected type cleans spool FAIL
+H06 forbidden role cleans spool FAIL
+M03 strict UTF8 PASS
+H06 quoted newline logical count PASS
+H06 blank-line CSV cannot bypass 100000 rows FAIL
+H05 revoked session query and download PASS
+M03 default rate bucket enforces 20 per minute PASS

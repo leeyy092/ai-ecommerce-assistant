@@ -1,0 +1,21 @@
+[
+  {
+    "name": "H02 audit failure rolls back CAS update",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  },
+  {
+    "name": "H01 omitted date bounds still obey 90 day maximum",
+    "expected": true,
+    "actual": false,
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n\nfalse !== true\n"
+  },
+  {
+    "name": "M03 rate response observation, no new gate finding",
+    "statusCode": 429,
+    "retryable": true,
+    "retryAfter": null
+  }
+]

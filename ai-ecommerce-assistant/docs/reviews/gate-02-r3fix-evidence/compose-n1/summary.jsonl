@@ -1,0 +1,11 @@
+{"step":"S1","name":"compose build(完整日志+真实退出码)","exit":0,"expect":"exit=0"}
+{"step":"S2","name":"镜像存在+canary排除断言","exit":0,"expect":"exit=0"}
+{"step":"S3","name":"up+健康200","exit":0,"expect":"exit=0"}
+{"step":"S4","name":"官方12迁移","exit":0,"expect":"exit=0"}
+{"step":"S5","name":"init-owner","exit":0,"expect":"exit=0"}
+{"step":"S6","name":"登录/建店/建源/上传201","exit":0,"expect":"exit=0"}
+{"step":"S7","name":"Worker校验preview_ready","exit":0,"expect":"exit=0"}
+{"step":"S8","name":"签名下载一致","exit":0,"expect":"exit=0"}
+{"step":"S9","name":"重启web/worker后读回一致","exit":0,"expect":"exit=0"}
+{"step":"S10","name":"down-v清理无残留","exit":1,"expect":"exit=0"}
+{"step":"S10b","name":"显式docker rmi补清理（S10首跑img=2如实保留失败）","exit":0,"expect":"exit=0"}

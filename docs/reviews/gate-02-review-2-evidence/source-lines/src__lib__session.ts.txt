@@ -1,0 +1,80 @@
+   1 /**
+   2  * 会话上下文（TASK-003；Gate-01 H01 修复版）。
+   3  * 从请求 Cookie 解析 Better Auth session → 领域 User + 全部 Membership。
+   4  * 活跃组织唯一解析点：读取 aiea_active_org Cookie，仅当其命中当前有效
+   5  * Membership 时作为 activeOrgId，否则回退首个有效成员关系——Cookie 只能
+   6  * 在已验证的成员关系内选择显示/授权上下文，不能自授权限。
+   7  * /me、requirePermission 与全部业务 API 共用本函数结果。
+   8  * 禁用即时失权：全局 User.status=disabled（平台运维级）或全部成员关系失效时视为未登录。
+   9  */
+  10 import type { PrismaClient } from "@/generated/prisma/client";
+  11 import { getAuth } from "@/lib/auth";
+  12 import { getPrismaClient } from "@/database/prisma";
+  13 
+  14 export const ACTIVE_ORG_COOKIE = "aiea_active_org";
+  15 
+  16 export interface MembershipInfo {
+  17   orgId: string;
+  18   orgName: string;
+  19   role: "owner" | "admin" | "operator" | "customer_service";
+  20   status: "active" | "disabled";
+  21 }
+  22 
+  23 export interface SessionContext {
+  24   authUserId: string;
+  25   user: { id: string; email: string; displayName: string };
+  26   memberships: MembershipInfo[];
+  27   activeOrgId: string | null;
+  28 }
+  29 
+  30 /** 从请求头解析活跃组织 Cookie 值（无则 null） */
+  31 export function readActiveOrgCookie(request: Request): string | null {
+  32   const cookieHeader = request.headers.get("cookie") ?? "";
+  33   for (const part of cookieHeader.split(";")) {
+  34     const [name, ...rest] = part.trim().split("=");
+  35     if (name === ACTIVE_ORG_COOKIE) {
+  36       const value = rest.join("=");
+  37       return value.length > 0 ? value : null;
+  38     }
+  39   }
+  40   return null;
+  41 }
+  42 
+  43 export async function getSessionContext(
+  44   request: Request,
+  45   db: PrismaClient = getPrismaClient(),
+  46 ): Promise<SessionContext | null> {
+  47   const session = await getAuth().api.getSession({ headers: request.headers });
+  48   if (!session?.user?.id) return null;
+  49 
+  50   const domainUser = await db.user.findUnique({
+  51     where: { authUserId: session.user.id },
+  52     include: {
+  53       memberships: {
+  54         where: { status: "active" },
+  55         include: { organization: { select: { id: true, name: true } } },
+  56       },
+  57     },
+  58   });
+  59   if (!domainUser || domainUser.status === "disabled") return null;
+  60 
+  61   const memberships: MembershipInfo[] = domainUser.memberships.map((m) => ({
+  62     orgId: m.orgId,
+  63     orgName: m.organization.name,
+  64     role: m.role,
+  65     status: m.status,
+  66   }));
+  67 
+  68   // H01：唯一活跃组织解析——Cookie 必须命中有效成员关系，否则回退首个
+  69   const cookieOrg = readActiveOrgCookie(request);
+  70   const activeOrgId = memberships.some((m) => m.orgId === cookieOrg)
+  71     ? (cookieOrg as string)
+  72     : (memberships[0]?.orgId ?? null);
+  73 
+  74   return {
+  75     authUserId: session.user.id,
+  76     user: { id: domainUser.id, email: domainUser.email, displayName: domainUser.displayName },
+  77     memberships,
+  78     activeOrgId,
+  79   };
+  80 }

@@ -1,0 +1,9 @@
+{
+  "name": "e2e",
+  "args": [
+    "pnpm",
+    "test:e2e"
+  ],
+  "exit": 0,
+  "seconds": 8.82
+}

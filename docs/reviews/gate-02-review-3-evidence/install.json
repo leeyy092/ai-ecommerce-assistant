@@ -1,0 +1,12 @@
+{
+  "name": "install",
+  "args": [
+    "pnpm",
+    "install",
+    "--frozen-lockfile",
+    "--store-dir",
+    "/private/tmp/gate02-review3-20260925-8_hqanp6/pnpm-store"
+  ],
+  "exit": 0,
+  "seconds": 23.41
+}

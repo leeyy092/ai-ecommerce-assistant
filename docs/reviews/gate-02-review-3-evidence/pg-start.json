@@ -1,0 +1,14 @@
+{
+  "name": "pg-start",
+  "args": [
+    "pg_ctl",
+    "-D",
+    "/private/tmp/gate02-review3-20260925-8_hqanp6/pgdata",
+    "-l",
+    "/private/tmp/gate02-review3-20260925-8_hqanp6/evidence/postgres.log",
+    "-w",
+    "start"
+  ],
+  "exit": 0,
+  "seconds": 0.19
+}

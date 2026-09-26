@@ -1,0 +1,12 @@
+{
+  "name": "migrate-deploy",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "exec",
+    "prisma",
+    "migrate",
+    "deploy"
+  ],
+  "exit": 0,
+  "seconds": 1.52
+}

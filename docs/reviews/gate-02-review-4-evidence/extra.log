@@ -1,0 +1,4 @@
+(node:44768) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+H02 audit failure rolls back CAS update PASS
+H01 omitted date bounds still obey 90 day maximum PASS

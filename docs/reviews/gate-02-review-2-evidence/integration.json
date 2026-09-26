@@ -1,0 +1,9 @@
+{
+  "name": "integration",
+  "args": [
+    "pnpm",
+    "test:integration"
+  ],
+  "exit": 0,
+  "seconds": 25.72
+}

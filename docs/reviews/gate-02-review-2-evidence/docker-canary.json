@@ -1,0 +1,15 @@
+{
+  "name": "docker-canary",
+  "args": [
+    "docker",
+    "run",
+    "--rm",
+    "--entrypoint",
+    "node",
+    "aiea-g2r2-review:072f9ba",
+    "-e",
+    "const fs=require('fs');const p='/app/.data';console.log(JSON.stringify({private_directory_in_image:fs.existsSync(p)}));if(fs.existsSync(p))process.exit(1)"
+  ],
+  "exit": 0,
+  "seconds": 0.59
+}

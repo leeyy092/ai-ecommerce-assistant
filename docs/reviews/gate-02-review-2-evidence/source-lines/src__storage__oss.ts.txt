@@ -1,0 +1,47 @@
+   1 /**
+   2  * 私有阿里云 OSS 适配（TASK-007 / M04；11_DEVELOPMENT_RULES:87 合同指定 ali-oss）。
+   3  * - 仅在 STORAGE_DRIVER=oss 时启用；配置缺失在首次使用时明确报错；
+   4  * - 真实账号联调（上传/下载/签名 URL 打通）需云资源，当前未执行——如实记录为
+   5  *   剩余范围（TASK-029 试点运维阶段核验），本适配的可测试性由注入 client 的
+   6  *   单元测试保证（不伪造云端联调证据）。
+   7  */
+   8 
+   9 /** 与 ali-oss 实例形态兼容的最小接口（测试可注入假实现） */
+  10 export interface OssClientLike {
+  11   put(key: string, buffer: Buffer): Promise<unknown>;
+  12   get(key: string): Promise<{ content: Buffer }>;
+  13   getStream(key: string): Promise<{ stream: NodeJS.ReadableStream }>;
+  14   head(key: string): Promise<unknown>;
+  15   delete(key: string): Promise<unknown>;
+  16   copy(toKey: string, fromKey: string): Promise<unknown>;
+  17 }
+  18 
+  19 const g = globalThis as typeof globalThis & {
+  20   __aieaOssClient?: OssClientLike;
+  21 };
+  22 
+  23 /** 测试注入点：设置后 getOssClient 直接返回该实例 */
+  24 export function setOssClientForTests(client: OssClientLike | undefined): void {
+  25   g.__aieaOssClient = client;
+  26 }
+  27 
+  28 export async function getOssClient(): Promise<OssClientLike> {
+  29   if (g.__aieaOssClient) return g.__aieaOssClient;
+  30   // 惰性加载 ali-oss（local 驱动零开销；oss 驱动配置缺失时给出明确变量名）
+  31   const { createOssClient } = await import("./oss-client");
+  32   const client = createOssClient();
+  33   g.__aieaOssClient = client;
+  34   return client;
+  35 }
+  36 
+  37 /** 签名下载 URL（合同：5 分钟有效）；key 为对象键，返回带签名的完整 URL */
+  38 export function ossSignedUrl(client: OssClientLike, key: string, ttlSeconds: number): string {
+  39   // ali-oss signatureUrl(url, options)；这里以最小接口约定（假实现可断言参数）
+  40   const signed = (client as OssClientLike & {
+  41     signatureUrl?: (key: string, opts: { expires: number }) => string;
+  42   }).signatureUrl;
+  43   if (typeof signed !== "function") {
+  44     throw new Error("OSS client 不支持 signatureUrl（签名下载不可用）");
+  45   }
+  46   return signed.call(client, key, { expires: ttlSeconds });
+  47 }

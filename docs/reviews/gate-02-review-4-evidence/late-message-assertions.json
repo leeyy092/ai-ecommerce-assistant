@@ -1,0 +1,75 @@
+[
+  {
+    "name": "Customer message after complete file valid-tail lag=350",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 1,
+      "health": 200
+    },
+    "actual": {
+      "status": 201,
+      "hadSpoolBeforeTermination": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 1,
+      "health": 200
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "Customer message after complete file truncated-tail lag=0",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "actual": {
+      "status": 422,
+      "code": "VALIDATION_ERROR",
+      "hadSpoolBeforeTermination": false,
+      "newTemporaryFiles": 1,
+      "newTasks": 0,
+      "health": 200
+    },
+    "status": "FAIL",
+    "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+  },
+  {
+    "name": "Customer message after complete file truncated-tail lag=350",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "actual": {
+      "status": 422,
+      "code": "VALIDATION_ERROR",
+      "hadSpoolBeforeTermination": true,
+      "newTemporaryFiles": 1,
+      "newTasks": 0,
+      "health": 200
+    },
+    "status": "FAIL",
+    "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+  },
+  {
+    "name": "Customer message after complete file socket-abort lag=350",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "actual": {
+      "aborted": true,
+      "hadSpoolBeforeTermination": true,
+      "newTemporaryFiles": 1,
+      "newTasks": 0,
+      "health": 200
+    },
+    "status": "FAIL",
+    "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+  }
+]

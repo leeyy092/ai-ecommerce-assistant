@@ -1,0 +1,16 @@
+{
+  "name": "migrate-diff",
+  "args": [
+    "pnpm",
+    "exec",
+    "prisma",
+    "migrate",
+    "diff",
+    "--from-config-datasource",
+    "--to-schema",
+    "prisma/schema.prisma",
+    "--script"
+  ],
+  "exit": 0,
+  "seconds": 1.28
+}

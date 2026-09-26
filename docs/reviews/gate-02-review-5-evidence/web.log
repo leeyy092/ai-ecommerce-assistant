@@ -1,0 +1,12 @@
+▲ Next.js 16.3.5
+- Local:         http://127.0.0.1:53190
+- Network:       http://127.0.0.1:53190
+✓ Ready in 61ms
+✓ Running next.config.ts took 13ms
+(node:61261) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[internal] request_id=8db76ea0-0548-4637-a455-c73e3d40959b 
+Invalid `prisma.httpIdempotency.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "http_idempotency" violates check constraint "reviewer_fail_ledger"`

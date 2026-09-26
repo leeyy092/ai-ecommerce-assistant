@@ -1,0 +1,98 @@
+
+> ai-ecommerce-assistant@0.1.0 test:integration /private/tmp/gate02-review4-20260926-t6xh05db/app
+> env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90m/private/tmp/gate02-review4-20260926-t6xh05db/app[39m
+
+(node:43065) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[90mstderr[2m | tests/integration/imports.test.ts[2m > [22m[2mGATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04[2m > [22m[2mG2-R2-H07：存档写入失败 → 上传不无保护成功（503），无任务残留
+[22m[39m[internal] request_id=4f951715-f680-4c51-86bc-619877af4733 
+Invalid `ctx.db.httpIdempotency.findUnique()` invocation in
+/private/tmp/gate02-review4-20260926-t6xh05db/app/src/services/imports.ts:271:44
+
+  268 }
+  269 
+  270 async function readHttpArchive(ctx: ImportsContext, input: UploadInput, requestKey: string): Promise<HttpArchive | null> {
+→ 271   const row = await ctx.db.httpIdempotency.findUnique(
+The column `http_idempotency.request_hash` does not exist in the current database.
+
+ [32m✓[39m tests/integration/imports.test.ts [2m([22m[2m32 tests[22m[2m)[22m[33m 25327[2mms[22m[39m
+   [33m[2m✓[22m[39m TASK-007｜上传、幂等与任务查询[2m > [22mO 上传 csv（entity_type 合同字段）→ 201 任务（sha256/行数/filename/bytes）；重复上传返回同任务 [33m 675[2mms[22m[39m
+   [33m[2m✓[22m[39m TASK-007｜上传、幂等与任务查询[2m > [22mG2-H07：并发同内容上传恰产生一个任务（部分唯一索引原子认领） [33m 404[2mms[22m[39m
+   [33m[2m✓[22m[39m TASK-007｜类型权限（G2-H05）[2m > [22m降权后旧任务与链接拒绝：C 消息任务在成员禁用后查询 403、下载 403 [33m 304[2mms[22m[39m
+   [33m[2m✓[22m[39m TASK-007｜限制与拒绝[2m > [22m超过 10 万逻辑行即停止解析（422 TOO_MANY_ROWS） [33m 840[2mms[22m[39m
+   [33m[2m✓[22m[39m TASK-007｜限制与拒绝[2m > [22mG2-H06：quoted 换行按单条逻辑记录计数（50,001 条不误拒） [33m 496[2mms[22m[39m
+   [33m[2m✓[22m[39m TASK-007｜限制与拒绝[2m > [22m超过 20MB 真实分块流在接收链路立即中止（422 FILE_TOO_LARGE，不等 multipart 结束） [33m 14638[2mms[22m[39m
+   [33m[2m✓[22m[39m TASK-007｜签名下载与 validate/恢复边界[2m > [22mG2-H05：执行前撤权 → 任务终态 failed UPLOAD_PERMISSION_REVOKED，不解析 [33m 360[2mms[22m[39m
+   [33m[2m✓[22m[39m GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04[2m > [22mG2-R2-H05：领域全局 User 禁用（Membership 仍 active）→ 未终态任务终态拒绝 [33m 391[2mms[22m[39m
+   [33m[2m✓[22m[39m GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04[2m > [22mG2-R2-H06：空行前缀+100001 条数据仍拒绝（422 TOO_MANY_ROWS），计数不因空行停摆 [33m 880[2mms[22m[39m
+   [33m[2m✓[22m[39m GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04[2m > [22mG2-R2-H07：Key 按用户隔离；并发同 key 异 body 恰一 201 一 409，且无无文件任务 [33m 324[2mms[22m[39m
+   [33m[2m✓[22m[39m GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放[2m > [22mG2-R3-H06：请求未结束但行数超限 → 稳定 422 TOO_MANY_ROWS（不降级为通用 multipart 错误） [33m 1289[2mms[22m[39m
+ [32m✓[39m tests/integration/stores.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 2668[2mms[22m[39m
+[90mstderr[2m | tests/integration/gate01.auth.test.ts[2m > [22m[2mGate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封）[2m > [22m[2mM03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[22m[39m[internal] request_id=cae98cc6-9b5d-4daa-af9c-ad2e53d228d4 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+[90mstderr[2m | tests/integration/gate01.auth.test.ts[2m > [22m[2mGate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封）[2m > [22m[2mM03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[22m[39m[internal] request_id=2ec2b96d-879c-4f08-a4c8-59145487a279 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+ [32m✓[39m tests/integration/gate01.auth.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 6148[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 H05｜邀请接受后为框架真实会话[2m > [22maccept 响应转发的 Set-Cookie 可建立可用登录态（getSessionContext 解析成功） [33m 632[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 H06｜输入校验、孤儿恢复与故障补偿[2m > [22m孤儿 Auth 身份（有 Auth 无领域）→ 安全回收后正常接受 [33m 384[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 H06｜输入校验、孤儿恢复与故障补偿[2m > [22mAuth 创建后领域事务失败：补偿删除 Auth 身份，邀请回 pending，重试成功 [33m 502[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 H06｜输入校验、孤儿恢复与故障补偿[2m > [22mOwner 初始化同型故障：补偿后重跑成功 [33m 311[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 正式复核 H06 增补｜并发与身份链[2m > [22minit/init 并发：一胜一幂等，AuthUser 恰 1，二者均可登录语义 [33m 480[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 正式复核 H06 增补｜并发与身份链[2m > [22minit/invite 交错：邮箱锁串行，最终恰一个身份路径胜出且状态一致 [33m 519[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 正式复核 H06 增补｜并发与身份链[2m > [22m断链恢复：删除 AuthUser 模拟链断裂后重跑 init → 重建身份且能真实登录 [33m 418[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 REVIEW_4｜邀请入口来源/输入/限流键（M01/M02/M03）[2m > [22mM03：DELETE expected_version 小数/缺失/非数字 → 422；M01：非可信 Origin 撤销 403、无 Origin 合法撤销 200 [33m 321[2mms[22m[39m
+Loaded Prisma config from prisma.config.ts.
+
+ [32m✓[39m tests/integration/gate01.db.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 5231[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 H08｜AuditLog 店铺同域强制（数据库级）[2m > [22mH08 REVIEW_4：并发交错方向 A——父行改归属未提交时插入旧组织审计引用，后者必须失败 [33m 390[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 H08｜AuditLog 店铺同域强制（数据库级）[2m > [22mH08 REVIEW_4：并发交错方向 B——审计引用未提交时改父行归属，后者必须失败且引用方正常提交 [33m 337[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 正式复核 H08/H09/M04 增补[2m > [22mH08：升级守卫——存量跨域引用使 v2 迁移失败（拒绝静默通过） [33m 1067[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏）[2m > [22mM06：applyMigrationsUpTo 首次执行到目标、重复不越界、不存在目标明确失败 [33m 865[2mms[22m[39m
+   [33m[2m✓[22m[39m Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏）[2m > [22mM07：官方 migrate diff 不再净删除审计同域复合外键（重建必须同引用且配平） [33m 1572[2mms[22m[39m
+[90mstderr[2m | tests/integration/gate01.access.test.ts[2m > [22m[2mGate-01 H07｜成员/组织管理与审计原子[2m > [22m[2m成员 PATCH：审计故障 → 角色与版本零提交
+[22m[39m[internal] request_id=d6d75c65-d9be-424e-8bca-fbb776f8b3ca 
+Invalid `db.auditLog.create()` invocation in
+/private/tmp/gate02-review4-20260926-t6xh05db/app/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_member_audit"`
+
+[90mstderr[2m | tests/integration/gate01.access.test.ts[2m > [22m[2mGate-01 H07｜成员/组织管理与审计原子[2m > [22m[2m组织 PATCH：审计故障 → 名称与版本零提交
+[22m[39m[internal] request_id=946110e6-ced1-400e-be49-76410bf94cbf 
+Invalid `db.auditLog.create()` invocation in
+/private/tmp/gate02-review4-20260926-t6xh05db/app/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_org_audit"`
+
+ [32m✓[39m tests/integration/gate01.access.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 2337[2mms[22m[39m
+ [32m✓[39m tests/integration/auth.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 2161[2mms[22m[39m
+   [33m[2m✓[22m[39m TASK-003｜初始 Owner 与登录[2m > [22m初始化创建 Auth+领域身份并可用真实会话登录；/api 层无公开注册入口依赖 [33m 305[2mms[22m[39m
+ [32m✓[39m tests/integration/permissions.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 2115[2mms[22m[39m
+ [32m✓[39m tests/integration/database.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 1200[2mms[22m[39m
+ [32m✓[39m tests/integration/db.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m      Tests [22m [1m[32m111 passed[39m[22m[90m (111)[39m
+[2m   Start at [22m 14:46:16
+[2m   Duration [22m 50.18s[2m (transform 836ms, setup 1.01s, collect 1.53s, tests 47.20s, environment 0ms, prepare 93ms)[22m
+

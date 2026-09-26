@@ -1,0 +1,203 @@
+   1 /**
+   2  * POST /api/v1/imports（08 §17.3；TASK-007；G2-H06/07/M01/M03 修复版）
+   3  * - 流式 multipart（busboy）：20MB / 10 万 CSV 逻辑记录上限在接收链路即时生效，
+   4  *   超限立即中止上游并响应，不等待 multipart 结束；quoted 换行按逻辑记录计数；
+   5  * - entity_type 为合同字段（source_kind 作为内部别名兼容）；响应含 filename/bytes；
+   6  * - Idempotency-Key 从请求头读取（org/user/endpoint 隔离 24h，同 key 异 body 409）；
+   7  * - C 仅 customer_messages；角色类型失权后旧任务/链接同样拒绝（见查询/下载路由）。
+   8  */
+   9 import type { NextRequest } from "next/server";
+  10 import { Readable } from "node:stream";
+  11 import Busboy from "busboy";
+  12 import { ok, fail, serviceFailure, guardWrite, internalFailure } from "@/lib/http";
+  13 import { getPrismaClient } from "@/database/prisma";
+  14 import { CAPABILITIES, requirePermission, canImport } from "@/services/access";
+  15 import {
+  16   createImportTaskFromSpool,
+  17   deleteObjectSafe,
+  18   isSourceKind,
+  19   SOURCE_KINDS,
+  20   spoolUpload,
+  21   readSpooledTextStrict,
+  22   UPLOAD_RATE_LIMIT_PER_MIN,
+  23   type SpooledUpload,
+  24 } from "@/services/imports";
+  25 import { consumeRateLimit } from "@/lib/rateLimit";
+  26 import { enqueueValidate } from "@/jobs/queue";
+  27 
+  28 export const runtime = "nodejs";
+  29 
+  30 export async function POST(req: NextRequest) {
+  31   let spooled: SpooledUpload | null = null;
+  32   try {
+  33     const blocked = guardWrite(req);
+  34     if (blocked) return blocked;
+  35     // 上传能力：全员基础权限；具体类型按 canImport 在字段齐备后立即判定
+  36     const ctx = await requirePermission(req, { capability: CAPABILITIES.viewCustomerServiceData });
+  37     const db = getPrismaClient();
+  38 
+  39     // F10：上传入口限流（数据库固定窗口，20 次/分钟/用户桶）
+  40     const limit = await consumeRateLimit(db, `upload:${ctx.orgId}:${ctx.userId}`, UPLOAD_RATE_LIMIT_PER_MIN, 60);
+  41     if (!limit.allowed) {
+  42       return fail(429, "上传过于频繁，请稍后重试", {
+  43         code: "RATE_LIMITED",
+  44         extraMeta: { retry_after: limit.retryAfterSeconds },
+  45       });
+  46     }
+  47 
+  48     const contentType = req.headers.get("content-type") ?? "";
+  49     if (!contentType.toLowerCase().includes("multipart/form-data")) {
+  50       return fail(422, "请求须为 multipart/form-data");
+  51     }
+  52     // G2-H07：HTTP Idempotency-Key 只从请求头读取（multipart 字段不冒充请求幂等）
+  53     const httpKey = req.headers.get("idempotency-key")?.trim() || undefined;
+  54     if (httpKey && (httpKey.length < 8 || httpKey.length > 128)) {
+  55       return fail(422, "Idempotency-Key 长度须在 8–128 字符", {
+  56         fieldErrors: { "idempotency-key": "长度须在 8–128 字符" },
+  57       });
+  58     }
+  59     if (!req.body) {
+  60       return fail(422, "缺少请求体");
+  61     }
+  62 
+  63     // G2-H06：真实请求流 → busboy 流式解析（不整体缓冲）
+  64     const nodeReq = Readable.fromWeb(req.body as Parameters<typeof Readable.fromWeb>[0]);
+  65     const bb = Busboy({
+  66       headers: { "content-type": contentType },
+  67       limits: { files: 1, fileSize: Infinity },
+  68     });
+  69 
+  70     const fields: Record<string, string> = {};
+  71     const received: { fileMeta?: { filename: string }; fileStream?: Readable; spoolPromise?: Promise<SpooledUpload> } = {};
+  72     let spoolError: unknown = null;
+  73 
+  74     bb.on("field", (name: string, value: string) => {
+  75       fields[name] = value;
+  76     });
+  77     bb.on("file", (name: string, stream: Readable, info: { filename: string }) => {
+  78       if (name === "file" && !received.spoolPromise) {
+  79         received.fileMeta = { filename: info.filename || "upload.csv" };
+  80         received.fileStream = stream;
+  81         // 接收链路内完成字节/逻辑行限额：超限销毁上游并立即响应；
+  82         // onAbort 销毁请求流，防止 busboy 继续等待剩余 multipart 输入
+  83         received.spoolPromise = spoolUpload(stream, () => nodeReq.destroy()).catch((error) => {
+  84           spoolError = error;
+  85           throw error;
+  86         });
+  87         notifySpool(received.spoolPromise);
+  88       } else {
+  89         stream.resume();
+  90       }
+  91     });
+  92     // 文件部分可能排在字段之后：spoolSeen 在 file 事件出现时立即带出 spool promise，
+  93     // 使限额/存储中止能即时传播到响应（不等 multipart 结束）
+  94     let notifySpool: (p: Promise<SpooledUpload> | null) => void = () => undefined;
+  95     const spoolSeen = new Promise<Promise<SpooledUpload> | null>((resolve) => {
+  96       notifySpool = resolve;
+  97     });
+  98     const finished = new Promise<void>((resolve, reject) => {
+  99       bb.on("close", () => {
+ 100         notifySpool(received.spoolPromise ?? null);
+ 101         resolve();
+ 102       });
+ 103       bb.on("error", reject);
+ 104     });
+ 105     // 中止路径下 finished 可能永不落定，防止未处理拒绝
+ 106     finished.catch(() => undefined);
+ 107     nodeReq.pipe(bb);
+ 108     try {
+ 109       const seen = await Promise.race([
+ 110         spoolSeen,
+ 111         finished.then(() => received.spoolPromise ?? null),
+ 112       ]);
+ 113       if (!seen) {
+ 114         // multipart 已接收完毕且没有文件部分
+ 115         return fail(422, "缺少上传文件 file");
+ 116       }
+ 117       spooled = await seen;
+ 118       await finished;
+ 119     } catch {
+ 120       nodeReq.destroy();
+ 121       const mapped = spoolError ? serviceFailure(spoolError) : null;
+ 122       return mapped ?? fail(422, "multipart 解析失败");
+ 123     }
+ 124 
+ 125     // ---- multipart 结束后的合同校验 ----
+ 126     const storeId = fields["store_id"] ?? "";
+ 127     const dataSourceId = fields["data_source_id"] ?? "";
+ 128     // M01：entity_type 为合同输入字段；source_kind 作为内部别名兼容
+ 129     const kindRaw = fields["entity_type"] ?? fields["source_kind"] ?? "";
+ 130     if (!storeId || !dataSourceId || !kindRaw) {
+ 131       return fail(422, "store_id、data_source_id、entity_type 必填");
+ 132     }
+ 133     if (!received.fileMeta) {
+ 134       return fail(422, "缺少上传文件 file");
+ 135     }
+ 136     const fileMeta = received.fileMeta;
+ 137     if (!isSourceKind(kindRaw)) {
+ 138       return fail(422, `entity_type 不支持：${kindRaw}`, {
+ 139         fieldErrors: { entity_type: `仅支持 ${SOURCE_KINDS.join("/")}` },
+ 140       });
+ 141     }
+ 142     // 角色文件类型限制（02_USER_ROLES：C 仅客户消息）
+ 143     if (!canImport(ctx.role, kindRaw)) {
+ 144       return fail(403, "当前角色不能上传该类型文件", { code: "FILE_KIND_FORBIDDEN" });
+ 145     }
+ 146     // M03：明确文件类型策略——仅 CSV（.csv 扩展名），不带 Excel 解析器
+ 147     if (!/\.csv$/i.test(fileMeta.filename)) {
+ 148       return fail(415, "仅支持 CSV 文件（.csv 扩展名）", { code: "UNSUPPORTED_FILE_TYPE" });
+ 149     }
+ 150 
+ 151     // M03：严格 UTF-8（非法字节 422，不做静默替换）
+ 152     await readSpooledTextStrict(spooled.tempKey);
+ 153 
+ 154     const result = await createImportTaskFromSpool(
+ 155       { db, orgId: ctx.orgId, userId: ctx.userId, role: ctx.role },
+ 156       {
+ 157         storeId,
+ 158         dataSourceId,
+ 159         sourceKind: kindRaw,
+ 160         filename: fileMeta.filename,
+ 161         bytes: spooled.bytes,
+ 162         sha256: spooled.sha256,
+ 163         dataRows: spooled.dataRows,
+ 164         httpKey,
+ 165         endpoint: "/api/v1/imports",
+ 166       },
+ 167       spooled.tempKey,
+ 168     );
+ 169 
+ 170     // G2-H08 窗口2：投递失败不冒充成功——任务保持 uploaded+pending，dispatcher 兜底补投；
+ 171     // 复用且从未执行的 uploaded 任务也补投（先失败上传的重试路径）
+ 172     try {
+ 173       const jobId = await enqueueValidate(result.id);
+ 174       if (jobId) {
+ 175         await db.importTask.updateMany({
+ 176           where: { id: result.id, outboxStatus: "pending" },
+ 177           data: { outboxStatus: "dispatched" },
+ 178         });
+ 179       }
+ 180     } catch {
+ 181       // 投递暂不可用：任务保持 uploaded+outbox=pending，Worker dispatcher 兜底补投
+ 182     }
+ 183     return ok(
+ 184       {
+ 185         id: result.id,
+ 186         status: result.status,
+ 187         file_sha256: result.fileSha256,
+ 188         row_count: result.rowCount,
+ 189         reused: result.reused,
+ 190         filename: fileMeta.filename,
+ 191         bytes: spooled.bytes,
+ 192       },
+ 193       // 重放保持首次响应状态（201）；无 Idempotency-Key 的内容复用返回 200
+ 194       { status: result.replayed || !result.reused ? 201 : 200 },
+ 195     );
+ 196   } catch (error) {
+ 197     // 校验/建账失败：清理已 spool 的临时对象（落位成功后 delete 无副作用）
+ 198     if (spooled) await deleteObjectSafe(spooled.tempKey);
+ 199     const mapped = serviceFailure(error);
+ 200     if (mapped) return mapped;
+ 201     return internalFailure(error);
+ 202   }
+ 203 }

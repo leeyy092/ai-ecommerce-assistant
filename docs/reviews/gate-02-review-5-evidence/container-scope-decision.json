@@ -1,0 +1,7 @@
+{
+  "current_compose_selftest_reviewed": true,
+  "independent_current_compose_rerun": false,
+  "reason": "Only Route catch and added tests changed; schema/dependencies/build/Compose/Dockerfile/storage/worker unchanged. Current production Next server and built Worker exercised independently; prior R4 independent container infrastructure chain retained conditionally, not claimed as current candidate container run.",
+  "corrected_harness_failures": "ZCode S2 wrong image name failed; S2b actual correct-name inspect/canary success. Original S10 image-count check wrong project; explicit correct-image removal output retained.",
+  "test_token_hygiene": "ZCode s6-login.json contains a synthetic local r4n2.local session token. Disposable cluster stopped, local stack removed. No production credentials inferred; token value not printed/copied to new review evidence."
+}

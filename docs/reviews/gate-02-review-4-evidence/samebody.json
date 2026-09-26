@@ -1,0 +1,11 @@
+{
+  "name": "samebody",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-samebody.ts"
+  ],
+  "exit": 0,
+  "seconds": 2.08
+}

@@ -1,0 +1,48 @@
+[
+  {
+    "name": "Successful complete-tail files remain owned and byte-identical after all failure cases",
+    "expected": {
+      "count": 2,
+      "intact": 2
+    },
+    "actual": {
+      "count": 2,
+      "intact": 2
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "Unsigned blocked; fresh signed downloads after Web restart remain correct",
+    "expected": [
+      {
+        "unsigned": 403,
+        "signed": 200,
+        "same": true
+      },
+      {
+        "unsigned": 403,
+        "signed": 200,
+        "same": true
+      }
+    ],
+    "actual": [
+      {
+        "unsigned": 403,
+        "signed": 200,
+        "same": true
+      },
+      {
+        "unsigned": 403,
+        "signed": 200,
+        "same": true
+      }
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "No unowned temp files remain after complete lifecycle suite",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  }
+]

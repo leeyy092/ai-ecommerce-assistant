@@ -1,0 +1,2 @@
+store_external_id,source_updated_at,external_message_id,external_conversation_id,message_at,external_sku_id,message_text,is_complaint,channel,language
+XM-DEMO-B,2026-09-11T09:00:00+08:00,M1,C1,2026-09-01T11:00:00+08:00,S1,请问什么时候发货,,platform_chat,zh-CN

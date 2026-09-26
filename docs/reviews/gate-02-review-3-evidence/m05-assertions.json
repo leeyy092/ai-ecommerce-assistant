@@ -1,0 +1,72 @@
+[
+  {
+    "name": "M05 absent bounds exact 90 days",
+    "expected": {
+      "status": 200,
+      "days": 90,
+      "from": "2026-06-28",
+      "to": "2026-09-25"
+    },
+    "actual": {
+      "status": 200,
+      "days": 90,
+      "from": "2026-06-28",
+      "to": "2026-09-25"
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "M05 from only exact 90 days",
+    "expected": {
+      "status": 200,
+      "days": 90,
+      "from": "2026-08-06",
+      "to": "2026-11-03"
+    },
+    "actual": {
+      "status": 200,
+      "days": 90,
+      "from": "2026-08-06",
+      "to": "2026-11-03"
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "M05 to only exact 90 days",
+    "expected": {
+      "status": 200,
+      "days": 90,
+      "from": "2026-07-02",
+      "to": "2026-09-29"
+    },
+    "actual": {
+      "status": 200,
+      "days": 90,
+      "from": "2026-07-02",
+      "to": "2026-09-29"
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "M05 explicit 90 and exclusive end",
+    "expected": {
+      "status": 200,
+      "days": 90,
+      "from": "2026-06-28",
+      "to": "2026-09-25"
+    },
+    "actual": {
+      "status": 200,
+      "days": 90,
+      "from": "2026-06-28",
+      "to": "2026-09-25"
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "M05 91 days rejected",
+    "expected": 422,
+    "actual": 422,
+    "status": "PASS"
+  }
+]

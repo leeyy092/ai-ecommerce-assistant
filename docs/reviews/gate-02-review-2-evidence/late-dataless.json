@@ -1,0 +1,4 @@
+{
+  "files": [],
+  "note": "iCloud evicted 11 application files after pre-write full SHA check. No content edits. Rehydrate these exact paths for final Git snapshot."
+}

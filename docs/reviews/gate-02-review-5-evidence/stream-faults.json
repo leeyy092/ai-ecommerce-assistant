@@ -1,0 +1,11 @@
+{
+  "name": "stream-faults",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "exec",
+    "tsx",
+    "review-stream-faults.ts"
+  ],
+  "exit": 0,
+  "seconds": 0.98
+}

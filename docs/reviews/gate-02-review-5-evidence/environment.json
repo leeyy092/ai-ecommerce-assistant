@@ -1,0 +1,10 @@
+{
+  "archive_sha": "5b51908b8404e4e0257fe0fd4bd2202f466e6c10",
+  "pg": "17",
+  "pg_port": 53189,
+  "web_port": 53190,
+  "temp_root": "/tmp/gate02-review5-20260926-siq330x3",
+  "own_database": "review5",
+  "tools_on_main": false,
+  "temporary_secrets_saved_in_evidence": false
+}

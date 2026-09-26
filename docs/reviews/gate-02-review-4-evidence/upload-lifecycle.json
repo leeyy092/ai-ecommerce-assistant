@@ -1,0 +1,11 @@
+{
+  "name": "upload-lifecycle",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-upload-lifecycle.ts"
+  ],
+  "exit": 1,
+  "seconds": 4.43
+}

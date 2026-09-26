@@ -1,0 +1,600 @@
+{
+  "checks": {
+    "store_create": {
+      "status": 201,
+      "demo_inherited": true,
+      "audit": 1
+    },
+    "contract_entity_type": {
+      "status": 422,
+      "body": {
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "store_id、data_source_id、source_kind 必填",
+          "retryable": false,
+          "request_id": "91d2e676-7517-4eb1-ac8e-cdcb5bf9d725"
+        }
+      }
+    },
+    "normal_upload": {
+      "status": 201,
+      "body": {
+        "data": {
+          "id": "d8d8e521-f1d3-4a78-a050-3885074c1507",
+          "status": "uploaded",
+          "file_sha256": "5ea2fc3c1df11837bcb4de3881c62b028cbd5f9ab1f7535b9394c122f955a5c1",
+          "row_count": 1,
+          "reused": false
+        },
+        "meta": {
+          "request_id": "afa13f2f-9bc3-4a1f-9af3-1a0c0eb9acc0"
+        }
+      }
+    },
+    "repeat_upload": {
+      "status": 200,
+      "body": {
+        "data": {
+          "id": "d8d8e521-f1d3-4a78-a050-3885074c1507",
+          "status": "uploaded",
+          "file_sha256": "5ea2fc3c1df11837bcb4de3881c62b028cbd5f9ab1f7535b9394c122f955a5c1",
+          "row_count": 1,
+          "reused": true
+        },
+        "meta": {
+          "request_id": "75541b26-47a0-45be-8ac3-6759b6bed25e"
+        }
+      }
+    },
+    "cs_order_forbidden": {
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "FILE_KIND_FORBIDDEN",
+          "message": "当前角色不能上传该类型文件",
+          "retryable": false,
+          "request_id": "ab0fbc20-ee17-4fb9-921a-13cb7ac266c1"
+        }
+      }
+    },
+    "read_own_task": {
+      "cs": {
+        "upload": 201,
+        "query": {
+          "status": 403,
+          "body": {
+            "error": {
+              "code": "FORBIDDEN",
+              "message": "当前角色没有该操作权限",
+              "retryable": false,
+              "request_id": "17e87e9a-510c-4644-8b71-b56a3d6e3e8a"
+            }
+          }
+        }
+      },
+      "operator": {
+        "upload": 201,
+        "query": {
+          "status": 403,
+          "body": {
+            "error": {
+              "code": "FORBIDDEN",
+              "message": "当前角色没有该操作权限",
+              "retryable": false,
+              "request_id": "69b18dfa-ea50-4ee8-8093-12fb8199f40e"
+            }
+          }
+        }
+      },
+      "admin_query": {
+        "status": 200,
+        "body": {
+          "data": {
+            "id": "d8d8e521-f1d3-4a78-a050-3885074c1507",
+            "store_id": "e24de9fa-2e4c-4079-bdd8-2224e95bb2aa",
+            "data_source_id": "ee03ddb1-12cb-4525-abcb-d136c26cf170",
+            "source_kind": "products",
+            "status": "uploaded",
+            "original_filename": "test.csv",
+            "file_sha256": "5ea2fc3c1df11837bcb4de3881c62b028cbd5f9ab1f7535b9394c122f955a5c1",
+            "row_count": 1,
+            "valid_count": 0,
+            "error_count": 0,
+            "insert_count": 0,
+            "update_count": 0,
+            "unchanged_count": 0,
+            "error_code": null,
+            "created_at": "2026-09-15T11:35:48.380Z",
+            "confirmed_at": null,
+            "committed_at": null,
+            "base_dataset_version": "0",
+            "committed_dataset_version": null
+          },
+          "meta": {
+            "request_id": "4de89fdd-87ab-4f58-9f65-22583d76afbb"
+          }
+        }
+      }
+    },
+    "unsigned": {
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "下载签名无效或已过期",
+          "retryable": false,
+          "request_id": "b7f9d167-773b-4458-a42b-62bb34ba2a58"
+        }
+      }
+    },
+    "expired": {
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "下载签名无效或已过期",
+          "retryable": false,
+          "request_id": "f46430aa-ee51-4e40-ab7a-dd7b93d9df30"
+        }
+      }
+    },
+    "signed": {
+      "status": 200,
+      "content_equal": true
+    },
+    "cs_signed_file": {
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "当前角色没有该操作权限",
+          "retryable": false,
+          "request_id": "6c8fcb1c-b6d3-4fa8-8f02-bc9ad63bc7fc"
+        }
+      }
+    },
+    "cross_org": {
+      "query": {
+        "status": 404,
+        "body": {
+          "error": {
+            "code": "NOT_FOUND",
+            "message": "导入任务不存在",
+            "retryable": false,
+            "request_id": "fbe65054-05cd-4075-a0c7-35b9cd6d6f1f"
+          }
+        }
+      },
+      "file": {
+        "status": 404,
+        "body": {
+          "error": {
+            "code": "NOT_FOUND",
+            "message": "导入任务或其文件不存在",
+            "retryable": false,
+            "request_id": "622343a9-ad41-4a4c-a5d4-639d18772e29"
+          }
+        }
+      },
+      "sources": {
+        "status": 404,
+        "body": {
+          "error": {
+            "code": "NOT_FOUND",
+            "message": "店铺不存在",
+            "retryable": false,
+            "request_id": "df7fc530-9c9a-4c72-bf72-519203970d73"
+          }
+        }
+      }
+    },
+    "public_file": {
+      "status": 404,
+      "body": {
+        "nonJSON": "<!DOCTYPE html><html lang=\"zh-CN\" class=\"h-full antialiased\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/stati"
+      }
+    },
+    "store_write_cs": {
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "当前角色没有该操作权限",
+          "retryable": false,
+          "request_id": "3f9ed2eb-6601-4e61-850b-194ff9bd2585"
+        }
+      }
+    },
+    "coverage_cs": {
+      "status": 200,
+      "body": {
+        "data": {
+          "store": {
+            "id": "e24de9fa-2e4c-4079-bdd8-2224e95bb2aa",
+            "name": "G2 Store",
+            "status": "active"
+          },
+          "items": [
+            {
+              "id": "ee03ddb1-12cb-4525-abcb-d136c26cf170",
+              "name": "G2 source",
+              "adapter_kind": "csv",
+              "source_namespace": "g2_source",
+              "status": "active",
+              "mapping_version": "mapping-v1",
+              "supported_entities": [
+                "customer_messages"
+              ],
+              "coverage": [
+                {
+                  "date": "2026-09-01",
+                  "source_kinds": 4,
+                  "record_count": 227
+                }
+              ],
+              "last_import_at": "2026-09-15T11:35:48.418Z"
+            }
+          ]
+        },
+        "meta": {
+          "request_id": "f7b91c47-78d4-4c77-9cde-6572dda24a40"
+        }
+      }
+    },
+    "coverage_owner": {
+      "status": 200,
+      "body": {
+        "data": {
+          "store": {
+            "id": "e24de9fa-2e4c-4079-bdd8-2224e95bb2aa",
+            "name": "G2 Store",
+            "status": "active"
+          },
+          "items": [
+            {
+              "id": "ee03ddb1-12cb-4525-abcb-d136c26cf170",
+              "name": "G2 source",
+              "adapter_kind": "csv",
+              "source_namespace": "g2_source",
+              "status": "active",
+              "mapping_version": "mapping-v1",
+              "supported_entities": [
+                "products",
+                "orders",
+                "order_items",
+                "ads",
+                "customer_messages",
+                "after_sales"
+              ],
+              "coverage": [
+                {
+                  "date": "2026-09-01",
+                  "source_kinds": 4,
+                  "record_count": 227
+                }
+              ],
+              "last_import_at": "2026-09-15T11:35:48.418Z"
+            }
+          ]
+        },
+        "meta": {
+          "request_id": "ec71ee62-5880-452f-944d-1263cf303d67"
+        }
+      }
+    },
+    "coverage_to_exclusive": {
+      "status": 200,
+      "body": {
+        "data": {
+          "store": {
+            "id": "e24de9fa-2e4c-4079-bdd8-2224e95bb2aa",
+            "name": "G2 Store",
+            "status": "active"
+          },
+          "items": [
+            {
+              "id": "ee03ddb1-12cb-4525-abcb-d136c26cf170",
+              "name": "G2 source",
+              "adapter_kind": "csv",
+              "source_namespace": "g2_source",
+              "status": "active",
+              "mapping_version": "mapping-v1",
+              "supported_entities": [
+                "products",
+                "orders",
+                "order_items",
+                "ads",
+                "customer_messages",
+                "after_sales"
+              ],
+              "coverage": [
+                {
+                  "date": "2026-09-01",
+                  "source_kinds": 4,
+                  "record_count": 227
+                }
+              ],
+              "last_import_at": "2026-09-15T11:35:48.418Z"
+            }
+          ]
+        },
+        "meta": {
+          "request_id": "9d3f1bf0-8e43-4cf4-be66-539161bc6ccf"
+        }
+      }
+    },
+    "invalid_date": {
+      "status": 503,
+      "body": {
+        "error": {
+          "code": "INTERNAL_ERROR",
+          "message": "服务器内部错误，请稍后重试",
+          "retryable": true,
+          "request_id": "307b66b9-c23a-49e9-ab7e-97b68fa2f1c0"
+        }
+      }
+    },
+    "concurrent_store_cas": {
+      "observed_lock_waits": 2,
+      "results": [
+        {
+          "status": 200,
+          "body": {
+            "data": {
+              "id": "e24de9fa-2e4c-4079-bdd8-2224e95bb2aa",
+              "name": "CAS-1",
+              "status": "active",
+              "currency": "CNY",
+              "timezone": "Asia/Shanghai",
+              "required_channels": null,
+              "row_version": 2
+            },
+            "meta": {
+              "request_id": "fb204efb-8ef2-4636-be17-a7b2491b6990"
+            }
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "data": {
+              "id": "e24de9fa-2e4c-4079-bdd8-2224e95bb2aa",
+              "name": "CAS-2",
+              "status": "active",
+              "currency": "CNY",
+              "timezone": "Asia/Shanghai",
+              "required_channels": null,
+              "row_version": 3
+            },
+            "meta": {
+              "request_id": "e8fcadb8-8d81-43d7-887b-4e0611f55019"
+            }
+          }
+        }
+      ],
+      "row_version": 3
+    },
+    "rename_duplicate": {
+      "status": 200,
+      "body": {
+        "data": {
+          "id": "c73d3e2f-1cdd-4e4b-9fcb-39ce8790eecc",
+          "name": "CAS-2",
+          "status": "active",
+          "currency": "CNY",
+          "timezone": "UTC",
+          "required_channels": null,
+          "row_version": 2
+        },
+        "meta": {
+          "request_id": "c88fd18f-95cc-4f3b-a8ce-b4753ba3d2e5"
+        }
+      }
+    },
+    "concurrent_upload": {
+      "responses": [
+        {
+          "status": 201,
+          "id": "e4331593-d3c5-49ea-9c98-7f98aa883723"
+        },
+        {
+          "status": 201,
+          "id": "4979ab6c-0151-4ec9-995a-24d87fc4ca57"
+        },
+        {
+          "status": 200,
+          "id": "4979ab6c-0151-4ec9-995a-24d87fc4ca57"
+        },
+        {
+          "status": 200,
+          "id": "4979ab6c-0151-4ec9-995a-24d87fc4ca57"
+        }
+      ],
+      "rows": 2
+    },
+    "http_key_conflict": {
+      "first": {
+        "status": 201,
+        "body": {
+          "data": {
+            "id": "f24f75a7-91eb-4956-b597-a349a496ca76",
+            "status": "uploaded",
+            "file_sha256": "18820eb3aa0cbbe262b6a9a64493d32014140c4de9bfa866643d01073bce1db1",
+            "row_count": 1,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "876e55b1-977a-49ba-87b5-fc972fffd661"
+          }
+        }
+      },
+      "changed": {
+        "status": 503,
+        "body": {
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "服务器内部错误，请稍后重试",
+            "retryable": true,
+            "request_id": "8852c172-6465-4630-8296-6353600cacfc"
+          }
+        }
+      }
+    },
+    "xlsx": {
+      "status": 201,
+      "body": {
+        "data": {
+          "id": "f29dcf5d-fb22-4179-a575-680cf534d737",
+          "status": "uploaded",
+          "file_sha256": "9c80cdbef0c7fbd2ad4bf071797351eaea613a57e1889784882cb5d7d36e28b4",
+          "row_count": 1,
+          "reused": false
+        },
+        "meta": {
+          "request_id": "75bf02b7-7c87-4896-b9f3-8c01b5eb63e5"
+        }
+      }
+    },
+    "invalid_header": {
+      "status": 201,
+      "body": {
+        "data": {
+          "id": "7bd77949-975b-411f-9df7-93617f996222",
+          "status": "uploaded",
+          "file_sha256": "084a3ece5b96631bbe040469ee9a3fb3ebd55357ef492354b6051e88ed93fb2e",
+          "row_count": 1,
+          "reused": false
+        },
+        "meta": {
+          "request_id": "e80b5d8c-6530-4e40-83e1-d2997be224ce"
+        }
+      }
+    },
+    "service_byte_limit": {
+      "code": "FILE_TOO_LARGE",
+      "chunks_read": 21,
+      "total_chunks": 24
+    },
+    "service_row_limit": {
+      "code": "TOO_MANY_ROWS",
+      "chunks_read": 3,
+      "total_chunks": 3
+    },
+    "quoted_logical_rows": {
+      "logical_rows": 50001,
+      "physical_lines": 100003,
+      "response": {
+        "status": 422,
+        "body": {
+          "error": {
+            "code": "TOO_MANY_ROWS",
+            "message": "数据行超过 100000 行上限",
+            "retryable": false,
+            "request_id": "6bd3ba35-b2c1-489f-8832-31a7e78024fe"
+          }
+        }
+      }
+    },
+    "disk_failure_retry": {
+      "initial_error": "ENOTDIR",
+      "retry": {
+        "id": "c6217dcc-b5c5-4889-b393-40b41dd6b4e6",
+        "status": "uploaded",
+        "fileSha256": "4df5af242b6a45e58078721f90bf4fe41efca7f454e87cc3f2df2b3b2d936609",
+        "rowCount": 1,
+        "bytes": 253,
+        "reused": true
+      },
+      "status": "uploaded",
+      "raw_object_key": ""
+    },
+    "audit_failure": {
+      "create": {
+        "status": 503,
+        "body": {
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "服务器内部错误，请稍后重试",
+            "retryable": true,
+            "request_id": "520f434b-b500-4111-93c9-f8d9fe47032d"
+          }
+        }
+      },
+      "update": {
+        "status": 503,
+        "body": {
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "服务器内部错误，请稍后重试",
+            "retryable": true,
+            "request_id": "bb0c1afa-9ba2-44eb-b0a8-955c922a89be"
+          }
+        }
+      },
+      "source": {
+        "status": 503,
+        "body": {
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "服务器内部错误，请稍后重试",
+            "retryable": true,
+            "request_id": "97c766d9-04a3-4210-90f0-9414cb0f0005"
+          }
+        }
+      },
+      "store_leaks": 0,
+      "source_leaks": 0
+    },
+    "enqueue_failure": {
+      "initial": {
+        "status": 201,
+        "body": {
+          "data": {
+            "id": "76cb30bc-6b0d-492b-9ceb-e4a8f437f274",
+            "status": "uploaded",
+            "file_sha256": "cdd73658ddee24ed3b214074179f793bbaa95c6f0aa1a1c4e6c2c389b1ca7132",
+            "row_count": 1,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "810ad0fc-87d4-417e-9b30-81a86c00f9f0"
+          }
+        }
+      },
+      "retry": {
+        "status": 200,
+        "body": {
+          "data": {
+            "id": "76cb30bc-6b0d-492b-9ceb-e4a8f437f274",
+            "status": "uploaded",
+            "file_sha256": "cdd73658ddee24ed3b214074179f793bbaa95c6f0aa1a1c4e6c2c389b1ca7132",
+            "row_count": 1,
+            "reused": true
+          },
+          "meta": {
+            "request_id": "14c98e3e-dff8-4d97-9a55-456a771e679d"
+          }
+        }
+      },
+      "jobs": 0,
+      "task_status": "uploaded"
+    },
+    "upload_rate": {
+      "requests": 11,
+      "statuses": [
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201
+      ],
+      "elapsed_ms": 103
+    }
+  }
+}

@@ -1,0 +1,17 @@
+
+> ai-ecommerce-assistant@0.1.0 test /private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant
+> vitest run tests/unit
+
+
+ RUN  v3.2.7 /private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant
+
+ ✓ tests/unit/adapters.test.ts (45 tests) 29ms
+ ✓ tests/unit/env.test.ts (11 tests) 5ms
+ ✓ tests/unit/storage-oss.test.ts (4 tests) 6ms
+ ✓ tests/unit/permissions.test.ts (7 tests) 1ms
+
+ Test Files  4 passed (4)
+      Tests  67 passed (67)
+   Start at  13:40:29
+   Duration  1.52s (transform 218ms, setup 571ms, collect 90ms, tests 42ms, environment 0ms, prepare 672ms)
+

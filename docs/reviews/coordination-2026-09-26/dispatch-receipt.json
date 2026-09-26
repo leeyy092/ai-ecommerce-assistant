@@ -1,0 +1,45 @@
+{
+  "handoff_id": "G2R3-20260926-01",
+  "recorded_at": "2026-09-26T13:06:44+08:00",
+  "target": {
+    "app": "ZCode",
+    "project": "产品-开发",
+    "conversation": "接手AI电商助手P0交接计划"
+  },
+  "baseline_head": "a4652611e29d3e316de7f41bf46550fe02a64c2d",
+  "handshake": {
+    "sent": true,
+    "observed_message": true,
+    "response": "收到握手请求。先按清单只读核对磁盘与 Git 状态，不写任何文件。",
+    "ack_pending": false,
+    "ack": "ACK G2R3-20260926-01",
+    "ack_ui_time": "13:04",
+    "verified_head": "a4652611e29d3e316de7f41bf46550fe02a64c2d",
+    "uncommitted_business_changes": false,
+    "blockers": "无",
+    "current_writer": "Codex; ZCode awaits START",
+    "scope_verified": [
+      "H06/H08 shared interruption cleanup",
+      "TOO_MANY_ROWS propagation",
+      "M06 archive status",
+      "isolated Compose evidence"
+    ]
+  },
+  "start": {
+    "sent": true,
+    "verified_at": "2026-09-26T13:06:44+08:00",
+    "observed_message": "START G2R3-20260926-01",
+    "ui_status": "工作中; 输入框已清空，显示停止生成",
+    "writer_transferred_to": "ZCode",
+    "progress_update_responsibility": "ZCode records START intake and subsequent execution",
+    "scope": "P08 current TASK-007 residual repair; no TASK-008, main merge or deployment"
+  },
+  "automation": {
+    "id": "codex-zcode",
+    "status": "ACTIVE",
+    "interval_minutes": 10,
+    "tool_and_config_verified": true
+  },
+  "phase_continuation_authority": "pending_owner_answer; original rule preserved",
+  "business_changes_by_codex": false
+}

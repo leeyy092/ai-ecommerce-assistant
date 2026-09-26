@@ -1,0 +1,25 @@
+(node:92496) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+error: column "retrycount" does not exist
+    at /private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/node_modules/.pnpm/pg@8.23.0/node_modules/pg/lib/client.js:694:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async row (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/review-worker.ts:18:100)
+    at async main (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/review-worker.ts:31:53) {
+  length: 172,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: 'Perhaps you meant to reference the column "job.retry_count".',
+  position: '14',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3732',
+  routine: 'errorMissingColumn'
+}

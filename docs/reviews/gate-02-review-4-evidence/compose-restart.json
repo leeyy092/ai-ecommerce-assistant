@@ -1,0 +1,14 @@
+{
+  "name": "compose-restart",
+  "args": [
+    "docker",
+    "compose",
+    "-p",
+    "aiea-review4-t6xh",
+    "restart",
+    "web",
+    "worker"
+  ],
+  "exit": 0,
+  "seconds": 0.77
+}

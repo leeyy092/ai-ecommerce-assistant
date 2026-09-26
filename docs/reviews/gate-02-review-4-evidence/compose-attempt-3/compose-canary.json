@@ -1,0 +1,14 @@
+{
+  "name": "compose-canary",
+  "args": [
+    "docker",
+    "run",
+    "--rm",
+    "aiea-review4-t6xh-web",
+    "node",
+    "-e",
+    "const fs=require('fs');if(fs.existsSync('/app/.data'))process.exit(1);console.log('no .data in image')"
+  ],
+  "exit": 0,
+  "seconds": 2.36
+}

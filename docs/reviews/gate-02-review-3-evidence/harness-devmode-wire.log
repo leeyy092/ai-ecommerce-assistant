@@ -1,0 +1,22 @@
+node:fs:483
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open '/tmp/gate02-review3-20260925-8_hqanp6/actors-private.json'
+    at readFileSync (node:fs:483:20)
+    at assert (/private/tmp/gate02-review3-20260925-8_hqanp6/ai-ecommerce-assistant/review-wire-longwait.ts:2:62)
+    at Object.<anonymous> (/private/tmp/gate02-review3-20260925-8_hqanp6/ai-ecommerce-assistant/review-wire-longwait.ts:13:51)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object.transformer (/private/tmp/gate02-review3-20260925-8_hqanp6/ai-ecommerce-assistant/node_modules/.pnpm/tsx@4.23.13/node_modules/tsx/dist/register-OY9cqBEN.cjs:9:3619)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at loadCJSModuleWithModuleLoad (node:internal/modules/esm/translators:372:15)
+    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:244:9) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/tmp/gate02-review3-20260925-8_hqanp6/actors-private.json'
+}
+
+Node.js v24.21.0

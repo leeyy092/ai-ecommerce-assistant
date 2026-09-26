@@ -1,0 +1,494 @@
+   1 /**
+   2  * 导入任务服务（TASK-007；08 §imports）。
+   3  *
+   4  * G2-H06：上传走真实流式接收——字节上限/CSV 逻辑记录（csv-parse 流）增量统计，
+   5  *   超限立即中止上游并清理半截文件；quoted 换行按单条逻辑记录计数（不按物理行）。
+   6  * G2-H07：内容幂等由数据库部分唯一索引原子认领（并发同内容恰一任务，败者复用）；
+   7  *   HTTP Idempotency-Key 按 org/user/endpoint 隔离存档 24h，同 key 异 body 409，
+   8  *   与业务自然键幂等（TASK-008 起）分属两层。
+   9  * G2-H08：文件先落位、任务后建账（rawObjectKey 非空恒成立）；投递失败保持
+  10  *   uploaded+outbox=pending 由 Worker dispatcher 兜底补投；落位后建账失败清理孤儿对象。
+  11  * G2-H05：查询/下载按当前角色可导入类型鉴权（C 仅消息，订单 403）。
+  12  */
+  13 import { createHash, randomUUID } from "node:crypto";
+  14 import { createWriteStream } from "node:fs";
+  15 import { mkdir } from "node:fs/promises";
+  16 import path from "node:path";
+  17 import { once } from "node:events";
+  18 import { Readable } from "node:stream";
+  19 import { parse as csvParseStream } from "csv-parse";
+  20 import { AccessError, canImport, type Role } from "@/services/access";
+  21 import { writeAudit } from "@/services/audit";
+  22 import { deleteObject, getObjectStream, moveObject, storageRoot } from "@/storage";
+  23 import type { Prisma, PrismaClient } from "@/generated/prisma/client";
+  24 
+  25 export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024; // 20MB
+  26 export const MAX_UPLOAD_ROWS = 100_000; // 10 万数据行（CSV 逻辑记录）
+  27 /** F10：上传限流沿用既有数据库限流设施（阈值与邀请接受同量级；测试可经环境变量放宽） */
+  28 export const UPLOAD_RATE_LIMIT_PER_MIN = Number(process.env.UPLOAD_RATE_LIMIT_PER_MIN ?? 20);
+  29 
+  30 export const SOURCE_KINDS = [
+  31   "products",
+  32   "orders",
+  33   "order_items",
+  34   "ads",
+  35   "customer_messages",
+  36   "after_sales",
+  37 ] as const;
+  38 export type SourceKind = (typeof SOURCE_KINDS)[number];
+  39 
+  40 export function isSourceKind(kind: string): kind is SourceKind {
+  41   return (SOURCE_KINDS as readonly string[]).includes(kind);
+  42 }
+  43 
+  44 export interface ImportsContext {
+  45   db: PrismaClient;
+  46   orgId: string;
+  47   userId: string;
+  48   role: Role;
+  49 }
+  50 
+  51 function sha256(text: string): string {
+  52   return createHash("sha256").update(text).digest("hex");
+  53 }
+  54 
+  55 /** 唯一冲突判别（driver-adapter 形态：constraint.index / meta.target） */
+  56 function isUniqueViolation(error: unknown, indexName: string): boolean {
+  57   const err = error as { code?: unknown; meta?: Record<string, unknown> } | null;
+  58   if (err?.code !== "P2002") return false;
+  59   const meta = err.meta ?? {};
+  60   const index = (meta.driverAdapterError as { cause?: { constraint?: { index?: string } } } | undefined)?.cause?.constraint?.index;
+  61   if (index === indexName) return true;
+  62   const target = meta.target !== undefined ? String(meta.target) : "";
+  63   return target.includes(indexName);
+  64 }
+  65 
+  66 // ---------- G2-H06：流式 spool（字节 + 逻辑行上限，超限即中止） ----------
+  67 
+  68 export interface SpooledUpload {
+  69   tempKey: string;
+  70   bytes: number;
+  71   sha256: string;
+  72   dataRows: number;
+  73 }
+  74 
+  75 /**
+  76  * 把上传文件流落入私有存储临时对象，同时增量计算 SHA256 与 CSV 逻辑记录数。
+  77  * 超出字节/行上限：销毁上游流（HTTP 层立即响应，不等 multipart 结束）并清理半截文件。
+  78  * onAbort 在任何中止路径被调用（调用方用于销毁请求流，防止 busboy 等待剩余输入）。
+  79  * csv-parse 语法错误在解析阶段（Worker）细报；此处仅按逻辑记录计数，错误后停止计数
+  80  * （低估不放过超限文件，最终由校验失败兜底）。
+  81  */
+  82 export async function spoolUpload(
+  83   fileStream: NodeJS.ReadableStream,
+  84   onAbort?: () => void,
+  85 ): Promise<SpooledUpload> {
+  86   const tempKey = `tmp/upload-${randomUUID()}.csv`;
+  87   const root = storageRoot();
+  88   const tempPath = path.resolve(root, tempKey);
+  89   try {
+  90     await mkdir(path.dirname(tempPath), { recursive: true });
+  91   } catch {
+  92     // 早期失败同样必须终止文件流，否则 busboy 等待文件数据造成请求悬挂
+  93     (fileStream as Readable).destroy?.();
+  94     onAbort?.();
+  95     throw new AccessError(503, "STORAGE_WRITE_FAILED", "私有存储写入失败");
+  96   }
+  97 
+  98   return new Promise<SpooledUpload>((resolve, reject) => {
+  99     let settled = false;
+ 100     const hash = createHash("sha256");
+ 101     let bytes = 0;
+ 102     let records = 0;
+ 103 
+ 104     const parser = csvParseStream();
+ 105     const writeStream = createWriteStream(tempPath);
+ 106     let countingAlive = true;
+ 107 
+ 108     const cleanup = () => {
+ 109       writeStream.destroy();
+ 110       parser.destroy?.();
+ 111       void deleteObject(tempKey).catch(() => undefined);
+ 112     };
+ 113     const fail = (error: AccessError) => {
+ 114       if (settled) return;
+ 115       settled = true;
+ 116       countingAlive = false;
+ 117       // G2-H06：立即销毁上游（HTTP 响应先于 multipart 结束）
+ 118       (fileStream as Readable).destroy?.(error);
+ 119       onAbort?.();
+ 120       cleanup();
+ 121       reject(error);
+ 122     };
+ 123 
+ 124     parser.on("data", () => {
+ 125       records += 1;
+ 126       if (records - 1 > MAX_UPLOAD_ROWS) {
+ 127         fail(new AccessError(422, "TOO_MANY_ROWS", `数据行超过 ${MAX_UPLOAD_ROWS} 行上限`));
+ 128       }
+ 129     });
+ 130     parser.on("error", () => {
+ 131       // 语法错误交由 Worker 校验阶段给出逐行明细；此处仅停止计数
+ 132       countingAlive = false;
+ 133     });
+ 134 
+ 135     fileStream.on("data", (chunk: Buffer | string) => {
+ 136       if (settled) return;
+ 137       const buf = typeof chunk === "string" ? Buffer.from(chunk, "utf8") : chunk;
+ 138       bytes += buf.length;
+ 139       hash.update(buf);
+ 140       if (bytes > MAX_UPLOAD_BYTES) {
+ 141         fail(new AccessError(422, "FILE_TOO_LARGE", `文件超过 ${MAX_UPLOAD_BYTES} 字节上限，已停止接收`));
+ 142         return;
+ 143       }
+ 144       // 逻辑记录计数：手动喂给 csv-parse（quoted 换行按单条记录）；不再 pipe，
+ 145       // 避免 busboy 文件流销毁时与 pipe 管线交互产生跨流错误
+ 146       if (countingAlive) parser.write(buf);
+ 147     });
+ 148     fileStream.on("error", (error: Error) => {
+ 149       if (!settled) {
+ 150         settled = true;
+ 151         cleanup();
+ 152         reject(new AccessError(400, "UPLOAD_INTERRUPTED", `上传中断：${error.message}`));
+ 153       }
+ 154     });
+ 155     fileStream.on("end", () => {
+ 156       void (async () => {
+ 157         if (settled) return;
+ 158         try {
+ 159           if (countingAlive) parser.end();
+ 160           await once(writeStream, "finish");
+ 161           settled = true;
+ 162           resolve({
+ 163             tempKey,
+ 164             bytes,
+ 165             sha256: hash.digest("hex"),
+ 166             dataRows: Math.max(0, records - 1), // 首条为表头
+ 167           });
+ 168         } catch (error) {
+ 169           settled = true;
+ 170           cleanup();
+ 171           reject(error instanceof AccessError ? error : new AccessError(500, "INTERNAL_ERROR", "写入临时存储失败"));
+ 172         }
+ 173       })();
+ 174     });
+ 175 
+ 176     fileStream.pipe(writeStream);
+ 177   });
+ 178 }
+ 179 
+ 180 // ---------- 上传上下文与建账 ----------
+ 181 
+ 182 export interface UploadInput {
+ 183   storeId: string;
+ 184   dataSourceId: string;
+ 185   sourceKind: SourceKind;
+ 186   filename: string;
+ 187   /** 上传请求结束时声明的字节数/内容哈希/逻辑数据行数（spoolUpload 产出） */
+ 188   bytes: number;
+ 189   sha256: string;
+ 190   dataRows: number;
+ 191   /** HTTP Idempotency-Key 头（可选；08 §17.5） */
+ 192   httpKey?: string;
+ 193   endpoint: string;
+ 194 }
+ 195 
+ 196 export interface UploadResult {
+ 197   id: string;
+ 198   status: string;
+ 199   fileSha256: string;
+ 200   rowCount: number;
+ 201   bytes: number;
+ 202   reused: boolean;
+ 203   /** HTTP Idempotency-Key 重放（返回首次响应，状态码保持 201） */
+ 204   replayed?: boolean;
+ 205 }
+ 206 
+ 207 async function assertUploadContext(ctx: ImportsContext, input: UploadInput): Promise<void> {
+ 208   const store = await ctx.db.store.findFirst({
+ 209     where: { orgId: ctx.orgId, id: input.storeId },
+ 210     select: { id: true, status: true },
+ 211   });
+ 212   if (!store) throw new AccessError(404, "NOT_FOUND", "店铺不存在");
+ 213   if (store.status === "archived") {
+ 214     throw new AccessError(409, "STORE_ARCHIVED", "归档店铺不接受新导入");
+ 215   }
+ 216   const dataSource = await ctx.db.dataSource.findFirst({
+ 217     where: { orgId: ctx.orgId, storeId: input.storeId, id: input.dataSourceId },
+ 218     select: { id: true, adapterKind: true, status: true },
+ 219   });
+ 220   if (!dataSource) throw new AccessError(404, "NOT_FOUND", "数据源不存在");
+ 221   if (dataSource.adapterKind === "mock") {
+ 222     throw new AccessError(422, "VALIDATION_ERROR", "mock 数据源不接受文件上传");
+ 223   }
+ 224   if (dataSource.status !== "active") {
+ 225     throw new AccessError(409, "SOURCE_INACTIVE", "数据源已停用");
+ 226   }
+ 227 }
+ 228 
+ 229 /** 查找可复用的同内容未失败任务（重复请求返回同任务） */
+ 230 async function findReusableTask(ctx: ImportsContext, input: UploadInput) {
+ 231   return ctx.db.importTask.findFirst({
+ 232     where: {
+ 233       orgId: ctx.orgId,
+ 234       storeId: input.storeId,
+ 235       dataSourceId: input.dataSourceId,
+ 236       sourceKind: input.sourceKind,
+ 237       fileSha256: input.sha256,
+ 238       status: { not: "failed" },
+ 239     },
+ 240     orderBy: { createdAt: "desc" },
+ 241     select: { id: true, status: true, fileSha256: true, rowCount: true },
+ 242   });
+ 243 }
+ 244 
+ 245 /**
+ 246  * G2-H07：HTTP 请求幂等——同 key 同 body 返回首次响应；同 key 异 body 409。
+ 247  * 与内容幂等（部分唯一索引认领）分属两层；存档 24 小时（过期行惰性清理）。
+ 248  */
+ 249 async function checkHttpIdempotency(
+ 250   ctx: ImportsContext,
+ 251   input: UploadInput,
+ 252   requestKey: string | null,
+ 253   requestHash: string,
+ 254 ): Promise<UploadResult | null> {
+ 255   if (!requestKey) return null;
+ 256   const existing = await ctx.db.httpIdempotency.findUnique({
+ 257     where: {
+ 258       orgId_userId_endpoint_requestKey: {
+ 259         orgId: ctx.orgId,
+ 260         userId: ctx.userId,
+ 261         endpoint: input.endpoint,
+ 262         requestKey,
+ 263       },
+ 264     },
+ 265   });
+ 266   if (!existing) return null;
+ 267   if (Date.now() - existing.createdAt.getTime() > 24 * 3600 * 1000) {
+ 268     await ctx.db.httpIdempotency.delete({ where: { id: existing.id } }).catch(() => undefined);
+ 269     return null;
+ 270   }
+ 271   if (existing.requestHash !== requestHash) {
+ 272     throw new AccessError(409, "IDEMPOTENCY_CONFLICT", "同一 Idempotency-Key 已绑定不同请求内容");
+ 273   }
+ 274   const body = existing.responseBody as unknown as { data: UploadResult };
+ 275   return { ...body.data, reused: true, replayed: true };
+ 276 }
+ 277 
+ 278 async function recordHttpIdempotency(
+ 279   ctx: ImportsContext,
+ 280   input: UploadInput,
+ 281   requestKey: string | null,
+ 282   requestHash: string,
+ 283   result: UploadResult,
+ 284 ): Promise<void> {
+ 285   if (!requestKey) return;
+ 286   try {
+ 287     await ctx.db.httpIdempotency.create({
+ 288       data: {
+ 289         id: randomUUID(),
+ 290         orgId: ctx.orgId,
+ 291         userId: ctx.userId,
+ 292         endpoint: input.endpoint,
+ 293         requestKey,
+ 294         requestHash,
+ 295         responseStatus: 201,
+ 296         responseBody: { data: result } as unknown as Prisma.InputJsonValue,
+ 297       },
+ 298     });
+ 299   } catch (error) {
+ 300     if (isUniqueViolation(error, "http_idempotency_org_id_user_id_endpoint_request_key_key")) {
+ 301       // 并发同 key 异 body：以数据库裁决为准
+ 302       throw new AccessError(409, "IDEMPOTENCY_CONFLICT", "同一 Idempotency-Key 已绑定不同请求内容");
+ 303     }
+ 304     // 存档失败不阻断主流程（幂等档是加速与防重试手段，非任务存在性依据）
+ 305   }
+ 306 }
+ 307 
+ 308 /**
+ 309  * 从 spool 临时对象建账：上下文校验 → HTTP 幂等 → 内容认领（原子）→
+ 310  * moveObject 落位 → 任务+审计同事务。任何失败路径不产生"空文件可复用任务"。
+ 311  */
+ 312 export async function createImportTaskFromSpool(
+ 313   ctx: ImportsContext,
+ 314   input: UploadInput,
+ 315   tempKey: string,
+ 316 ): Promise<UploadResult> {
+ 317   await assertUploadContext(ctx, input);
+ 318 
+ 319   const requestKey = input.httpKey
+ 320     ? sha256(`${ctx.orgId}:${ctx.userId}:${input.endpoint}:${input.httpKey}`).slice(0, 48)
+ 321     : null;
+ 322   const requestHash = sha256(
+ 323     `${ctx.orgId}:${ctx.userId}:${input.endpoint}:${input.storeId}:${input.dataSourceId}:${input.sourceKind}:${input.filename}:${input.sha256}`,
+ 324   );
+ 325 
+ 326   const replay = await checkHttpIdempotency(ctx, input, requestKey, requestHash);
+ 327   if (replay) {
+ 328     await deleteObject(tempKey).catch(() => undefined);
+ 329     return replay;
+ 330   }
+ 331 
+ 332   const existing = await findReusableTask(ctx, input);
+ 333   if (existing) {
+ 334     await deleteObject(tempKey).catch(() => undefined);
+ 335     return {
+ 336       id: existing.id,
+ 337       status: existing.status,
+ 338       fileSha256: existing.fileSha256,
+ 339       rowCount: existing.rowCount,
+ 340       bytes: input.bytes,
+ 341       reused: true,
+ 342     };
+ 343   }
+ 344 
+ 345   // G2-H08 窗口1 修复：文件先落位到最终键，任务建账带完整 rawObjectKey
+ 346   const taskId = randomUUID();
+ 347   const rawKey = `raw/${taskId}/source.csv`;
+ 348   await moveObject(tempKey, rawKey);
+ 349   try {
+ 350     const created = await ctx.db.$transaction(async (tx) => {
+ 351       const task = await tx.importTask.create({
+ 352         data: {
+ 353           id: taskId,
+ 354           orgId: ctx.orgId,
+ 355           storeId: input.storeId,
+ 356           dataSourceId: input.dataSourceId,
+ 357           sourceKind: input.sourceKind,
+ 358           status: "uploaded",
+ 359           originalFilename: input.filename.slice(0, 255),
+ 360           rawObjectKey: rawKey,
+ 361           fileSha256: input.sha256,
+ 362           uploadRequestKey: randomUUID().replace(/-/g, ""),
+ 363           idempotencyKey: input.httpKey && input.httpKey.length <= 64 ? input.httpKey : null,
+ 364           baseDatasetVersion: 0n,
+ 365           rowCount: input.dataRows,
+ 366           outboxStatus: "pending",
+ 367           createdBy: ctx.userId,
+ 368         },
+ 369       });
+ 370       await writeAudit(tx, {
+ 371         orgId: ctx.orgId,
+ 372         storeId: input.storeId,
+ 373         actorUserId: ctx.userId,
+ 374         action: "import_upload",
+ 375         entityType: "import_task",
+ 376         entityId: task.id,
+ 377         afterSummary: {
+ 378           source_kind: input.sourceKind,
+ 379           file_sha256: input.sha256,
+ 380           row_count: input.dataRows,
+ 381         },
+ 382       });
+ 383       return task;
+ 384     });
+ 385     const result: UploadResult = {
+ 386       id: created.id,
+ 387       status: created.status,
+ 388       fileSha256: input.sha256,
+ 389       rowCount: input.dataRows,
+ 390       bytes: input.bytes,
+ 391       reused: false,
+ 392     };
+ 393     await recordHttpIdempotency(ctx, input, requestKey, requestHash, result);
+ 394     return result;
+ 395   } catch (error) {
+ 396     if (isUniqueViolation(error, "import_task_active_content_key")) {
+ 397       // G2-H07：并发同内容——败者复用胜者任务，清理自己落位的对象
+ 398       const winner = await findReusableTask(ctx, input);
+ 399       await deleteObject(rawKey).catch(() => undefined);
+ 400       if (winner) {
+ 401         return {
+ 402           id: winner.id,
+ 403           status: winner.status,
+ 404           fileSha256: winner.fileSha256,
+ 405           rowCount: winner.rowCount,
+ 406           bytes: input.bytes,
+ 407           reused: true,
+ 408         };
+ 409       }
+ 410     } else {
+ 411       // 建账失败：不留孤儿对象（G2-H08）
+ 412       await deleteObject(rawKey).catch(() => undefined);
+ 413     }
+ 414     throw error;
+ 415   }
+ 416 }
+ 417 
+ 418 /** 清理临时对象（幂等；不存在时静默） */
+ 419 export async function deleteObjectSafe(key: string): Promise<void> {
+ 420   await deleteObject(key).catch(() => undefined);
+ 421 }
+ 422 
+ 423 /** 读取已 spool 的对象并做严格 UTF-8 校验（M03：非法字节 422，不静默替换） */
+ 424 export async function readSpooledTextStrict(tempKey: string): Promise<string> {
+ 425   const stream = getObjectStream(tempKey);
+ 426   const chunks: Buffer[] = [];
+ 427   for await (const chunk of stream as AsyncIterable<Buffer | string>) {
+ 428     chunks.push(typeof chunk === "string" ? Buffer.from(chunk, "utf8") : chunk);
+ 429   }
+ 430   const buffer = Buffer.concat(chunks);
+ 431   try {
+ 432     return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+ 433   } catch {
+ 434     throw new AccessError(422, "INVALID_ENCODING", "文件不是合法的 UTF-8 编码");
+ 435   }
+ 436 }
+ 437 
+ 438 export async function getImportTask(ctx: ImportsContext, taskId: string) {
+ 439   const task = await ctx.db.importTask.findFirst({
+ 440     where: { orgId: ctx.orgId, id: taskId },
+ 441     select: {
+ 442       id: true,
+ 443       storeId: true,
+ 444       dataSourceId: true,
+ 445       sourceKind: true,
+ 446       status: true,
+ 447       originalFilename: true,
+ 448       fileSha256: true,
+ 449       rowCount: true,
+ 450       validCount: true,
+ 451       errorCount: true,
+ 452       insertCount: true,
+ 453       updateCount: true,
+ 454       unchangedCount: true,
+ 455       errorCode: true,
+ 456       createdAt: true,
+ 457       confirmedAt: true,
+ 458       committedAt: true,
+ 459       baseDatasetVersion: true,
+ 460       committedDatasetVersion: true,
+ 461     },
+ 462   });
+ 463   if (!task) throw new AccessError(404, "NOT_FOUND", "导入任务不存在");
+ 464   // G2-H05：按当前角色可导入类型鉴权（C 仅消息；类型失权后旧任务拒绝）
+ 465   if (!canImport(ctx.role, task.sourceKind)) {
+ 466     throw new AccessError(403, "FILE_KIND_FORBIDDEN", "当前角色不能访问该类型导入任务");
+ 467   }
+ 468   return {
+ 469     id: task.id,
+ 470     store_id: task.storeId,
+ 471     data_source_id: task.dataSourceId,
+ 472     source_kind: task.sourceKind,
+ 473     status: task.status,
+ 474     original_filename: task.originalFilename,
+ 475     file_sha256: task.fileSha256,
+ 476     row_count: task.rowCount,
+ 477     valid_count: task.validCount,
+ 478     error_count: task.errorCount,
+ 479     insert_count: task.insertCount,
+ 480     update_count: task.updateCount,
+ 481     unchanged_count: task.unchangedCount,
+ 482     error_code: task.errorCode,
+ 483     created_at: task.createdAt.toISOString(),
+ 484     confirmed_at: task.confirmedAt?.toISOString() ?? null,
+ 485     committed_at: task.committedAt?.toISOString() ?? null,
+ 486     base_dataset_version: String(task.baseDatasetVersion),
+ 487     committed_dataset_version: task.committedDatasetVersion === null ? null : String(task.committedDatasetVersion),
+ 488   };
+ 489 }
+ 490 
+ 491 /** 测试辅助：供路由/测试组装 Node 可读流 */
+ 492 export function streamFromWeb(body: unknown): Readable {
+ 493   return Readable.fromWeb(body as Parameters<typeof Readable.fromWeb>[0]);
+ 494 }

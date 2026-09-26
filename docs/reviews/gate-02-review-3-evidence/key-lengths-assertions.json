@@ -1,0 +1,28 @@
+[
+  {
+    "name": "H07 HTTP key length 7",
+    "expected": 422,
+    "actual": 422,
+    "status": "PASS",
+    "code": "VALIDATION_ERROR"
+  },
+  {
+    "name": "H07 HTTP key length 8",
+    "expected": 201,
+    "actual": 201,
+    "status": "PASS"
+  },
+  {
+    "name": "H07 HTTP key length 128",
+    "expected": 201,
+    "actual": 201,
+    "status": "PASS"
+  },
+  {
+    "name": "H07 HTTP key length 129",
+    "expected": 422,
+    "actual": 422,
+    "status": "PASS",
+    "code": "VALIDATION_ERROR"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "name": "wire-longwait",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "exec",
+    "tsx",
+    "review-wire-longwait.ts"
+  ],
+  "exit": 0,
+  "seconds": 4.3
+}

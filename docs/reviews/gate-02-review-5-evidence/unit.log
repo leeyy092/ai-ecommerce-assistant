@@ -1,0 +1,18 @@
+
+> ai-ecommerce-assistant@0.1.0 test /private/tmp/gate02-review5-20260926-siq330x3/ai-ecommerce-assistant
+> vitest run tests/unit
+
+
+ RUN  v3.2.7 /private/tmp/gate02-review5-20260926-siq330x3/ai-ecommerce-assistant
+
+ ✓ tests/unit/adapters.test.ts (47 tests) 23ms
+ ✓ tests/unit/env.test.ts (11 tests) 3ms
+ ✓ tests/unit/storage-oss.test.ts (4 tests) 4ms
+ ✓ tests/unit/permissions.test.ts (7 tests) 1ms
+ ✓ tests/unit/spool-interruption.test.ts (3 tests) 265ms
+
+ Test Files  5 passed (5)
+      Tests  72 passed (72)
+   Start at  15:58:40
+   Duration  1.30s (transform 151ms, setup 400ms, collect 89ms, tests 295ms, environment 0ms, prepare 394ms)
+

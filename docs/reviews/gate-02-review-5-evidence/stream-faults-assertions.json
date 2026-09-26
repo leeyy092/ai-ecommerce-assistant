@@ -1,0 +1,68 @@
+[
+  {
+    "name": "H06 normal spool cleanup control",
+    "expected": {
+      "rows": 1,
+      "files": 0
+    },
+    "actual": {
+      "rows": 1,
+      "files": 0
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H06 H08 input error cleans partial spool and invokes abort",
+    "expected": {
+      "code": "UPLOAD_INTERRUPTED",
+      "newFiles": 0,
+      "abortCalls": 1
+    },
+    "actual": {
+      "code": "UPLOAD_INTERRUPTED",
+      "newFiles": 0,
+      "abortCalls": 1
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H06 early invalid CSV closes input and cleans file",
+    "expected": {
+      "code": "INVALID_CSV",
+      "newFiles": 0,
+      "abortCalls": 1
+    },
+    "actual": {
+      "code": "INVALID_CSV",
+      "newFiles": 0,
+      "abortCalls": 1
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H08 open input EACCES controlled failure",
+    "expected": {
+      "code": "STORAGE_WRITE_FAILED",
+      "abortCalls": 1
+    },
+    "actual": {
+      "code": "STORAGE_WRITE_FAILED",
+      "abortCalls": 1
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H08 injected ENOSPC on open input is handled and cleans file",
+    "expected": {
+      "code": "STORAGE_WRITE_FAILED",
+      "newFiles": 0,
+      "abortCalls": 1
+    },
+    "actual": {
+      "code": "STORAGE_WRITE_FAILED",
+      "newFiles": 0,
+      "abortCalls": 1
+    },
+    "status": "PASS"
+  }
+]

@@ -1,0 +1,122 @@
+[
+    {
+        "Architecture": "arm64",
+        "Config": {
+            "Cmd": [
+                "node",
+                "node_modules/next/dist/bin/next",
+                "start"
+            ],
+            "Entrypoint": [
+                "docker-entrypoint.sh"
+            ],
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "NODE_VERSION=24.21.0",
+                "YARN_VERSION=1.22.22",
+                "NODE_ENV=production",
+                "NEXT_TELEMETRY_DISABLED=1"
+            ],
+            "ExposedPorts": {
+                "3000/tcp": {}
+            },
+            "Labels": {
+                "com.docker.compose.image.builder": "classic"
+            },
+            "WorkingDir": "/app"
+        },
+        "Created": "2026-09-26T14:43:16.817532855+08:00",
+        "Descriptor": {
+            "digest": "sha256:abd15041a93fe8e520dd122bd891be9c3fe1009125af52838ee12c0fd5ca2db4",
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 2053
+        },
+        "Id": "sha256:abd15041a93fe8e520dd122bd891be9c3fe1009125af52838ee12c0fd5ca2db4",
+        "Metadata": {
+            "LastTagTime": "2026-09-26T06:43:17.029574376Z"
+        },
+        "Os": "linux",
+        "Parent": "sha256:b9ea29066d01d181ae9b2d626157329b090528950d8ca40a9719db2ca78527af",
+        "RepoDigests": [
+            "aiea-r3fix-web@sha256:abd15041a93fe8e520dd122bd891be9c3fe1009125af52838ee12c0fd5ca2db4"
+        ],
+        "RepoTags": [
+            "aiea-r3fix-web:latest"
+        ],
+        "RootFS": {
+            "Layers": [
+                "sha256:055ab12bd547e17a0630037f06a186cf405e3f61bb03a614562ca8f5ab52a8be",
+                "sha256:d72a355d0ef2414e65765fce96999c34bf31ec0bbf3b3d79307ba26457c52bbf",
+                "sha256:00aa6f17ffebf42a4a535794511e8025b8816bbcf4dd308e74dabf4c959ea0c6",
+                "sha256:3d44ad3b789d4f301c825e85f9f0a8d3f2b8a9830436da13afdf7c3f192301b3",
+                "sha256:6c9b0b51efdb379ab8b915e12c218d51e2bb55e764e94900b138bb83790417bd",
+                "sha256:5b7a17b3768b2eb2875a4e18cf2487f9c155aff447877924719516b9efd68b94",
+                "sha256:05baf8fa6803661dd774ab877ea6e06745be8fea064068291eca7951b0d314c2",
+                "sha256:1e5f9efd5e583a24e624862295315fc2a5087569422fed8eea074a2c9bcacea1"
+            ],
+            "Type": "layers"
+        },
+        "Size": 379156716
+    }
+]
+[
+    {
+        "Architecture": "arm64",
+        "Config": {
+            "Cmd": [
+                "node",
+                "node_modules/next/dist/bin/next",
+                "start"
+            ],
+            "Entrypoint": [
+                "docker-entrypoint.sh"
+            ],
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "NODE_VERSION=24.21.0",
+                "YARN_VERSION=1.22.22",
+                "NODE_ENV=production",
+                "NEXT_TELEMETRY_DISABLED=1"
+            ],
+            "ExposedPorts": {
+                "3000/tcp": {}
+            },
+            "Labels": {
+                "com.docker.compose.image.builder": "classic"
+            },
+            "WorkingDir": "/app"
+        },
+        "Created": "2026-09-26T14:43:16.804851017+08:00",
+        "Descriptor": {
+            "digest": "sha256:cb4709274ec540dfe362935117bd883d2ef97df0e357e83455ae06784868823b",
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 2053
+        },
+        "Id": "sha256:cb4709274ec540dfe362935117bd883d2ef97df0e357e83455ae06784868823b",
+        "Metadata": {
+            "LastTagTime": "2026-09-26T06:43:17.024587717Z"
+        },
+        "Os": "linux",
+        "Parent": "sha256:5a67bf0704ca69d94e2f0e72041f8bd73c6cd924203feb19aefc5f1aa73f1a55",
+        "RepoDigests": [
+            "aiea-r3fix-worker@sha256:cb4709274ec540dfe362935117bd883d2ef97df0e357e83455ae06784868823b"
+        ],
+        "RepoTags": [
+            "aiea-r3fix-worker:latest"
+        ],
+        "RootFS": {
+            "Layers": [
+                "sha256:055ab12bd547e17a0630037f06a186cf405e3f61bb03a614562ca8f5ab52a8be",
+                "sha256:d72a355d0ef2414e65765fce96999c34bf31ec0bbf3b3d79307ba26457c52bbf",
+                "sha256:00aa6f17ffebf42a4a535794511e8025b8816bbcf4dd308e74dabf4c959ea0c6",
+                "sha256:3d44ad3b789d4f301c825e85f9f0a8d3f2b8a9830436da13afdf7c3f192301b3",
+                "sha256:6c9b0b51efdb379ab8b915e12c218d51e2bb55e764e94900b138bb83790417bd",
+                "sha256:5b7a17b3768b2eb2875a4e18cf2487f9c155aff447877924719516b9efd68b94",
+                "sha256:05baf8fa6803661dd774ab877ea6e06745be8fea064068291eca7951b0d314c2",
+                "sha256:b7948224b5bbb1544726024a4d2e6a7fa7ce72462a60656dc1dd524ab738eda3"
+            ],
+            "Type": "layers"
+        },
+        "Size": 379187303
+    }
+]

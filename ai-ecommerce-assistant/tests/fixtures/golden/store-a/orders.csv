@@ -1,0 +1,4 @@
+store_external_id,source_updated_at,external_order_id,payment_status,ordered_at,paid_at,currency,expected_item_count
+XM-DEMO-A,2026-09-11T09:00:00+08:00,O1,paid,2026-09-01T09:55:00+08:00,2026-09-01T10:00:00+08:00,CNY,2
+XM-DEMO-A,2026-09-11T09:00:00+08:00,O2,paid,2026-09-01T11:55:00+08:00,2026-09-01T12:00:00+08:00,CNY,1
+XM-DEMO-A,2026-09-11T09:00:00+08:00,O3,paid,2026-09-10T09:55:00+08:00,2026-09-10T10:00:00+08:00,CNY,1

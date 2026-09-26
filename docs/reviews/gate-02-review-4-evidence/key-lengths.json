@@ -1,0 +1,11 @@
+{
+  "name": "key-lengths",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-key-lengths.ts"
+  ],
+  "exit": 0,
+  "seconds": 2.05
+}

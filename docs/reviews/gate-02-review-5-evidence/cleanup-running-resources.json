@@ -1,0 +1,6 @@
+{
+  "web_stopped": true,
+  "worker_stopped": true,
+  "pg_stop_exit": 0,
+  "docker_resources_created_by_review5": false
+}

@@ -1,0 +1,521 @@
+time="2026-09-26T14:37:46+08:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image aiea-r3fix-web Building 
+ Image aiea-r3fix-worker Building 
+ Image aiea-r3fix-worker Building 
+ Image aiea-r3fix-web Building 
+Sending build context to Docker daemon  524.5kBSending build context to Docker daemon  524.5kBSending build context to Docker daemon    655kB
+Sending build context to Docker daemon    655kB
+Step 1/28 : FROM node:24.21.0-bookworm-slim AS deps
+Step 1/28 : FROM node:24.21.0-bookworm-slim AS deps
+ ---> 0e0ff40c39bc
+Step 2/28 : WORKDIR /app
+ ---> 0e0ff40c39bc
+Step 2/28 : WORKDIR /app
+ ---> Running in ea804ec48115
+ ---> Running in 7fdcbb00a9a8
+ ---> Removed intermediate container ea804ec48115
+ ---> ad8227393fc3
+Step 3/28 : RUN corepack enable
+ ---> Removed intermediate container 7fdcbb00a9a8
+ ---> d2aa452fb1bd
+Step 3/28 : RUN corepack enable
+ ---> Running in ca6f017546d6
+ ---> Running in 325ec93a9a8f
+ ---> Removed intermediate container 325ec93a9a8f
+ ---> 269f5d12f360
+Step 4/28 : COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+ ---> Removed intermediate container ca6f017546d6
+ ---> 3769fd7d58b8
+Step 4/28 : COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+ ---> 491e088673f3
+Step 5/28 : COPY prisma/schema.prisma ./prisma/schema.prisma
+ ---> 1f94980968e4
+Step 5/28 : COPY prisma/schema.prisma ./prisma/schema.prisma
+ ---> 2ccc2688e359
+Step 6/28 : COPY prisma.config.ts ./
+ ---> 01d9099b5cd5
+Step 6/28 : COPY prisma.config.ts ./
+ ---> f7c1ec4ff25d
+Step 7/28 : COPY src/lib/dbUrl.ts ./src/lib/dbUrl.ts
+ ---> fd8002f98b88
+Step 7/28 : COPY src/lib/dbUrl.ts ./src/lib/dbUrl.ts
+ ---> d83e21166d23
+Step 8/28 : RUN pnpm install --frozen-lockfile
+ ---> 7ef7642f0e91
+Step 8/28 : RUN pnpm install --frozen-lockfile
+ ---> Running in 1739edaf271e
+ ---> Running in 2fd53bf5e749
+[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0m[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0mLockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +375
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +375
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 375, reused 0, downloaded 8, added 8
+Progress: resolved 375, reused 0, downloaded 7, added 7
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │     Update available! 10.34.5 → 12.6.0.      │
+   │     Changelog: https://pnpm.io/v/12.6.0      │
+   │   To update, run: corepack use pnpm@12.6.0   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 375, reused 0, downloaded 44, added 44
+Progress: resolved 375, reused 0, downloaded 44, added 44
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │     Update available! 10.34.5 → 12.6.0.      │
+   │     Changelog: https://pnpm.io/v/12.6.0      │
+   │   To update, run: corepack use pnpm@12.6.0   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 375, reused 0, downloaded 63, added 63
+Progress: resolved 375, reused 0, downloaded 62, added 62
+Progress: resolved 375, reused 0, downloaded 79, added 79
+Progress: resolved 375, reused 0, downloaded 78, added 78
+Progress: resolved 375, reused 0, downloaded 86, added 86
+Progress: resolved 375, reused 0, downloaded 85, added 85
+Progress: resolved 375, reused 0, downloaded 100, added 100
+Progress: resolved 375, reused 0, downloaded 98, added 98
+ WARN  Tarball download average speed 29 KiB/s (size 75 KiB) is below 50 KiB/s: https://registry.npmjs.org/@types/react/-/react-19.3.0.tgz (GET)
+Progress: resolved 375, reused 0, downloaded 118, added 118
+Progress: resolved 375, reused 0, downloaded 118, added 118
+Progress: resolved 375, reused 0, downloaded 135, added 130
+Progress: resolved 375, reused 0, downloaded 136, added 136
+Progress: resolved 375, reused 0, downloaded 154, added 154
+Progress: resolved 375, reused 0, downloaded 153, added 153
+Progress: resolved 375, reused 0, downloaded 167, added 165
+Progress: resolved 375, reused 0, downloaded 174, added 170
+Progress: resolved 375, reused 0, downloaded 184, added 184
+Progress: resolved 375, reused 0, downloaded 184, added 184
+Progress: resolved 375, reused 0, downloaded 199, added 199
+Progress: resolved 375, reused 0, downloaded 196, added 196
+Progress: resolved 375, reused 0, downloaded 207, added 207
+Progress: resolved 375, reused 0, downloaded 204, added 204
+Progress: resolved 375, reused 0, downloaded 213, added 213
+Progress: resolved 375, reused 0, downloaded 207, added 207
+Progress: resolved 375, reused 0, downloaded 216, added 216
+Progress: resolved 375, reused 0, downloaded 208, added 208
+ WARN  Tarball download average speed 46 KiB/s (size 84 KiB) is below 50 KiB/s: https://registry.npmjs.org/lightningcss/-/lightningcss-1.32.0.tgz (GET)
+Progress: resolved 375, reused 0, downloaded 221, added 221
+Progress: resolved 375, reused 0, downloaded 216, added 216
+Progress: resolved 375, reused 0, downloaded 231, added 231
+Progress: resolved 375, reused 0, downloaded 224, added 224
+Progress: resolved 375, reused 0, downloaded 243, added 243
+Progress: resolved 375, reused 0, downloaded 228, added 228
+Progress: resolved 375, reused 0, downloaded 252, added 252
+Progress: resolved 375, reused 0, downloaded 233, added 233
+ WARN  Tarball download average speed 12 KiB/s (size 21 KiB) is below 50 KiB/s: https://registry.npmjs.org/cac/-/cac-6.7.14.tgz (GET)
+Progress: resolved 375, reused 0, downloaded 265, added 265
+Progress: resolved 375, reused 0, downloaded 245, added 245
+Progress: resolved 375, reused 0, downloaded 278, added 278
+Progress: resolved 375, reused 0, downloaded 262, added 262
+Progress: resolved 375, reused 0, downloaded 290, added 290
+Progress: resolved 375, reused 0, downloaded 273, added 273
+Progress: resolved 375, reused 0, downloaded 301, added 301
+Progress: resolved 375, reused 0, downloaded 296, added 296
+Progress: resolved 375, reused 0, downloaded 315, added 312
+Progress: resolved 375, reused 0, downloaded 343, added 343
+Progress: resolved 375, reused 0, downloaded 361, added 360
+Progress: resolved 375, reused 0, downloaded 316, added 312
+ WARN  Tarball download average speed 20 KiB/s (size 49 KiB) is below 50 KiB/s: https://registry.npmjs.org/stream-http/-/stream-http-2.8.2.tgz (GET)
+Progress: resolved 375, reused 0, downloaded 368, added 367
+Progress: resolved 375, reused 0, downloaded 342, added 342
+Progress: resolved 375, reused 0, downloaded 369, added 369
+Progress: resolved 375, reused 0, downloaded 368, added 368
+Progress: resolved 375, reused 0, downloaded 370, added 369
+Progress: resolved 375, reused 0, downloaded 369, added 369
+Progress: resolved 375, reused 0, downloaded 371, added 371
+Progress: resolved 375, reused 0, downloaded 371, added 369
+Progress: resolved 375, reused 0, downloaded 372, added 372
+Progress: resolved 375, reused 0, downloaded 373, added 373
+Progress: resolved 375, reused 0, downloaded 373, added 373
+Progress: resolved 375, reused 0, downloaded 374, added 373
+Progress: resolved 375, reused 0, downloaded 374, added 373
+Progress: resolved 375, reused 0, downloaded 374, added 374
+Progress: resolved 375, reused 0, downloaded 374, added 374
+Progress: resolved 375, reused 0, downloaded 375, added 375, done
+.../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+.../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+
+dependencies:
++ @prisma/adapter-pg 7.10.0
++ @prisma/client 7.10.0
++ better-auth 1.7.4
++ busboy 1.6.0
++ csv-parse 5.6.0
++ next 16.3.5
++ pg 8.23.0
++ pg-boss 12.32.0
++ pino 10.3.1
++ react 19.2.8
++ react-dom 19.2.8
++ zod 4.6.2
+
+devDependencies:
++ @playwright/test 1.63.0
++ @tailwindcss/postcss 4.3.3
++ @types/ali-oss 6.23.3
++ @types/busboy 1.5.4
++ @types/node 24.13.4
++ @types/pg 8.23.1
++ @types/react 19.3.0
++ @types/react-dom 19.3.0
++ ali-oss 6.23.0
++ esbuild 0.25.12
++ prisma 7.10.0
++ tailwindcss 4.3.3
++ tsx 4.23.13
++ typescript 5.9.3
++ vitest 3.2.7
+
+. postinstall$ prisma generate
+Progress: resolved 375, reused 0, downloaded 375, added 374
+Progress: resolved 375, reused 0, downloaded 375, added 375, done
+. postinstall: Loaded Prisma config from prisma.config.ts.
+.../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+.../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+. postinstall: prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+. postinstall: Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+. postinstall: prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+. postinstall: Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+
+dependencies:
++ @prisma/adapter-pg 7.10.0
++ @prisma/client 7.10.0
++ better-auth 1.7.4
++ busboy 1.6.0
++ csv-parse 5.6.0
++ next 16.3.5
++ pg 8.23.0
++ pg-boss 12.32.0
++ pino 10.3.1
++ react 19.2.8
++ react-dom 19.2.8
++ zod 4.6.2
+
+devDependencies:
++ @playwright/test 1.63.0
++ @tailwindcss/postcss 4.3.3
++ @types/ali-oss 6.23.3
++ @types/busboy 1.5.4
++ @types/node 24.13.4
++ @types/pg 8.23.1
++ @types/react 19.3.0
++ @types/react-dom 19.3.0
++ ali-oss 6.23.0
++ esbuild 0.25.12
++ prisma 7.10.0
++ tailwindcss 4.3.3
++ tsx 4.23.13
++ typescript 5.9.3
++ vitest 3.2.7
+
+. postinstall$ prisma generate
+. postinstall: Loaded Prisma config from prisma.config.ts.
+. postinstall: prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+. postinstall: Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+. postinstall: prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+. postinstall: Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+. postinstall: Prisma schema loaded from prisma/schema.prisma.
+. postinstall: ✔ Generated Prisma Client (7.10.0) to ./src/generated/prisma in 644ms
+. postinstall: Done
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: @prisma/engines@7.10.0, prisma@7.10.0.              │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 42.3s using pnpm v10.34.5
+. postinstall: Prisma schema loaded from prisma/schema.prisma.
+. postinstall: ✔ Generated Prisma Client (7.10.0) to ./src/generated/prisma in 771ms
+. postinstall: Done
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: @prisma/engines@7.10.0, prisma@7.10.0.              │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 43.8s using pnpm v10.34.5
+ ---> Removed intermediate container 1739edaf271e
+ ---> 3ea83b40364e
+Step 9/28 : FROM node:24.21.0-bookworm-slim AS build
+ ---> 0e0ff40c39bc
+Step 10/28 : WORKDIR /app
+ ---> Using cache
+ ---> ad8227393fc3
+Step 11/28 : RUN corepack enable
+ ---> Using cache
+ ---> 269f5d12f360
+Step 12/28 : COPY --from=deps /app/node_modules ./node_modules
+ ---> Removed intermediate container 2fd53bf5e749
+ ---> 64f86c959851
+Step 9/28 : FROM node:24.21.0-bookworm-slim AS build
+ ---> 0e0ff40c39bc
+Step 10/28 : WORKDIR /app
+ ---> Using cache
+ ---> ad8227393fc3
+Step 11/28 : RUN corepack enable
+ ---> Using cache
+ ---> 269f5d12f360
+Step 12/28 : COPY --from=deps /app/node_modules ./node_modules
+ ---> 935f354ee435
+ ---> 04ce9e3b119b
+Step 13/28 : COPY --from=deps /app/src/generated ./src/generated
+Step 13/28 : COPY --from=deps /app/src/generated ./src/generated
+ ---> 08409bff7188
+Step 14/28 : COPY . .
+ ---> 987cc3f66e70
+Step 14/28 : COPY . .
+ ---> 2911840baa37
+Step 15/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> abf0961c2f42
+Step 15/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Running in 6b07d0a92976
+ ---> Running in d1efc1e4e82a
+ ---> Removed intermediate container 6b07d0a92976
+ ---> 4be429f37386
+Step 16/28 : ENV DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:5432/placeholder
+ ---> Removed intermediate container d1efc1e4e82a
+ ---> 5de674a3b7ed
+Step 16/28 : ENV DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:5432/placeholder
+ ---> Running in 2f3977109804
+ ---> Running in be3f0e1a48ac
+ ---> Removed intermediate container 2f3977109804
+ ---> 6e6ccd563100
+Step 17/28 : ENV BETTER_AUTH_SECRET=build-time-placeholder-not-a-secret
+ ---> Removed intermediate container be3f0e1a48ac
+ ---> 033ecdf1a129
+Step 17/28 : ENV BETTER_AUTH_SECRET=build-time-placeholder-not-a-secret
+ ---> Running in 0c6220421f47
+ ---> Running in 5ef0b148d077
+ ---> Removed intermediate container 0c6220421f47
+ ---> 26c801ce59e0
+Step 18/28 : ENV BETTER_AUTH_URL=http://localhost:3000
+ ---> Removed intermediate container 5ef0b148d077
+ ---> ebdaf66fddd9
+Step 18/28 : ENV BETTER_AUTH_URL=http://localhost:3000
+ ---> Running in a3576c5faa42
+ ---> Running in 28448c965e06
+ ---> Removed intermediate container a3576c5faa42
+ ---> 0367e429435e
+Step 19/28 : RUN pnpm build
+ ---> Removed intermediate container 28448c965e06
+ ---> 4a91ffc4c959
+Step 19/28 : RUN pnpm build
+ ---> Running in ae50fb26ebd5
+ ---> Running in 25e1d4647a9f
+[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0m[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0m
+> ai-ecommerce-assistant@0.1.0 build /app
+> next build && pnpm build:worker && pnpm build:scripts
+
+
+> ai-ecommerce-assistant@0.1.0 build /app
+> next build && pnpm build:worker && pnpm build:scripts
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 57ms
+
+  Creating an optimized production build ...
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 57ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 24.8s
+  Running TypeScript ...
+✓ Compiled successfully in 24.9s
+  Running TypeScript ...
+  Finished TypeScript in 13.1s ...
+  Collecting page data using 1 worker ...
+  Finished TypeScript in 13.0s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/12) ...
+  Generating static pages using 1 worker (3/12) 
+  Generating static pages using 1 worker (0/12) ...
+  Generating static pages using 1 worker (3/12) 
+  Generating static pages using 1 worker (6/12) 
+  Generating static pages using 1 worker (9/12) 
+✓ Generating static pages using 1 worker (12/12) in 155ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/[...all]
+├ ƒ /api/health
+├ ƒ /api/v1/data-sources
+├ ƒ /api/v1/imports
+├ ƒ /api/v1/imports/[id]
+├ ƒ /api/v1/imports/[id]/file
+├ ƒ /api/v1/invitations
+├ ƒ /api/v1/invitations/[idOrToken]
+├ ƒ /api/v1/invitations/[idOrToken]/accept
+├ ƒ /api/v1/me
+├ ƒ /api/v1/me/active-organization
+├ ƒ /api/v1/members
+├ ƒ /api/v1/members/[id]
+├ ƒ /api/v1/organization
+├ ƒ /api/v1/stores
+├ ƒ /api/v1/stores/[id]
+├ ƒ /invite/[token]
+└ ○ /login
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+  Generating static pages using 1 worker (6/12) 
+  Generating static pages using 1 worker (9/12) 
+✓ Generating static pages using 1 worker (12/12) in 166ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/[...all]
+├ ƒ /api/health
+├ ƒ /api/v1/data-sources
+├ ƒ /api/v1/imports
+├ ƒ /api/v1/imports/[id]
+├ ƒ /api/v1/imports/[id]/file
+├ ƒ /api/v1/invitations
+├ ƒ /api/v1/invitations/[idOrToken]
+├ ƒ /api/v1/invitations/[idOrToken]/accept
+├ ƒ /api/v1/me
+├ ƒ /api/v1/me/active-organization
+├ ƒ /api/v1/members
+├ ƒ /api/v1/members/[id]
+├ ƒ /api/v1/organization
+├ ƒ /api/v1/stores
+├ ƒ /api/v1/stores/[id]
+├ ƒ /invite/[token]
+└ ○ /login
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> ai-ecommerce-assistant@0.1.0 build:worker /app
+> esbuild src/jobs/worker.ts src/jobs/status.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/jobs --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+
+> ai-ecommerce-assistant@0.1.0 build:worker /app
+> esbuild src/jobs/worker.ts src/jobs/status.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/jobs --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+[91m
+  dist/jobs/worker.js  7.5mb ⚠️
+  dist/jobs/status.js  2.6kb
+
+⚡ Done in 768ms
+[0m[91m
+  dist/jobs/worker.js  7.5mb ⚠️
+  dist/jobs/status.js  2.6kb
+
+⚡ Done in 820ms
+[0m
+> ai-ecommerce-assistant@0.1.0 build:scripts /app
+> esbuild scripts/init-owner.ts scripts/reset-owner-password.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/scripts --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+
+> ai-ecommerce-assistant@0.1.0 build:scripts /app
+> esbuild scripts/init-owner.ts scripts/reset-owner-password.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/scripts --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+[91m
+  dist/scripts/init-owner.js            7.7mb ⚠️
+  dist/scripts/reset-owner-password.js  6.1mb ⚠️
+
+⚡ Done in 779ms
+[0m[91m
+  dist/scripts/init-owner.js            7.7mb ⚠️
+  dist/scripts/reset-owner-password.js  6.1mb ⚠️
+
+⚡ Done in 816ms
+[0m ---> Removed intermediate container ae50fb26ebd5
+ ---> c6dacf6072fd
+Step 20/28 : FROM node:24.21.0-bookworm-slim AS runner
+ ---> 0e0ff40c39bc
+Step 21/28 : WORKDIR /app
+ ---> Using cache
+ ---> ad8227393fc3
+Step 22/28 : RUN corepack enable
+ ---> Using cache
+ ---> 269f5d12f360
+Step 23/28 : ENV NODE_ENV=production
+ ---> Removed intermediate container 25e1d4647a9f
+ ---> 3d120717afd3
+Step 20/28 : FROM node:24.21.0-bookworm-slim AS runner
+ ---> 0e0ff40c39bc
+Step 21/28 : WORKDIR /app
+ ---> Using cache
+ ---> ad8227393fc3
+Step 22/28 : RUN corepack enable
+ ---> Using cache
+ ---> 269f5d12f360
+Step 23/28 : ENV NODE_ENV=production
+ ---> Running in 8946b0d93ae1
+ ---> Running in 5003c26e50fc
+ ---> Removed intermediate container 5003c26e50fc
+ ---> 0924fb304cab
+Step 24/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Removed intermediate container 8946b0d93ae1
+ ---> 3bd5a286463a
+Step 24/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Running in f925526aefa7
+ ---> Running in cb39836e8ea0
+ ---> Removed intermediate container f925526aefa7
+ ---> cec32cd8ecc8
+Step 25/28 : COPY --from=build /app ./
+ ---> Removed intermediate container cb39836e8ea0
+ ---> 61b938cfa20e
+Step 25/28 : COPY --from=build /app ./
+ ---> 450fcc05380a
+Step 26/28 : EXPOSE 3000
+ ---> 875ae991841b
+Step 26/28 : EXPOSE 3000
+ ---> Running in 01e99938e1a7
+ ---> Running in 54d6ef71efa4
+ ---> Removed intermediate container 01e99938e1a7
+ ---> 26a636c31ca6
+Step 27/28 : CMD ["node", "node_modules/next/dist/bin/next", "start"]
+ ---> Removed intermediate container 54d6ef71efa4
+ ---> 186dd145e0a8
+Step 27/28 : CMD ["node", "node_modules/next/dist/bin/next", "start"]
+ ---> Running in 40babcdc589f
+ ---> Running in 4fd54bea8a59
+ ---> Removed intermediate container 40babcdc589f
+ ---> 5a67bf0704ca
+Step 28/28 : LABEL com.docker.compose.image.builder=classic
+ ---> Removed intermediate container 4fd54bea8a59
+ ---> b9ea29066d01
+Step 28/28 : LABEL com.docker.compose.image.builder=classic
+ ---> Running in 7c72c5f3dc71
+ ---> Running in 67320a4d417f
+ ---> Removed intermediate container 7c72c5f3dc71
+ ---> cb4709274ec5
+ ---> Removed intermediate container 67320a4d417f
+ ---> abd15041a93f
+Successfully built cb4709274ec5
+Successfully built abd15041a93f
+Successfully tagged aiea-r3fix-web:latest
+Successfully tagged aiea-r3fix-worker:latest
+ Image aiea-r3fix-web Built 
+ Image aiea-r3fix-worker Built 
+ Image aiea-r3fix-web Built 
+ Image aiea-r3fix-worker Built 

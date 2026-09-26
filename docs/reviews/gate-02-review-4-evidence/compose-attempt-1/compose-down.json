@@ -1,0 +1,14 @@
+{
+  "name": "compose-down",
+  "args": [
+    "docker",
+    "compose",
+    "-p",
+    "aiea-review4-t6xh",
+    "down",
+    "-v",
+    "--remove-orphans"
+  ],
+  "exit": 0,
+  "seconds": 0.65
+}

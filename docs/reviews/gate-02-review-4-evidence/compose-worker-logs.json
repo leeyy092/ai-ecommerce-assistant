@@ -1,0 +1,14 @@
+{
+  "name": "compose-worker-logs",
+  "args": [
+    "docker",
+    "compose",
+    "-p",
+    "aiea-review4-t6xh",
+    "logs",
+    "--no-color",
+    "worker"
+  ],
+  "exit": 0,
+  "seconds": 0.13
+}

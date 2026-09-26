@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-09-26T15:31:39.968591+08:00",
+  "checks": {
+    "state_task": true,
+    "state_owner": true,
+    "state_prompt": true,
+    "state_checkpoint": true,
+    "state_status": true,
+    "md_exact_prompt": true,
+    "html_exact_prompt": true,
+    "control": true
+  },
+  "state_updated_at": "2026-09-26T15:31:19+08:00",
+  "files": [
+    "00_START_HERE.md",
+    "00_START_HERE.html",
+    "/Users/yuyuyu/Documents/AI-Workspace/00_CONTROL_CENTER/PROJECTS.md"
+  ]
+}

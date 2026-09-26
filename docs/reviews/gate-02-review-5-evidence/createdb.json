@@ -1,0 +1,15 @@
+{
+  "name": "createdb",
+  "args": [
+    "/opt/homebrew/opt/postgresql@17/bin/createdb",
+    "-h",
+    "127.0.0.1",
+    "-p",
+    "53189",
+    "-U",
+    "review5",
+    "review5"
+  ],
+  "exit": 0,
+  "seconds": 0.18
+}

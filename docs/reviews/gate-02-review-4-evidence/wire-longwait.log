@@ -1,0 +1,16 @@
+(node:44390) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+H06 true HTTP incomplete multipart byte boundary PASS {
+  status: 422,
+  code: 'FILE_TOO_LARGE',
+  message: '文件超过 20971520 字节上限，已停止接收',
+  bytes_sent: 23068672,
+  multipart_closed: false
+}
+H06 true HTTP incomplete multipart record boundary PASS {
+  status: 422,
+  code: 'TOO_MANY_ROWS',
+  message: '数据行超过 100000 行上限',
+  bytes_sent: 440004,
+  multipart_closed: false
+}

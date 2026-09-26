@@ -1,0 +1,11 @@
+{
+  "name": "oss",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "exec",
+    "tsx",
+    "review-oss.ts"
+  ],
+  "exit": 0,
+  "seconds": 0.83
+}

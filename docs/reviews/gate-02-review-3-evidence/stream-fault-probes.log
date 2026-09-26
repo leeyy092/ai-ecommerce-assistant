@@ -1,0 +1,4 @@
+H06 normal spool cleanup control PASS
+H06 H08 input error cleans partial spool and invokes abort FAIL
+H06 early invalid CSV closes input and cleans file PASS
+H08 open input EACCES controlled failure PASS

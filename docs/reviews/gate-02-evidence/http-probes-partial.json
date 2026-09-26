@@ -1,0 +1,209 @@
+{
+  "checks": {
+    "store_create": {
+      "status": 201,
+      "demo_inherited": true,
+      "audit": 1
+    },
+    "contract_entity_type": {
+      "status": 422,
+      "body": {
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "store_id、data_source_id、source_kind 必填",
+          "retryable": false,
+          "request_id": "bcd9b2f8-9a4e-4155-b9db-1549c6b77d56"
+        }
+      }
+    },
+    "normal_upload": {
+      "status": 201,
+      "body": {
+        "data": {
+          "id": "3ceb5d1d-e336-44ac-b2c2-5678d6041280",
+          "status": "uploaded",
+          "file_sha256": "5ea2fc3c1df11837bcb4de3881c62b028cbd5f9ab1f7535b9394c122f955a5c1",
+          "row_count": 1,
+          "reused": false
+        },
+        "meta": {
+          "request_id": "f94512c8-b72b-4bfc-ad31-09d55f077d23"
+        }
+      }
+    },
+    "repeat_upload": {
+      "status": 200,
+      "body": {
+        "data": {
+          "id": "3ceb5d1d-e336-44ac-b2c2-5678d6041280",
+          "status": "uploaded",
+          "file_sha256": "5ea2fc3c1df11837bcb4de3881c62b028cbd5f9ab1f7535b9394c122f955a5c1",
+          "row_count": 1,
+          "reused": true
+        },
+        "meta": {
+          "request_id": "c74deabb-605c-4195-a362-eab0b1ff084c"
+        }
+      }
+    },
+    "cs_order_forbidden": {
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "FILE_KIND_FORBIDDEN",
+          "message": "当前角色不能上传该类型文件",
+          "retryable": false,
+          "request_id": "88e28545-7615-493b-a4b9-e789fa8f4c96"
+        }
+      }
+    },
+    "read_own_task": {
+      "cs": {
+        "upload": 201,
+        "query": {
+          "status": 403,
+          "body": {
+            "error": {
+              "code": "FORBIDDEN",
+              "message": "当前角色没有该操作权限",
+              "retryable": false,
+              "request_id": "3ba14536-10e0-48df-bc22-3255197402da"
+            }
+          }
+        }
+      },
+      "operator": {
+        "upload": 201,
+        "query": {
+          "status": 403,
+          "body": {
+            "error": {
+              "code": "FORBIDDEN",
+              "message": "当前角色没有该操作权限",
+              "retryable": false,
+              "request_id": "5c8a2839-8a8c-4f64-979c-ac38e41a381c"
+            }
+          }
+        }
+      },
+      "admin_query": {
+        "status": 200,
+        "body": {
+          "data": {
+            "id": "3ceb5d1d-e336-44ac-b2c2-5678d6041280",
+            "store_id": "86bfddba-7e2a-4879-86f9-9801abadb0a6",
+            "data_source_id": "618b1ef8-8dd7-45de-85b7-241861eee533",
+            "source_kind": "products",
+            "status": "uploaded",
+            "original_filename": "test.csv",
+            "file_sha256": "5ea2fc3c1df11837bcb4de3881c62b028cbd5f9ab1f7535b9394c122f955a5c1",
+            "row_count": 1,
+            "valid_count": 0,
+            "error_count": 0,
+            "insert_count": 0,
+            "update_count": 0,
+            "unchanged_count": 0,
+            "error_code": null,
+            "created_at": "2026-09-15T11:34:59.842Z",
+            "confirmed_at": null,
+            "committed_at": null,
+            "base_dataset_version": "0",
+            "committed_dataset_version": null
+          },
+          "meta": {
+            "request_id": "2c534fd7-b810-4bf9-8317-2b536e04d6d7"
+          }
+        }
+      }
+    },
+    "unsigned": {
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "下载签名无效或已过期",
+          "retryable": false,
+          "request_id": "a4608db0-6a6d-46d1-bd74-747cf61e9c37"
+        }
+      }
+    },
+    "expired": {
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "下载签名无效或已过期",
+          "retryable": false,
+          "request_id": "0046e14b-920d-4b4d-8c43-ccf0dd6d79ce"
+        }
+      }
+    },
+    "signed": {
+      "status": 200,
+      "content_equal": true
+    },
+    "cs_signed_file": {
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "当前角色没有该操作权限",
+          "retryable": false,
+          "request_id": "f853faa7-aa87-4a06-aaa8-b453ab1b5598"
+        }
+      }
+    },
+    "cross_org": {
+      "query": {
+        "status": 404,
+        "body": {
+          "error": {
+            "code": "NOT_FOUND",
+            "message": "导入任务不存在",
+            "retryable": false,
+            "request_id": "60ea46a8-2509-4809-914e-d1dc6872af97"
+          }
+        }
+      },
+      "file": {
+        "status": 404,
+        "body": {
+          "error": {
+            "code": "NOT_FOUND",
+            "message": "导入任务或其文件不存在",
+            "retryable": false,
+            "request_id": "dae82046-f802-40fd-a79b-cb93f95e42c1"
+          }
+        }
+      },
+      "sources": {
+        "status": 404,
+        "body": {
+          "error": {
+            "code": "NOT_FOUND",
+            "message": "店铺不存在",
+            "retryable": false,
+            "request_id": "780ce5c4-2269-4cb6-8bf8-ecaee9d8114e"
+          }
+        }
+      }
+    },
+    "public_file": {
+      "status": 404,
+      "body": {
+        "nonJSON": "<!DOCTYPE html><html lang=\"zh-CN\" class=\"h-full antialiased\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/stati"
+      }
+    },
+    "store_write_cs": {
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "当前角色没有该操作权限",
+          "retryable": false,
+          "request_id": "073df00a-104a-4fd8-843a-0dfd78c141b9"
+        }
+      }
+    }
+  }
+}

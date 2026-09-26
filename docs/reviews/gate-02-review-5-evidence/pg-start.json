@@ -1,0 +1,15 @@
+{
+  "name": "pg-start",
+  "args": [
+    "/opt/homebrew/opt/postgresql@17/bin/pg_ctl",
+    "-D",
+    "/tmp/gate02-review5-20260926-siq330x3/pg",
+    "-o",
+    "-p 53189 -h 127.0.0.1 -k /tmp/gate02-review5-20260926-siq330x3/socket",
+    "-l",
+    "/tmp/gate02-review5-20260926-siq330x3/pg.log",
+    "start"
+  ],
+  "exit": 0,
+  "seconds": 0.13
+}

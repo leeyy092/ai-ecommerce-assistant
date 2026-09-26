@@ -63,6 +63,55 @@ async function main(): Promise<number> {
   logger.info("worker 运行中：数据库连接正常，心跳间隔 %dms", HEARTBEAT_INTERVAL_MS);
   beat("running", true);
 
+  // TASK-007：pg-boss 持久队列与 dispatcher——注册 validate/commit 边界
+  const { getBoss, ensureQueues, QUEUE_VALIDATE, QUEUE_COMMIT } = await import("./queue");
+  const { handleValidateTask, handleCommitTask } = await import("./handlers/imports");
+  type ValidateOutcome = Awaited<ReturnType<typeof handleValidateTask>>;
+  const { sweepDispatches } = await import("./dispatcher");
+  try {
+    const boss = await getBoss();
+    await ensureQueues(boss);
+    await boss.work<{ taskId: string }, ValidateOutcome[], { includeMetadata: true }>(
+      QUEUE_VALIDATE,
+      // G2-R2-H08：includeMetadata 使作业携带 retryLimit/retryCount 真实元数据，
+      // 重试耗尽判定不再依赖类型强转（默认批数据不含这些字段）
+      { includeMetadata: true },
+      async (jobs) => {
+        const results = [];
+        for (const job of jobs) {
+          logger.info({ job_id: job.id, task: job.data }, "import-validate 开始");
+          const result = await handleValidateTask(job.data, {
+            retryCount: job.retryCount,
+            retryLimit: job.retryLimit,
+          });
+          logger.info({ job_id: job.id, ...result }, "import-validate 完成");
+          results.push(result);
+        }
+        return results;
+      },
+    );
+    await boss.work<{ taskId: string }>(QUEUE_COMMIT, async (jobs) => {
+      for (const job of jobs) {
+        logger.warn({ job_id: job.id, task: job.data }, "import-commit 边界被触发（TASK-008 实现前不应入队）");
+        await handleCommitTask(job.data);
+      }
+    });
+    logger.info("pg-boss 队列就绪：%s / %s", QUEUE_VALIDATE, QUEUE_COMMIT);
+  } catch (error) {
+    logger.error({ err: error instanceof Error ? error.message : error }, "pg-boss 队列初始化失败");
+    beat("failed", true);
+    await pool.end().catch(() => {});
+    return 1;
+  }
+
+  // G2-H08：dispatcher 周期兜底——投递丢失窗口与悬挂 validating 的恢复边界
+  const dispatchTimer = setInterval(() => {
+    void sweepDispatches().catch((error: unknown) => {
+      logger.warn({ err: error instanceof Error ? error.message : error }, "dispatcher sweep 失败（下轮重试）");
+    });
+  }, 30_000);
+  void sweepDispatches().catch(() => undefined);
+
   const heartbeat = setInterval(() => beat("running", true), HEARTBEAT_INTERVAL_MS);
 
   let stopping = false;
@@ -70,6 +119,7 @@ async function main(): Promise<number> {
     if (stopping) return;
     stopping = true;
     clearInterval(heartbeat);
+    clearInterval(dispatchTimer);
     logger.info({ signal }, "worker 收到退出信号，正在停止");
     beat("stopped", true);
     void pool.end().catch(() => {});

@@ -1,0 +1,46 @@
+(node:44725) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[
+  {
+    name: 'M04 isolated object adapter put/get/move works',
+    expected: true,
+    actual: true,
+    status: 'PASS'
+  },
+  {
+    name: 'M04 actual spool then strict read works with OSS',
+    expected: true,
+    actual: true,
+    status: 'PASS'
+  },
+  {
+    name: 'M04 failed upload cleanup removes local temporary object',
+    expected: true,
+    actual: true,
+    status: 'PASS'
+  },
+  {
+    name: 'M04 real service spool strictread promote ledger worker stream download chain',
+    expected: {
+      status: 'preview_ready',
+      valid: 2,
+      localTemp: false,
+      bodyMatches: true,
+      remote: true
+    },
+    actual: {
+      status: 'preview_ready',
+      valid: 2,
+      localTemp: false,
+      bodyMatches: true,
+      remote: true
+    },
+    status: 'PASS'
+  },
+  {
+    name: 'M04 H08 OSS task transaction failure removes unowned remote file',
+    expected: { threw: true, localTemp: false, newRemote: 0, newTask: 0 },
+    actual: { threw: true, localTemp: false, newRemote: 0, newTask: 0 },
+    status: 'PASS'
+  }
+]

@@ -1,0 +1,910 @@
+
+FILE src/services/dataSources.ts
+92:   });
+93: }
+94: 
+95: export interface ListDataSourcesOpts {
+96:   storeId: string;
+97:   from?: string;
+98:   to?: string;
+99: }
+100: 
+101: /** 按日 coverage 摘要（P0：导入提交前为空数组；from/to 为 ISO 日期边界） */
+102: export async function listDataSources(
+103:   ctx: DataSourcesContext,
+104:   opts: ListDataSourcesOpts,
+105: ): Promise<{ store: { id: string; name: string; status: string }; items: Record<string, unknown>[] }> {
+106:   const store = await ctx.db.store.findFirst({
+107:     where: { orgId: ctx.orgId, id: opts.storeId },
+108:     select: { id: true, name: true, status: true },
+109:   });
+110:   if (!store) {
+111:     throw new AccessError(404, "NOT_FOUND", "店铺不存在");
+112:   }
+113: 
+114:   const sources = await ctx.db.dataSource.findMany({
+115:     where: { orgId: ctx.orgId, storeId: opts.storeId },
+116:     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+117:     select: {
+118:       id: true,
+119:       name: true,
+120:       adapterKind: true,
+121:       sourceNamespace: true,
+122:       status: true,
+123:       configuration: true,
+124:     },
+125:   });
+126: 
+127:   const coverageWhere = {
+128:     orgId: ctx.orgId,
+129:     storeId: opts.storeId,
+130:     ...(opts.from || opts.to
+131:       ? {
+132:           coverageDate: {
+133:             ...(opts.from ? { gte: new Date(opts.from) } : {}),
+134:             ...(opts.to ? { lte: new Date(opts.to) } : {}),
+135:           },
+136:         }
+137:       : {}),
+138:   };
+139:   const coverageRows = await ctx.db.dataCoverage.groupBy({
+140:     by: ["dataSourceId", "coverageDate"],
+141:     where: coverageWhere,
+142:     _sum: { recordCount: true },
+143:     _count: { sourceKind: true },
+144:   });
+145:   const lastImports = await ctx.db.importTask.groupBy({
+146:     by: ["dataSourceId"],
+147:     where: { orgId: ctx.orgId, storeId: opts.storeId },
+148:     _max: { createdAt: true },
+149:   });
+150:   const lastImportBySource = new Map(
+151:     lastImports.map((r) => [r.dataSourceId, r._max.createdAt?.toISOString() ?? null]),
+152:   );
+153: 
+154:   // 角色裁剪：客服仅消息源实体（02_USER_ROLES：C 只见脱敏客服数据）
+155:   const supported =
+156:     ctx.role === "customer_service" ? ["customer_messages"] : [...SUPPORTED_ENTITIES];
+157: 
+158:   const items = sources.map((s) => {
+159:     const coverage = coverageRows
+160:       .filter((c) => c.dataSourceId === s.id)
+161:       .map((c) => ({
+162:         date: c.coverageDate.toISOString().slice(0, 10),
+163:         source_kinds: c._count.sourceKind,
+164:         record_count: Number(c._sum.recordCount ?? 0n),
+165:       }))
+166:       .sort((a, b) => a.date.localeCompare(b.date));
+167:     return {
+168:       id: s.id,
+169:       name: s.name,
+170:       adapter_kind: s.adapterKind,
+171:       source_namespace: s.sourceNamespace,
+172:       status: s.status,
+173:       mapping_version:
+174:         (s.configuration as Record<string, unknown>)?.mapping_version ?? MAPPING_VERSION,
+175:       supported_entities: supported,
+176:       coverage,
+177:       last_import_at: lastImportBySource.get(s.id) ?? null,
+178:     };
+179:   });
+180: 
+
+FILE src/services/stores.ts
+67: ): Promise<{ id: string }> {
+68:   const currency = input.currency.toUpperCase();
+69:   if (!/^[A-Z]{3}$/.test(currency)) {
+70:     throw new AccessError(422, "VALIDATION_ERROR", "currency 必须为 3 位字母（ISO 4217）");
+71:   }
+72:   if (!isValidTimezone(input.timezone)) {
+73:     throw new AccessError(422, "VALIDATION_ERROR", "timezone 必须为合法 IANA 时区");
+74:   }
+75:   return ctx.db.$transaction(async (tx) => {
+76:     const sameName = await tx.store.findFirst({
+77:       where: { orgId: ctx.orgId, name: input.name },
+78:       select: { id: true },
+79:     });
+80:     if (sameName) {
+81:       throw new AccessError(409, "STORE_NAME_EXISTS", "同名店铺已存在");
+82:     }
+83:     const sameExternal = await tx.store.findFirst({
+84:       where: { orgId: ctx.orgId, externalStoreId: input.externalStoreId },
+85:       select: { id: true },
+86:     });
+87:     if (sameExternal) {
+88:       throw new AccessError(409, "STORE_EXISTS", "相同外部店铺标识已存在");
+89:     }
+90:     const org = await tx.organization.findUniqueOrThrow({
+91:       where: { id: ctx.orgId },
+92:       select: { demoMode: true },
+93:     });
+94:     const created = await tx.store.create({
+95:       data: {
+96:         orgId: ctx.orgId,
+97:         name: input.name,
+98:         externalStoreId: input.externalStoreId,
+99:         platform: input.platform,
+100:         currency,
+101:         timezone: input.timezone,
+102:         demoMode: org.demoMode,
+103:       },
+104:     });
+105:     await writeAudit(tx, {
+106:       orgId: ctx.orgId,
+107:       storeId: created.id,
+108:       actorUserId: ctx.userId,
+109:       action: "store_create",
+110:       entityType: "store",
+111:       entityId: created.id,
+112:       afterSummary: {
+113:         name: input.name,
+114:         platform: input.platform,
+115:         currency,
+116:         timezone: input.timezone,
+117:       },
+118:     });
+119:     return { id: created.id };
+120:   });
+121: }
+122: 
+123: /** 店铺列表投影：无任何经营数值字段（平台只是标签，无连接状态） */
+124: export async function listStores(
+125:   ctx: StoresContext,
+126:   opts: { cursor?: string; limit?: number },
+127: ): Promise<{ items: Record<string, unknown>[]; next_cursor: string | null }> {
+128:   const limit = Math.min(Math.max(opts.limit ?? 20, 1), 100);
+129:   const rows = await ctx.db.store.findMany({
+171: export async function updateStore(
+172:   ctx: StoresContext,
+173:   storeId: string,
+174:   input: UpdateStoreInput,
+175: ): Promise<Record<string, unknown>> {
+176:   return ctx.db.$transaction(async (tx) => {
+177:     const store = await tx.store.findFirst({
+178:       where: { orgId: ctx.orgId, id: storeId },
+179:     });
+180:     if (!store) {
+181:       throw new AccessError(404, "NOT_FOUND", "店铺不存在");
+182:     }
+183:     if (store.rowVersion !== input.expectedVersion) {
+184:       throw new AccessError(409, "VERSION_CONFLICT", "配置版本已变化，请刷新后重试");
+185:     }
+186: 
+187:     const touchesLocked = input.currency !== undefined || input.timezone !== undefined;
+188:     if (touchesLocked && (await storeHasFacts(tx, storeId))) {
+189:       throw new AccessError(
+190:         409,
+191:         "STORE_CONFIG_LOCKED",
+192:         "已存在业务事实，币种与时区不可变更",
+193:       );
+194:     }
+195:     if (input.currency !== undefined && !/^[A-Za-z]{3}$/.test(input.currency)) {
+196:       throw new AccessError(422, "VALIDATION_ERROR", "currency 必须为 3 位字母（ISO 4217）");
+197:     }
+198:     if (input.timezone !== undefined && !isValidTimezone(input.timezone)) {
+199:       throw new AccessError(422, "VALIDATION_ERROR", "timezone 必须为合法 IANA 时区");
+200:     }
+201: 
+202:     const nextSettings =
+203:       input.requiredChannels !== undefined
+204:         ? { ...((store.settings as Record<string, unknown>) ?? {}), required_channels: input.requiredChannels }
+205:         : (store.settings as Record<string, unknown>);
+206:     void (nextSettings as Prisma.InputJsonValue);
+207: 
+208:     await tx.store.update({
+209:       where: { id: store.id },
+210:       data: {
+211:         name: input.name ?? store.name,
+212:         status: input.status ?? store.status,
+213:         currency: input.currency?.toUpperCase() ?? store.currency,
+214:         timezone: input.timezone ?? store.timezone,
+215:         settings: nextSettings as Prisma.InputJsonValue,
+216:         rowVersion: { increment: 1 },
+217:       },
+218:     });
+219: 
+220:     await writeAudit(tx, {
+221:       orgId: ctx.orgId,
+222:       storeId: store.id,
+223:       actorUserId: ctx.userId,
+224:       action: "store_update",
+225:       entityType: "store",
+226:       entityId: store.id,
+227:       beforeSummary: {
+228:         name: store.name,
+229:         status: store.status,
+230:         currency: store.currency,
+231:         timezone: store.timezone,
+232:       },
+233:       afterSummary: {
+234:         name: input.name ?? store.name,
+235:         status: input.status ?? store.status,
+236:         currency: input.currency?.toUpperCase() ?? store.currency,
+237:         timezone: input.timezone ?? store.timezone,
+238:       },
+239:     });
+
+FILE src/adapters/contracts.ts
+216: export function validateAmount(
+217:   value: unknown,
+218:   column: string,
+219:   row: number,
+220:   errors: RowError[],
+221:   opts: { required: boolean; min?: number },
+222: ): string | null {
+223:   if (value === null || value === undefined || value === "") {
+224:     if (opts.required) errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+225:     return null;
+226:   }
+227:   const text = String(value).trim();
+228:   if (!/^\d+(\.\d{1,6})?$/.test(text)) {
+229:     errors.push({ row, column, code: "INVALID_AMOUNT", message: `${column} 必须为非负十进制且最多 6 位小数：${text}` });
+230:     return null;
+231:   }
+232:   if (opts.min !== undefined && Number(text) < opts.min) {
+233:     errors.push({ row, column, code: "OUT_OF_RANGE", message: `${column} 不能小于 ${opts.min}` });
+234:     return null;
+235:   }
+236:   return text;
+237: }
+238: 
+239: export function validateInteger(
+240:   value: unknown,
+241:   column: string,
+242:   row: number,
+243:   errors: RowError[],
+244:   opts: { required: boolean; min?: number; max?: number },
+245: ): number | null {
+246:   if (value === null || value === undefined || value === "") {
+247:     if (opts.required) errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+248:     return null;
+249:   }
+250:   const text = String(value).trim();
+251:   if (!/^-?\d+$/.test(text)) {
+252:     errors.push({ row, column, code: "INVALID_INTEGER", message: `${column} 必须为整数：${text}` });
+253:     return null;
+254:   }
+255:   const n = Number(text);
+256:   if (opts.min !== undefined && n < opts.min) {
+257:     errors.push({ row, column, code: "OUT_OF_RANGE", message: `${column} 不能小于 ${opts.min}` });
+258:     return null;
+259:   }
+260:   if (opts.max !== undefined && n > opts.max) {
+261:     errors.push({ row, column, code: "OUT_OF_RANGE", message: `${column} 不能大于 ${opts.max}` });
+262:     return null;
+263:   }
+264:   return n;
+265: }
+266: 
+267: /** timestamptz：接受 ISO 字符串（含 +08:00 偏移），输出 UTC ISO */
+268: export function validateTimestamp(
+269:   value: unknown,
+270:   column: string,
+271:   row: number,
+272:   errors: RowError[],
+273:   opts: { required: boolean },
+274: ): string | null {
+275:   if (value === null || value === undefined || value === "") {
+276:     if (opts.required) errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+277:     return null;
+278:   }
+279:   const text = value instanceof Date ? value.toISOString() : String(value).trim();
+280:   const d = new Date(text);
+281:   if (Number.isNaN(d.getTime())) {
+282:     errors.push({ row, column, code: "INVALID_DATETIME", message: `${column} 不是合法时间：${text}` });
+283:     return null;
+284:   }
+285:   return d.toISOString();
+286: }
+287: 
+288: /** date：YYYY-MM-DD */
+289: export function validateDate(
+290:   value: unknown,
+291:   column: string,
+292:   row: number,
+293:   errors: RowError[],
+294:   opts: { required: boolean },
+295: ): string | null {
+296:   if (value === null || value === undefined || value === "") {
+297:     if (opts.required) errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+298:     return null;
+299:   }
+300:   const text = String(value).trim();
+301:   if (!/^\d{4}-\d{2}-\d{2}$/.test(text) || Number.isNaN(new Date(`${text}T00:00:00Z`).getTime())) {
+302:     errors.push({ row, column, code: "INVALID_DATE", message: `${column} 必须为 YYYY-MM-DD：${text}` });
+303:     return null;
+304:   }
+305:   return text;
+306: }
+307: 
+411: export function parseStandardFile(
+412:   kind: FileKind,
+413:   content: string,
+414:   opts: ParseStandardOptions,
+415: ): ParseResult {
+416:   const rows = parseCsv(content);
+417:   const errors: RowError[] = [];
+418:   if (rows.length === 0) {
+419:     return { kind, records: [], errors: [{ row: 1, code: "EMPTY_FILE", message: "文件为空" }] };
+420:   }
+421:   const headers = rows[0].map((h) => h.trim());
+422:   const expected = FILE_HEADERS[kind];
+423:   for (const h of expected) {
+424:     if (!headers.includes(h)) {
+425:       return {
+426:         kind,
+427:         records: [],
+428:         errors: [{ row: 1, column: h, code: "MISSING_COLUMN", message: `缺少必需列 ${h}` }],
+429:       };
+430:     }
+431:   }
+432:   const records: StandardRecords[FileKind][] = [];
+433:   for (let r = 1; r < rows.length; r++) {
+434:     const values = rows[r];
+435:     const record: Record<string, Cell> = {};
+436:     headers.forEach((h, idx) => {
+437:       record[h] = values[idx] === undefined ? null : values[idx] === "" ? null : values[idx];
+438:     });
+439:     const rowNo = r + 1;
+440:     // 店铺一致性：任何行店铺不符 → 整文件拒绝（STORE_MISMATCH）
+441:     const rowStore = cell(record, "store_external_id");
+442:     if (rowStore !== opts.storeExternalId) {
+443:       return {
+444:         kind,
+445:         records: [],
+446:         errors: [
+447:           {
+448:             row: rowNo,
+471:   row: number,
+472:   defaultSourceUpdatedAt: string,
+473:   errors: RowError[],
+474: ): StandardRecords[FileKind] | null {
+475:   const storeExternalId = String(optsStore(record));
+476:   const sourceUpdatedAt =
+477:     validateTimestamp(cell(record, "source_updated_at") ?? defaultSourceUpdatedAt, "source_updated_at", row, errors, { required: true }) ??
+478:     defaultSourceUpdatedAt;
+479:   switch (kind) {
+480:     case "products": {
+481:       const externalProductId = validateExternalId(cell(record, "external_product_id"), "external_product_id", row, errors);
+482:       const externalSkuId = validateExternalId(cell(record, "external_sku_id"), "external_sku_id", row, errors);
+483:       const name = validateText(cell(record, "product_name"), "product_name", row, errors, { required: true, max: 300 });
+484:       const skuCode = validateText(cell(record, "sku_code"), "sku_code", row, errors, { required: true, max: 128 });
+485:       const skuName = validateText(cell(record, "sku_name"), "sku_name", row, errors, { required: true, max: 300 });
+486:       if (errors.length) return null;
+487:       return {
+488:         kind,
+489:         storeExternalId,
+490:         sourceUpdatedAt,
+491:         externalProductId: externalProductId!,
+492:         name: name!,
+493:         category: validateText(cell(record, "category"), "category", row, errors, { required: false, max: 100 }),
+494:         productStatus: validateEnum(cell(record, "product_status"), ["active", "archived"] as const, "product_status", row, errors, "active"),
+495:         externalSkuId: externalSkuId!,
+496:         skuCode: skuCode!,
+497:         skuName: skuName!,
+498:         specification: validateText(cell(record, "specification"), "specification", row, errors, { required: false, max: 500 }),
+499:         skuStatus: validateEnum(cell(record, "sku_status"), ["active", "archived"] as const, "sku_status", row, errors, "active"),
+500:       };
+675: }
+676: 
+677: // ---------- DataAdapter 契约 ----------
+678: 
+679: export interface AdapterContext {
+680:   storeExternalId: string;
+681:   /** 任务级默认来源更新时间（合成/CSV 共用） */
+682:   sourceUpdatedAt: string | Date;
+683: }
+684: 
+685: export interface DataAdapter {
+686:   readonly kind: "csv" | "mock";
+687:   /** CSV：content 为文件文本；Mock：content 为合成数据集（与 CSV 同一逻辑数据的对象形态） */
+688:   parse(kind: FileKind, ctx: AdapterContext, content: string): ParseResult;
+689: }
+690: 
+691: export const csvAdapter: DataAdapter = {
+692:   kind: "csv",
+693:   parse(kind, ctx, content) {
+694:     return parseStandardFile(kind, content, {
+695:       storeExternalId: ctx.storeExternalId,
+696:       defaultSourceUpdatedAt: ctx.sourceUpdatedAt,
+697:     });
+698:   },
+699: };
+700: 
+701: /** Mock 合成数据集：与 CSV 同一逻辑数据的对象形态（value 语义同 CSV 单元格） */
+702: export type MockDataset = Record<FileKind, Record<string, string | null>[]>;
+703: 
+704: export const mockAdapter: DataAdapter = {
+705:   kind: "mock",
+706:   parse(kind, ctx, content) {
+707:     let dataset: MockDataset;
+708:     try {
+709:       dataset = JSON.parse(content) as MockDataset;
+710:     } catch {
+711:       return { kind, records: [], errors: [{ row: 0, code: "INVALID_MOCK_DATASET", message: "mock 数据集不是合法 JSON" }] };
+712:     }
+713:     const rows = dataset[kind];
+714:     if (!Array.isArray(rows)) {
+715:       return { kind, records: [], errors: [{ row: 0, code: "INVALID_MOCK_DATASET", message: `mock 数据集缺少 ${kind}` }] };
+716:     }
+717:     // 与 CSV 完全同一解析/校验路径：把对象行序列化为 CSV 文本后复用 parseStandardFile，
+718:     // 保证“同一逻辑数据经 CSV 和 Mock 所得标准记录一致”。
+719:     const headers = FILE_HEADERS[kind];
+720:     const escape = (v: string | null) => {
+721:       if (v === null) return "";
+722:       if (/[",\r\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
+723:       return v;
+724:     };
+725:     const text = [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h] ?? null)).join(","))].join("\r\n");
+726:     return parseStandardFile(kind, text, {
+727:       storeExternalId: ctx.storeExternalId,
+728:       defaultSourceUpdatedAt: ctx.sourceUpdatedAt,
+729:     });
+730:   },
+731: };
+732: 
+733: export function getAdapter(kind: "csv" | "mock"): DataAdapter {
+
+FILE src/app/api/v1/imports/route.ts
+20:     if (blocked) return blocked;
+21:     // 上传能力：全员基础权限 + 角色文件类型限制（C 仅客户消息，见 canImport）
+22:     const ctx = await requirePermission(req, { capability: CAPABILITIES.viewCustomerServiceData });
+23: 
+24:     let form: FormData;
+25:     try {
+26:       form = await req.formData();
+27:     } catch {
+28:       return fail(422, "请求须为 multipart/form-data");
+29:     }
+30:     const storeId = String(form.get("store_id") ?? "");
+31:     const dataSourceId = String(form.get("data_source_id") ?? "");
+32:     const sourceKindRaw = String(form.get("source_kind") ?? "");
+33:     const idempotencyKey = form.get("idempotency_key") ? String(form.get("idempotency_key")) : undefined;
+34:     const file = form.get("file");
+35: 
+36:     if (!storeId || !dataSourceId || !sourceKindRaw) {
+37:       return fail(422, "store_id、data_source_id、source_kind 必填");
+38:     }
+39:     if (!isSourceKind(sourceKindRaw)) {
+40:       return fail(422, `source_kind 不支持：${sourceKindRaw}`, {
+41:         fieldErrors: { source_kind: `仅支持 ${SOURCE_KINDS.join("/")}` },
+42:       });
+43:     }
+44:     // 角色文件类型限制（02_USER_ROLES：C 仅客户消息）
+45:     if (!canImport(ctx.role, sourceKindRaw)) {
+46:       return fail(403, "当前角色不能上传该类型文件", { code: "FILE_KIND_FORBIDDEN" });
+47:     }
+48:     if (!(file instanceof File) || file.size === 0) {
+49:       return fail(422, "缺少上传文件 file");
+50:     }
+51: 
+52:     const result = await createImportTaskFromBuffer(
+53:       { db: getPrismaClient(), orgId: ctx.orgId, userId: ctx.userId, role: ctx.role },
+54:       {
+55:         storeId,
+56:         dataSourceId,
+57:         sourceKind: sourceKindRaw,
+58:         filename: file.name || "upload.csv",
+59:         idempotencyKey,
+60:       },
+61:       Readable.fromWeb(file.stream() as Parameters<typeof Readable.fromWeb>[0]),
+62:     );
+63: 
+64:     // 已入库的新任务异步投递校验（复用任务不重复入队）
+65:     if (!result.reused) {
+66:       await enqueueValidate(result.id).catch(() => undefined);
+67:     }
+68:     return ok(
+69:       {
+70:         id: result.id,
+71:         status: result.status,
+72:         file_sha256: result.fileSha256,
+73:         row_count: result.rowCount,
+74:         reused: result.reused,
+75:       },
+76:       { status: result.reused ? 200 : 201 },
+77:     );
+78:   } catch (error) {
+79:     const mapped = serviceFailure(error);
+80:     if (mapped) return mapped;
+
+FILE src/services/imports.ts
+84:   // 有界缓冲：超过 20MB 立即中止读取（超限即停止解析）
+85:   const chunks: Buffer[] = [];
+86:   let bytes = 0;
+87:   await new Promise<void>((resolve, reject) => {
+88:     content.on("data", (chunk: Buffer | string) => {
+89:       const buf = typeof chunk === "string" ? Buffer.from(chunk, "utf8") : chunk;
+90:       bytes += buf.length;
+91:       if (bytes > MAX_UPLOAD_BYTES) {
+92:         content.destroy();
+93:         reject(new AccessError(422, "FILE_TOO_LARGE", `文件超过 ${MAX_UPLOAD_BYTES} 字节上限，已停止接收`));
+94:         return;
+95:       }
+96:       chunks.push(buf);
+97:     });
+98:     content.on("end", () => resolve());
+99:     content.on("error", reject);
+100:   });
+101:   const buffer = Buffer.concat(chunks);
+102: 
+103:   const hash = createHash("sha256").update(buffer).digest("hex");
+104:   const text = buffer.toString("utf8");
+105:   const newlines = (text.match(/\n/g) ?? []).length;
+106:   const dataRowCount = (text.endsWith("\n") ? newlines : newlines + 1) - 1;
+107:   if (dataRowCount > MAX_UPLOAD_ROWS) {
+108:     throw new AccessError(422, "TOO_MANY_ROWS", `数据行超过 ${MAX_UPLOAD_ROWS} 行上限`);
+109:   }
+110: 
+111:   // 幂等：同 store+source+kind+内容哈希 的未失败任务复用（重复请求返回同任务）
+112:   const existing = await ctx.db.importTask.findFirst({
+113:     where: {
+114:       orgId: ctx.orgId,
+115:       storeId: input.storeId,
+116:       dataSourceId: input.dataSourceId,
+117:       sourceKind: input.sourceKind,
+118:       fileSha256: hash,
+119:       status: { notIn: ["failed"] },
+120:     },
+121:     orderBy: { createdAt: "desc" },
+122:     select: { id: true, status: true, fileSha256: true, rowCount: true },
+123:   });
+124:   if (existing) {
+125:     return {
+126:       id: existing.id,
+127:       status: existing.status,
+128:       fileSha256: existing.fileSha256,
+129:       rowCount: existing.rowCount,
+130:       bytes,
+131:       reused: true,
+132:     };
+133:   }
+134: 
+135:   const task = await ctx.db.$transaction(async (tx) => {
+136:     const created = await tx.importTask.create({
+137:       data: {
+138:         orgId: ctx.orgId,
+139:         storeId: input.storeId,
+140:         dataSourceId: input.dataSourceId,
+141:         sourceKind: input.sourceKind,
+142:         status: "uploaded",
+143:         originalFilename: input.filename.slice(0, 255),
+144:         rawObjectKey: "", // 落盘后补
+145:         fileSha256: hash,
+146:         uploadRequestKey: `up-${createHash("sha256").update(`${ctx.orgId}:${hash}:${Date.now()}`).digest("hex").slice(0, 32)}`,
+147:         idempotencyKey: input.idempotencyKey ?? null,
+148:         baseDatasetVersion: 0n,
+149:         rowCount: dataRowCount,
+150:         createdBy: ctx.userId,
+151:       },
+152:     });
+153:     await writeAudit(tx, {
+154:       orgId: ctx.orgId,
+155:       storeId: input.storeId,
+156:       actorUserId: ctx.userId,
+157:       action: "import_upload",
+158:       entityType: "import_task",
+159:       entityId: created.id,
+160:       afterSummary: {
+161:         source_kind: input.sourceKind,
+162:         file_sha256: hash,
+163:         row_count: dataRowCount,
+164:       },
+165:     });
+166:     return created;
+167:   });
+168: 
+169:   const rawKey = `raw/${task.id}/source.csv`;
+170:   await putObject(rawKey, Readable.from(buffer));
+171:   await ctx.db.importTask.update({ where: { id: task.id }, data: { rawObjectKey: rawKey } });
+172: 
+173:   return { id: task.id, status: "uploaded", fileSha256: hash, rowCount: dataRowCount, bytes, reused: false };
+174: }
+175: 
+176: export async function getImportTask(ctx: ImportsContext, taskId: string) {
+177:   const task = await ctx.db.importTask.findFirst({
+178:     where: { orgId: ctx.orgId, id: taskId },
+179:     select: {
+180:       id: true,
+181:       storeId: true,
+182:       dataSourceId: true,
+183:       sourceKind: true,
+
+FILE src/app/api/v1/imports/[id]/route.ts
+1: /**
+2:  * GET /api/v1/imports/{id}（TASK-007）：导入任务查询（状态/计数/版本）。
+3:  */
+4: import type { NextRequest } from "next/server";
+5: import { ok, serviceFailure, internalFailure } from "@/lib/http";
+6: import { getPrismaClient } from "@/database/prisma";
+7: import { CAPABILITIES, requirePermission } from "@/services/access";
+8: import { getImportTask } from "@/services/imports";
+9: 
+10: export const runtime = "nodejs";
+11: 
+12: export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+13:   try {
+14:     const ctx = await requirePermission(req, { capability: CAPABILITIES.manageSettings });
+15:     const { id } = await params;
+16:     const task = await getImportTask({ db: getPrismaClient(), orgId: ctx.orgId, userId: ctx.userId, role: ctx.role }, id);
+17:     return ok(task);
+18:   } catch (error) {
+19:     const mapped = serviceFailure(error);
+20:     if (mapped) return mapped;
+21:     return internalFailure(error);
+22:   }
+23: }
+
+FILE src/app/api/v1/imports/[id]/file/route.ts
+1: /**
+2:  * GET /api/v1/imports/{id}/file?expires=...&signature=...（TASK-007）
+3:  * 私有原文件的签名下载：HMAC（对象键+过期时间）校验 + 会话权限双重门槛；
+4:  * 原始文件只存私有根，绝不经 public 静态路径暴露。
+5:  */
+6: import type { NextRequest } from "next/server";
+7: import { fail, serviceFailure, internalFailure } from "@/lib/http";
+8: import { getPrismaClient } from "@/database/prisma";
+9: import { CAPABILITIES, requirePermission } from "@/services/access";
+10: import { getObjectStream, verifyDownload } from "@/storage";
+11: 
+12: export const runtime = "nodejs";
+13: 
+14: export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+15:   try {
+16:     const ctx = await requirePermission(req, { capability: CAPABILITIES.manageSettings });
+17:     const { id } = await params;
+18:     const db = getPrismaClient();
+19:     const task = await db.importTask.findFirst({
+20:       where: { orgId: ctx.orgId, id },
+21:       select: { rawObjectKey: true, originalFilename: true },
+22:     });
+23:     if (!task || !task.rawObjectKey) {
+24:       return fail(404, "导入任务或其文件不存在");
+25:     }
+26:     const url = new URL(req.url);
+27:     const expires = Number(url.searchParams.get("expires"));
+28:     const signature = url.searchParams.get("signature") ?? "";
+29:     if (!verifyDownload({ key: task.rawObjectKey, expiresAt: expires, signature })) {
+30:       return fail(403, "下载签名无效或已过期");
+31:     }
+32:     const stream = getObjectStream(task.rawObjectKey);
+33:     return new Response(stream as unknown as ReadableStream, {
+34:       status: 200,
+35:       headers: {
+36:         "content-type": "text/csv; charset=utf-8",
+37:         "content-disposition": `attachment; filename="import-${id}.csv"`,
+38:         "cache-control": "private, no-store",
+39:         "x-original-filename": encodeURIComponent(task.originalFilename),
+40:       },
+41:     });
+42:   } catch (error) {
+43:     const mapped = serviceFailure(error);
+44:     if (mapped) return mapped;
+45:     return internalFailure(error);
+46:   }
+47: }
+
+FILE src/jobs/handlers/imports.ts
+15:   taskId: string;
+16: }
+17: 
+18: export async function handleValidateTask(data: ValidateJobData): Promise<{ status: string; valid: number; errors: number }> {
+19:   const db = getPrismaClient();
+20:   const task = await db.importTask.findUnique({ where: { id: data.taskId } });
+21:   if (!task) return { status: "missing", valid: 0, errors: 0 };
+22:   if (task.status !== "uploaded" || !isFileKind(task.sourceKind)) {
+23:     return { status: task.status, valid: 0, errors: 0 };
+24:   }
+25: 
+26:   const store = await db.store.findUniqueOrThrow({
+27:     where: { id: task.storeId },
+28:     select: { externalStoreId: true },
+29:   });
+30: 
+31:   await db.importTask.update({ where: { id: task.id }, data: { status: "validating" } });
+32: 
+33:   const text = await getObjectText(task.rawObjectKey);
+34:   const result = getAdapter("csv").parse(task.sourceKind, { storeExternalId: store.externalStoreId, sourceUpdatedAt: task.createdAt }, text);
+35: 
+36:   const valid = result.records.length;
+37:   const errors = result.errors.length;
+38:   let errorObjectKey: string | null = null;
+39:   if (errors > 0) {
+40:     errorObjectKey = `errors/${task.id}/errors.csv`;
+41:     const header = "row,column,code,message";
+42:     const body = result.errors
+43:       .map((e) => [e.row, e.column ?? "", e.code, `"${String(e.message).replace(/"/g, '""')}"`].join(","))
+44:       .join("\r\n");
+45:     await putObject(errorObjectKey, Readable.from([`${header}\r\n${body}\r\n`]));
+46:   }
+47: 
+48:   const failure = result.errors.find((e) => ["STORE_MISMATCH", "MISSING_COLUMN", "EMPTY_FILE"].includes(e.code));
+49:   await db.importTask.update({
+50:     where: { id: task.id },
+51:     data: {
+52:       status: failure ? "failed" : "preview_ready",
+53:       validCount: valid,
+54:       errorCount: errors,
+55:       errorObjectKey,
+56:       errorCode: failure ? failure.code : null,
+57:       previewVersion: { increment: 1 },
+58:     },
+59:   });
+60:   void randomUUID;
+61:   return { status: failure ? "failed" : "preview_ready", valid, errors };
+62: }
+63: 
+64: /**
+65:  * 提交 handler 边界（TASK-008 实现业务提交；此处仅注册占位并显式拒绝，
+66:  * 防止误用冒充已提交）。
+67:  */
+68: export async function handleCommitTask(_data: { taskId: string }): Promise<never> {
+69:   throw new Error("commit 编排尚未实现：属 TASK-008（预览确认与原子提交）边界");
+70: }
+
+FILE src/storage/index.ts
+15: const gRoot = globalThis as typeof globalThis & { __aieaStorageRoot?: string };
+16: 
+17: /** 私有根目录（进程内单例；测试可用 setStorageRoot 覆盖为临时目录） */
+18: export function storageRoot(): string {
+19:   if (!gRoot.__aieaStorageRoot) {
+20:     const env = loadEnv(["auth"]);
+21:     gRoot.__aieaStorageRoot =
+22:       process.env.STORAGE_PRIVATE_ROOT ?? path.join(process.cwd(), ".data", "private");
+23:     void env;
+24:   }
+25:   return gRoot.__aieaStorageRoot;
+26: }
+27: 
+28: export function setStorageRoot(root: string): void {
+29:   gRoot.__aieaStorageRoot = root;
+30: }
+31: 
+32: /** 对象键 → 绝对路径（拒绝路径遍历；键必须落在私有根内） */
+33: function resolveKey(key: string): string {
+34:   const root = storageRoot();
+35:   const full = path.resolve(root, key);
+36:   if (full !== root && !full.startsWith(root + path.sep)) {
+37:     throw new Error(`非法存储键：${key}`);
+38:   }
+39:   return full;
+40: }
+41: 
+42: function signingKey(): string {
+43:   return loadEnv(["auth"]).auth?.secret ?? "aiea-local-signing";
+44: }
+45: 
+46: function hmac(payload: string): string {
+47:   return createHmac("sha256", signingKey()).update(payload).digest("hex");
+48: }
+49: 
+50: export interface DownloadSignature {
+51:   key: string;
+52:   expiresAt: number;
+53:   signature: string;
+54: }
+55: 
+56: /** 生成签名下载参数（默认 10 分钟有效） */
+57: export function signDownload(key: string, ttlSeconds = 600): DownloadSignature {
+58:   const expiresAt = Date.now() + ttlSeconds * 1000;
+59:   return { key, expiresAt, signature: hmac(`${key}:${expiresAt}`) };
+60: }
+61: 
+62: /** 校验签名（恒时比较；过期无效） */
+63: export function verifyDownload(sig: DownloadSignature): boolean {
+64:   if (typeof sig.expiresAt !== "number" || sig.expiresAt < Date.now()) return false;
+65:   const expected = Buffer.from(hmac(`${sig.key}:${sig.expiresAt}`));
+66:   const got = Buffer.from(String(sig.signature));
+67:   return got.length === expected.length && timingSafeEqual(got, expected);
+68: }
+69: 
+70: export interface PutOptions {
+71:   /** 来源流（如上传文件体）；写入过程由调用方负责限流/计数 */
+72:   content: NodeJS.ReadableStream;
+73: }
+74: 
+75: /** 落盘到私有存储；返回最终键与字节数 */
+76: export async function putObject(key: string, content: NodeJS.ReadableStream): Promise<{ key: string; bytes: number }> {
+77:   if (process.env.STORAGE_DRIVER === "oss") {
+78:     throw new Error("P0 未实现 OSS 存储；请使用 STORAGE_DRIVER=local");
+79:   }
+80:   const full = resolveKey(key);
+81:   await mkdir(path.dirname(full), { recursive: true });
+82:   let bytes = 0;
+83:   content.on("data", (chunk: Buffer | string) => {
+84:     bytes += typeof chunk === "string" ? Buffer.byteLength(chunk) : chunk.length;
+85:   });
+86:   await pipeline(content, createWriteStream(full));
+87:   return { key, bytes };
+88: }
+89: 
+90: /** 读取对象为流（下载/后续解析用） */
+91: export function getObjectStream(key: string): NodeJS.ReadableStream {
+92:   return createReadStream(resolveKey(key));
+93: }
+94: 
+95: /** 读小对象全文（validate handler 用；20MB 上限内） */
+
+FILE compose.yaml
+33:     build: .
+34:     environment: &db-conn
+35:       # M05：与 postgres 服务同一口令变量；应用与 prisma CLI 经 src/lib/dbUrl 组装连接串
+36:       PGHOST: postgres
+37:       PGPORT: "5432"
+38:       PGUSER: aiea
+39:       PGPASSWORD: ${POSTGRES_PASSWORD:-aiea_local_dev}
+40:       PGDATABASE: aiea_dev
+41:       # TASK-003 起启动必需（instrumentation 校验）；从 .env 注入，缺失即拒绝启动
+42:       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required (set it in .env)}
+43:       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+44:       LOG_LEVEL: info
+45:     ports:
+46:       - "127.0.0.1:3000:3000"
+47:     depends_on:
+48:       postgres:
+49:         condition: service_healthy
+50: 
+51:   worker:
+52:     build: .
+53:     command: node dist/jobs/worker.js
+54:     environment:
+55:       # M05：与 web 相同的 PG* 分量（同一口令变量）
+56:       PGHOST: postgres
+57:       PGPORT: "5432"
+58:       PGUSER: aiea
+59:       PGPASSWORD: ${POSTGRES_PASSWORD:-aiea_local_dev}
+60:       PGDATABASE: aiea_dev
+61:       LOG_LEVEL: info
+62:     depends_on:
+63:       postgres:
+64:         condition: service_healthy
+65:     healthcheck:
+66:       test: ["CMD", "node", "dist/jobs/status.js"]
+67:       interval: 10s
+68:       timeout: 5s
+69:       retries: 3
+70:       start_period: 15s
+71: 
+72: volumes:
+73:   pgdata:
+
+FILE .dockerignore
+1: node_modules
+2: .next
+3: dist
+4: .runtime
+5: .postgres
+6: .tools
+7: .env
+8: .env.*
+9: !.env.example
+10: test-results
+11: playwright-report
+12: coverage
+13: .git
+14: *.md
+15: !README.md
+
+FILE Dockerfile
+22: COPY --from=deps /app/src/generated ./src/generated
+23: COPY . .
+24: ENV NEXT_TELEMETRY_DISABLED=1
+25: # 构建阶段不访问数据库也不需要真实认证秘密：
+26: # 占位值仅满足可能触碰的模块级读取；运行时由 compose 注入真实值并强校验
+27: # （认证实例为懒加载，正常构建不会初始化；此处占位是纵深防御）
+28: ENV DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:5432/placeholder
+29: ENV BETTER_AUTH_SECRET=build-time-placeholder-not-a-secret
+30: ENV BETTER_AUTH_URL=http://localhost:3000
+31: RUN pnpm build
+32: 
+33: FROM node:24.21.0-bookworm-slim AS runner
+34: WORKDIR /app
+35: RUN corepack enable
+36: ENV NODE_ENV=production
+37: ENV NEXT_TELEMETRY_DISABLED=1
+38: COPY --from=build /app ./
+39: EXPOSE 3000
+40: # Web 默认入口直接以 node 启动，避免运行时经 corepack/pnpm 触发网络解析；
+41: # Worker 服务以 command: node dist/jobs/worker.js 覆盖
+42: # 运行时必需的 BETTER_AUTH_SECRET/BETTER_AUTH_URL/DATABASE_URL 由 compose 注入（见 compose.yaml）
+43: CMD ["node", "node_modules/next/dist/bin/next", "start"]

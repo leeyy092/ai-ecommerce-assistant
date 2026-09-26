@@ -1,0 +1,15 @@
+(node:92069) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+401 !== 201
+
+    at main (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/review-http.ts:37:174)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 401,
+  expected: 201,
+  operator: 'strictEqual',
+  diff: 'simple'
+}

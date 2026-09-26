@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Compose init-owner bundle login",
+    "expected": 200,
+    "actual": 200,
+    "status": "PASS"
+  },
+  {
+    "name": "Compose upload 201",
+    "expected": 201,
+    "actual": 201,
+    "status": "PASS"
+  },
+  {
+    "name": "Compose Worker consumes shared raw file",
+    "expected": "preview_ready",
+    "actual": "preview_ready",
+    "status": "PASS"
+  },
+  {
+    "name": "Compose signed download exact content",
+    "expected": [
+      200,
+      true
+    ],
+    "actual": [
+      200,
+      true
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "Compose restart readback query and file",
+    "expected": [
+      200,
+      "preview_ready",
+      200,
+      true
+    ],
+    "actual": [
+      200,
+      "preview_ready",
+      200,
+      true
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "Compose synthetic file content hash",
+    "sha256": "7db4c9f86d0a2ae1e17288ef2e321c50225ffcf333f832bd0696801e1c3f4b9a",
+    "taskId": "1cd5199d-66a4-492b-b464-74cf67a6ce2e",
+    "storeId": "aaedd03a-8ba4-4aab-87a5-df795afcf336"
+  }
+]

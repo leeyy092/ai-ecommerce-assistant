@@ -1,0 +1,12 @@
+-rw-r--r-- 1 root root 44 Sep 26 14:10 /etc/resolv.conf
+nameserver 192.168.101.1
+nameserver 8.8.8.8
+{
+  "exec-opts": [
+    "native.cgroupdriver=cgroupfs"
+  ],
+  "features": {
+    "buildkit": true,
+    "containerd-snapshotter": true
+  }
+}

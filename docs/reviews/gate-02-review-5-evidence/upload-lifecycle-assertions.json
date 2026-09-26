@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Completed file before later multipart valid-tail",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 1,
+      "health": 200
+    },
+    "actual": {
+      "status": 201,
+      "hadSpoolBeforeTermination": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 1,
+      "health": 200
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "Completed file before later multipart truncated-tail",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "actual": {
+      "status": 400,
+      "code": "UPLOAD_INTERRUPTED",
+      "hadSpoolBeforeTermination": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "Completed file before later multipart socket-abort",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "actual": {
+      "aborted": true,
+      "hadSpoolBeforeTermination": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "status": "PASS"
+  }
+]

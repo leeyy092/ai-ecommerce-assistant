@@ -1,0 +1,74 @@
+[
+  {
+    "name": "actual web image build exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "actual worker image build exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "private .data canary excluded",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "compose up exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "web health",
+    "expected": 200,
+    "actual": 200,
+    "status": "PASS"
+  },
+  {
+    "name": "official migrations exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "container init-owner exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "container login",
+    "expected": 200,
+    "actual": 200,
+    "status": "PASS"
+  },
+  {
+    "name": "container create store",
+    "expected": 201,
+    "actual": 401,
+    "status": "FAIL"
+  },
+  {
+    "name": "own containers cleaned",
+    "expected": "",
+    "actual": "",
+    "status": "PASS"
+  },
+  {
+    "name": "own volumes cleaned",
+    "expected": "",
+    "actual": "",
+    "status": "PASS"
+  },
+  {
+    "name": "own networks cleaned",
+    "expected": "",
+    "actual": "",
+    "status": "PASS"
+  }
+]

@@ -1,0 +1,120 @@
+{
+  "time": "2026-09-15T19:59:58.232644+08:00",
+  "head": "ce5f28699910e19310b790d31a6e8871a78b5e58",
+  "main": "4c7e95b925c2b04aa2c1116979678cac7af091f2",
+  "review": "FAIL",
+  "task_results": {
+    "TASK-005": "FAIL",
+    "TASK-006": "FAIL",
+    "TASK-007": "FAIL"
+  },
+  "severity_counts": {
+    "CRITICAL": 0,
+    "HIGH": 9,
+    "MEDIUM": 4,
+    "LOW": 2
+  },
+  "sync": {
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-15T19:59:58+08:00"
+  },
+  "readback": {
+    "project_markdown": {
+      "TASK-007": true,
+      "待修复": true,
+      "ZCode": true,
+      "GATE_02 FAIL": true,
+      "full_prompt_exact": true
+    },
+    "project_html": {
+      "TASK-007": true,
+      "待修复": true,
+      "ZCode": true,
+      "GATE_02 FAIL": true,
+      "full_prompt_exact": true
+    },
+    "control_center": {
+      "TASK-007": true,
+      "待修复": true,
+      "ZCode": true,
+      "GATE_02 FAIL": true
+    }
+  },
+  "tracked_file_count": 562,
+  "changed_tracked_files": [
+    "00_START_HERE.html",
+    "00_START_HERE.md",
+    "CODEX_REVIEW_HANDOFF.md",
+    "docs/ai-ecommerce-assistant/12_PROGRESS.md",
+    "prompts/P07_CODE_REVIEW.md",
+    "prompts/P08_FIX.md"
+  ],
+  "application_changed_files": [],
+  "old_review_evidence_changed_files": [],
+  "historical_handoff_and_prompts_preserved": true,
+  "initial_uncommitted_note_preserved": true,
+  "task_rows": 30,
+  "task_states": {
+    "TASK-001": "DONE",
+    "TASK-002": "DONE",
+    "TASK-003": "DONE",
+    "TASK-004": "DONE",
+    "TASK-005": "BLOCKED",
+    "TASK-006": "BLOCKED",
+    "TASK-007": "BLOCKED",
+    "TASK-008": "TODO",
+    "TASK-009": "TODO",
+    "TASK-010": "TODO",
+    "TASK-011": "TODO",
+    "TASK-012": "TODO",
+    "TASK-013": "TODO",
+    "TASK-014": "TODO",
+    "TASK-015": "TODO",
+    "TASK-016": "TODO",
+    "TASK-017": "TODO",
+    "TASK-018": "TODO",
+    "TASK-019": "TODO",
+    "TASK-020": "TODO",
+    "TASK-021": "TODO",
+    "TASK-022": "TODO",
+    "TASK-023": "TODO",
+    "TASK-024": "TODO",
+    "TASK-025": "TODO",
+    "TASK-026": "TODO",
+    "TASK-027": "TODO",
+    "TASK-028": "TODO",
+    "TASK-029": "TODO",
+    "TASK-030": "TODO"
+  },
+  "unique_state_block": true,
+  "report_sections": 15,
+  "diff_check_exit": 0,
+  "cleanup": {
+    "web_process_group_stopped": 91773,
+    "pg_stop_exit": 0,
+    "baseline_private_storage_removed": [
+      "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-wYwbaZ"
+    ],
+    "ports_released": {
+      "55572": true,
+      "3322": true,
+      "3000": true
+    },
+    "temporary_workcopy_removal": "complete",
+    "temporary_workcopy_removed": "/tmp/aiea-g2-review-h99ruviq",
+    "private_credentials_and_cookies_removed": true,
+    "completed_at": "2026-09-15T20:01:42.405222+08:00"
+  },
+  "owner_phase2_release": false,
+  "business_code_modified": false,
+  "committed": false,
+  "pushed": false,
+  "merged_main": false,
+  "deployed": false,
+  "task008_started": false,
+  "initial_uncommitted_added_nonempty_lines": 1,
+  "report_links_resolve": true,
+  "machine_index_hashes_verified": true
+}

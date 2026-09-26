@@ -1,0 +1,16 @@
+{"level":30,"time":1789472481837,"service":"worker","msg":"worker 启动中：开始 PostgreSQL 连通检查"}
+{"level":30,"time":1789472481845,"service":"worker","msg":"worker 运行中：数据库连接正常，心跳间隔 5000ms"}
+{"level":30,"time":1789472481883,"service":"worker","msg":"pg-boss 队列就绪：import-validate / import-commit"}
+{"level":40,"time":1789472481885,"service":"worker","job_id":"f3ab3fe7-18a7-49bf-8d5a-fb7983ae2821","task":{"taskId":"b0fb8826-5ae0-4cb4-8a2f-84442b3de40f"},"msg":"import-commit 边界被触发（TASK-008 实现前不应入队）"}
+{"level":30,"time":1789472481893,"service":"worker","job_id":"b52b06dd-c7c9-49e1-b42c-0de524b09fdd","task":{"taskId":"b0fb8826-5ae0-4cb4-8a2f-84442b3de40f"},"msg":"import-validate 开始"}
+(node:92563) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"level":30,"time":1789472482026,"service":"worker","job_id":"b52b06dd-c7c9-49e1-b42c-0de524b09fdd","status":"preview_ready","valid":2,"errors":0,"msg":"import-validate 完成"}
+{"level":30,"time":1789472483887,"service":"worker","job_id":"ac09cca9-1e70-42b0-a591-46aa9b899db5","task":{"taskId":"6d3f0d09-e10c-4c0b-a0f3-ce6b6d6b1230"},"msg":"import-validate 开始"}
+{"level":30,"time":1789472483904,"service":"worker","job_id":"ac09cca9-1e70-42b0-a591-46aa9b899db5","status":"failed","valid":0,"errors":1,"msg":"import-validate 完成"}
+{"level":30,"time":1789472485887,"service":"worker","job_id":"77254383-3be6-4710-87a9-deecbb763fec","task":{"taskId":"322fb2ec-7216-4f10-baf1-d739885376db"},"msg":"import-validate 开始"}
+{"level":30,"time":1789472487889,"service":"worker","job_id":"3d5901df-3a2f-4a46-8a13-a567b8d4cc48","task":{"taskId":"da53cc34-9dbd-4030-9bb5-66d44555e362"},"msg":"import-validate 开始"}
+{"level":30,"time":1789472487898,"service":"worker","job_id":"3d5901df-3a2f-4a46-8a13-a567b8d4cc48","status":"preview_ready","valid":2,"errors":0,"msg":"import-validate 完成"}
+{"level":30,"time":1789472491889,"service":"worker","job_id":"77254383-3be6-4710-87a9-deecbb763fec","task":{"taskId":"322fb2ec-7216-4f10-baf1-d739885376db"},"msg":"import-validate 开始"}
+{"level":30,"time":1789472491891,"service":"worker","job_id":"77254383-3be6-4710-87a9-deecbb763fec","status":"validating","valid":0,"errors":0,"msg":"import-validate 完成"}
+{"level":30,"time":1789472492301,"service":"worker","signal":"SIGTERM","msg":"worker 收到退出信号，正在停止"}

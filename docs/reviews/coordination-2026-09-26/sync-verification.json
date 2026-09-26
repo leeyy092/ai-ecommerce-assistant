@@ -1,0 +1,36 @@
+{
+  "verified_at": "2026-09-26T13:06:01+08:00",
+  "sync": {
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-26T13:05:12+08:00"
+  },
+  "views": {
+    "/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.md": {
+      "TASK-007": true,
+      "ZCode": true,
+      "P08": true,
+      "G2R3-20260926-01": true,
+      "actual_P08_text_present": true
+    },
+    "/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.html": {
+      "TASK-007": true,
+      "ZCode": true,
+      "P08": true,
+      "G2R3-20260926-01": true,
+      "actual_P08_text_present": true
+    },
+    "/Users/yuyuyu/Documents/AI-Workspace/00_CONTROL_CENTER/PROJECTS.md": {
+      "TASK-007": true,
+      "ZCode": true,
+      "P08": true,
+      "G2R3-20260926-01": true
+    }
+  },
+  "single_progress_state_block": true,
+  "business_diff_from_baseline": "",
+  "git_diff_check_exit": 0,
+  "business_tests": "not run; coordination/admin only",
+  "validation_note": "Initial literal prompts/P08_FIX.md search was unsuitable: generated pages embed the prompt content. Corrected check compares actual P08 first text block; all passed."
+}

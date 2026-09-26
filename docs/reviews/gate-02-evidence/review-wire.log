@@ -1,0 +1,1 @@
+{"file_bytes_sent":22020096,"response_before_multipart_end":false,"total_file_bytes_sent":23068672,"result":{"status":422,"body":{"error":{"code":"FILE_TOO_LARGE","message":"文件超过 20971520 字节上限，已停止接收","retryable":false,"request_id":"d8b46aa8-dba4-40bf-bb41-c7e51ee71561"}}}}

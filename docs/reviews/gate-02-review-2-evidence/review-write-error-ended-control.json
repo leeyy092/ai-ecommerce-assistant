@@ -1,0 +1,11 @@
+{
+  "name": "review-write-error",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-write-error.ts"
+  ],
+  "exit": 0,
+  "seconds": 1.27
+}

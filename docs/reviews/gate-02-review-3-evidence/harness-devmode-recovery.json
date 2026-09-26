@@ -1,0 +1,11 @@
+{
+  "name": "recovery-probes",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-recovery.ts"
+  ],
+  "exit": 1,
+  "seconds": 0.65
+}

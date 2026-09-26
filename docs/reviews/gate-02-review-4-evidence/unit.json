@@ -1,0 +1,9 @@
+{
+  "name": "unit",
+  "args": [
+    "pnpm",
+    "test"
+  ],
+  "exit": 0,
+  "seconds": 7.75
+}

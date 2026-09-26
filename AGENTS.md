@@ -15,6 +15,7 @@
 
 ## 开发与阶段审查
 
+- Owner于2026-09-26重申防跑偏：执行`FINAL_DECISIONS.md`第6/7节及`docs/STATE_PROTOCOL.md`“范围核对与停止规则”。每项开发/修复先对应已定稿合同与验收；发现偏离或重大范围疑义，立即停止当前开发/返修及后续派发，交Owner决定。该约束同时适用于Codex审查要求和ZCode实现。
 - 保持现有 P0 范围、技术栈、原文档路径与 TASK 编号。不要为了接入 Product OS 重命名业务文件或建立第二份进度。
 - 沿用 `PHASE_PLAN.md`：一次只推进一个 TASK；已授权的 Phase 内在 Checkpoint=NO 时按依赖顺序推进，每项单独检查、记录。阶段末停止开发，等待 Codex Review 与用户放行。不套用模板中“每个 TASK 都审查”的默认规则。
 - Phase 1 为 TASK-001–004；TASK-004 完成后触发 `CODEX_REVIEW_GATE_01`，状态 `CODEX_REVIEW_REQUIRED`，Checkpoint=YES，下一工具 Codex；不能直接进入 TASK-005。

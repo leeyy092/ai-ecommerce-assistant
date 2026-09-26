@@ -1,0 +1,11 @@
+{
+  "name": "review-adapter",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-adapter.ts"
+  ],
+  "exit": 0,
+  "seconds": 0.55
+}

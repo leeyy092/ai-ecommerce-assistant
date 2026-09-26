@@ -1,0 +1,27 @@
+{
+  "head": {
+    "exit": 0,
+    "stdout": "a4652611e29d3e316de7f41bf46550fe02a64c2d\n",
+    "stderr": ""
+  },
+  "branch": {
+    "exit": 0,
+    "stdout": "phase/02-data-ingestion\n",
+    "stderr": ""
+  },
+  "business_uncommitted": {
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "business_after_candidate": {
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "schema_since_baseline": {
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+}

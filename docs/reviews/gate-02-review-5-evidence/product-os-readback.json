@@ -1,0 +1,23 @@
+{
+  "at": "2026-09-26T16:14:30.381502+08:00",
+  "checks": {
+    "md_task": true,
+    "md_owner": true,
+    "md_pass": true,
+    "md_checkpoint": true,
+    "md_prompt": true,
+    "html_task": true,
+    "html_owner": true,
+    "html_pass": true,
+    "html_prompt": true,
+    "control_task": true,
+    "control_owner": true,
+    "control_pass": true
+  },
+  "all_pass": true,
+  "files": {
+    "/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.md": "8eb16eec92f5c1a9f658022254e7ed1a8e15d686784f928035b39cd4ef73205d",
+    "/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.html": "8b488ec33217ec0b777f08e2d96f1f45f770e66b29bca69217cf243519af46ef",
+    "/Users/yuyuyu/Documents/AI-Workspace/00_CONTROL_CENTER/PROJECTS.md": "d4f7ee4aa7e4e5e1b1a5552c07006237aff85374c77840e99ff39e44f67e7295"
+  }
+}

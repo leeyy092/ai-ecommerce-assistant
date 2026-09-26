@@ -1,0 +1,12 @@
+{
+  "web_pid_terminated": 44282,
+  "pg_stop_exit": 0,
+  "unit_owned_temp_dirs_removed": [
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-7Eb20p",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-after-dpeuEM",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-after-82Jpgb",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-after-qscaFG",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-ZXQmJZ",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-SxhOeE"
+  ]
+}

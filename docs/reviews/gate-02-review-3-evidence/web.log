@@ -1,0 +1,30 @@
+
+> ai-ecommerce-assistant@0.1.0 start /private/tmp/gate02-review3-20260925-8_hqanp6/ai-ecommerce-assistant
+> next start
+
+▲ Next.js 16.3.5
+- Local:         http://localhost:64486
+- Network:       http://192.168.101.10:64486
+✓ Ready in 121ms
+✓ Running next.config.ts took 27ms
+(node:21310) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[internal] request_id=2d26bfdd-964b-4779-bc81-9a18a3cc76c3 
+Invalid `prisma.httpIdempotency.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "http_idempotency" violates check constraint "reviewer_fail_ledger"`
+[internal] request_id=0328572f-4832-48b2-8524-2524193b5950 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_cas_audit_fail"`
+Error: aborted
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
+⨯ uncaughtException:  Error: aborted
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
+ ELIFECYCLE  Command failed with exit code 143.

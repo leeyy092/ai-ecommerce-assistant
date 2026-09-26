@@ -1,0 +1,137 @@
+{
+  "normal": {
+    "id": "b0fb8826-5ae0-4cb4-8a2f-84442b3de40f",
+    "status": "preview_ready",
+    "valid": 2,
+    "errors": 0,
+    "error_code": null,
+    "error_key": null,
+    "queue": [
+      {
+        "state": "failed",
+        "retry_count": 0,
+        "output": {
+          "name": "Error",
+          "stack": "Error: commit 编排尚未实现：属 TASK-008（预览确认与原子提交）边界\n    at handleCommitTask (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/dist/jobs/worker.js:69031:9)\n    at /private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/dist/jobs/worker.js:69154:15\n    at #processJobs (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54658:77)\n    at Worker.onFetch (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54938:38)\n    at Worker.run (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54091:26)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+          "message": "commit 编排尚未实现：属 TASK-008（预览确认与原子提交）边界"
+        }
+      },
+      {
+        "state": "completed",
+        "retry_count": 0,
+        "output": {
+          "value": [
+            {
+              "valid": 2,
+              "errors": 0,
+              "status": "preview_ready"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "invalid_header": {
+    "id": "6d3f0d09-e10c-4c0b-a0f3-ce6b6d6b1230",
+    "status": "failed",
+    "valid": 0,
+    "errors": 1,
+    "error_code": "MISSING_COLUMN",
+    "error_key": "errors/6d3f0d09-e10c-4c0b-a0f3-ce6b6d6b1230/errors.csv",
+    "queue": [
+      {
+        "state": "completed",
+        "retry_count": 0,
+        "output": {
+          "value": [
+            {
+              "valid": 0,
+              "errors": 1,
+              "status": "failed"
+            }
+          ]
+        }
+      }
+    ],
+    "private_error_csv": "row,column,code,message\r\n1,store_external_id,MISSING_COLUMN,\"缺少必需列 store_external_id\"\r\n"
+  },
+  "transient_file_failure": {
+    "id": "322fb2ec-7216-4f10-baf1-d739885376db",
+    "status": "validating",
+    "valid": 0,
+    "errors": 0,
+    "error_code": null,
+    "error_key": null,
+    "queue": [
+      {
+        "state": "completed",
+        "retry_count": 1,
+        "output": {
+          "value": [
+            {
+              "valid": 0,
+              "errors": 0,
+              "status": "validating"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "revoked_before_execute": {
+    "id": "da53cc34-9dbd-4030-9bb5-66d44555e362",
+    "status": "preview_ready",
+    "valid": 2,
+    "errors": 0,
+    "error_code": null,
+    "error_key": null,
+    "queue": [
+      {
+        "state": "completed",
+        "retry_count": 0,
+        "output": {
+          "value": [
+            {
+              "valid": 2,
+              "errors": 0,
+              "status": "preview_ready"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "commit_boundary": [
+    {
+      "state": "failed",
+      "output": {
+        "name": "Error",
+        "stack": "Error: commit 编排尚未实现：属 TASK-008（预览确认与原子提交）边界\n    at handleCommitTask (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/dist/jobs/worker.js:69031:9)\n    at /private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/dist/jobs/worker.js:69154:15\n    at #processJobs (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54658:77)\n    at Worker.onFetch (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54938:38)\n    at Worker.run (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54091:26)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+        "message": "commit 编排尚未实现：属 TASK-008（预览确认与原子提交）边界"
+      }
+    }
+  ],
+  "compose_environment": {
+    "id": "eab70e72-4b3b-49ee-9606-15b8dcabe8e7",
+    "status": "validating",
+    "valid": 0,
+    "errors": 0,
+    "error_code": null,
+    "error_key": null,
+    "queue": [
+      {
+        "state": "completed",
+        "retry_count": 1,
+        "output": {
+          "value": [
+            {
+              "valid": 0,
+              "errors": 0,
+              "status": "validating"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

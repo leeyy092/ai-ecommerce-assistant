@@ -1,0 +1,11 @@
+{
+  "name": "preservation",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "exec",
+    "tsx",
+    "review-preservation.ts"
+  ],
+  "exit": 0,
+  "seconds": 0.72
+}

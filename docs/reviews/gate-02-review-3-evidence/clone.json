@@ -1,0 +1,15 @@
+{
+  "command": [
+    "git",
+    "clone",
+    "--depth",
+    "40",
+    "--single-branch",
+    "--branch",
+    "phase/02-data-ingestion",
+    "ssh://github.com/leeyy092/ai-ecommerce-assistant.git",
+    "/tmp/gate02-review3-20260925-8_hqanp6/git-source"
+  ],
+  "exit": 128,
+  "reason": "local git archive exceeded 90s; remote clone to non-iCloud /tmp"
+}

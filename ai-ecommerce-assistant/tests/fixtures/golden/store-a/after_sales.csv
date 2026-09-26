@@ -1,0 +1,6 @@
+store_external_id,source_updated_at,record_type,external_record_id,external_order_id,external_order_item_id,related_case_id,occurred_at,status,completed_at,refund_amount,refunded_quantity_cumulative,currency,reason_code,reason_text
+XM-DEMO-A,2026-09-11T09:00:00+08:00,case,AS1,O1,L1,,2026-09-02T09:00:00+08:00,closed,,,,,quality,
+XM-DEMO-A,2026-09-11T09:00:00+08:00,refund,RF1,O1,L1,AS1,2026-09-03T10:00:00+08:00,succeeded,2026-09-03T10:00:00+08:00,25.000000,1,CNY,quality,
+XM-DEMO-A,2026-09-11T09:00:00+08:00,refund,RF2,O1,L1,AS1,2026-09-04T10:00:00+08:00,succeeded,2026-09-04T10:00:00+08:00,25.000000,1,CNY,quality,
+XM-DEMO-A,2026-09-11T09:00:00+08:00,refund,RF3,O1,L2,,2026-09-04T11:00:00+08:00,succeeded,2026-09-04T11:00:00+08:00,60.000000,1,CNY,wrong_item,
+XM-DEMO-A,2026-09-11T09:00:00+08:00,refund,RF4,O2,L1,,2026-09-09T11:00:00+08:00,succeeded,2026-09-09T11:00:00+08:00,10.000000,0,CNY,other,

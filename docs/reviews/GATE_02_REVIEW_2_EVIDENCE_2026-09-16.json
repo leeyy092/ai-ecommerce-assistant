@@ -1,0 +1,1144 @@
+{
+  "schemaVersion": 1,
+  "gate": "CODEX_REVIEW_GATE_02",
+  "review": "REVIEW_2",
+  "date": "2026-09-16",
+  "decision": "FAIL",
+  "scope": {
+    "base": "ce5f28699910e19310b790d31a6e8871a78b5e58",
+    "head": "072f9ba7cebe523832a739b3b3f19fcb1b305c2f",
+    "business": "b2fa10fa7dd8a8448bcac8f9064a520faeb59cfd",
+    "main": "4c7e95b925c2b04aa2c1116979678cac7af091f2",
+    "tasks": [
+      "TASK-005",
+      "TASK-006",
+      "TASK-007"
+    ]
+  },
+  "findings": {
+    "HIGH": [
+      "G2-H03",
+      "G2-H04",
+      "G2-H05",
+      "G2-H06",
+      "G2-H07",
+      "G2-H08"
+    ],
+    "MEDIUM": [
+      "G2-M04",
+      "G2-M05"
+    ],
+    "CRITICAL": [],
+    "LOW": [],
+    "closed": [
+      "G2-H02",
+      "G2-H09",
+      "G2-M01",
+      "G2-M02",
+      "G2-M03",
+      "G2-L01",
+      "G2-L02"
+    ],
+    "partialClosed": {
+      "G2-H01": "Original HIGH confidentiality/counting risk closed; missing default90day window now G2-M05"
+    }
+  },
+  "assertionSummary": {
+    "PASS": 58,
+    "FAIL": 17
+  },
+  "independentAssertions": [
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 A/products CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 A/orders CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 A/order_items CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 A/ads CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 A/customer_messages CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 A/after_sales CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 B/products CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 B/orders CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 B/order_items CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 B/ads CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 B/customer_messages CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 B/after_sales CSV normative oracle",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 numeric 20,6 upper boundary",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 unsafe integer refused",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 timestamp invalid 2026-02-30T00:00:00Z",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 timestamp invalid 2026-09-01T00:00:00",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 timestamp invalid 09/01/26",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 timestamp invalid 2026-09-01T00:00:00+24:00",
+      "status": "FAIL"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 timestamp invalid 2026-09-01T00:00:00+08:99",
+      "status": "FAIL"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 source time missing no invented value",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 optional columns may be omitted",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 blank required enum rejected",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 duplicate header refused",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 unclosed quote refused",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H03 STORE_MISMATCH whole file rejection",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 complaint normative distinction",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 independent explicit zeros match case refund dates",
+      "status": "PASS"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 coverage channel matches data contract enum default/case/refund",
+      "status": "FAIL"
+    },
+    {
+      "file": "adapter-assertions.json",
+      "name": "H04 batch metadata stable",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "M01 normal entity_type and response fields",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H07 sequential content reuse",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H05 current role query matrix",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H05 L02 signed download and isolation",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H01 effective coverage role projection",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H01 date validation and exclusive end",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H02 row lock concurrent CAS",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "M02 concurrent name uniqueness",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H07 concurrent same bytes one task",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H07 ordinary HTTP replay and conflict",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H07 reusable content binds a new HTTP key",
+      "status": "FAIL"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H07 key isolation across users",
+      "status": "FAIL"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H07 expiration allows a new request after 24h",
+      "status": "FAIL"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H08 HTTP ledger failure cannot report unprotected success",
+      "status": "FAIL"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H06 rejected type cleans spool",
+      "status": "FAIL"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H06 forbidden role cleans spool",
+      "status": "FAIL"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "M03 strict UTF8",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H06 quoted newline logical count",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H06 blank-line CSV cannot bypass 100000 rows",
+      "status": "FAIL"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "H05 revoked session query and download",
+      "status": "PASS"
+    },
+    {
+      "file": "http-assertions.json",
+      "name": "M03 default rate bucket enforces 20 per minute",
+      "status": "PASS"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "H08 built Worker normal parse",
+      "status": "PASS"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "H05 disabled Membership rejected",
+      "status": "PASS"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "H05 downgrade rejected",
+      "status": "PASS"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "H05 disabled global user rejected",
+      "status": "FAIL"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "H08 missing source terminal",
+      "status": "PASS"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "H08 malformed header private errors",
+      "status": "PASS"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "H08 terminal replay keeps preview version",
+      "status": "PASS"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "H08 dispatcher lost dispatch reaches ready",
+      "status": "PASS"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "H08 interrupted validation finalizes",
+      "status": "PASS"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "H08 retry exhausted immediately finalizes task",
+      "status": "FAIL"
+    },
+    {
+      "file": "worker-assertions.json",
+      "name": "commit explicitly refused no fact writes",
+      "status": "PASS"
+    },
+    {
+      "file": "recovery-assertions.json",
+      "name": "H07 H08 concurrent long HTTP key conflict must not commit an objectless second task",
+      "status": "FAIL"
+    },
+    {
+      "file": "oss-assertions.json",
+      "name": "M04 isolated object adapter put/get/move works",
+      "status": "PASS"
+    },
+    {
+      "file": "oss-assertions.json",
+      "name": "M04 actual spool then strict read works with OSS",
+      "status": "FAIL"
+    },
+    {
+      "file": "oss-assertions.json",
+      "name": "M04 failed upload cleanup removes local temporary object",
+      "status": "FAIL"
+    },
+    {
+      "file": "extra-assertions.json",
+      "name": "H02 audit failure rolls back CAS update",
+      "status": "PASS"
+    },
+    {
+      "file": "extra-assertions.json",
+      "name": "H01 omitted date bounds still obey 90 day maximum",
+      "status": "FAIL"
+    },
+    {
+      "file": "wire-longwait-assertions.json",
+      "name": "H06 true HTTP incomplete multipart byte boundary",
+      "status": "PASS"
+    },
+    {
+      "file": "wire-longwait-assertions.json",
+      "name": "H06 true HTTP incomplete multipart record boundary",
+      "status": "PASS"
+    },
+    {
+      "file": "compose-assertions.json",
+      "name": "Compose init-owner bundle login",
+      "status": "PASS"
+    },
+    {
+      "file": "compose-assertions.json",
+      "name": "Compose upload 201",
+      "status": "PASS"
+    },
+    {
+      "file": "compose-assertions.json",
+      "name": "Compose Worker consumes shared raw file",
+      "status": "PASS"
+    },
+    {
+      "file": "compose-assertions.json",
+      "name": "Compose signed download exact content",
+      "status": "PASS"
+    },
+    {
+      "file": "compose-assertions.json",
+      "name": "Compose restart readback query and file",
+      "status": "PASS"
+    },
+    {
+      "file": "write-error-assertions.json",
+      "name": "H08 write stream EACCES with open input handled without process crash",
+      "status": "FAIL"
+    }
+  ],
+  "originalSuites": {
+    "typecheck": "PASS",
+    "unit": "67/67 PASS",
+    "integration": "97/97 PASS",
+    "build": "web/worker/scripts exit0",
+    "e2e": "8/8 PASS",
+    "emptyDbMigrations": "12 PASS",
+    "oldSchemaUpgrade": "10 to 12 PASS, empty business data",
+    "migrateDiff": "M07 only, not applied",
+    "dockerComposeFileChain": "PASS"
+  },
+  "notRun": {
+    "realOssCloud": "No cloud account/resources; constrained defer to before TASK029/deployment; local OSS pipeline still FAIL"
+  },
+  "ownerPhaseRelease": false,
+  "mergedMain": false,
+  "deployed": false,
+  "businessCodeChanged": false,
+  "evidenceDirectory": "gate-02-review-2-evidence",
+  "report": "CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md",
+  "files": {
+    "review-extra-enum-setup.json": {
+      "sha256": "15e3c543f5cfaea35cfa148ba51213374bd2d87fabae54847bce5bd70a7bbdfb",
+      "bytes": 134
+    },
+    "review-worker.json": {
+      "sha256": "9621a2a1b2cb703e9acd7df54e965d6155a6c9178fe6890e54c50b776e6db0b0",
+      "bytes": 136
+    },
+    "compose-restart.log": {
+      "sha256": "78b7fada1f338fc493cf4ff76a0a78aae343f28ef99897c69569a77ad7b12f1f",
+      "bytes": 184
+    },
+    "review-wire-longwait.json": {
+      "sha256": "4337d5ce7f1035e1c0ed7e310ed35a394b989eea694a5a2eadff1d298ff92180",
+      "bytes": 141
+    },
+    "product-os-sync-final.json": {
+      "sha256": "d45234f6a084bddb061a998f708a360f46316cbba101b8cee1c5c3b043df8747",
+      "bytes": 159
+    },
+    "migrate-upgrade-ten-to-twelve.log": {
+      "sha256": "44bb8c31257d31fc72d04d3d03b7ef40610815700c44df46534e9f24484448f9",
+      "bytes": 606
+    },
+    "pg-start.log": {
+      "sha256": "66afd0411ccc09366e99fdd99b85f21899c8d2d064f5835126859618802153ad",
+      "bytes": 52
+    },
+    "review-http.json": {
+      "sha256": "dac8336afa4768ec0ed3aaa7341da9a610e5ec7cb34e8e4f4bcc2cc4c5869f50",
+      "bytes": 132
+    },
+    "docker-pg-legacy-build.json": {
+      "sha256": "7990c4914c5b29809831548adc11694eba7933570f0d456bc821f39a3c390979",
+      "bytes": 124
+    },
+    "coverage-default-response.json": {
+      "sha256": "9321b56b1069b77af22f2e64e812c5c638906c1861103a86dfa1eacbdf8f4b7d",
+      "bytes": 1869
+    },
+    "docker-build-legacy.log": {
+      "sha256": "5b53b2d64b33ab7ae2d6080cc63c06b2addbe243c66bbf37ac4de3c45c6556d7",
+      "bytes": 13281
+    },
+    "review-wire-longwait.log": {
+      "sha256": "ba889585b630f3bea16204c4ac71dfbb067f18dc8d5c4a43047442c81d582f1c",
+      "bytes": 587
+    },
+    "review-compose-ready-setup.log": {
+      "sha256": "41ed8ac3f8ec5a39bd44597d9abc6a85e1fd78503253dec5bec0bfc42ef9a454",
+      "bytes": 695
+    },
+    "migrate-repeat.log": {
+      "sha256": "2ddebdb0d9a354534157db21691c02f5e386b7a7589a8b830f71fc85a19eb3a1",
+      "bytes": 261
+    },
+    "review-write-error-ended-control.log": {
+      "sha256": "3bf6c62d93ca3e28fdf46c8da18bd5972cc5c8227ab215404e2c95c8961b4735",
+      "bytes": 31
+    },
+    "docker-canary.json": {
+      "sha256": "3b4760a09009c0069187f7a59a34604065d71589004e2ae84e311435bd8e0267",
+      "bytes": 350
+    },
+    "review-oss.log": {
+      "sha256": "b8857d9038a4cd02b32b1bba1e23837041535ee9b3b1cf995e73ce8a31f630f8",
+      "bytes": 500
+    },
+    "P08_FIX.md.before": {
+      "sha256": "acb6fb2586a6d037b8f6a38baffd369190a2d8a470d22fe7b448d2a468b59c53",
+      "bytes": 30209
+    },
+    "management-diff.patch": {
+      "sha256": "fb708c8e544d346eab55ec96d8b1e0874a4f5c7bd60c9d3832b5d64ec2c850be",
+      "bytes": 87375
+    },
+    "review-compose-login-setup.json": {
+      "sha256": "c7f23fb595389637213c76e7603bdc30f7db42a34a10ee9e3024ae1f2b6a9e35",
+      "bytes": 148
+    },
+    "fix-diff.patch": {
+      "sha256": "5da9d9e8e9d491ff5b877d5d513977a7453159c2a290b6e7ed0e567b65b305c8",
+      "bytes": 263561
+    },
+    "write-error-assertions.json": {
+      "sha256": "f5efe5312c7088ef6493b3fdb1958b612f6d41458948de9ec862ba8d3f9ee5f6",
+      "bytes": 295
+    },
+    "redaction.json": {
+      "sha256": "58d48345c7c2142d38f6623d0b805aa467cd8b21e700ff387f1e49b101f4917b",
+      "bytes": 309
+    },
+    "compose-assertions.json": {
+      "sha256": "c6f1b982429a4e6f282b4c791c9427f0799e8e05081e0a841cd30c789749932b",
+      "bytes": 1042
+    },
+    "review-adapter.log": {
+      "sha256": "342ea7946a5a4d09d70f0bcc2578dd3cd16ced24a6370a0396baeaa2a5588cbb",
+      "bytes": 1256
+    },
+    "management-writeback.json": {
+      "sha256": "9b0c755995bd40c462f0ffbc81261a880ea90550df9668a539436d7bb5c5c9fd",
+      "bytes": 348
+    },
+    "compose-migrate.log": {
+      "sha256": "eebda662760fad2db08d8c0a6f71fe9f1f3594aef3bc7aef801e86528f232077",
+      "bytes": 1888
+    },
+    "compose-up-local-images.log": {
+      "sha256": "2ae5ce52b80331350039b205d76dd89977a59b815f0b2c31f40ac279b86ab401",
+      "bytes": 1276
+    },
+    "review-http.log": {
+      "sha256": "35215aaa7c77ce77c2285f9f25005aa21fa20f06f19d949282c3be73c9872c98",
+      "bytes": 1164
+    },
+    "review-compose.json": {
+      "sha256": "326e07c7e706765d64f5acad973d04a493fd4f8125ae82583242d2b306de4ecd",
+      "bytes": 148
+    },
+    "docker-build.log": {
+      "sha256": "0a0033a83aaf69fddd35047b16a66734164121ebedf2ca91c57fe16fee286518",
+      "bytes": 326
+    },
+    "review-compose-login-setup.log": {
+      "sha256": "dd7c439bc6cb697af79880a6b562d0af9ebefd4c7f6454785da0e1acf0d305e3",
+      "bytes": 467
+    },
+    "compose-up.log": {
+      "sha256": "a27a6c8b95e2dc8957fd49da43cad07d9dd36fac7ce658888c74f17780d023b0",
+      "bytes": 535
+    },
+    "http-assertions.json": {
+      "sha256": "23c783cc641f05460bd421fc61f85ea9c971c4bd9d7d2fa2de8b1f352020bb15",
+      "bytes": 5353
+    },
+    "git-final-baseline.json": {
+      "sha256": "81631fa1fc182be6d5ace8d700ee065a47952207f1d9c504ef8d1dd3f91d8e90",
+      "bytes": 312
+    },
+    "review-wire-harness-setup.log": {
+      "sha256": "11201c743591871c13baa358c4cb3e04651e01243a15afda6af28b65bcaab366",
+      "bytes": 1901
+    },
+    "review-compose-origin-setup.log": {
+      "sha256": "228c84ce5dfbb72700edf43144535d05d80291f6b17e445b6870df21711e985c",
+      "bytes": 542
+    },
+    "assertion-index.json": {
+      "sha256": "a2003d1350a39c4837e2cc723ac354005e347a1ccbbbebc7285f44cbe53f9630",
+      "bytes": 9169
+    },
+    "createdb-upgrade.json": {
+      "sha256": "7fbe38fa7006eac32e5158ad2c6c7dc16c03fd97e84ceb17c5a887595200444a",
+      "bytes": 194
+    },
+    "compose-worker-log.log": {
+      "sha256": "77f47d379969867255d51b467ada6406097958be385503c1ae7a23b21a2a89bd",
+      "bytes": 1918
+    },
+    "docker-final-inventory.json": {
+      "sha256": "5ac16baaf3e2c882e290896b9ca9c11b17df81f3f0aa7acf279127bccc363536",
+      "bytes": 124
+    },
+    "late-dataless.json": {
+      "sha256": "1a33ac54f505621ec31ec52d22d5db4288f0a4539773fea71b2a812b610f19f8",
+      "bytes": 168
+    },
+    "final-integrity.json": {
+      "sha256": "816e6fbfd01f7afe3645595fbf0d605627b3539e376dfd9e5b1239c5a0c486eb",
+      "bytes": 215
+    },
+    "recovery-assertions.json": {
+      "sha256": "9dac5413a1734189527165be1972f289f1a3f5204dbf6475ed7541416fb5d7c6",
+      "bytes": 898
+    },
+    "compose-down.log": {
+      "sha256": "7bdfbbf53fdd7e62a3983110084c1cea2094cf588dc808d30db0585706216bdf",
+      "bytes": 819
+    },
+    "review-oss.json": {
+      "sha256": "611a7094e927711b0ef74d739bd0ac281fb4b1e10da4dd5522431865e71d3d67",
+      "bytes": 130
+    },
+    "review-extra.json": {
+      "sha256": "ee541d6972080ea18d5523f7526886510719d5d6e295d68d81ce507bc804a571",
+      "bytes": 134
+    },
+    "adapter-assertions.json": {
+      "sha256": "106cdeaaf3ec89804c7caf0dad8a293996ce9a9c1c82ed9e228e32087994cb38",
+      "bytes": 5496
+    },
+    "pg-boss-metadata-source.txt": {
+      "sha256": "e65ad95f581b80897dcd8efaa827c259e09b10fd0e90452461266f73661e6615",
+      "bytes": 10145
+    },
+    "product-os-sync.log": {
+      "sha256": "bdbc3234fde51e5933be41f0075adff0822a942878edcb38e5d7581f0e2a94a8",
+      "bytes": 101
+    },
+    "pre-write-integrity.json": {
+      "sha256": "123971b042f782869296a7abfcf6df51d6ec76eea64cc6ee5fa0bab9aad55356",
+      "bytes": 19510
+    },
+    "worker-built.log": {
+      "sha256": "a9644150531f9a743a40de6fb31824f9d04ce60d7890c2f966d11a5cd205c60f",
+      "bytes": 5018
+    },
+    "createdb.json": {
+      "sha256": "55780ebe8e1df421eac855517270fcee7e3c45b3822437f4e53a744256103488",
+      "bytes": 178
+    },
+    "compose-init-owner.json": {
+      "sha256": "85eb3b3d51c417cfaacc736cad21753f590e886707d3803d12fe021c3d4023c6",
+      "bytes": 55
+    },
+    "extra-assertions.json": {
+      "sha256": "8f38ded0e359cbd4ed374692289671eefdbe4928126978703f667b2e5c429a27",
+      "bytes": 490
+    },
+    "docker-final-inventory.log": {
+      "sha256": "69c3254f00f5e76dead65cc5c930fc9a827de7fc473beec80a0eb8bcb04f2a68",
+      "bytes": 254
+    },
+    "typecheck.log": {
+      "sha256": "3eebd7cdba39b626e77b0d20baed9ecb47df77dc3180013f74dbfa8df909c1e4",
+      "bytes": 118
+    },
+    "review-write-error.log": {
+      "sha256": "95c244bb4a60fb0b2e5f0bdde60f3cc896b705a953e68e58684c1ba8187ee2ba",
+      "bytes": 727
+    },
+    "product-os-sync-final.log": {
+      "sha256": "313871f273e94b8cba59591fa05ee022bc84c35507bec2e9449b14854d9c0b59",
+      "bytes": 101
+    },
+    "P07_CODE_REVIEW.md.before": {
+      "sha256": "c32af448254886d1a70f9dee5d5909fa2d53aec1bcd2311edb345de32a0a56a5",
+      "bytes": 9894
+    },
+    "node-runtime.json": {
+      "sha256": "6c07608de6024397a73faf94fbc48261eeefd1db73c1d2c452f134ab1b972423",
+      "bytes": 183
+    },
+    "review-oss-harness-setup.log": {
+      "sha256": "f9dfec8314eb62befe7a604da569e7f2d966e6601aa97641b5e85730e5a7f5d0",
+      "bytes": 1739
+    },
+    "review-write-error-ended-control.json": {
+      "sha256": "eecb53fd6183e6f8fa3c70ee4d0d6f2009154662bc5e4210521ae546a428641f",
+      "bytes": 146
+    },
+    "review-worker.log": {
+      "sha256": "133173987a64b62e45a66f6131ce6cc559ced279596a2668973c89f3ca08840f",
+      "bytes": 739
+    },
+    "compose-init-owner.log": {
+      "sha256": "54281635c50f35eb6f6315575193407fb823e087725fff297a490aa46fb8ee9f",
+      "bytes": 388
+    },
+    "12_PROGRESS.md.before": {
+      "sha256": "8dbb14bacf03842a8713677cf92098916ce57dd419065128adbff4314d0e0a6e",
+      "bytes": 103994
+    },
+    "integrity-dataless.json": {
+      "sha256": "236811450fb48bd95da255b65ef45e54b8091ff873de9e635502d8147a5c0218",
+      "bytes": 29218
+    },
+    "compose-recreate-correct-origin.log": {
+      "sha256": "031003c5d1afb3c2ff72c3d798a46af7c646f2b5b72fc572809d82978723d485",
+      "bytes": 604
+    },
+    "docker-build-legacy.json": {
+      "sha256": "258539715185001eccb578afa426a2b4daadf1db78043c0436de506f08a62c0a",
+      "bytes": 163
+    },
+    "compose-up.json": {
+      "sha256": "a9496fef9608b0b5bf2fb4df8e26e37fbefaf2d8cb356c519549ed6f80656f29",
+      "bytes": 373
+    },
+    "document-checks.json": {
+      "sha256": "b6eb64b60fb1dbae2922582f9e94faa0e8051456b1482d2e29583ce5bdcedcca",
+      "bytes": 254
+    },
+    "final-verification.json": {
+      "sha256": "7fbbfffe5efbbe711784be343220b262767670d182fa77da5b9605072c0baf93",
+      "bytes": 2483
+    },
+    "web.log": {
+      "sha256": "a7adfec67c5734d6ef1ccd86db392d80905ee007d4e0f5067831e3f9d1f59afe",
+      "bytes": 2240
+    },
+    "migrate.json": {
+      "sha256": "775f671fdf0bd8574eac3a5ac9b5cecd5c596ff6c9946d2ae39f0df6735c2a3b",
+      "bytes": 138
+    },
+    "e2e.json": {
+      "sha256": "66d7e4318057c06845ce63e15f1647035dfa3da43b9bece3060f78143015a0bb",
+      "bytes": 95
+    },
+    "snapshot.json": {
+      "sha256": "e21269866abcc1926ca0659b5021da1660e3a931451fff677ba6db4605c8e22d",
+      "bytes": 82046
+    },
+    "compose-pg-version.log": {
+      "sha256": "108acd0b338a00e467e2195b6d804ab72eaeab4384a2bdd07374652cecb95fe0",
+      "bytes": 123
+    },
+    "createdb-upgrade.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "review-recovery.log": {
+      "sha256": "487c7057083cd18ea312426c771e2751a9e83f9e81455ff2ed6d23d86999a27c",
+      "bytes": 778
+    },
+    "docker-canary.log": {
+      "sha256": "b39ee79696d56cc36c033f743003feecc8e25a963597aa3d3f8498464694d7f9",
+      "bytes": 37
+    },
+    "integration.log": {
+      "sha256": "ec5927c644f93f4a0dce6eb7a56b8355a03e2108e3f420d7ee329cccbddd94af",
+      "bytes": 4915
+    },
+    "compose-recreate-correct-origin.json": {
+      "sha256": "95aa1f3b64586aa49bfbd5d5b21100dd6a6376f32e3600a073385b1ac6242651",
+      "bytes": 443
+    },
+    "compose-shared-mounts.json": {
+      "sha256": "bad77b15cb89a5accf79da299674303e73c4d428b10c16148ebcb11602c1178f",
+      "bytes": 238
+    },
+    "README.md": {
+      "sha256": "dded610624d225a47978f04287cff44c88bc6493983a402d4d9b26750ab3786d",
+      "bytes": 6507
+    },
+    "review-wire-harness-setup.json": {
+      "sha256": "ba87d0fb74b6d0eda24cb534302a749117e9e936df740ec7090eb7027d3343f3",
+      "bytes": 132
+    },
+    "CODEX_REVIEW_HANDOFF.md.before": {
+      "sha256": "9d3f0f8d5c4303fdc44e996a4fc98a3327125d6756874d6aa2c8fe033c4c1c58",
+      "bytes": 57758
+    },
+    "product-os-sync.json": {
+      "sha256": "1fa49053ba657c4934248ff026172cf400985c1fe13738283cdcef8768d35f4c",
+      "bytes": 139
+    },
+    "review-wire.log": {
+      "sha256": "552490c216edad3b8449989d24b17e74c543fe6ea17a80baa6e5d08e7122defd",
+      "bytes": 557
+    },
+    "compose-up-local-images.json": {
+      "sha256": "b291a46068b5e1040e5001f06e5fdffc2da99ab5b8e4b72c33cd98281f98a394",
+      "bytes": 386
+    },
+    "docker-remove-owned-tags.log": {
+      "sha256": "5a766b16b08343e6ca3aed35be8d0fa8489762905026a17a79b32d0a3e90ef6b",
+      "bytes": 731
+    },
+    "docker-pg-legacy-build.log": {
+      "sha256": "e90cdfecfd244adaa7c684d3be425fc960917f001e9059df68ebd7aa355dcc0e",
+      "bytes": 1869
+    },
+    "review-compose.log": {
+      "sha256": "85bf2091d8a3867fc8c336fc7b291aa02fade005f45a060d25bb8fabf64bf901",
+      "bytes": 133
+    },
+    "pg-stop.log": {
+      "sha256": "ca19178a35ab4153b75b494963b66ce8243e1b94c173107c87b44d09db23652d",
+      "bytes": 56
+    },
+    "postgres.log": {
+      "sha256": "20edf86b29949d7207ba15c0b4465354654c144b140688567d9d0a695fefdd61",
+      "bytes": 60836
+    },
+    "start.json": {
+      "sha256": "d4e007bd8ed485240a2d250738d9b6a58386121b86811092bd861108ee1ccdf9",
+      "bytes": 301
+    },
+    "review-wire.json": {
+      "sha256": "b08f0eb4cabb6289929dd3af394ebee1f7fa9197dc1d8635bb9386bd57ac1eb2",
+      "bytes": 132
+    },
+    "pg-start.json": {
+      "sha256": "204aa0f99446db486d64c2fe390c9d2fdbe551ca826f8f8723e3ba37463b6bfd",
+      "bytes": 220
+    },
+    "compose-ps.log": {
+      "sha256": "729e0a959b06a5d5d1daa1436ce12786f6b1c55a8bf12979789dbe4704083c05",
+      "bytes": 4107
+    },
+    "migrate-diff.log": {
+      "sha256": "cefa413117f7571e2dfbd306fc075c87df413da4915a71d5e6529061d2e541a2",
+      "bytes": 336
+    },
+    "extra-temp-inventory.json": {
+      "sha256": "c03fe1f64d3cac279ca352d64d88543dadf59e887ba4988523d4a40535d01c99",
+      "bytes": 959
+    },
+    "worker-assertions.json": {
+      "sha256": "034a2d8e45b39b35f04b07bde1dccc7f4fa44f82ad51a1f08c0047253cdf8c77",
+      "bytes": 6165
+    },
+    "git-post-write.json": {
+      "sha256": "fa612ce579f64e489d1cb72640eb99e1d4db4c12d97b99999f213d0fd4ca8473",
+      "bytes": 619
+    },
+    "wire-assertions.json": {
+      "sha256": "4d335ec3ebe74262f2086e97f7690fc00751237384d474da3184fed64b97b845",
+      "bytes": 731
+    },
+    "docker-remove-owned-tags.json": {
+      "sha256": "ee300176b484099edd9e7c0396782aec80862ded3c963e8b380ba6d8619e216e",
+      "bytes": 199
+    },
+    "migrate-diff.json": {
+      "sha256": "07cb333d2220f48b95a16cfd618eb17f94ee8b43d9280d9f155ed92655d0cbdb",
+      "bytes": 236
+    },
+    "migrate.log": {
+      "sha256": "c6217a7493897276c4e42e960c416acda5e2ace94db35116bff16e0129bd8f31",
+      "bytes": 2754
+    },
+    "rate-responses.json": {
+      "sha256": "1bb41ff82fde5305a51b0769ee38e00f1ee0c088524a75e121263933ba6efb30",
+      "bytes": 16393
+    },
+    "unit.log": {
+      "sha256": "4446d744804c4277a4c109026d468a1c68727e53ba5180f22845b2ddceca6f62",
+      "bytes": 575
+    },
+    "review-recovery.json": {
+      "sha256": "076fa348c6c1a7c8f7d9b97b8599d652a467cceb6c78ee26515e08610546095c",
+      "bytes": 140
+    },
+    "extra-temp-cleanup.json": {
+      "sha256": "33fe9d1fc9e7a931bcf59aa4e7d426cc8f7b736ac824f53fa42b3e20affb5496",
+      "bytes": 1085
+    },
+    "docker-pull-pg-retry.json": {
+      "sha256": "099ecd612e082de667e294b9d4f22c2cbedb789380e50e4b47e3e310873a079b",
+      "bytes": 129
+    },
+    "wire-longwait-assertions.json": {
+      "sha256": "52063a985c79556d5b69985ba77e024a3f4555c2926893107679f5a347ac4941",
+      "bytes": 684
+    },
+    "fix-log.txt": {
+      "sha256": "415a434716ba44b8eddd46d2f106b6ab5532d3af7993cda7dd184f9fb3c5abbf",
+      "bytes": 1519
+    },
+    "review-compose-origin-setup.json": {
+      "sha256": "531fac5795874db03427e896c0e68ef10a582af7875bcb46ac3985ed2581f0f2",
+      "bytes": 148
+    },
+    "review-oss-harness-setup.json": {
+      "sha256": "f5adc70a136027b61e6360b0dbd786e0908b93e1ac52d9e9fe979c90297a6ab9",
+      "bytes": 129
+    },
+    "compose-worker-log.json": {
+      "sha256": "953bfb6c88ba7e9f699fc179e7fdeef0c24e46f9f86fc88734b2ffa286be9e80",
+      "bytes": 387
+    },
+    "oss-assertions.json": {
+      "sha256": "9dd2d99bb53c7db519069a40ca8c068eba65f78c388f31f23c9c75981e9fded0",
+      "bytes": 1076
+    },
+    "migrate-old-ten.json": {
+      "sha256": "d1a71546f5ae89f2e72a20193e87e1784f2172a54a3f9ea585ededacb6d5ab2d",
+      "bytes": 198
+    },
+    "views-readback.json": {
+      "sha256": "d0ebd61d4b060c8eb388cd0514d8642d9d1e2eb03b3bfddda6b822ec989d7dc7",
+      "bytes": 723
+    },
+    "createdb.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "compose-pg-version.json": {
+      "sha256": "34b59d896639e15c2f41db0c1d7691e2ce1cc89c3f69e3b599f2ca3a10ff1d69",
+      "bytes": 478
+    },
+    "migrate-upgrade-ten-to-twelve.json": {
+      "sha256": "b3ee4b88a3e5e67a65111843ae6a09280c4db84dfd53738e2fa24671202911aa",
+      "bytes": 160
+    },
+    "typecheck.json": {
+      "sha256": "3a68df0a9eb9a1aeeda91d743f9decc88006e864cbf5d8fb5c6f1fea5fba6a21",
+      "bytes": 102
+    },
+    "unit.json": {
+      "sha256": "79ff2d59ab2c585b093e17a281d50e81f27bc081af1730993ae4c9c4b96d8523",
+      "bytes": 92
+    },
+    "migrate-old-ten.log": {
+      "sha256": "7212f5cbc2b01cf4be8d4c4841f7163072047d499b129a1e50e0d226862604b4",
+      "bytes": 1636
+    },
+    "pg-stop.json": {
+      "sha256": "ce7c61f383898c5e56fee5a99c1287941ffd0a9e8276adab986567616ffd1a76",
+      "bytes": 177
+    },
+    "initdb.log": {
+      "sha256": "729b7c455a2aa965fa3d9a8b4968cf17b504a25fd039baebe50a9bcda0a10ad9",
+      "bytes": 822
+    },
+    "docker-build.json": {
+      "sha256": "028b0c77153bb26d0b6680565f0987321da234840c8b6bb89668dec58742d819",
+      "bytes": 180
+    },
+    "e2e.log": {
+      "sha256": "55c0308d7bff273d15d35fcad52a19ec3b7b44c6712cef933ed5c809ce8660a4",
+      "bytes": 2368
+    },
+    "integration.json": {
+      "sha256": "02434795c6f9a4376e07aa2565f783ef0ebbbe9bf639b44bfe814bcb16985a50",
+      "bytes": 112
+    },
+    "review-compose-ready-setup.json": {
+      "sha256": "531fac5795874db03427e896c0e68ef10a582af7875bcb46ac3985ed2581f0f2",
+      "bytes": 148
+    },
+    "install-local-runtime.log": {
+      "sha256": "a0cd50752b76f2491080d762aa3d50ce8f01c8d88ed1d6b7c64a4f8c54486044",
+      "bytes": 2240
+    },
+    "cleanup-owned.json": {
+      "sha256": "05b6f0dfc3068af813666b161589e15f51ba266b206f79d7c84ef5eb9b578679",
+      "bytes": 2942
+    },
+    "review-extra-enum-setup.log": {
+      "sha256": "98c686d027af8c239daa105ad4931e8dc90ff68babf4276695cb0c332e277bd5",
+      "bytes": 2651
+    },
+    "install.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "compose-migrate.json": {
+      "sha256": "ccddbf632bfbcb490914106d35baa6455396b1974b73a3dc9069d3b8f551e763",
+      "bytes": 146
+    },
+    "review-adapter.json": {
+      "sha256": "d06dcb81a7df5269891b91432545198646973c9b5f23ce493f3c6e8e959f3eb4",
+      "bytes": 138
+    },
+    "compose-shared-mounts.log": {
+      "sha256": "d80eb4abf5863f93ebadb9640bd2a691a5a0330047b0f3cce6529118b00eca81",
+      "bytes": 637
+    },
+    "compose-ps.json": {
+      "sha256": "e3a1c74c575991baef26984d267d20ef7ba23ef99029830d644e1c4fb76fdb27",
+      "bytes": 372
+    },
+    "node-shasums.txt": {
+      "sha256": "f410428039e2c922a14058df067a4482691c9304a5c01a75847f9f3f2d3307f6",
+      "bytes": 3171
+    },
+    "migrate-repeat.json": {
+      "sha256": "2a3fe135a869c676691304457011098584244caa46ca490e9898df3624462fa2",
+      "bytes": 145
+    },
+    "initdb.json": {
+      "sha256": "99a6b29e83b8f5cc6afe3ffb7b1eb3b2dd27e50ee23d178d3f9587590dc399b6",
+      "bytes": 222
+    },
+    "compose-down.json": {
+      "sha256": "7aeef98706ff60eabd47ad291580c09ca52e89b13d081d9bf724e3d364c43fea",
+      "bytes": 359
+    },
+    "install-local-runtime.json": {
+      "sha256": "cd263f9dd311bd447c44db9b0192741641f12ac539a79fc805eb73b9c6cc85c8",
+      "bytes": 154
+    },
+    "review-extra.log": {
+      "sha256": "b40afe5de9bd3a1db09673e16b501d9f7041e5614480c99056707fe62ca5d405",
+      "bytes": 390
+    },
+    "review-write-error.json": {
+      "sha256": "3d8f2b83f862c9bea47813666c007d5a57545be72fc706f59e340d17142d2d90",
+      "bytes": 146
+    },
+    "install.json": {
+      "sha256": "f11919a8844d94b9c34785b88394e207cad1d70340dcf7bacfe4c7ff41dd65dc",
+      "bytes": 144
+    },
+    "build.json": {
+      "sha256": "23bafd4ee1f65b732b1148ff2c11e3d3c7f21c0c5894a9f62852aea050501d69",
+      "bytes": 95
+    },
+    "build.log": {
+      "sha256": "4f2d552e2bb12aacf786110f78af4bdd26d35aecfcb8a6978fa6fe6336bc005d",
+      "bytes": 2357
+    },
+    "docker-pull-pg-retry.log": {
+      "sha256": "05a509779dfb1665a147a807d266fab4bf7b129b0f3905d2bc203a94c4617ab7",
+      "bytes": 255
+    },
+    "scripts/review-oss.ts": {
+      "sha256": "fd0a1165909bfa54ed11c4e61d3ea74f8f3c9a6586e8dffbcb3655e55b2b9e6d",
+      "bytes": 2336
+    },
+    "scripts/run.py": {
+      "sha256": "e796eb8ed59b60c2e09159cb1a7a09c1ef8fc7f6cfaddebc19ef284ec24c9802",
+      "bytes": 2592
+    },
+    "scripts/review-wire-longwait.ts": {
+      "sha256": "42d2a7ede5302b19854e80e8eff5e343f7a28ab63269eba1efc74a5b7c3381c1",
+      "bytes": 2457
+    },
+    "scripts/review-write-error.ts": {
+      "sha256": "b43cd953e6896883c002655cdce897743fbfa2b39f1097e46e2f6e1e1133d42c",
+      "bytes": 589
+    },
+    "scripts/review-extra.ts": {
+      "sha256": "4a260567d340e38bd32d59c37e0cb59553c41b062bdfb258c1a2775b461317b8",
+      "bytes": 3066
+    },
+    "scripts/review-wire.ts": {
+      "sha256": "c2020e82fb92350bf2517356b0c966875aa445538e5a7f6aca9e76c6a3cd66d2",
+      "bytes": 2447
+    },
+    "scripts/review-adapter.ts": {
+      "sha256": "4b74b3a6b4291c3a4cc9def4380341e4cb5cd824d2beb75a1e1c3b64ba7555df",
+      "bytes": 4973
+    },
+    "scripts/review-worker.ts": {
+      "sha256": "086149398347e14fa88c5de25cdec78ca19ee121989a863be971934d07ff5099",
+      "bytes": 8041
+    },
+    "scripts/review-http.ts": {
+      "sha256": "9d18679c17ce3551f713a3a9a8661e9e7f8b71787cd2e4f3e147ab1b52c742bf",
+      "bytes": 13771
+    },
+    "scripts/review-recovery.ts": {
+      "sha256": "df49aced0a9ae387e359d84c8345d896d132a4f47739ed5b69e29ecd47618911",
+      "bytes": 3185
+    },
+    "scripts/review-compose.mjs": {
+      "sha256": "dcfc4ae4a8114fabf586b8aecb7d601fff27e0da33467aa91400d9afaba1fc72",
+      "bytes": 3767
+    },
+    "source-lines/src__services__dataSources.ts.txt": {
+      "sha256": "2346bd9f4492e682d545c50cf36817613df40684c0c06e4ac4c6695d4db9af63",
+      "bytes": 10255
+    },
+    "source-lines/src__jobs__worker.ts.txt": {
+      "sha256": "b06db4885e3060eafbe8166507f7e0ee93fcb731f446118490f6a316f614706d",
+      "bytes": 5246
+    },
+    "source-lines/src__lib__session.ts.txt": {
+      "sha256": "b7c327ffef22b72bf5e1bae5cef04cdd9eec8a2b10ce1d59456b07ea5ba6fdbb",
+      "bytes": 3254
+    },
+    "source-lines/src__adapters__contracts.ts.txt": {
+      "sha256": "608d332b0c3a58cd670e9fd59d0a78c150e9c2e82c6db6762f71606a501bb447",
+      "bytes": 41000
+    },
+    "source-lines/src__services__stores.ts.txt": {
+      "sha256": "e190c32044bb65c00e5bae4ec4c089ca0aa5f9a149bdcce57f3dfd25e730a11a",
+      "bytes": 11619
+    },
+    "source-lines/src__storage__oss-client.ts.txt": {
+      "sha256": "6d8a6235c20f2c5e0239655498331828448f3c688f9aa6d801eb96debf77df2a",
+      "bytes": 1170
+    },
+    "source-lines/src__jobs__handlers__imports.ts.txt": {
+      "sha256": "cbb1afdabe3e7b2ebc8293c742bd5bad97f9caef9fac0606919488a73b6fd626",
+      "bytes": 7724
+    },
+    "source-lines/src__storage__oss.ts.txt": {
+      "sha256": "25374d433618e3af86e0a2f8834f5da1d1e200ad2dea472ec4672aaf6c0c3b1c",
+      "bytes": 2393
+    },
+    "source-lines/src__services__imports.ts.txt": {
+      "sha256": "229866c864971fa0048e987947b230c82b19ffc0464759cd6611e3da0a113b3e",
+      "bytes": 20136
+    },
+    "source-lines/src__storage__index.ts.txt": {
+      "sha256": "d0ed597ae67f8c8f67d3db30e0118de9471b9a35f335f3c934d2f6497d904970",
+      "bytes": 7930
+    },
+    "source-lines/src__app__api__v1__imports__route.ts.txt": {
+      "sha256": "852c8b7664531dae06c02f9acaaa2ee1b02954eb15765dffa57c82aa55b016fb",
+      "bytes": 9397
+    },
+    "source-lines/tests__fixtures__golden__coverage-golden.ts.txt": {
+      "sha256": "8e0a004b57f7d2b294e300ce1aec491c4068081b4a7b822192dabf463fbb0c6e",
+      "bytes": 5065
+    }
+  },
+  "reportSha256": "63e0b7c4320d2d6dfede09d5a5e37ed43ad650a1f6ba28734facc20a1e206b08",
+  "completedAt": "2026-09-16T14:28:21.771897+08:00",
+  "finalVerification": "gate-02-review-2-evidence/final-verification.json"
+}

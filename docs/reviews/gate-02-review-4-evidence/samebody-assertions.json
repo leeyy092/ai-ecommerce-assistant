@@ -1,0 +1,32 @@
+[
+  {
+    "name": "H07 concurrent identical HTTP request replays archived 201 and owns one readable task",
+    "expected": {
+      "waits": 2,
+      "statuses": [
+        201,
+        201
+      ],
+      "taskRows": 1,
+      "objectlessTasks": 0
+    },
+    "actual": {
+      "waits": 2,
+      "statuses": [
+        201,
+        201
+      ],
+      "taskRows": 1,
+      "objectlessTasks": 0,
+      "rows": [
+        {
+          "id": "c2eafa79-da90-4437-8413-a58414690444",
+          "rawObjectKey": "raw/c2eafa79-da90-4437-8413-a58414690444/source.csv",
+          "status": "uploaded",
+          "outboxStatus": "dispatched"
+        }
+      ]
+    },
+    "status": "PASS"
+  }
+]

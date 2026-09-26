@@ -1,0 +1,22 @@
+(node:62490) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[
+  {
+    name: 'Successful complete-tail files remain owned and byte-identical after all failure cases',
+    expected: { count: 2, intact: 2 },
+    actual: { count: 2, intact: 2 },
+    status: 'PASS'
+  },
+  {
+    name: 'Unsigned blocked; fresh signed downloads after Web restart remain correct',
+    expected: [ [Object], [Object] ],
+    actual: [ [Object], [Object] ],
+    status: 'PASS'
+  },
+  {
+    name: 'No unowned temp files remain after complete lifecycle suite',
+    expected: 0,
+    actual: 0,
+    status: 'PASS'
+  }
+]

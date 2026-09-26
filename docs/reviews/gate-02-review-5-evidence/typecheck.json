@@ -1,0 +1,13 @@
+{
+  "name": "typecheck",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "exec",
+    "tsc",
+    "--noEmit",
+    "--incremental",
+    "false"
+  ],
+  "exit": 0,
+  "seconds": 2.5
+}

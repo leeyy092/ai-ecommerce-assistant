@@ -1,0 +1,11 @@
+{
+  "name": "m05-final-probes",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-m05.ts"
+  ],
+  "exit": 0,
+  "seconds": 1.16
+}

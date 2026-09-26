@@ -1,0 +1,10 @@
+time="2026-09-25T18:28:05+08:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image gate02review3-worker Building 
+ Image gate02review3-web Building 
+ Image gate02review3-worker Building 
+ Image gate02review3-web Building 
+Sending build context to Docker daemon  236.6kB
+Sending build context to Docker daemon  236.6kB
+Step 1/28 : FROM node:24.21.0-bookworm-slim AS deps
+Step 1/28 : FROM node:24.21.0-bookworm-slim AS deps
+failed to resolve reference "docker.io/library/node:24.21.0-bookworm-slim": failed to do request: Head "https://registry-1.docker.io/v2/library/node/manifests/24.21.0-bookworm-slim": dial tcp: lookup registry-1.docker.io on [::1]:53: read udp [::1]:42913->[::1]:53: read: connection refused
