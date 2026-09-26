@@ -40,11 +40,11 @@ ZCode修复声明（须独立验证，不得采信自测）：内部catch统一�
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；本地工作区干净。
-- 分支：phase/02-data-ingestion；版本：1443a51965fe78857194942be8988da15a08b77c。
+- 分支：phase/02-data-ingestion；版本：5f2a43b26d799c0d3eb9bff0ca52a45b3e2fd20e。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
 - GitHub：2026-09-26 本地/远端 phase/02-data-ingestion=b32f731（业务修复；推送范围 a80d62a..b32f731，管理写回随交接提交）；main=4c7e95b 未合并；最后核验：2026-09-26T15:50:00+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：本轮 git push 后 ls-remote 核对一致；复修基线 a80d62a 见 docs/reviews/gate-02-r4fix-evidence/。
 - 部署：未部署；本轮本机隔离Compose验证通过，不是线上发布；最后核验：从未核验；地址：未记录；证据：TASK-029未开始；无Owner部署许可、无线上或客户使用证据。
 
-刷新前本地快照时间：2026-09-26T15:56:03+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-26T15:58:49+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)
