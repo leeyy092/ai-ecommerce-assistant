@@ -1,0 +1,11 @@
+{
+  "name": "review-wire-longwait",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-wire.ts"
+  ],
+  "exit": 0,
+  "seconds": 8.38
+}

@@ -1,0 +1,11 @@
+{
+  "name": "review-extra",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-extra.ts"
+  ],
+  "exit": 1,
+  "seconds": 1.27
+}

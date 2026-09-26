@@ -6,17 +6,17 @@
 | 你要知道的事 | 当前记录 |
 |---|---|
 | 最终目标 | 交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐） |
-| 当前阶段 | 06 分任务开发 · Phase 3 六类文件导入链路 · 已获Owner接续授权 |
-| 当前任务 | TASK-008 |
-| 当前状态 | 未开始 |
-| 上一个完成项 | GATE_02 REVIEW5 PASS、Owner放行Phase2；PH3-20260927-01已送达并获ZCode只读ACK（00:05，无阻塞） |
-| 下一步 | Codex发START转交写入权；ZCode按P06保护管理证据、接续原Git生命周期并从TASK-008顺序开发至012，GATE_03停审反馈 |
+| 当前阶段 | 06 分任务开发 · Phase 3 六类文件导入链路 · TASK-009 进行中 |
+| 当前任务 | TASK-009 |
+| 当前状态 | 进行中 |
+| 上一个完成项 | TASK-008 DONE（a5e9b7b）：字段映射/全量校验/staging 预览/错误下载/幂等键；Phase2 已按放行合并 main（85a93ec），phase/03-import 建链 |
+| 下一步 | TASK-009 原子提交内核与商品主数据（Phase 内一次一 TASK 连续推进至 TASK-012，GATE_03 停审） |
 | 交给谁 | ZCode |
 | 做到什么算完成 | TASK-008–012各按原合同验收；六类文件全量校验/预览确认/原子提交、隔离与幂等更正通过；GATE_03独立审查后停下向Owner反馈 |
-| 卡点 | 无已知技术阻塞；ZCode已ACK，待START实际送达。开户合同与真实OSS云验证保持原边界 |
+| 卡点 | 无已知技术阻塞；TASK-009 进行中。开户合同（TASK-031 草案）与真实 OSS 云验证保持原边界 |
 | 检查点 | NO |
 | 审查 | GATE_02 REVIEW5 PASS（4b9e139/业务b32f731）；Owner已授权Phase3；GATE_03尚未开始 |
-| 进度最后更新 | 2026-09-27T00:06:54+08:00 |
+| 进度最后更新 | 2026-09-27T01:07:30+08:00 |
 
 项目绝对路径：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
 
@@ -25,8 +25,8 @@
 ```text
 当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
 产品目标：交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）
-当前任务：TASK-008
-本轮动作：Codex发START转交写入权；ZCode按P06保护管理证据、接续原Git生命周期并从TASK-008顺序开发至012，GATE_03停审反馈
+当前任务：TASK-009
+本轮动作：TASK-009 原子提交内核与商品主数据（Phase 内一次一 TASK 连续推进至 TASK-012，GATE_03 停审）
 
 请在 /Users/yuyuyu/Documents/ChatGPT/产品-开发 接续完整P0，应用在 ai-ecommerce-assistant/。协调编号PH3-20260927-01，唯一Codex协调对话01a0de69-d398-74d1-ba7d-0013bd10edbd；MIGRATE-20260926-01已COMPLETE。
 先读AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、唯一进度docs/ai-ecommerce-assistant/12_PROGRESS.md当前导航/状态块/文末本编号、FINAL_DECISIONS.md第6/7/8节、PHASE_PLAN.md、DEVELOPMENT_HANDOFF.md和09_TASKS.md TASK-008–012。旧“Owner尚未放行Phase2”仅保留历史，不得覆盖最新授权。
@@ -41,11 +41,11 @@ ZCode开发时独占业务/唯一进度写入，Codex只读跟进。每TASK完�
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；存在未提交或未跟踪内容。
-- 分支：phase/02-data-ingestion；版本：4b9e13902588724d0cfb2d489ef07d49d0a3489d。
+- 分支：phase/03-import；版本：a5e9b7bed2b1e749d174afca3b02afc822d29f34。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
-- GitHub：本地/远端phase/02-data-ingestion=4b9e139（业务b32f731）；main=4c7e95b未合并。本轮Codex REVIEW5报告/管理写回尚未提交推送；最后核验：2026-09-26T16:06:50.912385+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：本轮独立git ls-remote与实际HEAD一致；审查管理写回另计，未推送。
+- GitHub：2026-09-27 本地/远端 phase/03-import=a5e9b7b（TASK-008）；main=85a93ec（Phase2 已按放行合并）；phase/02-data-ingestion=4b9e139 冻结保留；最后核验：2026-09-26T16:06:50.912385+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：本轮独立git ls-remote与实际HEAD一致；审查管理写回另计，未推送。
 - 部署：未部署；本轮生产模式Web/Worker在一次性本机环境验证，不是线上发布；最后核验：从未核验；地址：未记录；证据：TASK-029未开始；无Owner部署许可、无线上或客户使用证据。
 
-刷新前本地快照时间：2026-09-27T00:06:54+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-27T01:07:05+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)

@@ -1,0 +1,193 @@
+{
+  "checks": [
+    {
+      "name": "H08 built Worker normal parse",
+      "expected": [
+        "preview_ready",
+        2,
+        0
+      ],
+      "actual": [
+        "preview_ready",
+        2,
+        0
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "H05 disabled Membership rejected",
+      "expected": [
+        "failed",
+        "UPLOAD_PERMISSION_REVOKED",
+        0
+      ],
+      "actual": [
+        "failed",
+        "UPLOAD_PERMISSION_REVOKED",
+        0
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "H05 downgrade rejected",
+      "expected": [
+        "failed",
+        "UPLOAD_PERMISSION_REVOKED",
+        0
+      ],
+      "actual": [
+        "failed",
+        "UPLOAD_PERMISSION_REVOKED",
+        0
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "H05 disabled global user rejected",
+      "expected": [
+        "failed",
+        "UPLOAD_PERMISSION_REVOKED",
+        0
+      ],
+      "actual": [
+        "preview_ready",
+        null,
+        2
+      ],
+      "status": "FAIL",
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   'preview_ready',\n+   null,\n+   2\n-   'failed',\n-   'UPLOAD_PERMISSION_REVOKED',\n-   0\n  ]\n"
+    },
+    {
+      "name": "H08 missing source terminal",
+      "expected": [
+        "failed",
+        "SOURCE_FILE_MISSING"
+      ],
+      "actual": [
+        "failed",
+        "SOURCE_FILE_MISSING"
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "H08 malformed header private errors",
+      "expected": [
+        "failed",
+        "MISSING_COLUMN",
+        true
+      ],
+      "actual": [
+        "failed",
+        "MISSING_COLUMN",
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "H08 terminal replay keeps preview version",
+      "expected": true,
+      "actual": true,
+      "status": "PASS"
+    },
+    {
+      "name": "H08 dispatcher lost dispatch reaches ready",
+      "expected": true,
+      "actual": true,
+      "status": "PASS"
+    },
+    {
+      "name": "H08 interrupted validation finalizes",
+      "expected": [
+        "failed",
+        "VALIDATE_INTERRUPTED"
+      ],
+      "actual": [
+        "failed",
+        "VALIDATE_INTERRUPTED"
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "H08 retry exhausted immediately finalizes task",
+      "expected": true,
+      "actual": false,
+      "status": "FAIL",
+      "error": "Expected values to be strictly deep-equal:\n\nfalse !== true\n"
+    },
+    {
+      "name": "commit explicitly refused no fact writes",
+      "expected": true,
+      "actual": true,
+      "status": "PASS"
+    }
+  ],
+  "observations": {
+    "badtime": {
+      "id": "8658ea76-bd7b-4037-9dbd-8cfaa51cb3ec",
+      "status": "validating",
+      "errorCode": null,
+      "valid": 0,
+      "errors": 0,
+      "jobs": [
+        {
+          "name": "import-validate",
+          "state": "failed",
+          "retry_count": 1,
+          "retry_limit": 1,
+          "output": {
+            "name": "RangeError",
+            "stack": "RangeError: Invalid time value\n    at Date.toISOString (<anonymous>)\n    at validateTimestamp (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:70010:25)\n    at mapRow (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:70135:27)\n    at parseStandardFile (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:70127:20)\n    at Object.parse (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:70530:16)\n    at handleValidateTask (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:70841:38)\n    at async /private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:71054:24\n    at async resolveWithinSeconds (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:30355:14)\n    at async #processJobs (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54659:26)\n    at async Worker.onFetch (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54938:15)",
+            "message": "Invalid time value"
+          }
+        }
+      ]
+    },
+    "dir": {
+      "id": "e2470502-043d-4270-ac7b-8258284fb38a",
+      "status": "validating",
+      "errorCode": null,
+      "valid": 0,
+      "errors": 0,
+      "jobs": [
+        {
+          "name": "import-validate",
+          "state": "failed",
+          "retry_count": 1,
+          "retry_limit": 1,
+          "output": {
+            "code": "EISDIR",
+            "name": "Error",
+            "errno": -21,
+            "stack": "Error: EISDIR: illegal operation on a directory, read\n    at async readFileHandle (node:internal/fs/promises:1261:24)\n    at async handleValidateTask (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:70840:18)\n    at async /private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:71054:24\n    at async resolveWithinSeconds (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:30355:14)\n    at async #processJobs (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54659:26)\n    at async Worker.onFetch (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54938:15)\n    at async Worker.run (/private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/dist/jobs/worker.js:54091:15)",
+            "message": "EISDIR: illegal operation on a directory, read",
+            "syscall": "read"
+          }
+        }
+      ]
+    },
+    "archived": {
+      "id": "b3b9c3b2-c449-4ccc-aaa4-e9ea77c70b83",
+      "status": "failed",
+      "errorCode": "STORE_MISMATCH",
+      "valid": 0,
+      "errors": 1,
+      "jobs": [
+        {
+          "name": "import-validate",
+          "state": "completed",
+          "retry_count": 0,
+          "retry_limit": 1,
+          "output": {
+            "value": [
+              {
+                "valid": 0,
+                "errors": 1,
+                "status": "failed"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

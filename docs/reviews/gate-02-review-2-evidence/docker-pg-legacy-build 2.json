@@ -1,0 +1,1 @@
+{"args": ["docker", "build", "-t", "aiea-g2r2-pg:17", "-"], "input": "FROM postgres:17", "exit": 0, "seconds": 86.166968208}

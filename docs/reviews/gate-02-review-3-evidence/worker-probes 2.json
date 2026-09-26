@@ -1,0 +1,11 @@
+{
+  "name": "worker-probes",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-worker.ts"
+  ],
+  "exit": 0,
+  "seconds": 31.64
+}

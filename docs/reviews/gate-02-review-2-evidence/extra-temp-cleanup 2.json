@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-AvdRHt",
+    "created": "2026-09-16T13:40:34.185215",
+    "files": [
+      "errors",
+      "tmp",
+      "raw"
+    ],
+    "removed": true
+  },
+  {
+    "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-broken-0ce2fa",
+    "created": "2026-09-16T13:40:44.765689",
+    "files": "file",
+    "removed": true
+  },
+  {
+    "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-oss-limZyY",
+    "created": "2026-09-16T13:40:30.586346",
+    "files": [],
+    "removed": true
+  },
+  {
+    "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-oss-FOpikO",
+    "created": "2026-09-16T13:40:30.582572",
+    "files": [],
+    "removed": true
+  },
+  {
+    "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-oss-0LVdfV",
+    "created": "2026-09-16T13:40:30.586820",
+    "files": [],
+    "removed": true
+  },
+  {
+    "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-oss-L4ykw7",
+    "created": "2026-09-16T13:40:30.585985",
+    "files": [],
+    "removed": true
+  }
+]

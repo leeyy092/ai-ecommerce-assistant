@@ -1,0 +1,13 @@
+{
+  "name": "docker-build",
+  "args": [
+    "docker",
+    "build",
+    "--progress=plain",
+    "-t",
+    "aiea-g2r2-review:072f9ba",
+    "."
+  ],
+  "exit": 125,
+  "seconds": 0.35
+}

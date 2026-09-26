@@ -1,0 +1,53 @@
+
+> ai-ecommerce-assistant@0.1.0 start /private/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant
+> next start
+
+▲ Next.js 16.3.5
+- Local:         http://localhost:3324
+- Network:       http://192.168.101.10:3324
+✓ Ready in 159ms
+✓ Running next.config.ts took 33ms
+(node:55154) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[internal] request_id=a89fd719-8d10-464d-a60a-bacdda94ced1 
+Invalid `prisma.importTask.create()` invocation:
+
+
+Unique constraint failed on the constraint: `import_task_org_id_store_id_idempotency_key_key`
+[internal] request_id=470b61ed-095b-47b7-b13a-9dd0c2ef1ec8 
+Invalid `prisma.importTask.create()` invocation:
+
+
+Unique constraint failed on the constraint: `import_task_org_id_store_id_idempotency_key_key`
+Error: Cannot call write after a stream was destroyed
+    at ignore-listed frames {
+  code: 'ERR_STREAM_DESTROYED'
+}
+⨯ uncaughtException:  Error: Cannot call write after a stream was destroyed
+    at ignore-listed frames {
+  code: 'ERR_STREAM_DESTROYED'
+}
+Error: Cannot call write after a stream was destroyed
+    at ignore-listed frames {
+  code: 'ERR_STREAM_DESTROYED'
+}
+⨯ uncaughtException:  Error: Cannot call write after a stream was destroyed
+    at ignore-listed frames {
+  code: 'ERR_STREAM_DESTROYED'
+}
+[internal] request_id=7c3f99d3-06e5-4b3f-9cc5-862fa51e4288 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_cas_audit_fail"`
+[internal] request_id=ce4f32cb-2089-4ee9-8832-a2d3a88c759a 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_cas_audit_fail"`
+[internal] request_id=761dd0a6-cf71-4825-b283-fb7be35c6877 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "review_cas_audit_fail"`
+ ELIFECYCLE  Command failed with exit code 143.

@@ -1,0 +1,11 @@
+{
+  "name": "review-recovery",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-recovery.ts"
+  ],
+  "exit": 1,
+  "seconds": 1.16
+}

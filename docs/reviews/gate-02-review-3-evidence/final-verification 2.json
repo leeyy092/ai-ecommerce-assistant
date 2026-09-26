@@ -1,0 +1,62 @@
+{
+  "verified_at": "2026-09-25T18:48:37.040384+08:00",
+  "head": "a4652611e29d3e316de7f41bf46550fe02a64c2d",
+  "business_worktree_diff_empty": true,
+  "git_diff_check": 0,
+  "historical_files_unchanged": 249,
+  "preexisting_management_preserved": "original handoff/P07/P08 retained verbatim as historical append; original progress snapshot in pre-writeback; current state updated without deleting dated records",
+  "report_sections_1_to_15": true,
+  "state": {
+    "task": "TASK-007",
+    "status": "待修复",
+    "next_owner": "ZCode",
+    "next_prompt": "prompts/P08_FIX.md",
+    "checkpoint": "YES",
+    "task_counts": {
+      "DONE": 6,
+      "BLOCKED": 1,
+      "TODO": 23
+    }
+  },
+  "product_os_sync": {
+    "command": "/usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync",
+    "exit": 0,
+    "result": {
+      "registered": 1,
+      "updated": 1,
+      "errors": [],
+      "generated_at": "2026-09-25T18:47:02+08:00"
+    }
+  },
+  "readback": {
+    "project_md": {
+      "task_owner_status_match": true,
+      "exact_first_P08_text_match": true,
+      "sha256": "72aa82741b21e6dca42a9b68f8913d4605c700f797b981cdb76267462e553cb9"
+    },
+    "project_html": {
+      "task_owner_status_match": true,
+      "exact_first_P08_text_match": true,
+      "note": "HTML embeds first text block; filename need not appear separately",
+      "sha256": "910259bfa2efbdf534543a6670051fd500fac1504acab71005bb90b2c5c629f1"
+    },
+    "control_projects": {
+      "task_owner_status_prompt_match": true,
+      "sha256": "76cded25cb6d655dd628bd216f50459f78deb6259100cd0d72628092336708f4"
+    }
+  },
+  "cleanup": {
+    "web_own_process_group_stopped": true,
+    "postgres_new_cluster_stopped": true,
+    "colima_started_for_test_restored_stopped": true,
+    "docker_containers_or_volumes_created": false,
+    "temporary_directory": "/tmp/gate02-review3-20260925-8_hqanp6",
+    "temporary_directory_removed": true
+  },
+  "known_test_secret_scan": "PASS",
+  "business_code_modified": false,
+  "review_committed_or_pushed": false,
+  "main_merged": false,
+  "task008_started": false,
+  "deployed": false
+}

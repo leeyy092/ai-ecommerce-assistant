@@ -1,0 +1,16 @@
+[
+  {
+    "name": "H08 write stream EACCES with open input handled without process crash",
+    "expected": {
+      "exit": 0,
+      "handled": true,
+      "unhandled": false
+    },
+    "actual": {
+      "exit": 1,
+      "handled": false,
+      "unhandled": true
+    },
+    "status": "FAIL"
+  }
+]

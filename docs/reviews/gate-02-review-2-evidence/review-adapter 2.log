@@ -1,0 +1,29 @@
+H04 A/products CSV normative oracle PASS
+H04 A/orders CSV normative oracle PASS
+H04 A/order_items CSV normative oracle PASS
+H04 A/ads CSV normative oracle PASS
+H04 A/customer_messages CSV normative oracle PASS
+H04 A/after_sales CSV normative oracle PASS
+H04 B/products CSV normative oracle PASS
+H04 B/orders CSV normative oracle PASS
+H04 B/order_items CSV normative oracle PASS
+H04 B/ads CSV normative oracle PASS
+H04 B/customer_messages CSV normative oracle PASS
+H04 B/after_sales CSV normative oracle PASS
+H03 numeric 20,6 upper boundary PASS
+H03 unsafe integer refused PASS
+H03 timestamp invalid 2026-02-30T00:00:00Z PASS
+H03 timestamp invalid 2026-09-01T00:00:00 PASS
+H03 timestamp invalid 09/01/26 PASS
+H03 timestamp invalid 2026-09-01T00:00:00+24:00 FAIL
+H03 timestamp invalid 2026-09-01T00:00:00+08:99 FAIL
+H03 source time missing no invented value PASS
+H03 optional columns may be omitted PASS
+H03 blank required enum rejected PASS
+H03 duplicate header refused PASS
+H03 unclosed quote refused PASS
+H03 STORE_MISMATCH whole file rejection PASS
+H04 complaint normative distinction PASS
+H04 independent explicit zeros match case refund dates PASS
+H04 coverage channel matches data contract enum default/case/refund FAIL
+H04 batch metadata stable PASS

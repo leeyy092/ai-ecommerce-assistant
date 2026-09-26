@@ -1,0 +1,10 @@
+{
+  "name": "docker-pull-pg-retry",
+  "args": [
+    "docker",
+    "pull",
+    "postgres:17"
+  ],
+  "exit": 1,
+  "seconds": 6.04
+}

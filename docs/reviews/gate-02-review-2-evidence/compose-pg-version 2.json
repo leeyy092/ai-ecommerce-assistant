@@ -1,0 +1,27 @@
+{
+  "name": "compose-pg-version",
+  "args": [
+    "docker",
+    "compose",
+    "-p",
+    "aiea-g2r2-9hnwja",
+    "--env-file",
+    "/tmp/aiea-g2r2-9hnwja_c/compose.env",
+    "-f",
+    "/tmp/aiea-g2r2-9hnwja_c/repo/ai-ecommerce-assistant/compose.yaml",
+    "-f",
+    "/tmp/aiea-g2r2-9hnwja_c/override.yaml",
+    "exec",
+    "-T",
+    "postgres",
+    "psql",
+    "-U",
+    "aiea",
+    "-d",
+    "aiea_dev",
+    "-Atc",
+    "select version();"
+  ],
+  "exit": 0,
+  "seconds": 0.18
+}

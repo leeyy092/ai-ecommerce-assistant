@@ -1,0 +1,9 @@
+{
+  "name": "review-compose",
+  "args": [
+    "node",
+    "/tmp/aiea-g2r2-9hnwja_c/scripts/review-compose.mjs"
+  ],
+  "exit": 0,
+  "seconds": 9.33
+}

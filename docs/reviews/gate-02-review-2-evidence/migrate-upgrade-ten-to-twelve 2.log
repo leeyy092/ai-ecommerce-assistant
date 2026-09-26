@@ -1,0 +1,19 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "review_upgrade", schema "public" at "127.0.0.1:55574"
+
+12 migrations found in prisma/migrations
+
+Applying migration `20260915110000_p0_store_name_unique`
+Applying migration `20260915120000_p0_import_claim_idempotency`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260915110000_p0_store_name_unique/
+    └─ migration.sql
+  └─ 20260915120000_p0_import_claim_idempotency/
+    └─ migration.sql
+
+All migrations have been successfully applied.

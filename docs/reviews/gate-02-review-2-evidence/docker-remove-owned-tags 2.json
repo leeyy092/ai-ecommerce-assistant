@@ -1,0 +1,13 @@
+{
+  "name": "docker-remove-owned-tags",
+  "args": [
+    "docker",
+    "image",
+    "rm",
+    "aiea-g2r2-review:072f9ba",
+    "aiea-g2r2-pg:17",
+    "postgres:17"
+  ],
+  "exit": 0,
+  "seconds": 1.18
+}

@@ -1,0 +1,14 @@
+{
+  "redactedFiles": {},
+  "excluded": [
+    "env.json",
+    "actors-private.json",
+    "compose-private.json",
+    "compose.env",
+    "pgdata",
+    "private",
+    "remote-git",
+    "node_modules"
+  ],
+  "note": "Only temporary local secrets excluded; assertion values and immutable review facts preserved."
+}

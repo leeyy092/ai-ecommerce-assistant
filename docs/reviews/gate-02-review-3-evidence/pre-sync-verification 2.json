@@ -1,0 +1,13 @@
+{
+  "state": {
+    "current_task": "TASK-007",
+    "status": "待修复",
+    "next_owner": "ZCode",
+    "next_prompt": "prompts/P08_FIX.md",
+    "checkpoint": "YES"
+  },
+  "task_rows": 30,
+  "historical_files_preserved": 249,
+  "known_secret_scan": "PASS",
+  "prompt_and_handoff_history_retained": true
+}

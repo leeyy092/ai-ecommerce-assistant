@@ -1,0 +1,17 @@
+{
+  "name": "initdb",
+  "args": [
+    "initdb",
+    "-D",
+    "/tmp/aiea-g2r2-9hnwja_c/pgdata",
+    "-U",
+    "reviewer",
+    "-A",
+    "trust",
+    "--no-locale",
+    "-E",
+    "UTF8"
+  ],
+  "exit": 0,
+  "seconds": 0.95
+}

@@ -1,0 +1,134 @@
+[
+  {
+    "name": "actual web image build exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "actual worker image build exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "private .data canary excluded",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "compose up exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "web health",
+    "expected": 200,
+    "actual": 200,
+    "status": "PASS"
+  },
+  {
+    "name": "official migrations exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "container init-owner exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "container login",
+    "expected": 200,
+    "actual": 200,
+    "status": "PASS"
+  },
+  {
+    "name": "container create store",
+    "expected": 201,
+    "actual": 201,
+    "status": "PASS"
+  },
+  {
+    "name": "container create source",
+    "expected": 201,
+    "actual": 201,
+    "status": "PASS"
+  },
+  {
+    "name": "container upload response",
+    "expected": 201,
+    "actual": 201,
+    "status": "PASS"
+  },
+  {
+    "name": "built Worker validation",
+    "expected": "preview_ready",
+    "actual": "preview_ready",
+    "status": "PASS"
+  },
+  {
+    "name": "unsigned file denied",
+    "expected": 403,
+    "actual": 403,
+    "status": "PASS"
+  },
+  {
+    "name": "signed download matches",
+    "expected": [
+      200,
+      true
+    ],
+    "actual": [
+      200,
+      true
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "container restart exit",
+    "expected": 0,
+    "actual": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "health after restart",
+    "expected": 200,
+    "actual": 200,
+    "status": "PASS"
+  },
+  {
+    "name": "read after restart matches",
+    "expected": [
+      200,
+      true
+    ],
+    "actual": [
+      200,
+      true
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "own containers cleaned",
+    "expected": "",
+    "actual": "",
+    "status": "PASS"
+  },
+  {
+    "name": "own volumes cleaned",
+    "expected": "",
+    "actual": "",
+    "status": "PASS"
+  },
+  {
+    "name": "own networks cleaned",
+    "expected": "",
+    "actual": "",
+    "status": "PASS"
+  }
+]
