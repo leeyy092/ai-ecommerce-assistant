@@ -4,7 +4,9 @@
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase 3 / TASK-009 / Phase内连续开发（Checkpoint=NO） / 进行中 / 下一责任人ZCode（P06）。**
+**Phase 3 / TASK-010 / Phase内连续开发（Checkpoint=NO） / 进行中 / 下一责任人ZCode（P06）。**
+
+TASK-008 DONE（a5e9b7b）：映射/全量校验/staging 预览/错误下载/幂等键。TASK-009 DONE（10adb88，2026-09-27）：POST commit（preview_version CAS+confirmation）店铺事务锁内 Product/SKU 自然键 upsert + 提交前来源新旧重验 + DataCoverage 按声明落库 + dataset_version 递增 + outbox pending + 审计；重放 200 复用不增版本；注入失败整文件回滚回 preview_ready；并发 CAS 恰一生效；POST sku-aliases 显式别名（跨店 404/重复 409）。验证：typecheck0/unit72/integration132/build0/e2e8；证据 gate-03-task008/009-evidence/。
 
 TASK-008 已完成（a5e9b7b，2026-09-27）：字段映射（PUT mapping CAS/时区确认/覆盖声明）、全量校验（文件内折叠/同刻冲突/未知SKU/缺失引用/退款越界，任一错误行整文件 failed）、staging 私有 manifest、脱敏预览（insert/update/unchanged/rejected 计数+覆盖缺口+ignored_columns）、错误文件 5 分钟签名下载、幂等键写入。验证：typecheck0/unit72/integration127/build0/e2e8（/tmp 副本+一次性 PG17@5435）；证据 ai-ecommerce-assistant/docs/reviews/gate-03-task008-evidence/。Git：Phase2 已按放行合并 main（85a93ec），phase/03-import 已建链。
 
@@ -24,19 +26,19 @@ Owner在新对话明确要求开始后续开发（原话见进度PH3-20260927-01
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
-  "stage": "06 分任务开发 · Phase 3 六类文件导入链路 · TASK-009 进行中",
-  "current_task": "TASK-009",
+  "stage": "06 分任务开发 · Phase 3 六类文件导入链路 · TASK-010 进行中",
+  "current_task": "TASK-010",
   "status": "进行中",
-  "last_completed": "TASK-008 DONE（a5e9b7b）：字段映射/全量校验/staging 预览/错误下载/幂等键；Phase2 已按放行合并 main（85a93ec），phase/03-import 建链",
-  "next_action": "TASK-009 原子提交内核与商品主数据（Phase 内一次一 TASK 连续推进至 TASK-012，GATE_03 停审）",
+  "last_completed": "TASK-009 DONE（10adb88）：commit CAS/店铺锁事务/重放复用/注入回滚/sku-aliases 别名；TASK-008 已完成（a5e9b7b）",
+  "next_action": "TASK-010 订单头与订单行导入（Phase 内一次一 TASK 连续推进至 TASK-012，GATE_03 停审）",
   "next_owner": "ZCode",
   "next_prompt": "prompts/P06_BUILD.md",
   "acceptance": "TASK-008–012各按原合同验收；六类文件全量校验/预览确认/原子提交、隔离与幂等更正通过；GATE_03独立审查后停下向Owner反馈",
   "blockers": "无已知技术阻塞；TASK-009 进行中。开户合同（TASK-031 草案）与真实 OSS 云验证保持原边界",
   "checkpoint": "NO",
   "review": "GATE_02 REVIEW5 PASS（4b9e139/业务b32f731）；Owner已授权Phase3；GATE_03尚未开始",
-  "updated_at": "2026-09-27T01:07:30+08:00",
-  "updated_by": "ZCode · TASK-008 DONE（a5e9b7b），接续 TASK-009",
+  "updated_at": "2026-09-27T01:16:00+08:00",
+  "updated_by": "ZCode · TASK-009 DONE（10adb88），接续 TASK-010",
   "evidence": [
     "PH3-20260927-01于2026-09-27首次发送，ZCode00:05只读ACK：phase/02-data-ingestion@4b9e139、无业务差异、管理文件保留、008–012合同/GATE03停点、无阻塞；START实际送达和开工由ZCode追加回执",
     "2026-09-27T00:02:18+08:00 Owner明确要求开始后续开发并在功能节点停下反馈；授权落实至Phase3 TASK-008–012，GATE_03停审；尚未派发START",
@@ -344,8 +346,8 @@ Owner在新对话明确要求开始后续开发（原话见进度PH3-20260927-01
 | TASK-006 | 统一Adapter与最小黄金样本 | DONE | TASK-005 | REVIEW 3独立PASS：H03非法偏移/Worker行错误、H04规范channel及两店CSV/Mock独立oracle通过；TASK-008内容未开始 |
 | TASK-007 | 文件上传、私有存储与ImportTask | DONE | TASK-006 | REVIEW 5独立PASS（4b9e139/业务b32f731）：H06/H08关闭；118集成、58独立断言及真实HTTP/Worker/重启文件链通过，待Owner放行Phase 2 |
 | TASK-008 | 字段映射、全量校验与预览 | DONE | TASK-007 | 2026-09-27：mapping CAS/coverage 声明、全量校验整文件拒绝、staging manifest、脱敏预览与错误下载、幂等键；127集成（+9）；提交 a5e9b7b |
-| TASK-009 | 原子提交内核与商品主数据 | IN_PROGRESS | TASK-008 | 未执行 |
-| TASK-010 | 订单头与订单行导入 | TODO | TASK-009 | 未执行 |
+| TASK-009 | 原子提交内核与商品主数据 | DONE | TASK-008 | 2026-09-27：commit CAS/店铺锁事务/重放复用/注入回滚/别名跨店404；132集成（+5）；提交 10adb88 |
+| TASK-010 | 订单头与订单行导入 | IN_PROGRESS | TASK-009 | 未执行 |
 | TASK-011 | 广告日数据导入 | TODO | TASK-009 | 未执行 |
 | TASK-012 | 客服、售后与退款事件导入 | TODO | TASK-009、TASK-010 | 未执行 |
 | TASK-013 | 持久任务与快照发布骨架 | TODO | TASK-010、TASK-011、TASK-012 | 未执行 |
@@ -927,6 +929,12 @@ GATE_02 收尾实际核验（2026-09-15T13:22:00+08:00）：Product OS sync 返�
 - Git：管理记录提交 c63d2aa 后，phase/02-data-ingestion（4b9e139，业务 b32f731）按放行合并 main（85a93ec，--no-ff 已推送，b32f731 经 merge-base 断言在祖先链）；自 main 创建 phase/03-import 并推送。业务提交 a5e9b7b（phase/03-import）。
 - 验证（/tmp 远端 clone@85a93ec+一次性 PG17@5435）：typecheck 0、unit 72/72、integration 127/127（+9）、build 0、e2e 8/8；无新迁移；日志 docs/reviews/gate-03-task008-evidence/。已关闭项与 M06 未触碰。
 - 下一步：TASK-009 原子提交内核与商品主数据（一次一 TASK）。
+
+## 2026-09-27 · ZCode 完成 TASK-009（原子提交内核与商品主数据）
+
+- 用户功能→合同→差异→关闭：用户确认预览后整文件原子落库→09_TASKS TASK-009+04 §10.5/PART11.1/12.1→commitTask 服务+commit/sku-aliases 路由→重放复用/回滚恢复/并发一次生效/别名跨店404（+5 回归全绿）。
+- 提交 10adb88；验证 typecheck0/unit72/integration132/build0/e2e8（/tmp 副本+PG17@5435）；日志 docs/reviews/gate-03-task009-evidence/。无新迁移、无依赖变化。
+- 下一步：TASK-010 订单头与订单行导入。
 
 ### PH3-20260927-01 START接收与开工（2026-09-27 00:08）
 
