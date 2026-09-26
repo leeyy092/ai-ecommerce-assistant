@@ -687,22 +687,28 @@ async function loadExistingByNaturalKey(args: {
       return indexBy(rows, (r) => byOrder.get(r.externalOrderId)?.key);
     }
     case "order_items": {
+      // 自然键=（订单外部ID, 行外部ID）：先解析订单，再按订单+行号精确对照，
+      // 避免不同订单的同名行号互相错配
       const recs = [...pending.values()];
-      const byItem = new Map(recs.map((k) => [(k.record as StandardRecords["order_items"]).externalOrderItemId, k]));
-      const rows = await db.orderItem.findMany({
-        where: { ...base, externalOrderItemId: { in: [...byItem.keys()] } },
-        select: { ...pick, id: true, orderId: true, externalOrderItemId: true },
-      });
+      const orderExtIds = [...new Set(recs.map((k) => (k.record as StandardRecords["order_items"]).externalOrderId))];
       const orders = await db.order.findMany({
-        where: { orgId, storeId, id: { in: rows.map((r) => r.orderId) } },
-        select: { id: true, sourceNamespace: true, externalOrderId: true },
+        where: { ...base, externalOrderId: { in: orderExtIds } },
+        select: { id: true, externalOrderId: true },
       });
-      const extByOrderId = new Map(orders.map((o) => [o.id, o.externalOrderId]));
-      return indexBy(
-        rows,
-        (r) => byItem.get(r.externalOrderItemId)?.key,
-        (r) => `${extByOrderId.get(r.orderId) ?? "?"}\u0000${r.externalOrderItemId}`,
-      );
+      const orderByExt = new Map(orders.map((o) => [o.externalOrderId, o.id] as const));
+      const itemExtIds = [...new Set(recs.map((k) => (k.record as StandardRecords["order_items"]).externalOrderItemId))];
+      const rows = await db.orderItem.findMany({
+        where: { orgId, storeId, orderId: { in: [...orderByExt.values()] }, externalOrderItemId: { in: itemExtIds } },
+        select: { ...pick, orderId: true, externalOrderItemId: true },
+      });
+      const out = new Map<string, { id: string; sourceUpdatedAt: Date; rowHash: string }>();
+      for (const r of rows) {
+        const orderExt = [...orderByExt.entries()].find(([, id]) => id === r.orderId)?.[0];
+        const key = JSON.stringify({ external_order_id: orderExt, external_order_item_id: r.externalOrderItemId });
+        const p = pending.get(key);
+        if (p) out.set(p.key, r);
+      }
+      return out;
     }
     case "ads": {
       const recs = [...pending.values()];

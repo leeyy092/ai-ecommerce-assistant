@@ -65,6 +65,21 @@ function toDbChannel(c: AdapterCoverageChannel): DbCoverageChannel {
   return c === "case" ? "case_channel" : c === "refund" ? "refund_channel" : "default_channel";
 }
 
+/** 自由文本脱敏（与 importPreview.redactFreeText 同规则；预览与落库一致） */
+function redactText(v: string): string {
+  const masked = v
+    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "***@***")
+    .replace(/(?:\+?86[- ]?)?1\d{10}/g, "***PHONE***")
+    .replace(/\d{15,19}/g, "***NO***");
+  return masked.length > 200 ? `${masked.slice(0, 200)}…` : masked;
+}
+
+function localDateInTz(tz: string, at: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(at);
+}
+
 function expandRange(from: string, to: string): string[] {
   const out: string[] = [];
   let d = new Date(`${from}T00:00:00Z`);
@@ -149,6 +164,7 @@ export async function commitImportTask(
       const baseVersion = storeRow.datasetVersion;
 
       let changed = 0;
+      const partialDates = new Set<string>(); // 行遗漏强制 partial（PART12.4）
       if (kind === "products") {
         for (const row of staged) {
           const s = row.sample as {
@@ -201,23 +217,273 @@ export async function commitImportTask(
           });
           changed += 1;
         }
-      } else {
-        // TASK-010–012 落库其余五类；本 TASK 仅注册商品提交路径
-        throw new AccessError(422, "VALIDATION_ERROR", `当前提交内核仅支持 products（${kind} 属后续 TASK 合同）`);
+      } else if (kind === "orders") {
+        for (const row of staged) {
+          const o = row.sample as {
+            externalOrderId: string; orderedAt: string; paidAt: string | null;
+            paymentStatus: string; currency: string; expectedItemCount: number;
+            sourceUpdatedAt: string;
+          };
+          const existingOrder = await tx.order.findFirst({
+            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalOrderId: o.externalOrderId },
+            select: { id: true, sourceUpdatedAt: true, paymentStatus: true },
+          });
+          if (existingOrder && existingOrder.sourceUpdatedAt.getTime() > new Date(o.sourceUpdatedAt).getTime()) {
+            continue; // 旧版本不覆盖
+          }
+          // 付款状态回退：已存 paid 改 unpaid/cancelled 且已有成功退款 → 拒绝
+          if (
+            existingOrder &&
+            existingOrder.paymentStatus === "paid" &&
+            o.paymentStatus !== "paid"
+          ) {
+            const items = await tx.orderItem.findMany({
+              where: { orgId: ctx.orgId, storeId: task.storeId, orderId: existingOrder.id },
+              select: { id: true },
+            });
+            const refundCount = items.length
+              ? await tx.refundEvent.count({
+                  where: { orgId: ctx.orgId, storeId: task.storeId, orderItemId: { in: items.map((i) => i.id) }, status: "succeeded" },
+                })
+              : 0;
+            if (refundCount > 0) {
+              throw new AccessError(409, "INVALID_PAYMENT_TRANSITION", `订单 ${o.externalOrderId} 存在成功退款，不能改为 ${o.paymentStatus}`);
+            }
+          }
+          const itemCount = existingOrder
+            ? await tx.orderItem.count({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: existingOrder.id } })
+            : 0;
+          if (itemCount > o.expectedItemCount) {
+            throw new AccessError(409, "ITEM_COUNT_EXCEEDED", `订单 ${o.externalOrderId} 现存行数 ${itemCount} 超过 expected_item_count=${o.expectedItemCount}`);
+          }
+          await tx.order.upsert({
+            where: { orgId_storeId_sourceNamespace_externalOrderId: {
+              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalOrderId: o.externalOrderId,
+            } },
+            create: {
+              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
+              externalOrderId: o.externalOrderId, sourceUpdatedAt: new Date(o.sourceUpdatedAt),
+              importTaskId: task.id, rowHash: row.row_hash,
+              orderedAt: new Date(o.orderedAt), paidAt: o.paidAt ? new Date(o.paidAt) : null,
+              paymentStatus: o.paymentStatus as "paid",
+              currency: o.currency, expectedItemCount: o.expectedItemCount,
+            },
+            update: {
+              orderedAt: new Date(o.orderedAt), paidAt: o.paidAt ? new Date(o.paidAt) : null,
+              paymentStatus: o.paymentStatus as "paid",
+              currency: o.currency, expectedItemCount: o.expectedItemCount,
+              sourceUpdatedAt: new Date(o.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
+            },
+          });
+          changed += 1;
+        }
+      } else if (kind === "order_items") {
+        for (const row of staged) {
+          const it = row.sample as {
+            externalOrderId: string; externalOrderItemId: string; externalSkuId: string;
+            quantity: number; itemPaidAmount: string; currency: string; sourceUpdatedAt: string;
+          };
+          const parentOrder = await tx.order.findFirst({
+            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalOrderId: it.externalOrderId },
+            select: { id: true },
+          });
+          if (!parentOrder) {
+            throw new AccessError(409, "MISSING_ORDER_REFERENCE", `订单 ${it.externalOrderId} 不存在，订单行不能提交`);
+          }
+          const sku = await tx.sKU.findFirst({
+            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalSkuId: it.externalSkuId },
+            select: { id: true },
+          });
+          if (!sku) {
+            throw new AccessError(409, "SKU_NOT_FOUND", `SKU ${it.externalSkuId} 不存在，订单行不能提交`);
+          }
+          const existingItem = await tx.orderItem.findFirst({
+            where: { orgId: ctx.orgId, storeId: task.storeId, orderId: parentOrder.id, externalOrderItemId: it.externalOrderItemId },
+            select: { id: true, sourceUpdatedAt: true },
+          });
+          if (existingItem && existingItem.sourceUpdatedAt.getTime() > new Date(it.sourceUpdatedAt).getTime()) {
+            continue; // 旧版本不覆盖
+          }
+          await tx.orderItem.upsert({
+            where: { orgId_storeId_sourceNamespace_orderId_externalOrderItemId: {
+              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
+              orderId: parentOrder.id, externalOrderItemId: it.externalOrderItemId,
+            } },
+            create: {
+              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
+              orderId: parentOrder.id, externalOrderItemId: it.externalOrderItemId,
+              skuId: sku.id, quantity: it.quantity, itemPaidAmount: it.itemPaidAmount,
+              currency: it.currency, sourceUpdatedAt: new Date(it.sourceUpdatedAt),
+              importTaskId: task.id, rowHash: row.row_hash,
+            },
+            update: {
+              skuId: sku.id, quantity: it.quantity, itemPaidAmount: it.itemPaidAmount,
+              currency: it.currency, sourceUpdatedAt: new Date(it.sourceUpdatedAt),
+              rowHash: row.row_hash, importTaskId: task.id,
+            },
+          });
+          // 缺行检查在 upsert 之后：present < expected → 该付款日强制 partial
+          const orderRow = await tx.order.findUniqueOrThrow({ where: { id: parentOrder.id }, select: { expectedItemCount: true, paidAt: true, orderedAt: true } });
+          const presentCount = await tx.orderItem.count({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: parentOrder.id } });
+          if (presentCount < orderRow.expectedItemCount) {
+            const baseDay = orderRow.paidAt ?? orderRow.orderedAt;
+            partialDates.add(localDateInTz(store.timezone, baseDay));
+          }
+          changed += 1;
+        }
+      } else if (kind === "ads") {
+        for (const row of staged) {
+          const a = row.sample as {
+            campaignId: string; campaignName: string; reportDate: string;
+            attributionModel: string; attributionWindowDays: number;
+            spend: string; attributedSales: string; currency: string; sourceUpdatedAt: string;
+          };
+          const existing = await tx.adMetric.findFirst({
+            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, campaignId: a.campaignId, reportDate: new Date(`${a.reportDate}T00:00:00Z`), attributionModel: a.attributionModel, attributionWindowDays: a.attributionWindowDays, currency: a.currency },
+            select: { id: true, sourceUpdatedAt: true },
+          });
+          if (existing && existing.sourceUpdatedAt.getTime() > new Date(a.sourceUpdatedAt).getTime()) {
+            continue; // 旧版本不覆盖
+          }
+          await tx.adMetric.upsert({
+            where: { orgId_storeId_sourceNamespace_campaignId_reportDate_attributionModel_attributionWindowDays_currency: {
+              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
+              campaignId: a.campaignId, reportDate: new Date(`${a.reportDate}T00:00:00Z`),
+              attributionModel: a.attributionModel, attributionWindowDays: a.attributionWindowDays, currency: a.currency,
+            } },
+            create: {
+              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
+              campaignId: a.campaignId, campaignName: a.campaignName,
+              reportDate: new Date(`${a.reportDate}T00:00:00Z`),
+              attributionModel: a.attributionModel, attributionWindowDays: a.attributionWindowDays,
+              spend: a.spend, attributedSales: a.attributedSales, currency: a.currency,
+              sourceUpdatedAt: new Date(a.sourceUpdatedAt), importTaskId: task.id, rowHash: row.row_hash,
+            },
+            update: {
+              campaignName: a.campaignName, spend: a.spend, attributedSales: a.attributedSales,
+              sourceUpdatedAt: new Date(a.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
+            },
+          });
+          changed += 1;
+        }
+      } else if (kind === "customer_messages") {
+        for (const row of staged) {
+          const m = row.sample as {
+            externalMessageId: string; externalConversationId: string; messageAt: string;
+            channel: string; message_text: string; language: string;
+            externalSkuId: string | null; isComplaint: boolean | null; sourceUpdatedAt: string;
+          };
+          let skuId: string | null = null;
+          if (m.externalSkuId) {
+            skuId = (await tx.sKU.findFirstOrThrow({
+              where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalSkuId: m.externalSkuId },
+              select: { id: true },
+            })).id;
+          }
+          await tx.customerMessage.upsert({
+            where: { orgId_storeId_sourceNamespace_externalMessageId: {
+              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalMessageId: m.externalMessageId,
+            } },
+            create: {
+              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
+              externalMessageId: m.externalMessageId, externalConversationId: m.externalConversationId,
+              messageAt: new Date(m.messageAt), channel: m.channel, language: m.language,
+              redactedText: m.message_text, skuId, isComplaint: m.isComplaint,
+              sourceUpdatedAt: new Date(m.sourceUpdatedAt), importTaskId: task.id, rowHash: row.row_hash,
+            },
+            update: {
+              messageAt: new Date(m.messageAt), channel: m.channel, language: m.language,
+              redactedText: m.message_text, skuId, isComplaint: m.isComplaint,
+              sourceUpdatedAt: new Date(m.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
+            },
+          });
+          changed += 1;
+        }
+      } else if (kind === "after_sales") {
+        for (const row of staged) {
+          const a = row.sample as {
+            recordType: "case" | "refund"; externalRecordId: string; externalOrderId: string;
+            externalOrderItemId: string; relatedCaseId: string | null; occurredAt: string;
+            status: string; completedAt: string | null; refundAmount: string | null;
+            refundedQuantityCumulative: number | null; currency: string | null;
+            reasonCode: string; reason_text: string | null; sourceUpdatedAt: string;
+          };
+          const parentOrder = await tx.order.findFirst({
+            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalOrderId: a.externalOrderId },
+            select: { id: true },
+          });
+          const parentItem = parentOrder
+            ? await tx.orderItem.findFirst({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: parentOrder.id, externalOrderItemId: a.externalOrderItemId }, select: { id: true } })
+            : null;
+          if (!parentOrder || !parentItem) {
+            throw new AccessError(409, "MISSING_ORDER_REFERENCE", `售后行 ${a.externalRecordId} 引用的订单行不存在`);
+          }
+          if (a.recordType === "case") {
+            await tx.afterSaleRecord.upsert({
+              where: { orgId_storeId_sourceNamespace_externalRecordId: {
+                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalRecordId: a.externalRecordId,
+              } },
+              create: {
+                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
+                externalRecordId: a.externalRecordId, orderId: parentOrder.id, orderItemId: parentItem.id,
+                occurredAt: new Date(a.occurredAt), status: a.status as "requested",
+                reasonCode: a.reasonCode, reasonText: a.reason_text ? redactText(a.reason_text) : null,
+                sourceUpdatedAt: new Date(a.sourceUpdatedAt), importTaskId: task.id, rowHash: row.row_hash,
+              },
+              update: {
+                occurredAt: new Date(a.occurredAt), status: a.status as "requested",
+                reasonCode: a.reasonCode, reasonText: a.reason_text ? redactText(a.reason_text) : null,
+                sourceUpdatedAt: new Date(a.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
+              },
+            });
+          } else {
+            let caseId: string | null = null;
+            if (a.relatedCaseId) {
+              caseId = (await tx.afterSaleRecord.findFirstOrThrow({
+                where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalRecordId: a.relatedCaseId },
+                select: { id: true },
+              })).id;
+            }
+            await tx.refundEvent.upsert({
+              where: { orgId_storeId_sourceNamespace_externalRecordId: {
+                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalRecordId: a.externalRecordId,
+              } },
+              create: {
+                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
+                externalRecordId: a.externalRecordId, orderId: parentOrder.id, orderItemId: parentItem.id,
+                afterSaleRecordId: caseId, occurredAt: new Date(a.occurredAt),
+                status: a.status as "succeeded",
+                completedAt: a.completedAt ? new Date(a.completedAt) : null,
+                refundAmount: a.refundAmount, refundedQuantityCumulative: a.refundedQuantityCumulative,
+                currency: a.currency ?? "CNY", reasonCode: a.reasonCode,
+                reasonText: a.reason_text ? redactText(a.reason_text) : null,
+                sourceUpdatedAt: new Date(a.sourceUpdatedAt), importTaskId: task.id, rowHash: row.row_hash,
+              },
+              update: {
+                afterSaleRecordId: caseId, occurredAt: new Date(a.occurredAt),
+                status: a.status as "succeeded",
+                completedAt: a.completedAt ? new Date(a.completedAt) : null,
+                refundAmount: a.refundAmount, refundedQuantityCumulative: a.refundedQuantityCumulative,
+                currency: a.currency ?? "CNY", reasonCode: a.reasonCode,
+                reasonText: a.reason_text ? redactText(a.reason_text) : null,
+                sourceUpdatedAt: new Date(a.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
+              },
+            });
+          }
+          changed += 1;
+        }
       }
 
       // 覆盖声明（用户确认制；非文件推断）：products 记录目录确认日
       const nowLocal = new Intl.DateTimeFormat("en-CA", {
         timeZone: store.timezone, year: "numeric", month: "2-digit", day: "2-digit",
       }).format(new Date());
-      console.log("COMMIT_DEBUG", JSON.stringify({ declared: manifest.coverage_declaration.length, changed, baseVersion: baseVersion.toString() }));
       const newVersion = changed > 0 || manifest.coverage_declaration.length > 0 ? baseVersion + 1n : baseVersion;
       for (const item of manifest.coverage_declaration) {
         if (item.source_kind !== kind) continue;
         const zero = new Set(item.explicit_zero_dates);
         const dates = kind === "products" ? [nowLocal] : expandRange(item.from, item.to);
         for (const date of dates) {
-          console.log("COVERAGE_UPSERT", date, item.channel);
           const recordCount = manifest.rows.filter((r) => r.affected_dates.includes(date)).length;
           await tx.dataCoverage.upsert({
             where: {
@@ -234,14 +500,14 @@ export async function commitImportTask(
               sourceKind: item.source_kind as "products",
               channel: toDbChannel(item.channel),
               coverageDate: new Date(`${date}T00:00:00Z`),
-              status: item.status === "partial" ? "partial" : "complete",
+              status: partialDates.has(date) ? "partial" : item.status === "partial" ? "partial" : "complete",
               explicitZero: zero.has(date),
               recordCount,
               datasetVersion: newVersion,
               importTaskId: task.id,
             },
             update: {
-              status: item.status === "partial" ? "partial" : "complete",
+              status: partialDates.has(date) ? "partial" : item.status === "partial" ? "partial" : "complete",
               explicitZero: zero.has(date),
               recordCount,
               importTaskId: task.id,

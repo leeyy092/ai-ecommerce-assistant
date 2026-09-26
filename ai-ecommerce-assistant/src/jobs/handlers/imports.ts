@@ -150,7 +150,6 @@ export async function handleValidateTask(
     const parsed = getAdapter("csv").parse(task.sourceKind, { storeExternalId: store.externalStoreId }, text);
     // G2-H04：统一 CanonicalBatch 合同——服务端赋值店铺/namespace/checksum，
     // 覆盖声明来自任务存档（用户映射确认），不来自文件内容
-    console.log("HANDLER_COVERAGE", JSON.stringify(task.coverageDeclaration), "mapping:", JSON.stringify(task.mapping));
     const batch: CanonicalBatch = createCanonicalBatch({
       sourceKind: task.sourceKind,
       sourceNamespace: dataSource.sourceNamespace,

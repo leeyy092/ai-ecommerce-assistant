@@ -1487,3 +1487,238 @@ describe("TASK-009｜原子提交内核、商品主数据与 SKU 别名", () => 
     expect(realSku.status).toBe(409);
   });
 });
+
+describe("TASK-010｜订单头与订单行导入", () => {
+  const PRODUCTS_R9 = (sku: string, name: string, ts: string): string =>
+    `${FILE_HEADERS.products.join(",")}\nIMP-1,${ts},R8P,杯,杯具,active,${sku},${sku}-CODE,${name},,active`;
+  async function putMapping(taskId: string, cookie: string, body: Record<string, unknown>): Promise<Response> {
+    const { PUT } = await import("@/app/api/v1/imports/[id]/mapping/route");
+    return PUT(
+      req(`/api/v1/imports/${taskId}/mapping`, { method: "PUT", body: JSON.stringify(body), headers: { "content-type": "application/json" } }, cookie),
+      { params: Promise.resolve({ id: taskId }) },
+    );
+  }
+  async function runValidate(taskId: string): Promise<void> {
+    const { handleValidateTask } = await import("@/jobs/handlers/imports");
+    await handleValidateTask({ taskId });
+  }
+  async function getPreview(taskId: string, cookie: string): Promise<Response> {
+    const { GET } = await import("@/app/api/v1/imports/[id]/preview/route");
+    return GET(req(`/api/v1/imports/${taskId}/preview`, {}, cookie), { params: Promise.resolve({ id: taskId }) });
+  }
+  async function commitTask(taskId: string, cookie: string, previewVersion: number): Promise<Response> {
+    const { POST } = await import("@/app/api/v1/imports/[id]/commit/route");
+    return POST(
+      req(`/api/v1/imports/${taskId}/commit`, {
+        method: "POST",
+        body: JSON.stringify({ preview_version: previewVersion, confirmation: true }),
+        headers: { "content-type": "application/json" },
+      }, cookie),
+      { params: Promise.resolve({ id: taskId }) },
+    );
+  }
+  const ORDERS_T10 = (orderId: string, paid: string, count: number): string =>
+    `${FILE_HEADERS.orders.join(",")}\nIMP-1,${paid}T02:05:00Z,${orderId},paid,${paid}T01:55:00Z,${paid}T02:00:00Z,CNY,${count}`;
+  const ITEMS_T10 = (orderId: string, itemId: string, qty: number, amount: string): string =>
+    `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,${orderId},${itemId},S10,${qty},${amount},CNY`;
+  const paid0 = "2026-09-01";
+
+  async function commitChain(products: string, orders: string, items: string): Promise<void> {
+    for (const [kind, content] of [["products", products], ["orders", orders], ["order_items", items]] as const) {
+      const made = await makeTask(operator.cookie, kind, content);
+      await runValidate(made.id);
+      const t = await db.importTask.findUniqueOrThrow({ where: { id: made.id }, select: { status: true, previewVersion: true, errorCode: true } });
+      expect(t.status).toBe("preview_ready");
+      if (kind === "order_items") {
+        const decl = await putMapping(made.id, operator.cookie, {
+          timezone: "Asia/Shanghai",
+          coverage_declaration: [{ source_kind: "order_items", channel: "default", from: paid0, to: "2026-09-11", status: "complete", explicit_zero_dates: [] }],
+          expected_preview_version: t.previewVersion,
+        });
+        expect(decl.status).toBe(202);
+        await runValidate(made.id);
+        const t2 = await db.importTask.findUniqueOrThrow({ where: { id: made.id }, select: { previewVersion: true } });
+        const res2 = await commitTask(made.id, operator.cookie, t2.previewVersion);
+        expect([202, 200]).toContain(res2.status);
+        continue;
+      }
+      const res = await commitTask(made.id, operator.cookie, t.previewVersion);
+      expect([202, 200]).toContain(res.status);
+    }
+  }
+
+  it("多行订单只建一单；两行落库；更正订单行替换金额且身份不变", async () => {
+    await commitChain(
+      PRODUCTS_R9("S10", "杯S10", "2026-09-01T00:00:00Z"),
+      ORDERS_T10("T10-O1", paid0, 2),
+      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O1,L1,S10,1,50.000000,CNY\nIMP-1,${paid0}T02:05:00Z,T10-O1,L2,S10,1,60.000000,CNY`,
+    );
+    const order = await db.order.findFirstOrThrow({ where: { orgId, externalOrderId: "T10-O1" } });
+    expect(await db.orderItem.count({ where: { orgId, orderId: order.id } })).toBe(2);
+    expect(await db.order.count({ where: { orgId, externalOrderId: "T10-O1" } })).toBe(1);
+
+    // 更正行金额（更晚 source_updated_at）：替换不重复
+    const fixed = await makeTask(operator.cookie, "order_items",
+      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,2026-09-02T02:05:00Z,T10-O1,L1,S10,1,55.000000,CNY`);
+    await runValidate(fixed.id);
+    const p = (await (await getPreview(fixed.id, operator.cookie)).json()) as { data: { counts: { update: number } } };
+    expect(p.data.counts.update).toBe(1);
+    const res = await commitTask(fixed.id, operator.cookie, 1);
+    expect([202, 200]).toContain(res.status);
+    const item = await db.orderItem.findFirstOrThrow({ where: { orgId, orderId: order.id, externalOrderItemId: "L1" } });
+    expect(Number(item.itemPaidAmount)).toBe(55);
+  });
+
+  it("行遗漏：expected=2 只到 1 行 → 允许提交但该日期覆盖强制 partial；补齐后恢复声明状态", async () => {
+    await commitChain(
+      PRODUCTS_R9("S10P", "杯S10P", "2026-09-01T00:00:00Z"),
+      ORDERS_T10("T10-O2", paid0, 2),
+      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O2,L1,S10P,1,40.000000,CNY`,
+    );
+    const order = await db.order.findFirstOrThrow({ where: { orgId, externalOrderId: "T10-O2" } });
+    expect(await db.orderItem.count({ where: { orgId, orderId: order.id } })).toBe(1);
+    // 订单行覆盖（声明 complete）当日被强制 partial
+    const cover = await db.dataCoverage.findFirstOrThrow({
+      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${paid0}T00:00:00Z`) },
+      orderBy: { datasetVersion: "desc" },
+    });
+    expect(cover.status).toBe("partial");
+
+    // 补齐第二行 → 新版本覆盖恢复声明 complete
+    const fill = await makeTask(operator.cookie, "order_items",
+      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O2,L2,S10P,1,30.000000,CNY`);
+    // 用户补齐后重新声明覆盖（覆盖始终来自用户声明，不由行数推断）
+    const fillDecl = await putMapping(fill.id, operator.cookie, {
+      timezone: "Asia/Shanghai",
+      coverage_declaration: [{ source_kind: "order_items", channel: "default", from: paid0, to: "2026-09-11", status: "complete", explicit_zero_dates: [] }],
+      expected_preview_version: 0,
+    });
+    expect(fillDecl.status).toBe(202);
+    await runValidate(fill.id);
+    const fillTask = await db.importTask.findUniqueOrThrow({ where: { id: fill.id }, select: { previewVersion: true } });
+    const res = await commitTask(fill.id, operator.cookie, fillTask.previewVersion);
+    console.log("FILL_RES", res.status, JSON.stringify((await res.json()).data ?? {}));
+    expect([202, 200]).toContain(res.status);
+    const cover2 = await db.dataCoverage.findFirstOrThrow({
+      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${paid0}T00:00:00Z`) },
+      orderBy: { datasetVersion: "desc" },
+    });
+    expect(cover2.status).toBe("complete");
+  });
+
+  it("订单行引用跨店/不存在订单 → 409 整文件回滚，无行落库", async () => {
+    const before = Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion);
+    const made = await makeTask(operator.cookie, "order_items",
+      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,不存在订单,L9,S10,1,10.000000,CNY`);
+    await runValidate(made.id);
+    const task = await db.importTask.findUniqueOrThrow({ where: { id: made.id } });
+    expect(task.status).toBe("failed");
+    expect(task.errorCode).toBe("MISSING_ORDER_REFERENCE");
+    expect(Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion)).toBe(before);
+  });
+
+  it("多行同订单不同 SKU 齐全 → 订单数 1（GMV 口径属 TASK-014）", async () => {
+    await commitChain(
+      `${PRODUCTS_R9("S10X", "杯X", "2026-09-01T00:00:00Z")}\n${PRODUCTS_R9("S10Y", "杯X", "2026-09-01T00:00:00Z").split("\n").slice(1).join("\n")}`,
+      ORDERS_T10("T10-O3", paid0, 2),
+      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O3,L1,S10X,1,10.000000,CNY\nIMP-1,${paid0}T02:05:00Z,T10-O3,L2,S10Y,1,20.000000,CNY`,
+    );
+    const order = await db.order.findFirstOrThrow({ where: { orgId, externalOrderId: "T10-O3" } });
+    expect(await db.orderItem.count({ where: { orgId, orderId: order.id } })).toBe(2);
+    expect(await db.order.count({ where: { orgId, externalOrderId: "T10-O3" } })).toBe(1);
+  });
+});
+
+describe("TASK-011/012｜广告与客服/售后/退款提交", () => {
+  const PRODUCTS_R9b = (sku: string, name: string): string =>
+    `${FILE_HEADERS.products.join(",")}\nIMP-1,2026-09-01T00:00:00Z,R8P,杯,杯具,active,${sku},${sku}-CODE,${name},,active`;
+  async function runValidate(taskId: string): Promise<void> {
+    const { handleValidateTask } = await import("@/jobs/handlers/imports");
+    await handleValidateTask({ taskId });
+  }
+  async function getPreview(taskId: string, cookie: string): Promise<Response> {
+    const { GET } = await import("@/app/api/v1/imports/[id]/preview/route");
+    return GET(req(`/api/v1/imports/${taskId}/preview`, {}, cookie), { params: Promise.resolve({ id: taskId }) });
+  }
+  async function commitTask(taskId: string, cookie: string, previewVersion: number): Promise<Response> {
+    const { POST } = await import("@/app/api/v1/imports/[id]/commit/route");
+    return POST(
+      req(`/api/v1/imports/${taskId}/commit`, {
+        method: "POST",
+        body: JSON.stringify({ preview_version: previewVersion, confirmation: true }),
+        headers: { "content-type": "application/json" },
+      }, cookie),
+      { params: Promise.resolve({ id: taskId }) },
+    );
+  }
+  const MSG_T11 = (mid: string, sku: string | null, text: string): string =>
+    `${FILE_HEADERS.customer_messages.join(",")}\nIMP-1,2026-09-11T01:00:00Z,${mid},C11,2026-09-01T03:00:00Z,${sku ?? ""},${text},true,platform_chat,zh-CN`;
+
+  async function chain11_12(steps: Array<[string, string]>): Promise<void> {
+    for (const [kind, content] of steps) {
+      const made = await makeTask(operator.cookie, kind, content);
+      await runValidate(made.id);
+      const t = await db.importTask.findUniqueOrThrow({ where: { id: made.id }, select: { status: true, previewVersion: true } });
+      expect(t.status).toBe("preview_ready");
+      const res = await commitTask(made.id, operator.cookie, t.previewVersion);
+      expect([202, 200]).toContain(res.status);
+    }
+  }
+
+  it("广告日提交：幂等落库、晚到归因替换不累加", async () => {
+    await chain11_12([
+      ["products", PRODUCTS_R9b("S11", "杯S11")],
+      ["ads", `${FILE_HEADERS.ads.join(",")}\nIMP-1,2026-09-01T04:00:00Z,AD11,广告11,2026-09-01,last_click,7,40.000000,100.000000,CNY`],
+    ]);
+    expect(await db.adMetric.count({ where: { orgId, campaignId: "AD11" } })).toBe(1);
+    const ad = await db.adMetric.findFirstOrThrow({ where: { orgId, campaignId: "AD11" } });
+    expect(Number(ad.spend)).toBe(40);
+
+    // 晚到归因更新：替换 spend/attributed_sales，不新增行
+    const later = await makeTask(operator.cookie, "ads",
+      `${FILE_HEADERS.ads.join(",")}\nIMP-1,2026-09-02T04:00:00Z,AD11,广告11,2026-09-01,last_click,7,45.000000,110.000000,CNY`);
+    await runValidate(later.id);
+    const p = (await (await getPreview(later.id, operator.cookie)).json()) as { data: { counts: { update: number } } };
+    expect(p.data.counts.update).toBe(1);
+    await commitTask(later.id, operator.cookie, 1);
+    const ads = await db.adMetric.findMany({ where: { orgId, campaignId: "AD11" } });
+    expect(ads).toHaveLength(1);
+    expect(Number(ads[0]!.spend)).toBe(45);
+  });
+
+  it("客服消息提交：脱敏落库、SKU 关联", async () => {
+    await chain11_12([
+      ["products", PRODUCTS_R9b("S12", "杯S12")],
+      ["customer_messages", MSG_T11("M12", "S12", "电话13812345678想退款")],
+    ]);
+    const msg = await db.customerMessage.findFirstOrThrow({ where: { orgId, externalMessageId: "M12" } });
+    expect(msg.redactedText).not.toContain("13812345678");
+    expect(msg.skuId).not.toBeNull();
+  });
+
+  it("售后 case+refund 原子提交：金额/累计件数越界在预览拒绝；正常两行落库", async () => {
+    await chain11_12([
+      ["products", PRODUCTS_R9b("S12R", "杯S12R")],
+      ["orders", `${FILE_HEADERS.orders.join(",")}\nIMP-1,2026-09-01T02:05:00Z,O-R12,paid,2026-09-01T01:55:00Z,2026-09-01T02:00:00Z,CNY,1`],
+      ["order_items", `${FILE_HEADERS.order_items.join(",")}\nIMP-1,2026-09-01T02:05:00Z,O-R12,L1,S12R,2,100.000000,CNY`],
+    ]);
+    // 越界：refund 金额 200 > 实付 100 → 整文件失败
+    const bad = await makeTask(operator.cookie, "after_sales",
+      `${FILE_HEADERS.after_sales.join(",")}\nIMP-1,2026-09-02T03:00:00Z,refund,R12-BAD,O-R12,L1,,2026-09-02T03:00:00Z,succeeded,2026-09-02T03:00:00Z,200.000000,1,CNY,quality,`);
+    await runValidate(bad.id);
+    const badTask = await db.importTask.findUniqueOrThrow({ where: { id: bad.id } });
+    expect(badTask.status).toBe("failed");
+    expect(badTask.errorCode).toBe("REFUND_AMOUNT_EXCEEDS_PAID");
+
+    // 正常：case + refund（合计 100 = 实付）
+    await chain11_12([
+      ["after_sales", `${FILE_HEADERS.after_sales.join(",")}\nIMP-1,2026-09-02T03:00:00Z,case,AS-R12,O-R12,L1,,2026-09-02T01:00:00Z,closed,,,,,quality,杯盖坏了\nIMP-1,2026-09-02T03:00:00Z,refund,RF-R12,O-R12,L1,AS-R12,2026-09-02T03:00:00Z,succeeded,2026-09-02T03:00:00Z,100.000000,2,CNY,quality,`],
+    ]);
+    const order = await db.order.findFirstOrThrow({ where: { orgId, externalOrderId: "O-R12" } });
+    expect(await db.afterSaleRecord.count({ where: { orgId, orderId: order.id } })).toBe(1);
+    const refunds = await db.refundEvent.findMany({ where: { orgId, orderId: order.id } });
+    expect(refunds).toHaveLength(1);
+    expect(Number(refunds[0]!.refundAmount)).toBe(100);
+    expect(refunds[0]!.afterSaleRecordId).not.toBeNull();
+  });
+});
