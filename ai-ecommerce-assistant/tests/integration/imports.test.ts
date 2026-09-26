@@ -1332,3 +1332,158 @@ describe("TASK-008｜字段映射、全量校验、预览与错误下载", () =>
     expect(t8TmpCount()).toBe(0);
   });
 });
+
+describe("TASK-009｜原子提交内核、商品主数据与 SKU 别名", () => {
+  const PRODUCTS_R9 = (sku: string, name: string, ts: string): string =>
+    `${FILE_HEADERS.products.join(",")}\nIMP-1,${ts},R8P,杯,杯具,active,${sku},${sku}-CODE,${name},,active`;
+  async function runValidate(taskId: string): Promise<void> {
+    const { handleValidateTask } = await import("@/jobs/handlers/imports");
+    await handleValidateTask({ taskId });
+  }
+  async function getPreview(taskId: string, cookie: string): Promise<Response> {
+    const { GET } = await import("@/app/api/v1/imports/[id]/preview/route");
+    return GET(req(`/api/v1/imports/${taskId}/preview`, {}, cookie), { params: Promise.resolve({ id: taskId }) });
+  }
+  async function putMapping(taskId: string, cookie: string, body: Record<string, unknown>): Promise<Response> {
+    const { PUT } = await import("@/app/api/v1/imports/[id]/mapping/route");
+    return PUT(
+      req(`/api/v1/imports/${taskId}/mapping`, { method: "PUT", body: JSON.stringify(body), headers: { "content-type": "application/json" } }, cookie),
+      { params: Promise.resolve({ id: taskId }) },
+    );
+  }
+  async function commitTask(taskId: string, cookie: string, previewVersion: number): Promise<Response> {
+    const { POST } = await import("@/app/api/v1/imports/[id]/commit/route");
+    return POST(
+      req(`/api/v1/imports/${taskId}/commit`, {
+        method: "POST",
+        body: JSON.stringify({ preview_version: previewVersion, confirmation: true }),
+        headers: { "content-type": "application/json" },
+      }, cookie),
+      { params: Promise.resolve({ id: taskId }) },
+    );
+  }
+
+  async function validatedProductsTask(cookie: string, content: string): Promise<{ id: string; previewVersion: number }> {
+    const made = await makeTask(cookie, "products", content);
+    await runValidate(made.id);
+    const t = await db.importTask.findUniqueOrThrow({ where: { id: made.id }, select: { status: true, previewVersion: true } });
+    expect(t.status).toBe("preview_ready");
+    return { id: made.id, previewVersion: t.previewVersion };
+  }
+
+  it("预览过期/缺确认/C 角色 → 409/422/403；正常提交 → 202、落库、版本+1、覆盖与审计在", async () => {
+    const made = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9A", "杯R9A", "2026-09-11T01:00:00Z"));
+    // 重映射并声明显式覆盖（products 目录确认），触发第二次校验 preview_version=2
+    const decl = await putMapping(made.id, operator.cookie, {
+      timezone: "Asia/Shanghai",
+      coverage_declaration: [{ source_kind: "products", channel: "default", from: "2026-09-01", to: "2026-09-11", status: "complete", explicit_zero_dates: [] }],
+      expected_preview_version: made.previewVersion,
+    });
+    expect(decl.status).toBe(202);
+    await runValidate(made.id);
+    const task = await db.importTask.findUniqueOrThrow({ where: { id: made.id }, select: { status: true, previewVersion: true } });
+    expect(task.status).toBe("preview_ready");
+
+    const before = Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion);
+    const expired = await commitTask(made.id, operator.cookie, 99);
+    expect(expired.status).toBe(409);
+    expect(((await expired.json()) as { error: { code: string } }).error.code).toBe("VERSION_CONFLICT");
+
+    const { POST: commitPost } = await import("@/app/api/v1/imports/[id]/commit/route");
+    const noConfirm = await commitPost(
+      req(`/api/v1/imports/${made.id}/commit`, { method: "POST", body: JSON.stringify({ preview_version: task.previewVersion }), headers: { "content-type": "application/json" } }, operator.cookie),
+      { params: Promise.resolve({ id: made.id }) },
+    );
+    expect(noConfirm.status).toBe(422);
+    const csForbidden = await commitTask(made.id, cs.cookie, task.previewVersion);
+    expect(csForbidden.status).toBe(403);
+
+    const okRes = await commitTask(made.id, operator.cookie, task.previewVersion);
+    expect(okRes.status).toBe(202);
+    const body = (await okRes.json()) as { data: { committed_dataset_version: string; insert: number } };
+    expect(body.data.insert).toBe(1);
+    expect(Number(body.data.committed_dataset_version)).toBe(before + 1);
+
+    const sku = await db.sKU.findFirstOrThrow({ where: { orgId, externalSkuId: "R9A" } });
+    expect(sku.rowHash).not.toBe("");
+    expect(sku.importTaskId).toBe(made.id);
+    expect(await db.product.count({ where: { orgId, externalProductId: "R8P" } })).toBe(1);
+    // products 覆盖记录目录确认日（本测试已通过 PUT mapping 声明 complete 覆盖）
+    expect(await db.dataCoverage.count({ where: { orgId, importTaskId: made.id } })).toBe(1);
+    expect(await db.auditLog.count({ where: { orgId, action: "import_commit", entityId: made.id } })).toBe(1);
+  });
+
+  it("重复提交同任务 → 200 复用，dataset_version 不变、行数不变", async () => {
+    const made0 = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9B", "杯R9B", "2026-09-11T01:00:00Z"));
+    const first = await commitTask(made0.id, operator.cookie, made0.previewVersion);
+    expect(first.status).toBe(202);
+    const before = Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion);
+    const replay = await commitTask(made0.id, operator.cookie, made0.previewVersion);
+    expect(replay.status).toBe(200);
+    const body = (await replay.json()) as { data: { reused: boolean; committed_dataset_version: string } };
+    expect(body.data.reused).toBe(true);
+    expect(Number(body.data.committed_dataset_version)).toBe(before);
+    expect(await db.sKU.count({ where: { orgId, externalSkuId: "R9B" } })).toBe(1);
+  });
+
+  it("提交失败（注入约束）→ 整文件回滚：任务回 preview_ready、版本与行数不变", async () => {
+    const made0 = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9C", "杯R9C", "2026-09-11T01:00:00Z"));
+    const beforeVersion = Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion);
+    await db.$executeRaw`ALTER TABLE sku ADD CONSTRAINT ck_t9_inject CHECK (false) NOT VALID`;
+    let status = 0;
+    try {
+      status = (await commitTask(made0.id, operator.cookie, made0.previewVersion)).status;
+    } finally {
+      await db.$executeRaw`ALTER TABLE sku DROP CONSTRAINT ck_t9_inject`;
+    }
+    expect([400, 500, 503]).toContain(status);
+    const task = await db.importTask.findUniqueOrThrow({ where: { id: made0.id } });
+    expect(task.status).toBe("preview_ready");
+    expect(Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion)).toBe(beforeVersion);
+    expect(await db.sKU.count({ where: { orgId, externalSkuId: "R9C" } })).toBe(0);
+    expect(await db.product.count({ where: { orgId, externalProductId: "R8P", importTaskId: made0.id } })).toBe(0);
+  });
+
+  it("并发同任务提交 → 恰一次生效，版本只 +1、行数不翻倍；确认后更名重传 → update 且身份不变", async () => {
+    const made0 = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9D", "杯R9D", "2026-09-11T01:00:00Z"));
+    const before = Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion);
+    const results = await Promise.all([
+      commitTask(made0.id, operator.cookie, made0.previewVersion),
+      commitTask(made0.id, operator.cookie, made0.previewVersion),
+      commitTask(made0.id, operator.cookie, made0.previewVersion),
+    ]);
+    const codes = results.filter((r): r is Response => r !== null).map((r) => r.status);
+    expect(codes.filter((c) => c === 202)).toHaveLength(1);
+    expect(Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion)).toBe(before + 1);
+    expect(await db.sKU.count({ where: { orgId, externalSkuId: "R9D" } })).toBe(1);
+
+    // 确认后更名重传：同自然键较新来源时间 → update；SKU 身份不变、名称更新
+    const updated = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9D", "杯R9D-新名", "2026-09-12T01:00:00Z"));
+    const pNewer = (await (await getPreview(updated.id, operator.cookie)).json()) as { data: { counts: { update: number } } };
+    expect(pNewer.data.counts.update).toBe(1);
+    const commit2 = await commitTask(updated.id, operator.cookie, updated.previewVersion);
+    expect([202, 200]).toContain(commit2.status);
+    const sku = await db.sKU.findFirstOrThrow({ where: { orgId, externalSkuId: "R9D" } });
+    expect(sku.name).toBe("杯R9D-新名");
+    expect(sku.skuCode).toBe("R9D-CODE");
+  });
+
+  it("sku-aliases：正常 201；重复 409；跨店 canonical 404", async () => {
+    const made0 = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9E", "杯R9E", "2026-09-11T01:00:00Z"));
+    await commitTask(made0.id, operator.cookie, made0.previewVersion);
+    const sku = await db.sKU.findFirstOrThrow({ where: { orgId, externalSkuId: "R9E" } });
+
+    const { POST } = await import("@/app/api/v1/sku-aliases/route");
+    const call = (body: Record<string, unknown>, cookie = operator.cookie) =>
+      POST(req("/api/v1/sku-aliases", { method: "POST", body: JSON.stringify(body), headers: { "content-type": "application/json" } }, cookie));
+
+    const okRes = await call({ store_id: storeId, source_namespace: "ns-import", external_sku_id: "ALIAS-R9E", canonical_sku_id: sku.id });
+    expect(okRes.status).toBe(201);
+    const dup = await call({ store_id: storeId, source_namespace: "ns-import", external_sku_id: "ALIAS-R9E", canonical_sku_id: sku.id });
+    expect(dup.status).toBe(409);
+    const crossStore = await call({ store_id: mockStoreId, source_namespace: "ns-import", external_sku_id: "ALIAS-R9E-X", canonical_sku_id: sku.id });
+    expect(crossStore.status).toBe(404);
+    const realSku = await call({ store_id: storeId, source_namespace: "ns-import", external_sku_id: "R9E", canonical_sku_id: sku.id });
+    expect(realSku.status).toBe(409);
+  });
+});
