@@ -104,6 +104,12 @@ export async function POST(req: NextRequest) {
     });
     // 中止路径下 finished 可能永不落定，防止未处理拒绝
     finished.catch(() => undefined);
+    // G2-R3-H06：请求源 error/断开不再只依赖文件流——挂接到同一条收尾路径：
+    // 记录中断语义并销毁 busboy（其 _destroy 会销毁当前文件流，spool 随之统一清理）
+    nodeReq.on("error", (error: Error) => {
+      spoolError = spoolError ?? new AccessError(400, "UPLOAD_INTERRUPTED", `上传中断：${error.message}`);
+      bb.destroy(new AccessError(400, "UPLOAD_INTERRUPTED", "上传中断"));
+    });
     nodeReq.pipe(bb);
     try {
       const seen = await Promise.race([
@@ -116,9 +122,22 @@ export async function POST(req: NextRequest) {
       }
       spooled = await seen;
       await finished;
-    } catch {
+    } catch (caught) {
       nodeReq.destroy();
-      const mapped = spoolError ? serviceFailure(spoolError) : null;
+      // G2-R3-H06：multipart 收尾错误可能先于 spool 结算（如 busboy "Unexpected end of
+      // form" 早于清理后的业务拒绝落定）。先等 spool promise 结算，保证响应映射的是
+      // 真实业务错误（TOO_MANY_ROWS/FILE_TOO_LARGE/UPLOAD_INTERRUPTED/…），
+      // 而非通用 multipart 失败。
+      if (received.spoolPromise) {
+        await received.spoolPromise.then(
+          () => undefined,
+          (error: unknown) => {
+            spoolError = spoolError ?? error;
+          },
+        );
+      }
+      // 优先映射 spool 的真实业务错误；无 spool 错误时映射 multipart 本身的异常
+      const mapped = serviceFailure(spoolError ?? caught);
       return mapped ?? fail(422, "multipart 解析失败");
     }
 

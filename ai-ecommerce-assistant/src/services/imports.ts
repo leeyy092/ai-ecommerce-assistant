@@ -16,8 +16,7 @@
  *   只有提升（promoteSpoolObject）进入当前驱动对象域（local rename / oss put）。
  */
 import { createHash, randomUUID } from "node:crypto";
-import { createReadStream, createWriteStream } from "node:fs";
-import { mkdir } from "node:fs/promises";
+import { createReadStream, createWriteStream, mkdirSync } from "node:fs";
 import path from "node:path";
 import { once } from "node:events";
 import { Readable } from "node:stream";
@@ -96,7 +95,9 @@ export async function spoolUpload(
   const tempKey = `tmp/upload-${randomUUID()}.csv`;
   const tempPath = localTempPath(tempKey);
   try {
-    await mkdir(path.dirname(tempPath), { recursive: true });
+    // G2-R3-H06/H08：目录准备必须同步完成——此前的 await mkdir 会在挂接事件监听前
+    // 留出异步间隙，间隙内到达的中断以"无监听 error 事件"逃逸（进程崩溃/请求悬挂）
+    mkdirSync(path.dirname(tempPath), { recursive: true });
   } catch {
     // 早期失败同样必须终止文件流，否则 busboy 等待文件数据造成请求悬挂
     (fileStream as Readable).destroy?.();
@@ -112,20 +113,29 @@ export async function spoolUpload(
 
     const parser = csvParseStream({ skip_empty_lines: true });
     const writeStream = createWriteStream(tempPath);
+    // G2-R3-H06/H08：收尾必须等写流真正关闭（fd 释放）后再删临时文件
+    const writeClosed = new Promise<void>((resolveClose) => writeStream.once("close", () => resolveClose()));
 
     const cleanup = () => {
       writeStream.destroy();
       parser.destroy?.();
     };
+    /**
+     * 唯一失败收尾（G2-R3-H06/H08：所有中止路径共用，仅结算一次）：
+     * 销毁上游（HTTP 响应先于 multipart 结束）→ onAbort 恰一次 → 等写流关闭后
+     * 删除未被任何任务拥有的半截临时文件 → 才以原始业务错误落定。
+     * 不接受绕过本路径的局部 catch（R3 反例：输入 error 分支曾遗留 tmp 且不通知调用方）。
+     */
     const fail = (error: AccessError) => {
       if (settled) return;
       settled = true;
-      // G2-H06：立即销毁上游（HTTP 响应先于 multipart 结束）
-      (fileStream as Readable).destroy?.(error);
+      (fileStream as Readable).destroy?.();
       onAbort?.();
       cleanup();
-      // G2-R2-H06：清理完成后再响应，保证拒绝路径不留临时文件
-      void deleteLocalTemp(tempKey).finally(() => reject(error));
+      void writeClosed
+        .catch(() => undefined)
+        .then(() => deleteLocalTemp(tempKey))
+        .finally(() => reject(error));
     };
 
     // G2-R2-H08：写流错误在创建时即接管——EACCES/ENOSPC 可控返回，不逃逸进程
@@ -156,12 +166,10 @@ export async function spoolUpload(
       // 逻辑记录计数：手动喂给 csv-parse（quoted 换行按单条记录）
       parser.write(buf);
     });
+    // G2-R3-H06/H08：输入中断与其它失败共用同一收尾——曾仅 reject 而不清理 tmp、
+    // 不调用 onAbort，导致客户端断开后遗留无人拥有的私有文件
     fileStream.on("error", (error: Error) => {
-      if (!settled) {
-        settled = true;
-        cleanup();
-        reject(new AccessError(400, "UPLOAD_INTERRUPTED", `上传中断：${error.message}`));
-      }
+      fail(new AccessError(400, "UPLOAD_INTERRUPTED", `上传中断：${error.message}`));
     });
     fileStream.on("end", () => {
       void (async () => {
@@ -177,9 +185,8 @@ export async function spoolUpload(
             dataRows: Math.max(0, records - 1), // 首条为表头
           });
         } catch (error) {
-          settled = true;
-          cleanup();
-          reject(error instanceof AccessError ? error : new AccessError(500, "INTERNAL_ERROR", "写入临时存储失败"));
+          // 结束阶段的写流/解析失败同样走唯一收尾（清理 tmp 后再落定）
+          fail(error instanceof AccessError ? error : new AccessError(500, "INTERNAL_ERROR", "写入临时存储失败"));
         }
       })();
     });
@@ -306,8 +313,10 @@ async function insertHttpArchive(
 
 /**
  * G2-R2-H07：内容复用时同样绑定本 key 的存档（否则后续同 key 异 body 无法 409）。
- * 冲突：hash 相同 → 静默（同一语义请求）；不同 → 409。
+ * 冲突：hash 相同 → 返回已存档的首次响应（G2-R3-M06：并发败者按存档状态重放，
+ *   不再静默降级为 200）；不同 → 409。
  * 非冲突写入失败 → 抛出（存档失败不得无保护地成功返回）。
+ * 返回 null 表示绑定成功，调用方按原结果返回。
  */
 async function bindHttpArchiveForReuse(
   ctx: ImportsContext,
@@ -315,13 +324,17 @@ async function bindHttpArchiveForReuse(
   requestKey: string,
   requestHash: string,
   result: UploadResult,
-): Promise<void> {
+): Promise<UploadResult | null> {
   try {
     await insertHttpArchive(ctx.db, ctx, input, requestKey, requestHash, 200, result);
+    return null;
   } catch (error) {
     if (isUniqueViolation(error, IDX_HTTP_IDEM)) {
       const archived = await readHttpArchive(ctx, input, requestKey);
-      if (archived && archived.requestHash === requestHash) return;
+      if (archived && archived.requestHash === requestHash) {
+        const body = archived.responseBody as { data: UploadResult };
+        return { ...body.data, reused: true, replayed: true, replayStatus: archived.responseStatus };
+      }
       throw new AccessError(409, "IDEMPOTENCY_CONFLICT", "同一 Idempotency-Key 已绑定不同请求内容");
     }
     throw error;
@@ -363,7 +376,7 @@ export async function createImportTaskFromSpool(
   const existing = await findReusableTask(ctx, input);
   if (existing) {
     // 内容复用：绑定本 key 存档（G2-R2-H07），失败/冲突按存档语义处理
-    const result: UploadResult = {
+    let result: UploadResult = {
       id: existing.id,
       status: existing.status,
       fileSha256: existing.fileSha256,
@@ -372,7 +385,9 @@ export async function createImportTaskFromSpool(
       reused: true,
     };
     if (requestKey) {
-      await bindHttpArchiveForReuse(ctx, input, requestKey, requestHash, result);
+      // G2-R3-M06：同 key 同 body 的既有存档（含并发败者）按存档状态重放
+      const replay = await bindHttpArchiveForReuse(ctx, input, requestKey, requestHash, result);
+      if (replay) result = replay;
     }
     await deleteLocalTemp(tempKey);
     return result;
@@ -451,7 +466,7 @@ export async function createImportTaskFromSpool(
       // G2-H07：并发同内容——败者复用胜者任务（并按存档语义绑定本 key）
       const winner = await findReusableTask(ctx, input);
       if (winner) {
-        const result: UploadResult = {
+        let result: UploadResult = {
           id: winner.id,
           status: winner.status,
           fileSha256: winner.fileSha256,
@@ -460,7 +475,9 @@ export async function createImportTaskFromSpool(
           reused: true,
         };
         if (requestKey) {
-          await bindHttpArchiveForReuse(ctx, input, requestKey, requestHash, result);
+          // G2-R3-M06：同 key 同 body 并发败者按存档首次 201 重放
+          const replay = await bindHttpArchiveForReuse(ctx, input, requestKey, requestHash, result);
+          if (replay) result = replay;
         }
         return result;
       }

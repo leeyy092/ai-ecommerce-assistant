@@ -788,3 +788,150 @@ describe("GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04", () => {
     }
   });
 });
+
+describe("GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放", () => {
+  const { readdirSync } = require("node:fs") as typeof import("node:fs");
+  const tmpFileCount = (): number => {
+    try {
+      return readdirSync(join(storageRoot(), "tmp")).length;
+    } catch {
+      return 0;
+    }
+  };
+
+  const R3_ROW = "IMP-1,2026-09-11T01:00:00Z,R3O,L1,S1,1,10.000000,CNY";
+
+  /** 原生 multipart 请求（不经 FormData）：head + chunks + 可调结束行为 */
+  async function postRaw(cookie: string, chunks: Buffer[], after: "close" | "error" | "never"): Promise<Response> {
+    const boundary = `----r3-${randomUUID().slice(0, 8)}`;
+    const head = [
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="store_id"',
+      "",
+      storeId,
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="data_source_id"',
+      "",
+      dataSourceId,
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="entity_type"',
+      "",
+      "order_items",
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="file"; filename="r3.csv"',
+      "Content-Type: text/csv",
+      "",
+      "",
+    ].join("\r\n");
+    let sent = 0;
+    let errored = false;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(Buffer.from(head, "utf8")));
+        for (const chunk of chunks) controller.enqueue(new Uint8Array(chunk));
+        if (after === "close") controller.close(); // multipart 未携带收尾边界即结束
+      },
+      pull(controller) {
+        if (sent < chunks.length) {
+          sent = chunks.length;
+          return;
+        }
+        if (after === "error" && !errored) {
+          errored = true;
+          controller.error(new Error("client disconnected"));
+          return;
+        }
+        if (after === "never") {
+          return new Promise(() => undefined); // 请求永不结束（multipart 未闭合仍持续传输）
+        }
+      },
+    });
+    const { POST } = await import("@/app/api/v1/imports/route");
+    return POST(
+      req("/api/v1/imports", {
+        method: "POST",
+        body,
+        headers: { "content-type": `multipart/form-data; boundary=${boundary}` },
+        duplex: "half",
+      } as RequestInit,
+      cookie),
+    );
+  }
+
+  async function uploadHeaderKey(cookie: string, key: string, content: string): Promise<Response> {
+    const { POST } = await import("@/app/api/v1/imports/route");
+    const form = new FormData();
+    form.set("store_id", storeId);
+    form.set("data_source_id", dataSourceId);
+    form.set("entity_type", "products");
+    form.set("file", csvFile("p.csv", content));
+    return POST(req("/api/v1/imports", { method: "POST", body: form, headers: { "idempotency-key": key } }, cookie));
+  }
+
+  it("G2-R3-H06/H08：multipart 提前截断（未闭合即关闭）→ 400 UPLOAD_INTERRUPTED，不留 tmp、无新任务", { timeout: 120_000 }, async () => {
+    const body = `store_external_id,source_updated_at,external_order_id,external_order_item_id,external_sku_id,quantity,item_paid_amount,currency\n${R3_ROW}\n`;
+    const sha = createHash("sha256").update(body).digest("hex");
+    const before = tmpFileCount();
+    const res = await postRaw(operator.cookie, [Buffer.from(body, "utf8")], "close");
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe("UPLOAD_INTERRUPTED");
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tmpFileCount()).toBe(before);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(0);
+  });
+
+  it("G2-R3-H06：请求未结束但行数超限 → 稳定 422 TOO_MANY_ROWS（不降级为通用 multipart 错误）", { timeout: 120_000 }, async () => {
+    const before = tmpFileCount();
+    const chunks: Buffer[] = [];
+    for (let c = 0; c < 11; c++) {
+      chunks.push(Buffer.from(`${R3_ROW}\n`.repeat(10_000), "utf8")); // 共 110,000 数据行
+    }
+    const res = await postRaw(operator.cookie, chunks, "never");
+    expect(res.status).toBe(422);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe("TOO_MANY_ROWS");
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tmpFileCount()).toBe(before);
+  });
+
+  it("G2-R3-H06/H08：请求源中途 error（客户端断开）→ 400 UPLOAD_INTERRUPTED，不留 tmp、无新任务", { timeout: 120_000 }, async () => {
+    const body = `store_external_id,source_updated_at,external_order_id,external_order_item_id,external_sku_id,quantity,item_paid_amount,currency\n${R3_ROW}\n`;
+    const sha = createHash("sha256").update(body).digest("hex");
+    const before = tmpFileCount();
+    const res = await postRaw(operator.cookie, [Buffer.from(body, "utf8")], "error");
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe("UPLOAD_INTERRUPTED");
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tmpFileCount()).toBe(before);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(0);
+  });
+
+  it("G2-R3-M06：同 key 同 body 并发 → 败者按存档首次 201 重放（非 200），恰一个任务且文件可读", { timeout: 120_000 }, async () => {
+    const key = `idem3-${randomUUID().slice(0, 12)}`;
+    const content = PRODUCTS_CSV.replace("CUP-RED", "CUP-R3M6");
+    const sha = createHash("sha256").update(content).digest("hex");
+    // 同一用户（key 按 org/user/endpoint 隔离，跨用户是独立存档，由既有用例覆盖）
+    const responses = await Promise.all([
+      uploadHeaderKey(owner.cookie, key, content),
+      uploadHeaderKey(owner.cookie, key, content),
+      uploadHeaderKey(owner.cookie, key, content),
+      uploadHeaderKey(owner.cookie, key, content),
+    ]);
+    const ids = new Set<string>();
+    for (const r of responses) {
+      expect(r.status).toBe(201);
+      ids.add(((await r.json()) as { data: { id: string } }).data.id);
+    }
+    expect(ids.size).toBe(1);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(1);
+    const task = await db.importTask.findFirstOrThrow({ where: { orgId, fileSha256: sha } });
+    const { objectExists } = await import("@/storage");
+    expect(await objectExists(task.rawObjectKey)).toBe(true);
+  });
+
+  it("G2-R3-M06：Key 长度边界 7/129 → 422（8/128 合法路径由既有用例覆盖）", async () => {
+    const short = await uploadHeaderKey(owner.cookie, "a".repeat(7), PRODUCTS_CSV);
+    expect(short.status).toBe(422);
+    const long = await uploadHeaderKey(owner.cookie, "b".repeat(129), PRODUCTS_CSV);
+    expect(long.status).toBe(422);
+  });
+});
