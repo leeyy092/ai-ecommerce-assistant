@@ -1,0 +1,60 @@
+   1 /**
+   2  * G2-H04｜黄金覆盖声明 fixture（04_DATA_MODEL §12.8 :701 的独立展开）。
+   3  *
+   4  * 规范要求：两店必须**分别**展开声明，无事件日期逐日 explicit_zero；
+   5  * 缺事件 ≠ 零事件——未经显式确认的日期保持 missing（不声明即可）。
+   6  * 区间一律右开 [from, to)；日期为店铺本地日期（Asia/Shanghai）。
+   7  *
+   8  * 依据 12.8 数据分布：
+   9  * - A 订单/订单行：09-01（O1,O2）、09-10（O3）→ 零事件日 09-02..09-09；
+  10  * - B 订单/订单行：仅 09-01（O1）→ 零事件日 09-02..09-10；
+  11  * - A 消息：仅 09-01；B 消息：仅 09-01；
+  12  * - A 广告：09-01、09-02 有数据 → 声明 [09-01, 09-03)；B 广告仅 09-01 → [09-01, 09-02)；
+  13  *   其余广告日期不声明（missing）；
+  14  * - A 售后 case：仅 09-02（AS1）→ 零事件日 09-01、09-03..09-10；
+  15  *   A 退款：09-03（RF1）、09-04（RF2,RF3）、09-09（RF4）
+  16  *   → 零事件日 09-01、09-02、09-05..09-10；
+  17  * - B case/refund：全区间明确零事件（B 的 after_sales.csv 为空文件+表头）；
+  18  * - products 无事件期：仅记录目录确认日（评估日 2026-09-11）。
+  19  */
+  20 import type { CoverageDeclarationItem } from "@/adapters/contracts";
+  21 
+  22 export const GOLDEN_EVAL_FROM = "2026-09-01";
+  23 export const GOLDEN_EVAL_TO = "2026-09-11"; // 右开：覆盖 09-01..09-10 共 10 天
+  24 
+  25 function days(from: string, to: string, exclude: ReadonlySet<string>): string[] {
+  26   const out: string[] = [];
+  27   for (let t = Date.parse(`${from}T00:00:00Z`); t < Date.parse(`${to}T00:00:00Z`); t += 86_400_000) {
+  28     const iso = new Date(t).toISOString().slice(0, 10);
+  29     if (!exclude.has(iso)) out.push(iso);
+  30   }
+  31   return out;
+  32 }
+  33 
+  34 const A_ORDER_DAYS = new Set(["2026-09-01", "2026-09-10"]);
+  35 const B_ORDER_DAYS = new Set(["2026-09-01"]);
+  36 const A_CASE_DAYS = new Set(["2026-09-02"]);
+  37 const A_REFUND_DAYS = new Set(["2026-09-03", "2026-09-04", "2026-09-09"]);
+  38 const A_MSG_DAYS = new Set(["2026-09-01"]);
+  39 
+  40 /** A 店覆盖声明（12.8 :701：逐渠道独立展开，含逐日显式零事件） */
+  41 export const goldenCoverageA: CoverageDeclarationItem[] = [
+  42   { source_kind: "orders", channel: "orders/default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_ORDER_DAYS) },
+  43   { source_kind: "order_items", channel: "order_items/default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_ORDER_DAYS) },
+  44   { source_kind: "customer_messages", channel: "customer_messages/default", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] },
+  45   { source_kind: "ads", channel: "ads/default", from: "2026-09-01", to: "2026-09-03", status: "complete", explicit_zero_dates: [] },
+  46   { source_kind: "after_sales", channel: "after_sales/case", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_CASE_DAYS) },
+  47   { source_kind: "after_sales", channel: "after_sales/refund", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, A_REFUND_DAYS) },
+  48   { source_kind: "products", channel: "products/catalog", from: "2026-09-11", to: "2026-09-12", status: "complete", explicit_zero_dates: [] },
+  49 ];
+  50 
+  51 /** B 店覆盖声明（case/refund 全区间明确零事件；广告/消息仅 09-01） */
+  52 export const goldenCoverageB: CoverageDeclarationItem[] = [
+  53   { source_kind: "orders", channel: "orders/default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, B_ORDER_DAYS) },
+  54   { source_kind: "order_items", channel: "order_items/default", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, B_ORDER_DAYS) },
+  55   { source_kind: "customer_messages", channel: "customer_messages/default", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] },
+  56   { source_kind: "ads", channel: "ads/default", from: "2026-09-01", to: "2026-09-02", status: "complete", explicit_zero_dates: [] },
+  57   { source_kind: "after_sales", channel: "after_sales/case", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, new Set()) },
+  58   { source_kind: "after_sales", channel: "after_sales/refund", from: GOLDEN_EVAL_FROM, to: GOLDEN_EVAL_TO, status: "complete", explicit_zero_dates: days(GOLDEN_EVAL_FROM, GOLDEN_EVAL_TO, new Set()) },
+  59   { source_kind: "products", channel: "products/catalog", from: "2026-09-11", to: "2026-09-12", status: "complete", explicit_zero_dates: [] },
+  60 ];

@@ -1,0 +1,95 @@
+[
+  {
+    "action": "stop owned Web process group",
+    "pid": 55145
+  },
+  {
+    "action": "remove owned build image",
+    "id": "07b41a2c0ce7",
+    "exit": 0,
+    "output": "Deleted: sha256:07b41a2c0ce7723b816b41c1d5cf9621b8a9e2f20314c66416a1dc1203d8d5b6\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "b3ad3cd38aef",
+    "exit": 0,
+    "output": "Deleted: sha256:b3ad3cd38aef65bb2cd5b9daeada0057c11e56f11009077a37e47bc5afa458c5\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "a2bb8d1a428a",
+    "exit": 0,
+    "output": "Deleted: sha256:a2bb8d1a428a1bbcdac8a0982549ed0cfd7ae9db003336a5ccb40b2bec3ca161\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "4bf29484bc53",
+    "exit": 0,
+    "output": "Deleted: sha256:4bf29484bc5355e5d768b64507784124476271e9d6e9b193534b7bcb610e30da\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "0553d5c0cf78",
+    "exit": 0,
+    "output": "Deleted: sha256:0553d5c0cf7807e46c78c0b39aa9a347c9025e51bcd408851215060c9484ccbf\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "a217fbc188b6",
+    "exit": 0,
+    "output": "Deleted: sha256:a217fbc188b6bdd64eff12acda9f7c220976fca4988dbf3a41a155a50b747868\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "bd55f0dca88d",
+    "exit": 0,
+    "output": "Deleted: sha256:bd55f0dca88dec1b0b566a7485f6791134ed4c1c049633685daf19899ed35b9e\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "14f905086924",
+    "exit": 0,
+    "output": "Deleted: sha256:14f905086924dad1dfd142ac4ff728c8226985af79d531411ddf1bfcc4421921\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "6eca71859f0b",
+    "exit": 0,
+    "output": "Deleted: sha256:6eca71859f0b253792a761f9e1f39d6b85585bb27f30f140e208e1d2f60e53e1\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "de29a3196907",
+    "exit": 0,
+    "output": "Deleted: sha256:de29a3196907b485d59c833834cb3f7713b761787569c975798b3d97277cd125\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "26948082ae98",
+    "exit": 0,
+    "output": "Deleted: sha256:26948082ae9877d71c2ff75aac4acd76f0b10608b6a30b8790192e905080f1d6\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "88e4acc2f280",
+    "exit": 0,
+    "output": "Deleted: sha256:88e4acc2f2801341c538cd61e7f7da1e77ddcfb456e6b6cc0b312041e5f5bf5a\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "89c7d624bcc9",
+    "exit": 0,
+    "output": "Deleted: sha256:89c7d624bcc903f155070d27032931708be72daabcd2a0f2bb6a8cc7df49acbf\n"
+  },
+  {
+    "action": "remove owned build image",
+    "id": "2fe369e96955",
+    "exit": 0,
+    "output": "Untagged: node:24.21.0-bookworm-slim\nDeleted: sha256:2fe369e969550cde8e867afc3fe370b260140cab4a23d467074295b42163d553\n"
+  },
+  {
+    "action": "remove owned node base tag",
+    "exit": 1,
+    "output": "Error response from daemon: No such image: node:24.21.0-bookworm-slim\n"
+  }
+]

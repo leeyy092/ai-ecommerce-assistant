@@ -1,0 +1,10 @@
+{
+  "command": "/usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync",
+  "exit": 0,
+  "result": {
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-25T18:47:02+08:00"
+  }
+}

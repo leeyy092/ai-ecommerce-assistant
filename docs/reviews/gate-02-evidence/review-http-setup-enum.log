@@ -1,0 +1,32 @@
+(node:92151) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PrismaClientValidationError: 
+Invalid `prisma.dataCoverage.create()` invocation:
+
+{
+  data: {
+    orgId: "4e9f5b59-2808-4c7b-9aad-f521a82f0501",
+    storeId: "86bfddba-7e2a-4879-86f9-9801abadb0a6",
+    dataSourceId: "618b1ef8-8dd7-45de-85b7-241861eee533",
+    sourceKind: "orders",
+    channel: "default",
+             ~~~~~~~~~
+    coverageDate: new Date("2026-09-01T00:00:00.000Z"),
+    status: "complete",
+    explicitZero: false,
+    recordCount: 100n,
+    datasetVersion: 1n,
+    importTaskId: "3ceb5d1d-e336-44ac-b2c2-5678d6041280"
+  }
+}
+
+Invalid value for argument `channel`. Expected CoverageChannel.
+    at throwValidationException (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:46:9)
+    at vn.handleRequestError (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:212:7)
+    at vn.handleAndLogRequestError (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:184:12)
+    at vn.request (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/RequestHandler.ts:153:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async a (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/node_modules/.pnpm/@prisma+client@7.10.0_prisma@7.10.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types_4ecc8a2a91bbd30a888e921ab7202b1b/node_modules/@prisma/client/src/runtime/getPrismaClient.ts:1014:24)
+    at async main (/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/review-http.ts:59:126) {
+  clientVersion: '7.10.0'
+}

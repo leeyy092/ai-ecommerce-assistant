@@ -1,0 +1,240 @@
+   1 /**
+   2  * 数据源配置（TASK-005；08 §data-sources）。
+   3  * - csv/mock 两类适配；同一来源（namespace）支持六类标准文件（TASK-006 统一 Adapter）；
+   4  * - mock 只能绑定演示店铺；归档店铺拒绝新建数据源（TASK-005 验收：归档店拒绝新导入）；
+   5  * - mapping_version 由统一 Adapter 约定（mapping-v1）；
+   6  * - 列表按角色裁剪 supported_entities：客服仅 customer_messages（02_USER_ROLES）；
+   7  * - coverage 按日摘要（G2-H01）：只统计当前角色可见的来源类型，且同一
+   8  *   (来源,类型,渠道,日期) 只取 dataset_version 最高的有效行——历史版本不重复累计；
+   9  *   from/to 为店铺本地日期、右开区间、单次最大 90 天；非法输入 422。
+  10  */
+  11 import { Prisma, type PrismaClient, type ImportSourceKind } from "@/generated/prisma/client";
+  12 import { AccessError, type AuthContext } from "@/services/access";
+  13 import { writeAudit } from "@/services/audit";
+  14 
+  15 export const MAPPING_VERSION = "mapping-v1";
+  16 
+  17 /** 六类标准文件（与 ROLE_IMPORT_KINDS 一致；TASK-006 黄金样本同清单） */
+  18 export const SUPPORTED_ENTITIES = [
+  19   "products",
+  20   "orders",
+  21   "order_items",
+  22   "ads",
+  23   "customer_messages",
+  24   "after_sales",
+  25 ] as const;
+  26 
+  27 export interface DataSourcesContext {
+  28   db: PrismaClient;
+  29   orgId: string;
+  30   userId: string;
+  31   role: AuthContext["role"];
+  32 }
+  33 
+  34 export interface CreateDataSourceInput {
+  35   storeId: string;
+  36   name: string;
+  37   adapterKind: "csv" | "mock";
+  38   sourceNamespace: string;
+  39 }
+  40 
+  41 export async function createDataSource(
+  42   ctx: DataSourcesContext,
+  43   input: CreateDataSourceInput,
+  44 ): Promise<{ id: string }> {
+  45   return ctx.db.$transaction(async (tx) => {
+  46     const store = await tx.store.findFirst({
+  47       where: { orgId: ctx.orgId, id: input.storeId },
+  48       select: { id: true, status: true, demoMode: true },
+  49     });
+  50     if (!store) {
+  51       throw new AccessError(404, "NOT_FOUND", "店铺不存在");
+  52     }
+  53     if (store.status === "archived") {
+  54       throw new AccessError(409, "STORE_ARCHIVED", "归档店铺不接受新的数据源与导入");
+  55     }
+  56     if (input.adapterKind === "mock" && !store.demoMode) {
+  57       throw new AccessError(409, "MOCK_SOURCE_DEMO_ONLY", "mock 数据源只能绑定演示店铺");
+  58     }
+  59     const dup = await tx.dataSource.findFirst({
+  60       where: {
+  61         orgId: ctx.orgId,
+  62         storeId: input.storeId,
+  63         sourceNamespace: input.sourceNamespace,
+  64       },
+  65       select: { id: true },
+  66     });
+  67     if (dup) {
+  68       throw new AccessError(409, "SOURCE_NAMESPACE_EXISTS", "同一店铺下来源命名空间已存在");
+  69     }
+  70     const created = await tx.dataSource.create({
+  71       data: {
+  72         orgId: ctx.orgId,
+  73         storeId: input.storeId,
+  74         sourceNamespace: input.sourceNamespace,
+  75         name: input.name,
+  76         adapterKind: input.adapterKind,
+  77         configuration: { mapping_version: MAPPING_VERSION },
+  78       },
+  79     });
+  80     await writeAudit(tx, {
+  81       orgId: ctx.orgId,
+  82       storeId: input.storeId,
+  83       actorUserId: ctx.userId,
+  84       action: "data_source_create",
+  85       entityType: "data_source",
+  86       entityId: created.id,
+  87       afterSummary: {
+  88         name: input.name,
+  89         adapter_kind: input.adapterKind,
+  90         source_namespace: input.sourceNamespace,
+  91       },
+  92     });
+  93     return { id: created.id };
+  94   });
+  95 }
+  96 
+  97 export interface ListDataSourcesOpts {
+  98   storeId: string;
+  99   from?: string;
+ 100   to?: string;
+ 101 }
+ 102 
+ 103 /** 严格本地日期（YYYY-MM-DD 且真实日历，拒绝 2026-02-30）；G2-H01 稳定 422 */
+ 104 function parseIsoDate(value: string, field: "from" | "to"): string {
+ 105   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+ 106     throw new AccessError(422, "VALIDATION_ERROR", `${field} 必须为 YYYY-MM-DD 本地日期`);
+ 107   }
+ 108   const d = new Date(`${value}T00:00:00Z`);
+ 109   if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== value) {
+ 110     throw new AccessError(422, "VALIDATION_ERROR", `${field} 不是合法日历日期：${value}`);
+ 111   }
+ 112   return value;
+ 113 }
+ 114 
+ 115 const DAY_MS = 86_400_000;
+ 116 const dateKey = (iso: string) => Date.parse(`${iso}T00:00:00Z`);
+ 117 
+ 118 /**
+ 119  * 角色可见的来源类型（02_USER_ROLES：C 仅消息；导入能力即覆盖可见能力）。
+ 120  */
+ 121 function visibleKindsFor(role: AuthContext["role"]): ImportSourceKind[] {
+ 122   return role === "customer_service"
+ 123     ? ["customer_messages"]
+ 124     : ([...SUPPORTED_ENTITIES] as ImportSourceKind[]);
+ 125 }
+ 126 
+ 127 /** 按日 coverage 摘要：有效版本行汇总 + 角色类型裁剪 + 右开 90 天窗口（G2-H01） */
+ 128 export async function listDataSources(
+ 129   ctx: DataSourcesContext,
+ 130   opts: ListDataSourcesOpts,
+ 131 ): Promise<{ store: { id: string; name: string; status: string }; items: Record<string, unknown>[] }> {
+ 132   // 日期参数先校验（非法 → 422，不进入 SQL）
+ 133   let from: string | undefined;
+ 134   let to: string | undefined;
+ 135   if (opts.from !== undefined) from = parseIsoDate(opts.from, "from");
+ 136   if (opts.to !== undefined) to = parseIsoDate(opts.to, "to");
+ 137   if (from !== undefined && to !== undefined) {
+ 138     // 右开区间 [from, to)：from==to 为合法空区间；to<from 才是非法
+ 139     if (dateKey(to) < dateKey(from)) {
+ 140       throw new AccessError(422, "VALIDATION_ERROR", "to 不得早于 from（右开区间）");
+ 141     }
+ 142     if ((dateKey(to) - dateKey(from)) / DAY_MS > 90) {
+ 143       throw new AccessError(422, "VALIDATION_ERROR", "查询范围一次最多 90 天");
+ 144     }
+ 145   } else if (from !== undefined) {
+ 146     // 只给一侧时按 90 天上限补齐另一侧，保证单次查询不越过 90 天窗口
+ 147     to = new Date(dateKey(from) + 90 * DAY_MS).toISOString().slice(0, 10);
+ 148   } else if (to !== undefined) {
+ 149     from = new Date(dateKey(to) - 90 * DAY_MS).toISOString().slice(0, 10);
+ 150   }
+ 151 
+ 152   const store = await ctx.db.store.findFirst({
+ 153     where: { orgId: ctx.orgId, id: opts.storeId },
+ 154     select: { id: true, name: true, status: true },
+ 155   });
+ 156   if (!store) {
+ 157     throw new AccessError(404, "NOT_FOUND", "店铺不存在");
+ 158   }
+ 159 
+ 160   const kinds = visibleKindsFor(ctx.role);
+ 161 
+ 162   const sources = await ctx.db.dataSource.findMany({
+ 163     where: { orgId: ctx.orgId, storeId: opts.storeId },
+ 164     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+ 165     select: {
+ 166       id: true,
+ 167       name: true,
+ 168       adapterKind: true,
+ 169       sourceNamespace: true,
+ 170       status: true,
+ 171       configuration: true,
+ 172     },
+ 173   });
+ 174 
+ 175   // G2-H01：同一 (来源,类型,渠道,日期) 先取 dataset_version 最高的有效行，
+ 176   // 再在可见类型内按日汇总——历史版本不再与当前版本重复累计。
+ 177   const effective = await ctx.db.$queryRaw<
+ 178     { data_source_id: string; source_kind: string; coverage_date: Date; record_count: bigint }[]
+ 179   >`
+ 180     SELECT data_source_id, source_kind, coverage_date, record_count
+ 181     FROM (
+ 182       SELECT DISTINCT ON (data_source_id, source_kind, channel, coverage_date)
+ 183              data_source_id, source_kind, channel, coverage_date, record_count
+ 184       FROM "data_coverage"
+ 185       WHERE org_id = ${ctx.orgId}
+ 186         AND store_id = ${opts.storeId}
+ 187         AND source_kind::text IN (${Prisma.join(kinds)})
+ 188         ${from !== undefined ? Prisma.sql`AND coverage_date >= ${from}::date` : Prisma.empty}
+ 189         ${to !== undefined ? Prisma.sql`AND coverage_date < ${to}::date` : Prisma.empty}
+ 190       ORDER BY data_source_id, source_kind, channel, coverage_date, dataset_version DESC
+ 191     ) effective`;
+ 192 
+ 193   const daily = new Map<string, Map<string, { kinds: Set<string>; count: bigint }>>();
+ 194   for (const row of effective) {
+ 195     const date = row.coverage_date.toISOString().slice(0, 10);
+ 196     const perSource = daily.get(row.data_source_id) ?? new Map();
+ 197     const bucket = perSource.get(date) ?? { kinds: new Set<string>(), count: 0n };
+ 198     bucket.kinds.add(row.source_kind);
+ 199     bucket.count += row.record_count;
+ 200     perSource.set(date, bucket);
+ 201     daily.set(row.data_source_id, perSource);
+ 202   }
+ 203 
+ 204   // last_import_at 同样只按当前角色可见的来源类型（G2-H01）
+ 205   const lastImports = await ctx.db.importTask.groupBy({
+ 206     by: ["dataSourceId"],
+ 207     where: { orgId: ctx.orgId, storeId: opts.storeId, sourceKind: { in: kinds } },
+ 208     _max: { createdAt: true },
+ 209   });
+ 210   const lastImportBySource = new Map(
+ 211     lastImports.map((r) => [r.dataSourceId, r._max?.createdAt?.toISOString() ?? null]),
+ 212   );
+ 213 
+ 214   const items = sources.map((s) => {
+ 215     const perSource = daily.get(s.id);
+ 216     const coverage = perSource
+ 217       ? [...perSource.entries()]
+ 218           .map(([date, bucket]) => ({
+ 219             date,
+ 220             source_kinds: bucket.kinds.size,
+ 221             record_count: Number(bucket.count),
+ 222           }))
+ 223           .sort((a, b) => a.date.localeCompare(b.date))
+ 224       : [];
+ 225     return {
+ 226       id: s.id,
+ 227       name: s.name,
+ 228       adapter_kind: s.adapterKind,
+ 229       source_namespace: s.sourceNamespace,
+ 230       status: s.status,
+ 231       mapping_version:
+ 232         (s.configuration as Record<string, unknown>)?.mapping_version ?? MAPPING_VERSION,
+ 233       supported_entities: kinds,
+ 234       coverage,
+ 235       last_import_at: lastImportBySource.get(s.id) ?? null,
+ 236     };
+ 237   });
+ 238 
+ 239   return { store: { id: store.id, name: store.name, status: store.status }, items };
+ 240 }

@@ -1,0 +1,14 @@
+{
+  "name": "compose-build",
+  "args": [
+    "docker",
+    "compose",
+    "-p",
+    "gate02review3",
+    "-f",
+    "/tmp/gate02-review3-20260925-8_hqanp6/docker-source/ai-ecommerce-assistant/compose.review.yaml",
+    "build"
+  ],
+  "exit": 1,
+  "seconds": 0.18
+}

@@ -1,0 +1,64 @@
+
+> ai-ecommerce-assistant@0.1.0 build /private/tmp/gate02-review3-20260925-8_hqanp6/ai-ecommerce-assistant
+> next build && pnpm build:worker && pnpm build:scripts
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 1960ms
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 6.2s
+  Running TypeScript ...
+  Finished TypeScript in 3.5s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/12) ...
+  Generating static pages using 9 workers (3/12) 
+  Generating static pages using 9 workers (6/12) 
+  Generating static pages using 9 workers (9/12) 
+✓ Generating static pages using 9 workers (12/12) in 222ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/[...all]
+├ ƒ /api/health
+├ ƒ /api/v1/data-sources
+├ ƒ /api/v1/imports
+├ ƒ /api/v1/imports/[id]
+├ ƒ /api/v1/imports/[id]/file
+├ ƒ /api/v1/invitations
+├ ƒ /api/v1/invitations/[idOrToken]
+├ ƒ /api/v1/invitations/[idOrToken]/accept
+├ ƒ /api/v1/me
+├ ƒ /api/v1/me/active-organization
+├ ƒ /api/v1/members
+├ ƒ /api/v1/members/[id]
+├ ƒ /api/v1/organization
+├ ƒ /api/v1/stores
+├ ƒ /api/v1/stores/[id]
+├ ƒ /invite/[token]
+└ ○ /login
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> ai-ecommerce-assistant@0.1.0 build:worker /private/tmp/gate02-review3-20260925-8_hqanp6/ai-ecommerce-assistant
+> esbuild src/jobs/worker.ts src/jobs/status.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/jobs --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+
+  dist/jobs/worker.js  7.5mb ⚠️
+  dist/jobs/status.js  2.6kb
+
+⚡ Done in 208ms
+
+> ai-ecommerce-assistant@0.1.0 build:scripts /private/tmp/gate02-review3-20260925-8_hqanp6/ai-ecommerce-assistant
+> esbuild scripts/init-owner.ts scripts/reset-owner-password.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/scripts --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+
+  dist/scripts/init-owner.js            7.7mb ⚠️
+  dist/scripts/reset-owner-password.js  6.1mb ⚠️
+
+⚡ Done in 175ms

@@ -1,0 +1,17 @@
+{
+  "name": "initdb",
+  "args": [
+    "initdb",
+    "-D",
+    "/private/tmp/gate02-review3-20260925-8_hqanp6/pgdata",
+    "-U",
+    "reviewer",
+    "-A",
+    "trust",
+    "--no-locale",
+    "-E",
+    "UTF8"
+  ],
+  "exit": 0,
+  "seconds": 1.6
+}

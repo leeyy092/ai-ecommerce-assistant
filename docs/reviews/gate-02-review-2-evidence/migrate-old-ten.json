@@ -1,0 +1,14 @@
+{
+  "name": "migrate-old-ten",
+  "args": [
+    "pnpm",
+    "exec",
+    "prisma",
+    "migrate",
+    "deploy",
+    "--config",
+    "review-prisma-prev.config.ts"
+  ],
+  "exit": 0,
+  "seconds": 1.82
+}

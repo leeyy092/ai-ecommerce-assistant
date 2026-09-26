@@ -1,0 +1,11 @@
+{
+  "name": "review-worker",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-worker.ts"
+  ],
+  "exit": 0,
+  "seconds": 18.65
+}

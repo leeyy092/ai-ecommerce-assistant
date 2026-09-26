@@ -1,0 +1,12 @@
+{
+  "name": "migrate-upgrade-ten-to-twelve",
+  "args": [
+    "pnpm",
+    "exec",
+    "prisma",
+    "migrate",
+    "deploy"
+  ],
+  "exit": 0,
+  "seconds": 1.05
+}

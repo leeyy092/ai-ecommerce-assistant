@@ -1,0 +1,30 @@
+{"level":30,"time":1790332159212,"service":"worker","msg":"worker 启动中：开始 PostgreSQL 连通检查"}
+{"level":30,"time":1790332159222,"service":"worker","msg":"worker 运行中：数据库连接正常，心跳间隔 5000ms"}
+{"level":30,"time":1790332159257,"service":"worker","msg":"pg-boss 队列就绪：import-validate / import-commit"}
+(node:21745) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"level":30,"time":1790332159396,"service":"worker","job_id":"f05fc235-3386-4d06-8725-b67748529ba6","task":{"taskId":"afe6fd91-6903-4abb-92c4-16ea4df74552"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332159425,"service":"worker","job_id":"f05fc235-3386-4d06-8725-b67748529ba6","status":"preview_ready","valid":2,"errors":0,"msg":"import-validate 完成"}
+{"level":30,"time":1790332161262,"service":"worker","job_id":"12005744-ee65-493f-9b76-1a9cfa024a26","task":{"taskId":"04c0cc52-ff6e-4fd2-8f9a-e8e92cb6ef8c"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332161270,"service":"worker","job_id":"12005744-ee65-493f-9b76-1a9cfa024a26","status":"failed","valid":0,"errors":0,"msg":"import-validate 完成"}
+{"level":30,"time":1790332163263,"service":"worker","job_id":"5c3eb986-537c-4fdb-bac8-cf6d912623ee","task":{"taskId":"4315a06b-5a84-4f41-a785-369a76c89ff5"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332163267,"service":"worker","job_id":"5c3eb986-537c-4fdb-bac8-cf6d912623ee","status":"failed","valid":0,"errors":0,"msg":"import-validate 完成"}
+{"level":30,"time":1790332165264,"service":"worker","job_id":"d595126d-13cb-49c4-b91f-f9bdef2382fc","task":{"taskId":"adb3c1b2-559d-40ea-879b-b87e0a7cc9f0"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332165269,"service":"worker","job_id":"d595126d-13cb-49c4-b91f-f9bdef2382fc","status":"failed","valid":0,"errors":0,"msg":"import-validate 完成"}
+{"level":30,"time":1790332167266,"service":"worker","job_id":"1a9d1753-04c8-47f6-8d49-9fe226ec8614","task":{"taskId":"61053df7-f933-4114-aaf8-491a621c04db"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332167275,"service":"worker","job_id":"1a9d1753-04c8-47f6-8d49-9fe226ec8614","status":"failed","valid":0,"errors":0,"msg":"import-validate 完成"}
+{"level":30,"time":1790332169265,"service":"worker","job_id":"a5327fc5-4cf8-4d07-92a1-534fa0a806fe","task":{"taskId":"3b82af4d-2e6d-4906-8c26-104c813dc4f0"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332169281,"service":"worker","job_id":"a5327fc5-4cf8-4d07-92a1-534fa0a806fe","status":"failed","valid":0,"errors":1,"msg":"import-validate 完成"}
+{"level":30,"time":1790332171268,"service":"worker","job_id":"276af8a6-6fda-4fe9-a84d-34d272962ada","task":{"taskId":"df3603f4-d188-4672-bc53-c599f21b9488"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332171281,"service":"worker","job_id":"276af8a6-6fda-4fe9-a84d-34d272962ada","status":"preview_ready","valid":0,"errors":2,"msg":"import-validate 完成"}
+{"level":30,"time":1790332173271,"service":"worker","job_id":"e5fc97c6-9244-4472-957b-556822c1ea34","task":{"taskId":"37d1c157-d0ea-4485-85c7-c994329699e0"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332175271,"service":"worker","job_id":"e5fc97c6-9244-4472-957b-556822c1ea34","task":{"taskId":"37d1c157-d0ea-4485-85c7-c994329699e0"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332175278,"service":"worker","job_id":"e5fc97c6-9244-4472-957b-556822c1ea34","status":"failed","valid":0,"errors":0,"msg":"import-validate 完成"}
+{"level":30,"time":1790332177271,"service":"worker","job_id":"89e275f9-fc3c-4313-b117-a458d0b00f16","task":{"taskId":"cd8df32d-01a6-403c-9fd0-bf0f227e8600"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332177280,"service":"worker","job_id":"89e275f9-fc3c-4313-b117-a458d0b00f16","status":"failed","valid":0,"errors":1,"msg":"import-validate 完成"}
+{"level":30,"time":1790332179270,"service":"worker","job_id":"242a36e8-c46a-4389-854a-c89c70b72bc5","task":{"taskId":"afe6fd91-6903-4abb-92c4-16ea4df74552"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332179271,"service":"worker","job_id":"242a36e8-c46a-4389-854a-c89c70b72bc5","status":"preview_ready","valid":2,"errors":0,"msg":"import-validate 完成"}
+{"level":30,"time":1790332181274,"service":"worker","job_id":"4424e407-c3c8-4513-8e70-f00bd5dd147e","task":{"taskId":"2c0cf799-75c3-4df2-b801-19fb81c3128a"},"msg":"import-validate 开始"}
+{"level":30,"time":1790332181282,"service":"worker","job_id":"4424e407-c3c8-4513-8e70-f00bd5dd147e","status":"preview_ready","valid":2,"errors":0,"msg":"import-validate 完成"}
+{"level":40,"time":1790332187277,"service":"worker","job_id":"ef9c49a6-f5f8-48b7-add4-e1bc93a77ffc","task":{"taskId":"afe6fd91-6903-4abb-92c4-16ea4df74552"},"msg":"import-commit 边界被触发（TASK-008 实现前不应入队）"}
+{"level":30,"time":1790332189361,"service":"worker","signal":"SIGTERM","msg":"worker 收到退出信号，正在停止"}

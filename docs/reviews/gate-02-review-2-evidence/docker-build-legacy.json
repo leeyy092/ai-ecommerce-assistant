@@ -1,0 +1,12 @@
+{
+  "name": "docker-build-legacy",
+  "args": [
+    "docker",
+    "build",
+    "-t",
+    "aiea-g2r2-review:072f9ba",
+    "."
+  ],
+  "exit": 0,
+  "seconds": 377.28
+}

@@ -1,0 +1,11 @@
+{
+  "name": "extra-probes",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-extra.ts"
+  ],
+  "exit": 0,
+  "seconds": 1.1
+}

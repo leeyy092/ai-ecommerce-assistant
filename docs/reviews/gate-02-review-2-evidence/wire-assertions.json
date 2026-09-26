@@ -1,0 +1,32 @@
+[
+  {
+    "name": "H06 true HTTP incomplete multipart byte boundary",
+    "expected": {
+      "status": 422,
+      "code": "FILE_TOO_LARGE",
+      "multipart_closed": false
+    },
+    "actual": {
+      "timeout": true,
+      "bytes_sent": 22020096,
+      "multipart_closed": false
+    },
+    "status": "FAIL",
+    "error": "Expected values to be strictly equal:\n\nundefined !== 422\n"
+  },
+  {
+    "name": "H06 true HTTP incomplete multipart record boundary",
+    "expected": {
+      "status": 422,
+      "code": "TOO_MANY_ROWS",
+      "multipart_closed": false
+    },
+    "actual": {
+      "status": 422,
+      "code": "TOO_MANY_ROWS",
+      "bytes_sent": 440004,
+      "multipart_closed": false
+    },
+    "status": "PASS"
+  }
+]

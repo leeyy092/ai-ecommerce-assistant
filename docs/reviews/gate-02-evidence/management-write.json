@@ -1,0 +1,10 @@
+{
+  "updated_at": "2026-09-15T19:57:56+08:00",
+  "progress_initial_preserved": true,
+  "old_task_rows": 6,
+  "remote_verified_at": "2026-09-15T19:57:56+08:00",
+  "next_owner": "ZCode",
+  "next_prompt": "prompts/P08_FIX.md",
+  "status": "待修复",
+  "review": "FAIL"
+}

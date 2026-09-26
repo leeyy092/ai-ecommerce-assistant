@@ -6,7 +6,7 @@
 
 - 任一时刻仅一个 TASK 处于 IN_PROGRESS；同一 TASK 可跨会话并按 12_PROGRESS 检查点续接。
 - Phase 内 Checkpoint = NO 时连续执行后续 TASK，无需逐个等待用户确认；每 TASK 完成后更新 12_PROGRESS.md 并输出固定格式汇报。
-- 到达 Review Gate：立即停止开发，状态更新为 CODEX_REVIEW_REQUIRED（写入 12_PROGRESS.md），生成/更新根目录 CODEX_REVIEW_HANDOFF.md，等待用户提供 Codex Review 结果与放行。
+- 到达 Review Gate：立即停止开发，状态更新为 CODEX_REVIEW_REQUIRED（写入 12_PROGRESS.md），生成/更新根目录 CODEX_REVIEW_HANDOFF.md，由 Codex 与 ZCode 直接交接独立 Review 结果（Owner 2026-09-26授权）；阶段放行仍按 docs/STATE_PROTOCOL.md 当前授权执行，未获新授权前继续等待 Owner 明确放行。
 - Phase 中途出现「数据库 Schema 重要修改、API Contract 重要修改、模块即将被大量依赖」时，即使用户未要求也可提前触发 Gate（主动提示）。
 - 收到 Review 后逐条标 ACCEPT/DISCUSS/REJECT；优先修 Critical/High；Medium/Low 以不明显拖慢 MVP 为限；修完重跑测试、更新进度，经放行进入下一 Phase。
 - 文案/UI 小调整/小 Bug 不触发 Gate。

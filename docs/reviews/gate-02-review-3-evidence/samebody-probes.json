@@ -1,0 +1,11 @@
+{
+  "name": "samebody-probes",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-samebody.ts"
+  ],
+  "exit": 1,
+  "seconds": 0.99
+}

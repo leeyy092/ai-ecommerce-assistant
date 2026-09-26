@@ -4,6 +4,8 @@
 
 | 场景 | 文件 | 接手工具 |
 |---|---|---|
+| 完整P0方向接手、待审期间准备与放行后接续 | [ZCode完整交付指令](ZCODE_FULL_P0_HANDOFF.md) | ZCode（不替代当前Codex审查） |
+| Codex与ZCode直接协作、持续接收审查结果 | [直接协作入口](CODEX_ZCODE_COORDINATION.md) | Codex ↔ ZCode |
 | 当前任务开发 | [继续当前 TASK](P06_BUILD.md) | ZCode |
 | 到阶段 Gate | [阶段独立审查](P07_CODE_REVIEW.md) | Codex |
 | 修复审查问题 | [修复后复审](P08_FIX.md) | ZCode → Codex |

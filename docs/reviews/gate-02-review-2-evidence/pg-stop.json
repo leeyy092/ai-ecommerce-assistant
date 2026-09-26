@@ -1,0 +1,14 @@
+{
+  "name": "pg-stop",
+  "args": [
+    "pg_ctl",
+    "-D",
+    "/tmp/aiea-g2r2-9hnwja_c/pgdata",
+    "-w",
+    "stop",
+    "-m",
+    "fast"
+  ],
+  "exit": 0,
+  "seconds": 0.13
+}

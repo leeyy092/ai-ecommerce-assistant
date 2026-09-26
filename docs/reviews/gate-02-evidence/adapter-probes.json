@@ -1,0 +1,282 @@
+{
+  "golden": [
+    {
+      "store": "XM-DEMO-A",
+      "kind": "products",
+      "equal": true,
+      "records": 2,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-A",
+      "kind": "orders",
+      "equal": true,
+      "records": 3,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-A",
+      "kind": "order_items",
+      "equal": true,
+      "records": 4,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-A",
+      "kind": "ads",
+      "equal": true,
+      "records": 2,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-A",
+      "kind": "customer_messages",
+      "equal": true,
+      "records": 3,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-A",
+      "kind": "after_sales",
+      "equal": true,
+      "records": 5,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-B",
+      "kind": "products",
+      "equal": true,
+      "records": 1,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-B",
+      "kind": "orders",
+      "equal": true,
+      "records": 1,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-B",
+      "kind": "order_items",
+      "equal": true,
+      "records": 1,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-B",
+      "kind": "ads",
+      "equal": true,
+      "records": 1,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-B",
+      "kind": "customer_messages",
+      "equal": true,
+      "records": 1,
+      "errors": []
+    },
+    {
+      "store": "XM-DEMO-B",
+      "kind": "after_sales",
+      "equal": true,
+      "records": 0,
+      "errors": []
+    }
+  ],
+  "boundaries": {
+    "amount_over_numeric_20_6": {
+      "accepted": 1,
+      "errors": [],
+      "record": {
+        "kind": "order_items",
+        "storeExternalId": "XM-DEMO-A",
+        "sourceUpdatedAt": "2026-09-11T01:00:00.000Z",
+        "externalOrderId": "O1",
+        "externalOrderItemId": "L1",
+        "externalSkuId": "S1",
+        "quantity": 2,
+        "itemPaidAmount": "100000000000000.000000",
+        "currency": "CNY"
+      }
+    },
+    "integer_over_safe_range": {
+      "accepted": 1,
+      "errors": [],
+      "record": {
+        "kind": "orders",
+        "storeExternalId": "XM-DEMO-A",
+        "sourceUpdatedAt": "2026-09-11T01:00:00.000Z",
+        "externalOrderId": "O1",
+        "paymentStatus": "paid",
+        "orderedAt": "2026-09-01T01:55:00.000Z",
+        "paidAt": "2026-09-01T02:00:00.000Z",
+        "currency": "CNY",
+        "expectedItemCount": 9007199254740992
+      }
+    },
+    "ambiguous_datetime": {
+      "accepted": 1,
+      "errors": [],
+      "record": {
+        "kind": "orders",
+        "storeExternalId": "XM-DEMO-A",
+        "sourceUpdatedAt": "2026-09-11T01:00:00.000Z",
+        "externalOrderId": "O1",
+        "paymentStatus": "paid",
+        "orderedAt": "2026-09-01T01:55:00.000Z",
+        "paidAt": "2026-09-01T02:00:00.000Z",
+        "currency": "CNY",
+        "expectedItemCount": 2
+      }
+    },
+    "impossible_date": {
+      "accepted": 1,
+      "errors": [],
+      "record": {
+        "kind": "ads",
+        "storeExternalId": "XM-DEMO-A",
+        "sourceUpdatedAt": "2026-09-11T01:00:00.000Z",
+        "campaignId": "AD1",
+        "campaignName": "杯子搜索",
+        "reportDate": "2026-02-30",
+        "attributionModel": "last_click",
+        "attributionWindowDays": 7,
+        "spend": "40.000000",
+        "attributedSales": "100.000000",
+        "currency": "CNY"
+      }
+    },
+    "missing_source_time": {
+      "accepted": 1,
+      "errors": [],
+      "record": {
+        "kind": "orders",
+        "storeExternalId": "XM-DEMO-A",
+        "sourceUpdatedAt": "2026-09-15T00:00:00.000Z",
+        "externalOrderId": "O1",
+        "paymentStatus": "paid",
+        "orderedAt": "2026-09-01T01:55:00.000Z",
+        "paidAt": "2026-09-01T02:00:00.000Z",
+        "currency": "CNY",
+        "expectedItemCount": 2
+      }
+    },
+    "refund_completed_before_occurred": {
+      "accepted": 1,
+      "errors": [],
+      "record": {
+        "kind": "after_sales",
+        "storeExternalId": "XM-DEMO-A",
+        "sourceUpdatedAt": "2026-09-11T01:00:00.000Z",
+        "recordType": "refund",
+        "externalRecordId": "RF1",
+        "externalOrderId": "O1",
+        "externalOrderItemId": "L1",
+        "relatedCaseId": "AS1",
+        "occurredAt": "2026-09-03T02:00:00.000Z",
+        "status": "succeeded",
+        "completedAt": "2026-09-01T00:00:00.000Z",
+        "refundAmount": "25.000000",
+        "refundedQuantityCumulative": 1,
+        "currency": "CNY",
+        "reasonCode": "quality",
+        "reasonText": null
+      }
+    },
+    "blank_required_enum": {
+      "accepted": 1,
+      "errors": [],
+      "record": {
+        "kind": "products",
+        "storeExternalId": "XM-DEMO-A",
+        "sourceUpdatedAt": "2026-09-11T01:00:00.000Z",
+        "externalProductId": "P1",
+        "name": "保温杯",
+        "category": "杯具",
+        "productStatus": "active",
+        "externalSkuId": "S1",
+        "skuCode": "CUP-RED",
+        "skuName": "红杯",
+        "specification": null,
+        "skuStatus": "active"
+      }
+    },
+    "optional_columns_omitted": {
+      "accepted": 0,
+      "errors": [
+        {
+          "row": 1,
+          "column": "category",
+          "code": "MISSING_COLUMN",
+          "message": "缺少必需列 category"
+        }
+      ],
+      "record": null
+    },
+    "duplicate_headers": {
+      "accepted": 1,
+      "errors": [],
+      "record": {
+        "kind": "orders",
+        "storeExternalId": "XM-DEMO-A",
+        "sourceUpdatedAt": "2026-09-11T01:00:00.000Z",
+        "externalOrderId": "O1",
+        "paymentStatus": "paid",
+        "orderedAt": "2026-09-01T01:55:00.000Z",
+        "paidAt": "2026-09-01T02:00:00.000Z",
+        "currency": "USD",
+        "expectedItemCount": 2
+      }
+    },
+    "unclosed_quoted_field": {
+      "accepted": 1,
+      "errors": [],
+      "record": {
+        "kind": "products",
+        "storeExternalId": "XM-DEMO-A",
+        "sourceUpdatedAt": "2026-09-11T01:00:00.000Z",
+        "externalProductId": "P1",
+        "name": "保温杯",
+        "category": "杯具",
+        "productStatus": "active",
+        "externalSkuId": "S1",
+        "skuCode": "CUP-RED",
+        "skuName": "红杯",
+        "specification": null,
+        "skuStatus": "active"
+      }
+    }
+  },
+  "golden_source_contract": {
+    "source": "04_DATA_MODEL section12.8",
+    "A_M3_expected": false,
+    "A_M3_actual": null,
+    "CSV_A_M3_actual": {
+      "kind": "customer_messages",
+      "storeExternalId": "XM-DEMO-A",
+      "sourceUpdatedAt": "2026-09-11T01:00:00.000Z",
+      "externalMessageId": "M3",
+      "externalConversationId": "C2",
+      "messageAt": "2026-09-01T04:00:00.000Z",
+      "externalSkuId": "S2",
+      "messageText": "可以装热水吗",
+      "isComplaint": null,
+      "channel": "platform_chat",
+      "language": "zh-CN"
+    },
+    "expected_A_complaint_coverage": "3/3",
+    "actual_A_known": 2
+  },
+  "adapter_output_keys": [
+    "kind",
+    "records",
+    "errors"
+  ],
+  "adapter_methods": [
+    "kind",
+    "parse"
+  ],
+  "has_coverage_manifest": false
+}

@@ -4,60 +4,207 @@
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase 2 / TASK-007 / GATE_02 REVIEW 2 剩余问题复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
+**Phase 2 / TASK-007 / GATE_02 REVIEW 3 剩余问题复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex（P07）。**
 
-2026-09-16（复修）：ZCode 按 P08 完成 REVIEW 2 剩余修复并推送。业务提交链 **0882e06（M05 默认90天窗口）→ eee45c1（H03 非法偏移 + H04 规范 channel）→ a6f141f（H05 全局禁用检查 + H06 计数/清理 + H07 幂等原子化 + H08 所有权/写流/retry 元数据 + M04 OSS 调用链）**；复审范围 **072f9ba..实际 HEAD**。每项均先落有期望值的失败回归（before 全红存档于本轮运行日志）再修根因。
+ZCode 于 2026-09-26 按直接协作交接 G2R3-20260926-01 完成 P08 剩余修复：业务提交 **83e33e7**，复审范围 **a465261..实际 HEAD**。关闭内容：①H06/H08 共用中断收尾——spoolUpload 全部中止路径（输入 error/abort、busboy/CSV/写流异常、超限）统一为唯一收尾（销毁上游→onAbort 恰一次→等写流 close→删未被任务拥有的 tmp→原始业务错误落定）；②同根因新发现——mkdir 由 await 改 mkdirSync，消除监听挂接前异步间隙（间隙内中断以无监听 error 逃逸）；③route 错误传播——请求源 error 挂接销毁 busboy，catch 先等 spool 结算再映射，未结束请求行超限稳定 422 TOO_MANY_ROWS；④G2-M06——同 key 同 body 并发败者按存档首次 201 重放（无 key 复用仍 200）。修前红色回归（4 项，形态与 REVIEW 3 断言一致）与修后全绿记录见 [复修证据](../../ai-ecommerce-assistant/docs/reviews/gate-02-r3fix-evidence/README.md)。
 
-最终候选独立验证：typecheck 0 错、unit 69/69、integration 106/106（9 文件）、build（web/worker/scripts）exit 0、e2e 8/8。上轮已通过项（H01 主风险/H02/H09、M01–M03、L01–L02）未触碰。测试自测通过不等于 Gate 通过；Codex 独立 PASS 后仍等 Owner 明确说“放行 Phase 2”。本轮不合并 main、不部署、不开始 TASK-008。
+本轮自测：typecheck 0、unit **72/72**（+3）、integration **111/111**（+5）、build（web/worker/scripts）0、e2e 8/8，均在 /tmp 远端 clone 副本+一次性 PG17 集群执行；**隔离 Compose 文件链通过**（canary 不进镜像→12 迁移→init-owner→登录→建店/源→上传→Worker preview_ready→签名下载一致→重启读回一致；R3 轮容器环境阻塞已定位为 colima VM DNS 悬空符号链接并修复，详见证据 README）。测试自测通过不等于 Gate 通过；Codex 独立 PASS 后仍等 Owner 明确"放行 Phase 2"。本轮不合并 main、不部署、不开始 TASK-008。
+
+Codex 于2026-09-25独立复审 `072f9ba..a465261`（业务止于`a6f141f`）。TASK-005、TASK-006 **PASS / DONE**；TASK-007 **FAIL / BLOCKED**。H03/H04/H05/M05已关闭，M04本机OSS链通过；剩 **1组HIGH：H06/H08共有上传中断清理遗漏**，另有 **G2-M06 MEDIUM：同key同body并发响应201/200不一致**。Docker当前重验因Colima仓库DNS失败BLOCKED，真实OSS云验证限定延期至TASK-029或更早的启用/部署前。详见[本轮正式报告](../reviews/CODEX_REVIEW_GATE_02_REVIEW_3_2026-09-25.md)、[机器索引](../reviews/GATE_02_REVIEW_3_EVIDENCE_2026-09-25.json)。
+
+本轮独立结果：typecheck=0、unit69/69、integration106/106、Web/Worker/scripts build=0、e2e8/8；另104条审查断言99PASS/5FAIL。常规全绿不等于Gate通过。当前共6 DONE、1 BLOCKED、23 TODO；TASK-008–030未开始。下一步仅修TASK-007，修后再交Codex；PASS后仍等Owner明确“放行 Phase 2”。
+
+**产品方向保持Owner 2026-09-21决定：原完整P0电商运营中台，六类CSV、经营/商品/广告/售后/VOC、告警、AI日报与行动全部保留；A/B缩减提案不采用。** 线上独立注册使用仍需补正式合同，TASK-031仅草案，本轮不实施。9月28日仍为Owner目标，本轮不作工期/上线承诺；9月21日排期与开户准备交付保留在[完整P0交付方向](../SEPT28_BETA_PROPOSAL.md)。
 
 <!-- PRODUCT_OS_STATE_BEGIN -->
 ```json
 {
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
-  "goal": "让受邀企业导入 CSV，在一页看到可信经营摘要、异常、客户反馈与有证据的今日行动",
-  "stage": "07 阶段审查 · Phase 2 数据接入基础 · GATE_02 REVIEW 2 复修完成待复审",
+  "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
+  "stage": "07 阶段审查 · Phase 2 数据接入基础 · GATE_02 REVIEW 3 复修完成待复审",
   "current_task": "TASK-007",
   "status": "待审查",
-  "last_completed": "ZCode 完成 REVIEW 2 剩余修复：0882e06/eee45c1/a6f141f 三个业务提交（M05、H03/H04、H05–H08+M04）已推送",
-  "next_action": "Codex 对 072f9ba..实际 HEAD 独立复审（重点复核 H03–H08/M04/M05 关闭标准，prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2",
+  "last_completed": "ZCode 完成 REVIEW 3 剩余修复：H06/H08 统一中断收尾（含 mkdir 异步间隙同根因）、route 错误传播与 TOO_MANY_ROWS、M06 同 body 并发存档重放；业务提交 83e33e7",
+  "next_action": "Codex 对 a465261..实际 HEAD 独立复审（重点 H06/H08 关闭标准与 M06 处理，prompts/P07_CODE_REVIEW.md 首个 text 块）；PASS 后等 Owner 明确放行 Phase 2",
   "next_owner": "Codex",
   "next_prompt": "prompts/P07_CODE_REVIEW.md",
-  "acceptance": "REVIEW 2 报告第13节六项 HIGH 关闭标准逐项复核（非法偏移/规范channel/全局禁用/空行与清理/幂等原子/写流与retry元数据）；M04 本地调用链与 M05 90天窗口；测试通过、独立PASS、Owner放行分开记录",
-  "blockers": "无技术阻塞；等待 Codex 独立复审；真实 OSS 云账号联调按 REVIEW 2 §5 核定留至 TASK-029/部署前（本机调用链已接通）；未合并main、未部署、未开始TASK-008",
+  "acceptance": "截断/断开/输入error 均不留 tmp、不悬挂、abort 恰一次且 UPLOAD_INTERRUPTED；未结束请求行超限稳定 422 TOO_MANY_ROWS（字节 FILE_TOO_LARGE 保持）；同 key 同 body 并发全 201 恰一任务；限额/权限/幂等/队列既有回归保持；Compose 文件链（canary/迁移/上传/下载/重启）新证据",
+  "blockers": "无技术阻塞；等待 Codex 独立复审；真实 OSS 云验证维持 REVIEW 3 §5 限定延期（TASK-029 或启用/部署前）；未合并 main、未部署、未开始 TASK-008",
   "checkpoint": "YES",
-  "review": "REVIEW 2 = FAIL（072f9ba，剩6H+2M）已按 P08 修复完毕；新业务冻结 a6f141f，复审范围 072f9ba..实际 HEAD；待独立复审",
-  "updated_at": "2026-09-16T16:40:00+08:00",
-  "updated_by": "ZCode · GATE_02 REVIEW 2 剩余修复",
+  "review": "REVIEW 3 = FAIL（冻结 a465261、业务 a6f141f）已按 P08 复修完毕；新业务冻结 83e33e7，复审范围 a465261..实际 HEAD；待独立复审",
+  "updated_at": "2026-09-26T14:29:41+08:00",
+  "updated_by": "ZCode · G2R3-20260926-01 复修完成，冻结候选并交回写入权",
   "evidence": [
-    "docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md",
-    "docs/reviews/GATE_02_REVIEW_2_EVIDENCE_2026-09-16.json",
-    "docs/reviews/gate-02-review-2-evidence/README.md",
-    "独立 typecheck=0 / unit=69/69 / integration=106/106 / build=0 / e2e=8/8；REVIEW 2 反例 before 断言全红→修复后转绿",
-    "独立新增断言 FAIL：异常时区、coverage channel、Worker全局禁用、空行超限、幂等原子性、写流错误、OSS调用链、默认日期无界",
-    "真实 Docker 构建/canary/隔离Compose上传→Worker→签名下载→重启读回通过；非部署；历史证据保留"
+    "G2R3-20260926-01：修前红色回归 4 项（input-error tmp=1/abort=0、截断 422 通用、行超限 VALIDATION_ERROR、同 body 并发 200）→修后全绿；修前/修后断言与复现见 ai-ecommerce-assistant/docs/reviews/gate-02-r3fix-evidence/README.md",
+    "2026-09-26 自测：typecheck 0（--incremental false）、unit 72/72、integration 111/111、build 0、e2e 8/8（/tmp 远端 clone 副本+一次性 PG17 @5434，Node 24.21.0 官方 SHA 校验）",
+    "2026-09-26 隔离 Compose 文件链通过：canary 不进镜像→12 迁移→init-owner→登录→建店/源→上传 201→Worker preview_ready→签名下载一致→重启 web/worker 后读回一致→down -v 清理；R3 轮容器阻塞根因=colima VM resolv.conf 悬空符号链接，已修复并记录",
+    "docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_3_2026-09-25.md",
+    "docs/reviews/GATE_02_REVIEW_3_EVIDENCE_2026-09-25.json",
+    "docs/reviews/gate-02-review-3-evidence/README.md",
+    "docs/reviews/gate-02-review-3-evidence/final-verification.json",
+    "2026-09-25独立：typecheck0/unit69/integration106/build0/e2e8；新PG17空库12迁移；独立断言99PASS/5FAIL；不等于Gate通过",
+    "历史记录（本轮接手前）：docs/SEPT28_BETA_PROPOSAL.md「ZCode完整交付计划与开户合同草案」（2026-09-21）：TASK-008–030+031 逐项排期（合计约32–50有效开发日，9-28缺口27–45日）、自助开户合同草案（TASK-031，仅三项标产品决策）、复审材料与上线输入核对；等待期准备，不改变Gate02被审合同",
+    "历史记录（本轮接手前）：docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md",
+    "历史记录（本轮接手前）：docs/reviews/GATE_02_REVIEW_2_EVIDENCE_2026-09-16.json",
+    "历史记录（本轮接手前）：docs/reviews/gate-02-review-2-evidence/README.md",
+    "历史记录（本轮接手前）：独立 typecheck=0 / unit=69/69 / integration=106/106 / build=0 / e2e=8/8；REVIEW 2 反例 before 断言全红→修复后转绿",
+    "历史记录（本轮接手前）：独立新增断言 FAIL：异常时区、coverage channel、Worker全局禁用、空行超限、幂等原子性、写流错误、OSS调用链、默认日期无界",
+    "历史记录（本轮接手前）：真实 Docker 构建/canary/隔离Compose上传→Worker→签名下载→重启读回通过；非部署；历史证据保留",
+    "历史记录（本轮接手前）：历史讨论（2026-09-16，已由2026-09-21完整P0决定替代）：docs/SEPT28_BETA_PROPOSAL.md：Owner 确认 2026-09-28 线上测试链接可注册/使用；首版业务范围待选择，提案不构成开发或阶段放行",
+    "历史记录（本轮接手前）：历史讨论（2026-09-16，已由2026-09-21完整P0决定替代）：docs/SEPT28_BETA_PROPOSAL.md 最新讨论：Owner 质疑晨报吸引力；Codex 撤回晨报优先默认推荐；具体商品问题排查为待验证候选，原范围未改",
+    "历史记录（本轮接手前）：历史讨论（2026-09-16，已由2026-09-21完整P0决定替代）：docs/SEPT28_BETA_PROPOSAL.md 当前方案：A/B/C版本边界、原TASK调整与依赖、9–14/14–20/20–30有效开发日累计估算；9月28日限A版条件冲刺，首版选择未确认",
+    "历史记录（本轮接手前）：历史讨论（2026-09-16，已由2026-09-21完整P0决定替代）：docs/SEPT28_BETA_PROPOSAL.md：已说明A版能力/客群/验证范围收窄、反馈工具化风险及阶段兼容成本；最终方向可保留但不能声称无影响；A/B仍未选择",
+    "历史记录（本轮接手前）：FINAL_DECISIONS.md §6：Owner 2026-09-21 重申完整 P0 中台；历史 A/B 缩减方案不作为当前执行指令",
+    "历史记录（本轮接手前）：docs/SEPT28_BETA_PROPOSAL.md 顶部：完整范围提效建议及当前剩余 7 日无可靠交付承诺；原任务/Gate保持，未运行业务测试或新复审",
+    "历史记录（本轮接手前）：prompts/ZCODE_FULL_P0_HANDOFF.md：完整P0准备交付、真实Gate分支判断和放行后接续；指令已写入，未自动发送，ZCode执行待核实"
   ],
   "github": {
-    "status": "候选本地/远端 phase/02-data-ingestion=a6f141f（已推送 072f9ba..a6f141f）；main=4c7e95b 未合并；管理写回随交接提交",
+    "status": "2026-09-26 本地/远端 phase/02-data-ingestion=83e33e7（业务修复；推送范围 a465261..83e33e7，管理写回随交接提交）；main=4c7e95b 未合并",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
-    "verified_at": "2026-09-16T14:15:32+08:00",
-    "evidence": "本轮 git ls-remote 与实际 HEAD 核对一致；见 docs/reviews/gate-02-review-2-evidence/git-final-baseline.json"
+    "verified_at": "2026-09-26T14:29:41+08:00",
+    "evidence": "本轮 git push 后 ls-remote 核对一致；复修基线 a465261 见 docs/reviews/gate-02-r3fix-evidence/"
   },
   "deployment": {
-    "status": "未部署（本轮授权不含部署）",
+    "status": "本轮未部署；无新增线上验证证据",
     "url": "",
     "verified_at": "",
-    "evidence": "TASK-029 试点运行与运维要求另计"
+    "evidence": "本轮为独立复审；Docker构建受阻，不是部署；TASK-029未开始"
   }
 }
 ```
 <!-- PRODUCT_OS_STATE_END -->
 
+## 2026-09-26 · ZCode 完成 REVIEW 3 复修（G2R3-20260926-01，候选冻结）
+
+- 时间/执行人：2026-09-26T14:29+08:00 · ZCode。执行 P08 首个 text 块；与 Codex 直接协作，写回期间为主副本唯一写入者。
+- 业务变更（提交 83e33e7）：`src/services/imports.ts`（spoolUpload 统一 fail() 收尾：销毁上游→onAbort 恰一次→writeClosed 后删未被任务拥有的 tmp→原始业务错误落定；输入 error 与 end 阶段失败并入同一收尾；mkdir await→mkdirSync 消除监听挂接前异步间隙；bindHttpArchiveForReuse 同 hash 冲突返回存档首次响应）；`src/app/api/v1/imports/route.ts`（请求源 error 挂接→记 UPLOAD_INTERRUPTED 并销毁 busboy；catch 先等 spool promise 结算再映射）；`tests/unit/spool-interruption.test.ts` 新增 3 例；`tests/integration/imports.test.ts` 新增 REVIEW 3 回归 describe 5 例。未改 Schema/迁移/依赖；未触碰已关闭项。
+- 修前红色回归（对 a465261 实测）：input-error 新tmp=1/abort=0；截断 422 通用错误；未结束行超限 VALIDATION_ERROR；同 body 并发败者 200——均与 REVIEW 3 §4/§5 断言一致。修后全绿。另发现并修复 R3 未列出的同根因缺陷：mkdir await 间隙内中断以无监听 error 逃逸（进程崩溃/请求悬挂），截断/断开用例在修前实际表现为挂起。
+- 环境事实：主副本 .git iCloud dataless（本地 git archive 与 cp 工具链均挂起），改用远端 clone 同 SHA 副本+官方 Node 24.21.0（SHA256 校验）；tsc incremental+陈旧 tsbuildinfo 曾导致过期程序状态，本轮 typecheck 一律 --incremental false 并预删 tsbuildinfo。R3 轮容器阻塞根因定位：colima VM /etc/resolv.conf 为指向未运行 systemd-resolved 的悬空符号链接（[::1]:53 拒绝），替换为宿主局域网 DNS 后镜像经 daocloud 镜像源拉取成功。
+- 隔离 Compose 文件链（独立项目 aiea-r3fix、回环端口、一次性随机凭据、私有卷、特殊字符口令）：canary 不进镜像→up 三服务 healthy/200→官方 12 迁移→dist/scripts init-owner→真实登录→建店/建源→上传 201→Worker preview_ready→BETTER_AUTH_SECRET 同源 HMAC 签名下载逐字节一致→重启 web/worker 后再次下载一致→down -v+镜像卷清理、colima 停止。
+- 检查与证据：typecheck 0、unit 72/72、integration 111/111、build 0、e2e 8/8（保留历轮一致 ECONNRESET 警告）；日志与修前/修后矩阵在 ai-ecommerce-assistant/docs/reviews/gate-02-r3fix-evidence/。真实 OSS 云验证维持限定延期未触碰；无新增迁移、无依赖变化；提交前检查无密钥/真实数据（一次性凭据仅存在于已销毁的 /tmp 上下文）。
+- 交接：业务候选冻结于 **83e33e7**，复审范围 **a465261..83e33e7**；TASK-005/006 PASS/DONE 与已关闭项身份不变。自测全绿不等于独立 PASS；候选已推送，写入权交回 Codex 独立复审（P07 首个 text 块），PASS 后仍等 Owner 明确"放行 Phase 2"。不合并 main、不部署、不开始 TASK-008。
+
+## 2026-09-26 · ZCode 接收 START G2R3-20260926-01（开工记录）
+
+- 时间/执行人：2026-09-26T13:07+08:00 · ZCode。收到 Codex START，主副本业务与唯一进度写入权自本条起归 ZCode（至冻结交接为止）；Codex 转只读跟进。
+- 接手核对：分支 phase/02-data-ingestion，HEAD=a4652611e29d3e316de7f41bf46550fe02a64c2d（业务 a6f141f），与 Review 3 冻结一致；在途差异全部为管理/生成/证据文件，无未提交业务代码；已重读 12_PROGRESS 13:05 版本、STATE_PROTOCOL 直接协作节、P08 首个 text 块、REVIEW 3 报告 §4/§5/§13 与 gate-02-review-3-evidence。
+- 本轮范围（与 ACK 一致）：①先落有期望值红色回归（stream-faults input-error、真实截断 multipart、socket abort：期望 UPLOAD_INTERRUPTED/新tmp=0/abort=1，现状 tmp=1/abort=0）；②spool/Route 统一请求源 error/abort、busboy/CSV/写流异常、超限的单次收尾——停止消费、等待写流关闭、清理未被有效任务拥有的文件、传播原始业务错误，不误删已建任务原文件；③未结束请求行超限稳定 422 TOO_MANY_ROWS（字节仍 FILE_TOO_LARGE）；④G2-M06：同 key 同 body 并发返回既有 HTTP 存档首次 201，补强制并发断言；⑤隔离 Compose 文件链补验（环境受阻如实记录）。
+- 边界：不重开 H01–H05/H07(原HIGH)/H09、M01–M05、L01–L02 关闭身份；TASK-005/006 PASS/DONE 不动；不开始 TASK-008、不合并 main、不部署、Schema 无变化不新增迁移；工具链在 /tmp 副本+一次性 PG17 执行；既有独立审查报告/机器索引/原始证据不改，修复证据另存。
+- 下一步：修复完成后冻结业务候选、更新本进度/交接/P07、sync 读回，并直接回复 Codex 交接写入权；自测全绿不等于独立 PASS。
+
+## 2026-09-26 · Codex与ZCode直接协作（当前协调记录）
+
+- Owner授权：直接沟通开发结果/修复/独立复审，省去人工中转；关键功能里程碑及重大取舍由Owner审核。原完整P0和独立Gate保留。
+- 桌面核验：ZCode / 产品-开发 / 会话“接手AI电商助手P0交接计划”，空闲可输入；实际HEAD仍a465261，无未提交业务变化，昨天Review3残余尚未见新修复。
+- 本次交接编号：G2R3-20260926-01；派发状态=13:04 ZCode明确ACK并核对全部资料，阻塞无；当前写入者Codex完成本轮sync后发送START，START起写入权转ZCode，须由ZCode将接收/开工记录追加于此。
+- 指令：执行P08首个text块，TASK-007 H06/H08共同中断清理，M06核定/修复，Docker缺证补验；5/6已过保持。完成后直接向Codex报告冻结业务提交、证据、残余项和交接写入权。
+- 阶段授权：已发起一次范围确认，答案待落盘；确认前仍按原规则等待Owner阶段放行。35/50/70/100功能节点建议见STATE_PROTOCOL，不伪造当前百分比。
+- 自动化：已创建本任务心跳 `codex-zcode`，ACTIVE，每10分钟检查；工具返回与配置读回一致。仅状态变化时推进，普通返修保持安静；本机/应用不可用则记录阻塞，不保证离线运行。
+- 本轮管理更新：STATE_PROTOCOL新增通信规则、协调提示词、交接/唯一进度，PHASE_PLAN改为两工具直接传递Review结果（Owner阶段放行边界未改）；没有业务代码/业务测试/新Gate结论，不合并或部署。sync与读回证据在coordination-2026-09-26/；START后Codex不并发修改唯一进度。
+
+
+## 2026-09-25 · Codex GATE_02 REVIEW 3 独立复审（当前执行记录）
+
+- 时间/执行人：2026-09-25T18:44:54+08:00 · Codex。范围072f9ba..a465261，最后业务a6f141f。开始及写回前确认主应用无未提交业务差异，a6f之后应用差异为空；保留原管理文档及全部旧报告/证据。冻结副本来自独立远端clone同完整SHA（主副本archive遇iCloud超时），未在主副本运行工具链。
+- 结论：FAIL。TASK-005/006逐项PASS登记DONE；TASK-007 BLOCKED/待修复。H03/H04/H05/M05关闭；H07原HIGH风险关闭，响应一致性残余转G2-M06 MEDIUM；M04本机链通过、真实云限定延期。H06/H08共有输入中断清理遗漏：服务流error不删除tmp、不调用abort；真实截断multipart和socket断开均留1个tmp，Web仍200且无新任务。未结束multipart行超限返回通用错误而非TOO_MANY_ROWS，作为同一错误传播修复要求；不再声称10万行限制被绕过。
+- 执行：新PG17.11/Node24.21.0，官方空库12迁移通过，diff仅既知M07外键差异且未应用。typecheck0、unit69、integration106、build0、e2e8；另104条独立断言99PASS/5FAIL；真实built Worker重试/补投/撤权已执行。未重跑旧库迁移链（本轮无迁移变化，适用条件明确引用历史）。
+- 环境与延期：本轮Colima启动后Docker拉基础镜像因registry DNS失败，当前canary/Compose链未运行，不能冒用历史通过。已停止本轮启动的Colima（无用户容器）、Web和新PG；资源清理与sync读回以证据final-verification为准。OSS实际函数链使用注入对象服务，无真实云请求；仅云账号/权限/网络验收到TASK-029或启用/部署前，不免除本机代码缺陷。
+- 交接：报告docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_3_2026-09-25.md，机器索引docs/reviews/GATE_02_REVIEW_3_EVIDENCE_2026-09-25.json，原始断言与脚本docs/reviews/gate-02-review-3-evidence/。下一工具ZCode/P08，Checkpoint=YES；下一复审a465261..新实际HEAD，已关闭项仅在修复触发边界时回归。未改业务代码、未提交/推送、未合并main、未部署、未开始TASK-008。Owner完整P0方向和开户草案边界不变。
+
+### 历史：本轮接手时当前导航原文（2026-09-21，保留追溯，不作当前状态）
+
+**Phase 2 / TASK-007 / GATE_02 REVIEW 2 剩余问题复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
+
+**产品方向（Owner 2026-09-21 重申）：保持最初完整 P0 电商中台，六类数据及经营/商品/广告/售后/客服/AI/行动/工作台全部保留；A/B 缩减提案不再作为开发方向。线上可注册和使用、9 月 28 日目标仍有效；自助独立开户合同尚待补齐，当前没有证据承诺剩余 7 日完成完整交付。提效建议见 [完整 P0 交付方向](../SEPT28_BETA_PROPOSAL.md)。本轮不改变 Gate/TASK，不代表注册已实现或获得阶段/部署放行。**
+
+**ZCode 专项接手入口（2026-09-21）：[完整 P0 接手指令](../../prompts/ZCODE_FULL_P0_HANDOFF.md)。ZCode 已于 2026-09-21 执行该指令第四节等待期准备交付：TASK-008–030 完整排期、自助开户合同草案（TASK-031 草案）、复审材料与上线输入核对已写入 [完整 P0 交付方向](../SEPT28_BETA_PROPOSAL.md) 的"ZCode完整交付计划与开户合同草案"节。业务主线仍为 Codex 独立复审，P07/Checkpoint=YES 不变；未触待审业务候选，TASK-008 未开始。**
+
+2026-09-16（复修）：ZCode 按 P08 完成 REVIEW 2 剩余修复并推送。业务提交链 **0882e06（M05 默认90天窗口）→ eee45c1（H03 非法偏移 + H04 规范 channel）→ a6f141f（H05 全局禁用检查 + H06 计数/清理 + H07 幂等原子化 + H08 所有权/写流/retry 元数据 + M04 OSS 调用链）**；复审范围 **072f9ba..实际 HEAD**。每项均先落有期望值的失败回归（before 全红存档于本轮运行日志）再修根因。
+
+最终候选独立验证：typecheck 0 错、unit 69/69、integration 106/106（9 文件）、build（web/worker/scripts）exit 0、e2e 8/8。上轮已通过项（H01 主风险/H02/H09、M01–M03、L01–L02）未触碰。测试自测通过不等于 Gate 通过；Codex 独立 PASS 后仍等 Owner 明确说“放行 Phase 2”。本轮不合并 main、不部署、不开始 TASK-008。
+
+
+
+## 2026-09-21 · ZCode 执行完整 P0 接手指令（等待期准备交付）
+
+- 时间/执行人：2026-09-21T17:09:47+08:00 · ZCode。Owner 通过 prompts/ZCODE_FULL_P0_HANDOFF.md 首个 text 块下达接手指令；本轮属 Gate02 等待期准备交付，不改变被审业务候选（072f9ba..实际 HEAD，业务 a6f141f），不代表复审通过或阶段放行。
+- 接手核对：分支 phase/02-data-ingestion，HEAD=a4652611e29d3e316de7f41bf46550fe02a64c2d，与指令基线一致；未提交差异为管理文档与未跟踪审查证据，全部保留；无其他执行者并发写入迹象。按指令顺序读取 AGENTS/.product-os/STATE_PROTOCOL/00_START_HERE/12_PROGRESS/FINAL_DECISIONS/PHASE_PLAN/09_TASKS/SEPT28_BETA_PROPOSAL/CODEX_REVIEW_HANDOFF/P07，另读 02_USER_ROLES/08_API_SPEC/10_ACCEPTANCE/11_DEVELOPMENT_RULES、REVIEW 2 报告§13、gate-02-review-2-evidence/README.md、认证与组织初始化代码（sign-up 403、owner_user_id 唯一）。当前无同一候选独立 PASS，也无 Owner"放行 Phase 2"记录，故不开始 TASK-008、不改业务代码、不合并 main、不部署。
+- 交付 A（完整计划）：TASK-008–030+新增 031 逐项依赖/产物/投入/验证/资源表；编码约 23–34、Gate 周转约 5.5–11、029/030 约 3.5–5，合计约 32–50 有效开发日（中位约 41）；关键链 008–021 线性主干+028–030；结论：不删功能不降验收前提下 9-28 不可行（缺口约 27–45 有效开发日），最早完整窗口约 2026-11 上旬、按历史返修频率应按 11 月中旬规划。
+- 交付 B（开户合同草案）：注册→独立 Organization（owner_user_id 既有唯一约束=一人一组织）→首位 Owner→引导显式建店→再次登录；新增 POST /api/v1/auth/register（不解封 /api/auth/sign-up/email 403）； advisory 锁单事务+补偿回滚+HTTP 幂等；409 邮箱已注册/超限、429 限流（auth_rate_limit 复用）；建议新增 TASK-031（依赖 TASK-004）并列入 Phase 3 首项；仅测试码/隐式建店/邮箱不验证三项标 GPT_PRODUCT_DECISION_REQUIRED。草案未生效，不改认证代码与原合同。
+- 交付 C（材料与输入核对）：REVIEW 2 报告/§13 关闭标准/机器证据/8 步复现 README 完整可读，P07 与磁盘 HEAD 一致；缺口=本轮复修 before 全红原始日志未落盘独立目录（断言已入测试文件，不阻塞复审）+REVIEW 2 报告/证据仍未跟踪（随下次管理写回提交）；上线输入（真实脱敏样本、百炼账号、服务器/域名/OSS、5 名观察人力）均待核实，未购买未部署。
+- 检查：本轮为管理文档交付，未运行业务测试、未执行新复审（无业务改动故无需）；已做合同一致性核对（02/08/09/10/11 与 schema 现状）。写回范围仅 docs/SEPT28_BETA_PROPOSAL.md（追加当前有效节，历史保留）与本进度（导航/执行记录/状态块）；业务代码、合同分册、P07/交接未动。保留全部在途未提交差异，不提交/推送/合并/部署。
+- 收尾：执行 Product OS sync 并读回项目首页与总控（结果见下条）。任务表不变：TASK-007/待审查，005–007 BLOCKED 待审，008–030 TODO；下一工具 Codex/P07/Checkpoint=YES，PASS 后仍等 Owner 明确"放行 Phase 2"。
+
+## 2026-09-21 · ZCode 完整 P0 接手指令交付
+
+- 时间/执行人：2026-09-21T16:46:37+08:00 · Codex。Owner 要求给 ZCode 讲清立即接手的工作；本轮准备可直接复制的完整提示词，未连接或自动发送至 ZCode。
+- 产物：prompts/ZCODE_FULL_P0_HANDOFF.md，包含所有核心资料绝对路径、完整P0范围、当前可执行的排期/开户合同草案/材料核对、按最新候选区分待审/FAIL/PASS/Owner放行、放行后的TASK-008接续与阶段内连续执行。没有把“开始干活”解释为免除独立Gate。
+- 同步：提示词导航增加入口；P06移除所有阶段固定停TASK-004的旧专用说明，改为按当前Phase停止；当前交接增加准备入口，原审查范围不变。
+- 基线：phase/02-data-ingestion / a465261；4 DONE、3 BLOCKED待审、23 TODO；待审业务代码、原任务合同、PHASE_PLAN及旧审查证据未修改。保留在途管理差异，不提交/推送/合并/部署。
+- 检查：管理文档与链接、唯一状态块/30任务行、首个text块及Git差异核对；无业务改动，不运行业务测试。执行Product OS sync并读回首页/总控。下一工具仍Codex/P07，待独立复审；ZCode准备工作是否实际执行待核实。
+
+## 2026-09-21 · 完整 P0 中台方向重申与提效核对
+
+- 时间/执行人：2026-09-21T14:18:49+08:00 · Codex。Owner 明确完整中台、保留最初设计并快速上线；据此终止 A/B 缩减提案作为当前方向，未取消任何原 P0 模块，也未扩入 P1/P2。
+- 核验：实际 HEAD a4652611e29d3e316de7f41bf46550fe02a64c2d，分支 phase/02-data-ingestion；任务表4 DONE、3 BLOCKED待审、23 TODO；src/app/page.tsx 仍初始化页。写入前对五份管理文件做内容哈希核对，保留全部在途修改和旧审查证据。
+- 交付：更新 FINAL_DECISIONS.md §6、既有 SEPT28_BETA_PROPOSAL.md 顶部现行方向、本导航与唯一状态块、CODEX_REVIEW_HANDOFF.md 及 P07 首个 text 块，避免旧缩减提案继续引导开发。建议通过公共实现复用、任务前明确期望/反例、阶段内连续执行、提前准备样本和资源减少返工与等待。
+- 新增需求边界：线上可注册使用要求沿用；独立开户的具体合同/任务归属尚待补齐，未更改认证实现、原30 TASK或阶段顺序。9月28日仍为目标；当前剩7日，无证据保证完整P0与新增开户按期完成，旧估算不作新承诺。
+- 状态：TASK-007 / 待审查 / Codex / P07 / Checkpoint=YES；任务表逐行状态不变。下一步仍是 Gate02 独立复审 072f9ba..实际 HEAD，PASS 后等 Owner 明确“放行 Phase 2”。本轮是方向/交接记录，不是新的技术验收。
+- 验证：仅管理文档的一致性、历史保留、业务/合同差异与生成视图检查；不为此运行业务测试。本轮未提交/推送、合并、部署或启动TASK-008；远端/资源状态未重验，不更新其核验时间。按协议执行 Product OS sync 并读回首页与总控，具体结果由本轮收尾核对。
+
 ## 当前 Git 与交接状态
+
+- 核验2026-09-25T18:38:42.584719+08:00：phase/02-data-ingestion本地/远端=a465261，业务a6f141f，main=4c7e95b；本轮文档/证据未提交未推送。
+- REVIEW 3=FAIL，TASK-005/006已独立PASS，TASK-007待修复；下一责任人ZCode，P08首个text块，Checkpoint=YES。
+- 下轮独立PASS后仍等Owner明确“放行 Phase 2”；本轮不合并、不部署、不开始TASK-008。
+
+### 历史Git交接快照（接手前原文）
+
 
 - 核验 2026-09-16T16:40:00+08:00：分支 phase/02-data-ingestion，本地/远端=a6f141f（推送记录 072f9ba..a6f141f）；main=4c7e95b 未合并。
 - 修复提交 0882e06/eee45c1/a6f141f 均含「反例回归 before 红 → 修复后绿」证据；上轮通过项未触碰。
 - 下一责任人 Codex，P07_CODE_REVIEW 首个 text 块；Checkpoint=YES；PASS 后仍等 Owner 放行 Phase 2。
+
+## 2026-09-16 · 首版范围对整体产品方向的影响说明
+
+- 时间/执行人：2026-09-16T17:06:55+08:00 · Codex。Owner 要求解释缩小首版对整体产品及方向的影响；本轮只补齐既有方案说明，不新增范围决定。
+- 结论：最终经营问题排查方向可保留，但A版能力、首批适用人群、可以验证的需求均实质收窄；缺少经营/正式售后事实时不能验证完整经营诊断。长期停留文本分类且取消B关联，会演变成商品反馈分析工具，不能称只是阶段顺序变化。
+- 工程影响：已建地基可复用，仍须调整任务依赖、完整条件与页面；后续B/C需兼容和回归。更早上线局部版本不等于整个P0提前完成或总投入减少，未承诺零返工。
+- 交付：在 [原上线提案](../SEPT28_BETA_PROPOSAL.md) 补充“对整体产品与方向的影响说明”；保留A/B/C定义和历史。未将A内测的潜在使用或付费推断为完整产品验证。
+- 状态与收尾：A/B首版选择未确认，原合同和任务表不变，TASK-007 / 待审查 / Codex / P07 / Checkpoint=YES；本轮管理说明无需业务测试，执行状态一致性检查和Product OS sync/读回。未推进开发、合并、部署或新的Gate结论。
+
+## 2026-09-16 · 商品问题排查方向的开发调整与目标/完整工期
+
+- 时间/执行人：2026-09-16T16:50:18+08:00 · Codex。Owner 要求按最后沟通的商品问题排查方向，评估开发调整及目标/完整进度；本轮形成方案，没有执行业务开发或Gate新候选复审。
+- 版本/状态：仍为 phase/02-data-ingestion，本地最近管理提交 a465261、业务候选 a6f141f；任务表4 DONE、3 BLOCKED待审、23 TODO。保留已有未提交管理文档、未跟踪审查报告和证据；本轮不提交/推送，不更新GitHub远端核验事实。
+- 关键依赖已实际核验：Prisma AfterSaleRecord.orderId/orderItemId 非空；04_DATA_MODEL §12.7要求已有同店订单与订单行。因此正式售后关联必须包含TASK-010及相关提交/校验，不能仅有反馈文本就称完整关联。CustomerMessage允许明确SKU关联，可先提供反馈证据范围的商品排查。
+- 交付：更新 [开发调整与工期方案](../SEPT28_BETA_PROPOSAL.md)，保留全部历史提案。A=自助开户+商品/消息+SKU反馈/证据/建议/本人行动，累计剩余9–14个有效开发日；B再含订单/正式售后/经营事实，累计14–20日；C原完整P0加本次必要开户/问题首页调整，累计20–30日。三者包含而非相加。
+- 日历口径：9月28日是A版连续投入、样本/资源就绪、Gate及时衔接情况下的冲刺目标；A按通常每周5个有效开发日约2–3周，B约3–4周（10月7–14日前后），C约4–6周（10月14–28日前后）。均为待执行校准的估算，停工/等待/新增返工顺延；非发布承诺或市场验证完成日期。
+- 调整原则：保留现有地基；客户反馈分类/证据/行动成为首版核心，导入/开户页面尽早贯通；订单/售后在B、广告/复杂退款指标/定时日报/完整工作台在C补齐。A缺少经营事实时明确不可计算，不冒充投诉/退款率或经营归因。
+- 尚待决定：9月28日首版采用A，还是必须B完整关联；首批样本与资源实际就绪情况。原合同依赖与Gate不能直接跳过，范围选定后须同步修订原决策/合同/阶段计划/提示词；当前未将部分完成或延期候选记为DONE。
+- 检查与收尾：读取实际规则/进度/Git/任务合同/Schema/CSV字段；仅管理方案，未新增或运行业务测试；执行文档范围/状态一致性检查及Product OS sync，读回项目首页与总控。当前保持 TASK-007 / 待审查 / Codex / P07 / Checkpoint=YES。
+- 后续开发边界：Gate02新候选须独立PASS并获Owner明确“放行 Phase 2”；本轮未开始TASK-008、未修改业务代码、未合并main、未部署。
+
+## 2026-09-16 · 产品核心卖点复核讨论
+
+- 时间/执行人：2026-09-16T16:27:41+08:00 · Codex。Owner 质疑“经营晨报”相对千牛后台的试用吸引力，要求说明产品核心卖点。本轮只核验文档、官方竞品资料和讨论定位，未执行业务开发或新候选复审。
+- Codex 修正：撤回上一条以晨报为主的默认缩减建议，原提案保留为历史。产品核心价值候选为将具体商品的经营/售后事实与买家反馈组织成可复核的问题和优先行动；不能仅靠已有平台也提供的汇总/分析/建议宣称差异。
+- 依据：原 01_PRODUCT_VISION.md、06_AI_CAPABILITIES.md、FINAL_DECISIONS.md；阿里官方 2024-06-13 商家 AI 工具介绍与 2026-03-27 商家 Agent 能力规划（链接见 ../SEPT28_BETA_PROPOSAL.md 最新讨论）。规划不等于所有商家账号已可用，本次未进入客户后台实测。
+- 待验证：具体品类/SKU 的售后与反馈问题排查，能否比卖家的现有后台/通用 AI 减少含导出整理在内的总耗时，产生有效新发现和实际采用/再次使用。当前没有客户试用、付费或独有竞争优势证据。
+- 边界：9月28日线上测试链接可注册/使用的目标保留；未批准任何任务删减、跳转或新的工期承诺。TASK 表、Gate 状态、下一工具与 P07 保持；代码/测试/Owner 放行/GitHub/部署状态未推进。本轮管理文档静态检查与 Product OS 同步单独执行。
+
+## 2026-09-16 · 9月28日自助内测目标与范围提案
+
+- 时间/执行人：2026-09-16T16:19:36+08:00 · Codex。范围：只读核验实际进度与代码入口，形成排期/范围提案；未重跑本轮业务复审，未修改业务代码。
+- Owner 已明确：最晚上线日期为 2026-09-28，交付“线上发产品测试链接，可注册和使用”。这不等于仅有介绍页、候补名单或人工代做报告；是否完全开放匿名注册、是否采用测试码尚未确定。
+- 实际版本：本地分支 phase/02-data-ingestion，HEAD a4652611e29d3e316de7f41bf46550fe02a64c2d；最近业务修复 0882e06/eee45c1/a6f141f，仍待独立复审。原审查报告与证据为未跟踪文件，已保留；本次未提交、推送或联网核验 GitHub。
+- 功能核验：当前 src/app/page.tsx 为工程初始化页；已有登录/受邀注册，未提供新客户自行创建独立企业空间的入口；完整导入与经营页面待后续开发。任务表维持 4 DONE、3 BLOCKED 待审、23 TODO，不把任务数比例解释成工程量比例。
+- 交付：[9月28日自助内测提案](../SEPT28_BETA_PROPOSAL.md)。推荐先聚焦商品/订单头/订单行 → 确定性经营指标 → 少量异常 → 有证据建议 → 自助页面及线上验证；广告/退款/VOC/完整工作台是否后移，待 Owner 选择。原 P0 合同与依赖未修改，不把延期候选写为完成。
+- 条件排期：9月21日前贯通数据与指标，24日前跑通自助使用并冻结新增功能，25–27日联调/修复/线上验证，28日经发布放行提供测试链接。属于有条件冲刺目标，无证据承诺原完整 P0 加新增注册均能按时完成。
+- 缺失输入：首版业务范围选择、首批客户及脱敏样本情况、部署和真实模型资源就绪情况。客户使用/复用/报价/付款均不预写为已发生。
+- 检查：读取规则、唯一进度、任务/阶段合同、Git 状态、页面/注册入口；本次仅管理文档，无需重跑业务测试。Product OS sync 于 2026-09-16T16:19:56+08:00 返回 registered=1、updated=1、errors=[]；已实际读回项目 00_START_HERE.md/.html 与总控 PROJECTS.md，TASK-007 / 待审查 / Codex / P07 一致。唯一 JSON 状态块、30 条任务行及 git diff --check 通过。
+- 下一步：当前仍为 TASK-007 / 待审查 / Codex / P07 / Checkpoint=YES。Gate 02 新候选独立 PASS 后等待 Owner 明确“放行 Phase 2”；产品范围选择与阶段放行分开。未启动 TASK-008、未合并 main、未部署。
 
 # 开发进度与交接
 
@@ -112,9 +259,9 @@
 | TASK-002 | P0数据库与约束迁移 | DONE | TASK-001 | REVIEW_5 PASS：H12绝对时刻/M04领域28表/M06目标边界/M07维护约定通过；10迁移/8→10/坏行与H08并发删除通过 |
 | TASK-003 | 登录、初始Owner与受控邀请 | DONE | TASK-002 | REVIEW_5 PASS：过期邀请拒绝无会话、有效接受可用；M03限流/会话故障信封及身份/回滚通过 |
 | TASK-004 | 组织隔离与固定权限服务 | DONE | TASK-003 | REVIEW_5 PASS；2026-09-14 Owner已放行Phase1并合并main；本轮新增文件/Worker消费者问题归TASK-007，不重开旧结论 |
-| TASK-005 | 店铺与数据源配置 | BLOCKED | TASK-004 | REVIEW 2 M05 已修复（0882e06）：无/单边日期默认 90 天窗口，101 日 fixture 断言 ≤90；其余上轮已通过；待独立复审保持 BLOCKED |
-| TASK-006 | 统一Adapter与最小黄金样本 | BLOCKED | TASK-005 | REVIEW 2 H03/H04 已修复（eee45c1）：非法偏移行级错误不抛出；channel 规范枚举按 kind 配对；oracle 三层校验保持；待独立复审保持 BLOCKED |
-| TASK-007 | 文件上传、私有存储与ImportTask | BLOCKED | TASK-006 | REVIEW 2 H05–H08+M04 已修复（a6f141f）：全局 User 禁用检查、空行计数/唯一清理出口、HTTP 存档同事务原子+复用绑定、写流接管/retry 元数据、本地 spool 与驱动域分离；imports 20 例全绿；待独立复审保持 BLOCKED |
+| TASK-005 | 店铺与数据源配置 | DONE | TASK-004 | REVIEW 3独立PASS：M05无/单/双边90日及91日拒绝通过，既有权限/版本/CAS/审计回归保留；不代表Phase 2放行 |
+| TASK-006 | 统一Adapter与最小黄金样本 | DONE | TASK-005 | REVIEW 3独立PASS：H03非法偏移/Worker行错误、H04规范channel及两店CSV/Mock独立oracle通过；TASK-008内容未开始 |
+| TASK-007 | 文件上传、私有存储与ImportTask | BLOCKED | TASK-006 | REVIEW 3 剩余项已复修（83e33e7）：H06/H08 统一收尾+mkdir 间隙+错误传播、M06 存档重放；修前红/修后绿与 Compose 链证据 gate-02-r3fix-evidence；待独立复审保持 BLOCKED |
 | TASK-008 | 字段映射、全量校验与预览 | TODO | TASK-007 | 未执行 |
 | TASK-009 | 原子提交内核与商品主数据 | TODO | TASK-008 | 未执行 |
 | TASK-010 | 订单头与订单行导入 | TODO | TASK-009 | 未执行 |

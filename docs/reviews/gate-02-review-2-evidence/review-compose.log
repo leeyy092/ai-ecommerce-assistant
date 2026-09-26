@@ -1,0 +1,3 @@
+Compose Worker consumes shared raw file PASS
+Compose signed download exact content PASS
+Compose restart readback query and file PASS

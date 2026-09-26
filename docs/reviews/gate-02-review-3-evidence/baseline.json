@@ -1,0 +1,48 @@
+{
+  "started_at": "2026-09-25T18:15:17.224976+08:00",
+  "root": "/Users/yuyuyu/Documents/ChatGPT/产品-开发",
+  "run": "/tmp/gate02-review3-20260925-8_hqanp6",
+  "head": {
+    "exit_code": 0,
+    "stdout": "a4652611e29d3e316de7f41bf46550fe02a64c2d\n",
+    "stderr": ""
+  },
+  "branch": {
+    "exit_code": 0,
+    "stdout": "phase/02-data-ingestion\n",
+    "stderr": ""
+  },
+  "status": {
+    "exit_code": 0,
+    "stdout": " M 00_START_HERE.html\n M 00_START_HERE.md\n M CODEX_REVIEW_HANDOFF.md\n M FINAL_DECISIONS.md\n M docs/ai-ecommerce-assistant/12_PROGRESS.md\n M prompts/P06_BUILD.md\n M prompts/P07_CODE_REVIEW.md\n M prompts/README.md\n?? docs/SEPT28_BETA_PROPOSAL.md\n?? docs/reviews/CODEX_REVIEW_GATE_02_2026-09-15.md\n?? docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md\n?? docs/reviews/GATE_02_EVIDENCE_2026-09-15.json\n?? docs/reviews/GATE_02_REVIEW_2_EVIDENCE_2026-09-16.json\n?? docs/reviews/gate-02-evidence/\n?? docs/reviews/gate-02-review-2-evidence/\n?? prompts/ZCODE_FULL_P0_HANDOFF.md\n",
+    "stderr": ""
+  },
+  "business_diff": {
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "change_files": {
+    "exit_code": 0,
+    "stdout": "00_START_HERE.html\n00_START_HERE.md\nCODEX_REVIEW_HANDOFF.md\nai-ecommerce-assistant/src/adapters/contracts.ts\nai-ecommerce-assistant/src/app/api/v1/imports/route.ts\nai-ecommerce-assistant/src/jobs/handlers/imports.ts\nai-ecommerce-assistant/src/jobs/worker.ts\nai-ecommerce-assistant/src/services/dataSources.ts\nai-ecommerce-assistant/src/services/imports.ts\nai-ecommerce-assistant/src/storage/index.ts\nai-ecommerce-assistant/tests/fixtures/golden/coverage-golden.ts\nai-ecommerce-assistant/tests/integration/imports.test.ts\nai-ecommerce-assistant/tests/integration/stores.test.ts\nai-ecommerce-assistant/tests/unit/adapters.test.ts\ndocs/ai-ecommerce-assistant/12_PROGRESS.md\nprompts/P07_CODE_REVIEW.md\nprompts/P08_FIX.md\n",
+    "stderr": ""
+  },
+  "management_files": {
+    "docs/ai-ecommerce-assistant/12_PROGRESS.md": {
+      "sha256": "2644100fa56c75b4486a9781d7777b061264f6718aab1a9a3669571b33a2f874",
+      "mtime_ns": 1789981945920499460
+    },
+    "CODEX_REVIEW_HANDOFF.md": {
+      "sha256": "288c62561b527ef19caba397c794d9b4c878b707beb5f54d7259c5b7090fa91d",
+      "mtime_ns": 1789980397714167542
+    },
+    "prompts/P07_CODE_REVIEW.md": {
+      "sha256": "8d1c7ede4c2fb2f141ebd318ae26e6d35f91b2e39ab8f43ceef8e1e18384e987",
+      "mtime_ns": 1789971529722816946
+    },
+    "prompts/P08_FIX.md": {
+      "sha256": "09263dbdfb4a102ea42ce6b814e1d25f5d8776174c190eaa98fca011e8fe362e",
+      "mtime_ns": 1789539589162938594
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "migrate",
+  "args": [
+    "pnpm",
+    "exec",
+    "prisma",
+    "migrate",
+    "deploy"
+  ],
+  "exit": 0,
+  "seconds": 1.91
+}

@@ -1,0 +1,5 @@
+{
+  "exit": 1,
+  "stdout": "\"\"\n",
+  "stderr": "failed to connect to the docker API at unix:///Users/yuyuyu/.colima/default/docker.sock; check if the path is correct and if the daemon is running: dial unix /Users/yuyuyu/.colima/default/docker.sock: connect: no such file or directory\n"
+}

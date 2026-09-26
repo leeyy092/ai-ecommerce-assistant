@@ -1,0 +1,67 @@
+
+> ai-ecommerce-assistant@0.1.0 test:integration /private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant
+> env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1
+
+
+ RUN  v3.2.7 /private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant
+
+(node:91433) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stderr | tests/integration/gate01.auth.test.ts > Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封） > M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[internal] request_id=6c758d4f-43b1-4b71-bb7b-a906aea21482 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+stderr | tests/integration/gate01.auth.test.ts > Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封） > M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[internal] request_id=5a9478e9-38bd-430d-9a15-38aa2f252b03 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+ ✓ tests/integration/gate01.auth.test.ts (17 tests) 3607ms
+Loaded Prisma config from prisma.config.ts.
+
+ ✓ tests/integration/gate01.db.test.ts (13 tests) 3236ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 A——父行改归属未提交时插入旧组织审计引用，后者必须失败  341ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 B——审计引用未提交时改父行归属，后者必须失败且引用方正常提交  330ms
+   ✓ Gate-01 正式复核 H08/H09/M04 增补 > H08：升级守卫——存量跨域引用使 v2 迁移失败（拒绝静默通过）  605ms
+   ✓ Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏） > M06：applyMigrationsUpTo 首次执行到目标、重复不越界、不存在目标明确失败  395ms
+   ✓ Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏） > M07：官方 migrate diff 不再净删除审计同域复合外键（重建必须同引用且配平）  950ms
+ ✓ tests/integration/stores.test.ts (8 tests) 1020ms
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 成员 PATCH：审计故障 → 角色与版本零提交
+[internal] request_id=27f576fc-4308-42e3-9935-7d64316fabed 
+Invalid `db.auditLog.create()` invocation in
+/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_member_audit"`
+
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 组织 PATCH：审计故障 → 名称与版本零提交
+[internal] request_id=5572b890-8e51-402e-a500-66eb6d83b687 
+Invalid `db.auditLog.create()` invocation in
+/private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_org_audit"`
+
+ ✓ tests/integration/gate01.access.test.ts (7 tests) 1490ms
+ ✓ tests/integration/imports.test.ts (9 tests) 1115ms
+ ✓ tests/integration/auth.test.ts (8 tests) 1475ms
+ ✓ tests/integration/permissions.test.ts (7 tests) 1357ms
+ ✓ tests/integration/database.test.ts (9 tests) 506ms
+ ✓ tests/integration/db.test.ts (4 tests) 7ms
+
+ Test Files  9 passed (9)
+      Tests  82 passed (82)
+   Start at  19:28:08
+   Duration  15.49s (transform 390ms, setup 555ms, collect 887ms, tests 13.81s, environment 0ms, prepare 55ms)
+

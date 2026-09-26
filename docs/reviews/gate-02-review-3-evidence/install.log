@@ -1,0 +1,71 @@
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +376
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 376, reused 0, downloaded 24, added 24
+Progress: resolved 376, reused 0, downloaded 91, added 89
+Progress: resolved 376, reused 0, downloaded 122, added 122
+Progress: resolved 376, reused 0, downloaded 153, added 153
+Progress: resolved 376, reused 0, downloaded 186, added 185
+Progress: resolved 376, reused 0, downloaded 221, added 221
+Progress: resolved 376, reused 0, downloaded 249, added 249
+Progress: resolved 376, reused 0, downloaded 283, added 282
+Progress: resolved 376, reused 0, downloaded 359, added 358
+Progress: resolved 376, reused 0, downloaded 368, added 368
+Progress: resolved 376, reused 0, downloaded 371, added 371
+Progress: resolved 376, reused 0, downloaded 372, added 372
+Progress: resolved 376, reused 0, downloaded 373, added 373
+Progress: resolved 376, reused 0, downloaded 374, added 374
+Progress: resolved 376, reused 0, downloaded 375, added 374
+Progress: resolved 376, reused 0, downloaded 375, added 375
+Progress: resolved 376, reused 0, downloaded 376, added 375
+Progress: resolved 376, reused 0, downloaded 376, added 376, done
+.../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+.../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+
+dependencies:
++ @prisma/adapter-pg 7.10.0
++ @prisma/client 7.10.0
++ better-auth 1.7.4
++ busboy 1.6.0
++ csv-parse 5.6.0
++ next 16.3.5
++ pg 8.23.0
++ pg-boss 12.32.0
++ pino 10.3.1
++ react 19.2.8
++ react-dom 19.2.8
++ zod 4.6.2
+
+devDependencies:
++ @playwright/test 1.63.0
++ @tailwindcss/postcss 4.3.3
++ @types/ali-oss 6.23.3
++ @types/busboy 1.5.4
++ @types/node 24.13.4
++ @types/pg 8.23.1
++ @types/react 19.3.0
++ @types/react-dom 19.3.0
++ ali-oss 6.23.0
++ esbuild 0.25.12
++ prisma 7.10.0
++ tailwindcss 4.3.3
++ tsx 4.23.13
++ typescript 5.9.3
++ vitest 3.2.7
+
+. postinstall$ prisma generate
+. postinstall: Loaded Prisma config from prisma.config.ts.
+. postinstall: Prisma schema loaded from prisma/schema.prisma.
+. postinstall: ✔ Generated Prisma Client (7.10.0) to ./src/generated/prisma in 296ms
+. postinstall: Done
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: @prisma/engines@7.10.0, prisma@7.10.0.              │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 23.2s using pnpm v10.34.5

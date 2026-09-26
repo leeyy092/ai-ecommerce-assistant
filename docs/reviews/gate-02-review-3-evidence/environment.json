@@ -1,0 +1,14 @@
+{
+  "app": "/tmp/gate02-review3-20260925-8_hqanp6/ai-ecommerce-assistant",
+  "root": "/Users/yuyuyu/Documents/ChatGPT/\u4ea7\u54c1-\u5f00\u53d1",
+  "head": "a4652611e29d3e316de7f41bf46550fe02a64c2d",
+  "business": "a6f141f",
+  "pg_port": 64485,
+  "web_port": 64486,
+  "node": "24.21.0",
+  "pnpm": "10.34.5",
+  "pg": "17.11",
+  "database_timezone": "Asia/Shanghai",
+  "storage_driver": "local",
+  "credentials": "random local test secret excluded from evidence"
+}

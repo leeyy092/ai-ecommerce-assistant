@@ -1,0 +1,79 @@
+{
+  "schema_migration_diff": [],
+  "migration_files": [
+    "ai-ecommerce-assistant/prisma/migrations/20260912102945_p0_init/migration.sql",
+    "ai-ecommerce-assistant/prisma/migrations/20260912103005_p0_constraints/migration.sql",
+    "ai-ecommerce-assistant/prisma/migrations/20260913043631_p0_domain_timestamptz/migration.sql",
+    "ai-ecommerce-assistant/prisma/migrations/20260913044218_p0_audit_tenant_fk/migration.sql",
+    "ai-ecommerce-assistant/prisma/migrations/20260913120000_p0_nullable_timestamptz/migration.sql",
+    "ai-ecommerce-assistant/prisma/migrations/20260913120100_p0_audit_tenant_fk_v2/migration.sql",
+    "ai-ecommerce-assistant/prisma/migrations/20260913120200_p0_domain_user_auth_fk/migration.sql",
+    "ai-ecommerce-assistant/prisma/migrations/20260914150000_p0_audit_store_composite_fk/migration.sql",
+    "ai-ecommerce-assistant/prisma/migrations/20260914200000_p0_audit_fk_schema_sync/migration.sql",
+    "ai-ecommerce-assistant/prisma/migrations/20260914210000_p0_domain_uuid_full_coverage/migration.sql"
+  ],
+  "file_sha256": {
+    "ai-ecommerce-assistant/prisma/migrations/20260912102945_p0_init/migration.sql": "099b05a3c04cb85abfc2b73ed6da69ec0de39385b93a0f3e830fce1bddb30a81",
+    "ai-ecommerce-assistant/prisma/migrations/20260912103005_p0_constraints/migration.sql": "019cba18464b8364b5fe1488aeeb97129eb1d72e5ff1c74482dd9a98bdf5d18e",
+    "ai-ecommerce-assistant/prisma/migrations/20260913043631_p0_domain_timestamptz/migration.sql": "c831e8ad6f8194dca2d37985f0e5ed17ff96642869eeac7ae22f6111065f48ea",
+    "ai-ecommerce-assistant/prisma/migrations/20260913044218_p0_audit_tenant_fk/migration.sql": "27c4f47b44c7d78640b515bc65ced1a8121a910659e808a516140ff860029046",
+    "ai-ecommerce-assistant/prisma/migrations/20260913120000_p0_nullable_timestamptz/migration.sql": "705012fe423011450325f74085546abe0e5fe531ecc14e65690fa55a17d5ce62",
+    "ai-ecommerce-assistant/prisma/migrations/20260913120100_p0_audit_tenant_fk_v2/migration.sql": "25abd62be7fd43a237e11a8827560609d99a299c317108cd73de6571c0a9ee9b",
+    "ai-ecommerce-assistant/prisma/migrations/20260913120200_p0_domain_user_auth_fk/migration.sql": "b631a18cdb15fc4c778d5592ae06984e2a98477787326341e0e6fd5de7e41713",
+    "ai-ecommerce-assistant/prisma/migrations/20260914150000_p0_audit_store_composite_fk/migration.sql": "13c3410d2b4d7ca39d9b74cd24023cd423924b12c8ad2abd62b2cfd266e8cbf3",
+    "ai-ecommerce-assistant/prisma/migrations/20260914200000_p0_audit_fk_schema_sync/migration.sql": "d6ef82ea2cf44cc0f89e8b8b4ec5a896a18e478317bb486ccc612c51837a6673",
+    "ai-ecommerce-assistant/prisma/migrations/20260914210000_p0_domain_uuid_full_coverage/migration.sql": "828815f26b936ae9efb67398264d45675765ec99e3b9ab96dcb872d13c787336",
+    "ai-ecommerce-assistant/prisma/migrations/migration_lock.toml": "99836963713b4f5b269ad49af0ed3d7b0b2e336115c2f92dc9ac683d139d0900",
+    "ai-ecommerce-assistant/prisma/schema.prisma": "78d742f0f8878494dcdf16b81c486da6ec78fe0a64bd50cca3afcc4f8fdaee81"
+  },
+  "private_ignore": {
+    "ai-ecommerce-assistant/.data/private/raw/review/source.csv": {
+      "exit": 1,
+      "rule": ""
+    },
+    "ai-ecommerce-assistant/.env": {
+      "exit": 0,
+      "rule": "ai-ecommerce-assistant/.gitignore:37:.env*\tai-ecommerce-assistant/.env"
+    }
+  },
+  "duplicate_sources": {
+    "src/lib/auth 2.ts": {
+      "same_as": "src/lib/auth.ts",
+      "identical": true
+    },
+    "src/lib/dbUrl 2.ts": {
+      "same_as": "src/lib/dbUrl.ts",
+      "identical": true
+    }
+  },
+  "added_tracked_env_files": [],
+  "new_executable_dependency_names": [
+    "pg-boss"
+  ],
+  "temporary_storage_created_by_baseline": [
+    {
+      "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-cGwH0z",
+      "mtime": 1789447966.4031014
+    },
+    {
+      "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-KXRCUa",
+      "mtime": 1789447848.3592267
+    },
+    {
+      "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-4N6kXq",
+      "mtime": 1789447701.8564036
+    },
+    {
+      "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-PPwxiV",
+      "mtime": 1789447799.903266
+    },
+    {
+      "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-wYwbaZ",
+      "mtime": 1789471700.401494
+    },
+    {
+      "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-Mka0YA",
+      "mtime": 1789447919.497684
+    }
+  ]
+}

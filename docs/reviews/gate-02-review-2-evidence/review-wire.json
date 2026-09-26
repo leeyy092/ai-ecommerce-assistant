@@ -1,0 +1,11 @@
+{
+  "name": "review-wire",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-wire.ts"
+  ],
+  "exit": 1,
+  "seconds": 8.58
+}

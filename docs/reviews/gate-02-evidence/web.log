@@ -1,0 +1,65 @@
+
+> ai-ecommerce-assistant@0.1.0 start /private/tmp/aiea-g2-review-h99ruviq/repo/ai-ecommerce-assistant
+> next start
+
+▲ Next.js 16.3.5
+- Local:         http://localhost:3322
+- Network:       http://192.168.101.10:3322
+✓ Ready in 118ms
+✓ Running next.config.ts took 28ms
+(node:91792) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[internal] request_id=307b66b9-c23a-49e9-ab7e-97b68fa2f1c0 
+Invalid `prisma.dataCoverage.groupBy()` invocation:
+
+{
+  select: {
+    _sum: {
+      select: {
+        recordCount: true
+      }
+    },
+    _count: {
+      select: {
+        sourceKind: true
+      }
+    },
+    dataSourceId: true,
+    coverageDate: true
+  },
+  by: [
+    "dataSourceId",
+    "coverageDate"
+  ],
+  where: {
+    orgId: "5d81e55a-928a-4ff3-8c75-07f4132b37b9",
+    storeId: "e24de9fa-2e4c-4079-bdd8-2224e95bb2aa",
+    coverageDate: {
+      gte: new Date("Invalid Date")
+           ~~~~~~~~~~~~~~~~~~~~~~~~
+    }
+  }
+}
+
+Invalid value for argument `gte`: Provided Date object is invalid. Expected Date.
+[internal] request_id=8852c172-6465-4630-8296-6353600cacfc 
+Invalid `prisma.importTask.create()` invocation:
+
+
+Unique constraint failed on the constraint: `import_task_org_id_store_id_idempotency_key_key`
+[internal] request_id=520f434b-b500-4111-93c9-f8d9fe47032d 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "g2_block_audit"`
+[internal] request_id=bb0c1afa-9ba2-44eb-b0a8-955c922a89be 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "g2_block_audit"`
+[internal] request_id=97c766d9-04a3-4210-90f0-9414cb0f0005 
+Invalid `prisma.auditLog.create()` invocation:
+
+
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "g2_block_audit"`
+ ELIFECYCLE  Command failed with exit code 143.

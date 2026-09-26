@@ -1,0 +1,22 @@
+[
+  {
+    name: 'M04 isolated object adapter put/get/move works',
+    expected: true,
+    actual: true,
+    status: 'PASS'
+  },
+  {
+    name: 'M04 actual spool then strict read works with OSS',
+    expected: true,
+    actual: undefined,
+    status: 'FAIL',
+    error: 'NoSuchKey'
+  },
+  {
+    name: 'M04 failed upload cleanup removes local temporary object',
+    expected: true,
+    actual: false,
+    status: 'FAIL',
+    error: 'Expected values to be strictly deep-equal:\n\nfalse !== true\n'
+  }
+]

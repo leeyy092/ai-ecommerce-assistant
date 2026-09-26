@@ -1,0 +1,879 @@
+   1 /**
+   2  * 统一 Adapter 契约与标准记录（TASK-006；09_TASKS：CSV 和 Mock 产生同一种标准记录）。
+   3  *
+   4  * 设计约束：
+   5  * - Adapter 是**纯解析与校验函数**：输入文件文本/合成数据，输出标准记录与行级错误；
+   6  *   不触数据库、不写页面、不做导入提交（那些属于 TASK-007/008+ 的导入流程）。
+   7  * - external_*_id 一律按字符串解析（保留前导零），长度上限 128（04_DATA_MODEL 10.1）。
+   8  * - 金额以字符串保留原精度（numeric(20,6)：整数部分 ≤14 位、小数 ≤6 位、≥0），
+   9  *   不在解析层转 float；整数列在 Number 转换前做安全整数校验（防 2^53 精度丢失）。
+  10  * - 时间统一转为 UTC ISO 字符串；必须为 RFC3339 且带时区（Z 或 ±hh:mm），
+  11  *   日期做真实日历校验（2026-02-30 拒绝）；日期为 YYYY-MM-DD。
+  12  * - source_updated_at 是每行必填列：缺失/空即报错，服务端**不得补造**来源时间
+  13  *   （04_DATA_MODEL:521）。
+  14  * - CSV 解析采用既定选型 csv-parse（11_DEVELOPMENT_RULES:88，RFC4180）：
+  15  *   BOM 剥离、CRLF/LF、引号包裹的逗号/换行/双引号转义；未闭合引号/列数不匹配
+  16  *   属语法错误，整文件拒绝。
+  17  * - 表头分"必填/可选"两级（04 §12.2–12.7）：必填列缺失 → MISSING_COLUMN；
+  18  *   可选列缺列或空单元格 → null；重复表头拒绝；未登记列忽略（字段映射归 TASK-008）。
+  19  * - CanonicalBatch（04 §11.2/§12.8）：统一元数据合同——store_id 由服务端赋值、
+  20  *   namespace/adapter_version/raw_checksum/coverage_declaration 服务端提供，
+  21  *   不信任文件内容或调用方声明。
+  22  */
+  23 import { parse as csvParse } from "csv-parse/sync";
+  24 
+  25 export const FILE_KINDS = [
+  26   "products",
+  27   "orders",
+  28   "order_items",
+  29   "ads",
+  30   "customer_messages",
+  31   "after_sales",
+  32 ] as const;
+  33 export type FileKind = (typeof FILE_KINDS)[number];
+  34 
+  35 export function isFileKind(kind: string): kind is FileKind {
+  36   return (FILE_KINDS as readonly string[]).includes(kind);
+  37 }
+  38 
+  39 /** 行级错误（携带 1-based 行号；表头为第 1 行） */
+  40 export interface RowError {
+  41   row: number;
+  42   column?: string;
+  43   code: string;
+  44   message: string;
+  45 }
+  46 
+  47 export interface ParseResult<K extends FileKind = FileKind> {
+  48   kind: K;
+  49   /** 解析+校验通过的记录（不含任何服务端字段：org/store/importTask 由导入流程补齐） */
+  50   records: StandardRecords[K][];
+  51   errors: RowError[];
+  52 }
+  53 
+  54 /** 六类标准记录（解析后形态；金额 string 保留精度、时间为 UTC ISO 字符串） */
+  55 export interface ProductRecord {
+  56   kind: "products";
+  57   storeExternalId: string;
+  58   sourceUpdatedAt: string;
+  59   externalProductId: string;
+  60   name: string;
+  61   category: string | null;
+  62   productStatus: "active" | "archived";
+  63   externalSkuId: string;
+  64   skuCode: string;
+  65   skuName: string;
+  66   specification: string | null;
+  67   skuStatus: "active" | "archived";
+  68 }
+  69 export interface OrderRecord {
+  70   kind: "orders";
+  71   storeExternalId: string;
+  72   sourceUpdatedAt: string;
+  73   externalOrderId: string;
+  74   paymentStatus: "unpaid" | "paid" | "cancelled";
+  75   orderedAt: string;
+  76   paidAt: string | null;
+  77   currency: string;
+  78   expectedItemCount: number;
+  79 }
+  80 export interface OrderItemRecord {
+  81   kind: "order_items";
+  82   storeExternalId: string;
+  83   sourceUpdatedAt: string;
+  84   externalOrderId: string;
+  85   externalOrderItemId: string;
+  86   externalSkuId: string;
+  87   quantity: number;
+  88   itemPaidAmount: string;
+  89   currency: string;
+  90 }
+  91 export interface AdRecord {
+  92   kind: "ads";
+  93   storeExternalId: string;
+  94   sourceUpdatedAt: string;
+  95   campaignId: string;
+  96   campaignName: string;
+  97   reportDate: string;
+  98   attributionModel: string;
+  99   attributionWindowDays: number;
+ 100   spend: string;
+ 101   attributedSales: string;
+ 102   currency: string;
+ 103 }
+ 104 export interface CustomerMessageRecord {
+ 105   kind: "customer_messages";
+ 106   storeExternalId: string;
+ 107   sourceUpdatedAt: string;
+ 108   externalMessageId: string;
+ 109   externalConversationId: string;
+ 110   messageAt: string;
+ 111   externalSkuId: string | null;
+ 112   messageText: string;
+ 113   isComplaint: boolean | null;
+ 114   channel: string;
+ 115   language: string;
+ 116 }
+ 117 export interface AfterSaleRecord {
+ 118   kind: "after_sales";
+ 119   storeExternalId: string;
+ 120   sourceUpdatedAt: string;
+ 121   recordType: "case" | "refund";
+ 122   externalRecordId: string;
+ 123   externalOrderId: string;
+ 124   externalOrderItemId: string;
+ 125   relatedCaseId: string | null;
+ 126   occurredAt: string;
+ 127   status: string;
+ 128   completedAt: string | null;
+ 129   refundAmount: string | null;
+ 130   refundedQuantityCumulative: number | null;
+ 131   currency: string | null;
+ 132   reasonCode: string;
+ 133   reasonText: string | null;
+ 134 }
+ 135 
+ 136 export interface StandardRecords {
+ 137   products: ProductRecord;
+ 138   orders: OrderRecord;
+ 139   order_items: OrderItemRecord;
+ 140   ads: AdRecord;
+ 141   customer_messages: CustomerMessageRecord;
+ 142   after_sales: AfterSaleRecord;
+ 143 }
+ 144 
+ 145 /** 六类标准文件的固定表头（模板与校验同源；顺序即模板列顺序） */
+ 146 export const FILE_HEADERS: Record<FileKind, readonly string[]> = {
+ 147   products: [
+ 148     "store_external_id", "source_updated_at",
+ 149     "external_product_id", "product_name", "category", "product_status",
+ 150     "external_sku_id", "sku_code", "sku_name", "specification", "sku_status",
+ 151   ],
+ 152   orders: [
+ 153     "store_external_id", "source_updated_at",
+ 154     "external_order_id", "payment_status", "ordered_at", "paid_at", "currency", "expected_item_count",
+ 155   ],
+ 156   order_items: [
+ 157     "store_external_id", "source_updated_at",
+ 158     "external_order_id", "external_order_item_id", "external_sku_id", "quantity", "item_paid_amount", "currency",
+ 159   ],
+ 160   ads: [
+ 161     "store_external_id", "source_updated_at",
+ 162     "campaign_id", "campaign_name", "report_date", "attribution_model",
+ 163     "attribution_window_days", "spend", "attributed_sales", "currency",
+ 164   ],
+ 165   customer_messages: [
+ 166     "store_external_id", "source_updated_at",
+ 167     "external_message_id", "external_conversation_id", "message_at", "external_sku_id",
+ 168     "message_text", "is_complaint", "channel", "language",
+ 169   ],
+ 170   after_sales: [
+ 171     "store_external_id", "source_updated_at",
+ 172     "record_type", "external_record_id", "external_order_id", "external_order_item_id",
+ 173     "related_case_id", "occurred_at", "status", "completed_at",
+ 174     "refund_amount", "refunded_quantity_cumulative", "currency", "reason_code", "reason_text",
+ 175   ],
+ 176 };
+ 177 
+ 178 /** 必填列（04 §12.2–12.7 中"必填=是"的列；缺失 → MISSING_COLUMN 整文件拒绝） */
+ 179 export const REQUIRED_HEADERS: Record<FileKind, readonly string[]> = {
+ 180   products: [
+ 181     "store_external_id", "source_updated_at", "external_product_id", "product_name",
+ 182     "product_status", "external_sku_id", "sku_code", "sku_name", "sku_status",
+ 183   ],
+ 184   orders: [
+ 185     "store_external_id", "source_updated_at", "external_order_id", "payment_status",
+ 186     "ordered_at", "currency", "expected_item_count",
+ 187   ],
+ 188   order_items: [...FILE_HEADERS.order_items],
+ 189   ads: [...FILE_HEADERS.ads],
+ 190   customer_messages: [
+ 191     "store_external_id", "source_updated_at", "external_message_id", "external_conversation_id",
+ 192     "message_at", "message_text", "channel", "language",
+ 193   ],
+ 194   after_sales: [
+ 195     "store_external_id", "source_updated_at", "record_type", "external_record_id",
+ 196     "external_order_id", "external_order_item_id", "occurred_at", "status", "reason_code",
+ 197   ],
+ 198 };
+ 199 
+ 200 // ---------- 纯校验函数（导入边界一致语义；供 CSV 行与 Mock 数据复用） ----------
+ 201 
+ 202 export function validateExternalId(value: unknown, column: string, row: number, errors: RowError[]): string | null {
+ 203   if (typeof value !== "string" || value.length === 0) {
+ 204     errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+ 205     return null;
+ 206   }
+ 207   if (value.length > 128) {
+ 208     errors.push({ row, column, code: "TOO_LONG", message: `${column} 超过 128 字符` });
+ 209     return null;
+ 210   }
+ 211   return value; // 原样保留（含前导零）
+ 212 }
+ 213 
+ 214 export function validateText(
+ 215   value: unknown,
+ 216   column: string,
+ 217   row: number,
+ 218   errors: RowError[],
+ 219   opts: { required: boolean; max: number },
+ 220 ): string | null {
+ 221   if (value === null || value === undefined || value === "") {
+ 222     if (opts.required) errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+ 223     return null;
+ 224   }
+ 225   const text = String(value);
+ 226   if (text.length > opts.max) {
+ 227     errors.push({ row, column, code: "TOO_LONG", message: `${column} 超过 ${opts.max} 字符` });
+ 228     return null;
+ 229   }
+ 230   return text;
+ 231 }
+ 232 
+ 233 /** 必填枚举：空值即 REQUIRED 错误（G2-H03：不得给 product_status 等默认兜底值） */
+ 234 export function validateEnum<T extends readonly string[]>(
+ 235   value: unknown,
+ 236   allowed: T,
+ 237   column: string,
+ 238   row: number,
+ 239   errors: RowError[],
+ 240 ): T[number] | null {
+ 241   const text = value === null || value === undefined || value === "" ? "" : String(value).trim();
+ 242   if (text === "") {
+ 243     errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+ 244     return null;
+ 245   }
+ 246   if ((allowed as readonly string[]).includes(text)) return text as T[number];
+ 247   errors.push({ row, column, code: "UNSUPPORTED_VALUE", message: `${column} 不支持：${text}` });
+ 248   return null;
+ 249 }
+ 250 
+ 251 /**
+ 252  * numeric(20,6) 语义：十进制字符串、非负、整数部分 ≤14 位、小数 ≤6 位
+ 253  * （G2-H03：100000000000000.000000 超出精度必须拒绝，等不到数据库写入）。
+ 254  */
+ 255 export function validateAmount(
+ 256   value: unknown,
+ 257   column: string,
+ 258   row: number,
+ 259   errors: RowError[],
+ 260   opts: { required: boolean; min?: number },
+ 261 ): string | null {
+ 262   if (value === null || value === undefined || value === "") {
+ 263     if (opts.required) errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+ 264     return null;
+ 265   }
+ 266   const text = String(value).trim();
+ 267   if (!/^\d{1,14}(\.\d{1,6})?$/.test(text)) {
+ 268     errors.push({ row, column, code: "INVALID_AMOUNT", message: `${column} 必须为非负十进制、整数部分≤14位且最多 6 位小数：${text}` });
+ 269     return null;
+ 270   }
+ 271   if (opts.min !== undefined && Number(text) < opts.min) {
+ 272     errors.push({ row, column, code: "OUT_OF_RANGE", message: `${column} 不能小于 ${opts.min}` });
+ 273     return null;
+ 274   }
+ 275   return text;
+ 276 }
+ 277 
+ 278 /**
+ 279  * 安全整数（G2-H03）：Number 转换后必须为安全整数——9007199254740993 一类
+ 280  * 输入会被二进制舍入为 ...992，必须在转换前拒绝。
+ 281  */
+ 282 export function validateInteger(
+ 283   value: unknown,
+ 284   column: string,
+ 285   row: number,
+ 286   errors: RowError[],
+ 287   opts: { required: boolean; min?: number; max?: number },
+ 288 ): number | null {
+ 289   if (value === null || value === undefined || value === "") {
+ 290     if (opts.required) errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+ 291     return null;
+ 292   }
+ 293   const text = String(value).trim();
+ 294   if (!/^-?\d+$/.test(text)) {
+ 295     errors.push({ row, column, code: "INVALID_INTEGER", message: `${column} 必须为整数：${text}` });
+ 296     return null;
+ 297   }
+ 298   const n = Number(text);
+ 299   if (!Number.isSafeInteger(n)) {
+ 300     errors.push({ row, column, code: "OUT_OF_RANGE", message: `${column} 超出安全整数范围：${text}` });
+ 301     return null;
+ 302   }
+ 303   if (opts.min !== undefined && n < opts.min) {
+ 304     errors.push({ row, column, code: "OUT_OF_RANGE", message: `${column} 不能小于 ${opts.min}` });
+ 305     return null;
+ 306   }
+ 307   if (opts.max !== undefined && n > opts.max) {
+ 308     errors.push({ row, column, code: "OUT_OF_RANGE", message: `${column} 不能大于 ${opts.max}` });
+ 309     return null;
+ 310   }
+ 311   return n;
+ 312 }
+ 313 
+ 314 /**
+ 315  * timestamptz（G2-H03）：必须为 RFC3339 且带时区（Z 或 ±hh:mm），
+ 316  * 并做真实日历校验——无时区的含糊时间与 2026-02-30 一类日期拒绝。
+ 317  */
+ 318 const RFC3339_RE =
+ 319   /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/;
+ 320 
+ 321 export function validateTimestamp(
+ 322   value: unknown,
+ 323   column: string,
+ 324   row: number,
+ 325   errors: RowError[],
+ 326   opts: { required: boolean },
+ 327 ): string | null {
+ 328   if (value === null || value === undefined || value === "") {
+ 329     if (opts.required) errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+ 330     return null;
+ 331   }
+ 332   const text = String(value).trim();
+ 333   const m = RFC3339_RE.exec(text);
+ 334   if (!m || !isRealCalendarDate(Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6]))) {
+ 335     errors.push({ row, column, code: "INVALID_DATETIME", message: `${column} 必须为 RFC3339 且带时区（如 2026-09-01T10:00:00+08:00）：${text}` });
+ 336     return null;
+ 337   }
+ 338   return new Date(text).toISOString();
+ 339 }
+ 340 
+ 341 function isRealCalendarDate(y: number, mo: number, d: number, h: number, mi: number, s: number): boolean {
+ 342   if (mo < 1 || mo > 12 || d < 1 || h > 23 || mi > 59 || s > 59) return false;
+ 343   const daysInMonth = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+ 344   return d <= daysInMonth;
+ 345 }
+ 346 
+ 347 /** date：YYYY-MM-DD 且真实日历（2026-02-30 拒绝） */
+ 348 export function validateDate(
+ 349   value: unknown,
+ 350   column: string,
+ 351   row: number,
+ 352   errors: RowError[],
+ 353   opts: { required: boolean },
+ 354 ): string | null {
+ 355   if (value === null || value === undefined || value === "") {
+ 356     if (opts.required) errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+ 357     return null;
+ 358   }
+ 359   const text = String(value).trim();
+ 360   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text);
+ 361   if (!m || !isRealCalendarDate(Number(m[1]), Number(m[2]), Number(m[3]), 0, 0, 0)) {
+ 362     errors.push({ row, column, code: "INVALID_DATE", message: `${column} 必须为 YYYY-MM-DD：${text}` });
+ 363     return null;
+ 364   }
+ 365   return text;
+ 366 }
+ 367 
+ 368 export function validateCurrency(value: unknown, column: string, row: number, errors: RowError[]): string | null {
+ 369   if (value === null || value === undefined || value === "") {
+ 370     errors.push({ row, column, code: "REQUIRED", message: `${column} 必填` });
+ 371     return null;
+ 372   }
+ 373   const text = String(value).trim().toUpperCase();
+ 374   if (!/^[A-Z]{3}$/.test(text)) {
+ 375     errors.push({ row, column, code: "INVALID_CURRENCY", message: `${column} 必须为 3 位字母：${text}` });
+ 376     return null;
+ 377   }
+ 378   return text;
+ 379 }
+ 380 
+ 381 export function validateBooleanTri(value: unknown, column: string, row: number, errors: RowError[]): boolean | null {
+ 382   if (value === null || value === undefined || value === "") return null;
+ 383   const text = String(value).trim().toLowerCase();
+ 384   if (text === "true") return true;
+ 385   if (text === "false") return false;
+ 386   errors.push({ row, column, code: "INVALID_BOOLEAN", message: `${column} 必须为 true/false/空：${text}` });
+ 387   return null;
+ 388 }
+ 389 
+ 390 // ---------- CSV 解析（既定选型 csv-parse；RFC4180 严格语法） ----------
+ 391 
+ 392 /**
+ 393  * 解析为二维单元格数组；BOM 剥离、CRLF/LF、quoted 逗号/换行/双引号转义。
+ 394  * 未闭合引号、引号后残留字符、列数不匹配 → 抛出语法错误（调用方整文件拒绝）。
+ 395  */
+ 396 export function parseCsv(content: string): string[][] {
+ 397   return csvParse(content, {
+ 398     bom: true,
+ 399     relax_column_count: false,
+ 400     skip_empty_lines: true,
+ 401     trim: false,
+ 402   }) as string[][];
+ 403 }
+ 404 
+ 405 // ---------- 标准文件解析（表头映射 + 行级校验；不含任何 DB 访问） ----------
+ 406 
+ 407 export interface ParseStandardOptions {
+ 408   /** 声明的店铺外部标识：行值不一致 → 整文件 STORE_MISMATCH */
+ 409   storeExternalId: string;
+ 410 }
+ 411 
+ 412 type Cell = string | null;
+ 413 
+ 414 function cell(row: Record<string, Cell>, header: string): Cell {
+ 415   return row[header] ?? null;
+ 416 }
+ 417 
+ 418 export function parseStandardFile(
+ 419   kind: FileKind,
+ 420   content: string,
+ 421   opts: ParseStandardOptions,
+ 422 ): ParseResult {
+ 423   let rows: string[][];
+ 424   try {
+ 425     rows = parseCsv(content);
+ 426   } catch (error) {
+ 427     return {
+ 428       kind,
+ 429       records: [],
+ 430       errors: [
+ 431         {
+ 432           row: 1,
+ 433           code: "INVALID_CSV",
+ 434           message: `CSV 语法错误（RFC4180）：${error instanceof Error ? error.message : String(error)}`,
+ 435         },
+ 436       ],
+ 437     };
+ 438   }
+ 439   const errors: RowError[] = [];
+ 440   if (rows.length === 0) {
+ 441     return { kind, records: [], errors: [{ row: 1, code: "EMPTY_FILE", message: "文件为空" }] };
+ 442   }
+ 443   const headers = rows[0].map((h) => h.trim());
+ 444   // G2-H03：重复表头拒绝（列语义歧义，不允许"后者覆盖前者"）
+ 445   const seen = new Set<string>();
+ 446   for (const h of headers) {
+ 447     if (seen.has(h)) {
+ 448       return {
+ 449         kind,
+ 450         records: [],
+ 451         errors: [{ row: 1, column: h, code: "DUPLICATE_COLUMN", message: `重复表头列 ${h}` }],
+ 452       };
+ 453     }
+ 454     seen.add(h);
+ 455   }
+ 456   // G2-H03：只要求必填列存在；可选列（category/specification/paid_at/external_sku_id/
+ 457   // is_complaint/related_case_id/completed_at/refund_amount/...）缺列按全空处理
+ 458   for (const h of REQUIRED_HEADERS[kind]) {
+ 459     if (!headers.includes(h)) {
+ 460       return {
+ 461         kind,
+ 462         records: [],
+ 463         errors: [{ row: 1, column: h, code: "MISSING_COLUMN", message: `缺少必需列 ${h}` }],
+ 464       };
+ 465     }
+ 466   }
+ 467   const records: StandardRecords[FileKind][] = [];
+ 468   for (let r = 1; r < rows.length; r++) {
+ 469     const values = rows[r];
+ 470     const record: Record<string, Cell> = {};
+ 471     headers.forEach((h, idx) => {
+ 472       record[h] = values[idx] === undefined || values[idx] === "" ? null : values[idx];
+ 473     });
+ 474     const rowNo = r + 1;
+ 475     // 店铺一致性：任何行店铺不符 → 整文件拒绝（STORE_MISMATCH）
+ 476     const rowStore = cell(record, "store_external_id");
+ 477     if (rowStore !== opts.storeExternalId) {
+ 478       return {
+ 479         kind,
+ 480         records: [],
+ 481         errors: [
+ 482           {
+ 483             row: rowNo,
+ 484             column: "store_external_id",
+ 485             code: "STORE_MISMATCH",
+ 486             message: `文件店铺声明不一致：期望 ${opts.storeExternalId}，第 ${rowNo} 行为 ${rowStore ?? "(空)"}`,
+ 487           },
+ 488         ],
+ 489       };
+ 490     }
+ 491     const recordErrors: RowError[] = [];
+ 492     const mapped = mapRow(kind, record, rowNo, recordErrors);
+ 493     errors.push(...recordErrors);
+ 494     if (recordErrors.length === 0 && mapped) records.push(mapped);
+ 495   }
+ 496   return { kind, records, errors };
+ 497 }
+ 498 
+ 499 function mapRow(
+ 500   kind: FileKind,
+ 501   record: Record<string, Cell>,
+ 502   row: number,
+ 503   errors: RowError[],
+ 504 ): StandardRecords[FileKind] | null {
+ 505   const storeExternalId = String(optsStore(record));
+ 506   // G2-H03：source_updated_at 每行必填，缺失报错——服务端不补造来源时间
+ 507   const sourceUpdatedAt = validateTimestamp(cell(record, "source_updated_at"), "source_updated_at", row, errors, { required: true });
+ 508   switch (kind) {
+ 509     case "products": {
+ 510       const externalProductId = validateExternalId(cell(record, "external_product_id"), "external_product_id", row, errors);
+ 511       const externalSkuId = validateExternalId(cell(record, "external_sku_id"), "external_sku_id", row, errors);
+ 512       const name = validateText(cell(record, "product_name"), "product_name", row, errors, { required: true, max: 300 });
+ 513       const skuCode = validateText(cell(record, "sku_code"), "sku_code", row, errors, { required: true, max: 128 });
+ 514       const skuName = validateText(cell(record, "sku_name"), "sku_name", row, errors, { required: true, max: 300 });
+ 515       const category = validateText(cell(record, "category"), "category", row, errors, { required: false, max: 100 });
+ 516       const specification = validateText(cell(record, "specification"), "specification", row, errors, { required: false, max: 500 });
+ 517       const productStatus = validateEnum(cell(record, "product_status"), ["active", "archived"] as const, "product_status", row, errors);
+ 518       const skuStatus = validateEnum(cell(record, "sku_status"), ["active", "archived"] as const, "sku_status", row, errors);
+ 519       if (errors.length) return null;
+ 520       return {
+ 521         kind,
+ 522         storeExternalId,
+ 523         sourceUpdatedAt: sourceUpdatedAt!,
+ 524         externalProductId: externalProductId!,
+ 525         name: name!,
+ 526         category,
+ 527         productStatus: productStatus!,
+ 528         externalSkuId: externalSkuId!,
+ 529         skuCode: skuCode!,
+ 530         skuName: skuName!,
+ 531         specification,
+ 532         skuStatus: skuStatus!,
+ 533       };
+ 534     }
+ 535     case "orders": {
+ 536       const externalOrderId = validateExternalId(cell(record, "external_order_id"), "external_order_id", row, errors);
+ 537       const paymentStatus = validateEnum(cell(record, "payment_status"), ["unpaid", "paid", "cancelled"] as const, "payment_status", row, errors);
+ 538       const orderedAt = validateTimestamp(cell(record, "ordered_at"), "ordered_at", row, errors, { required: true });
+ 539       const paidAtRaw = cell(record, "paid_at");
+ 540       const paidAt = validateTimestamp(paidAtRaw, "paid_at", row, errors, { required: paymentStatus === "paid" });
+ 541       const currency = validateCurrency(cell(record, "currency"), "currency", row, errors);
+ 542       const expectedItemCount = validateInteger(cell(record, "expected_item_count"), "expected_item_count", row, errors, { required: true, min: 1 });
+ 543       if (errors.length) return null;
+ 544       if (paymentStatus === "paid" && orderedAt && paidAt && paidAt < orderedAt) {
+ 545         errors.push({ row, column: "paid_at", code: "OUT_OF_RANGE", message: "paid_at 不得早于 ordered_at" });
+ 546         return null;
+ 547       }
+ 548       if (paymentStatus !== "paid" && paidAt) {
+ 549         errors.push({ row, column: "paid_at", code: "OUT_OF_RANGE", message: "非 paid 订单不得携带 paid_at" });
+ 550         return null;
+ 551       }
+ 552       return {
+ 553         kind,
+ 554         storeExternalId,
+ 555         sourceUpdatedAt: sourceUpdatedAt!,
+ 556         externalOrderId: externalOrderId!,
+ 557         paymentStatus: paymentStatus!,
+ 558         orderedAt: orderedAt!,
+ 559         paidAt,
+ 560         currency: currency!,
+ 561         expectedItemCount: expectedItemCount!,
+ 562       };
+ 563     }
+ 564     case "order_items": {
+ 565       const externalOrderId = validateExternalId(cell(record, "external_order_id"), "external_order_id", row, errors);
+ 566       const externalOrderItemId = validateExternalId(cell(record, "external_order_item_id"), "external_order_item_id", row, errors);
+ 567       const externalSkuId = validateExternalId(cell(record, "external_sku_id"), "external_sku_id", row, errors);
+ 568       const quantity = validateInteger(cell(record, "quantity"), "quantity", row, errors, { required: true, min: 1, max: 100_000_000 });
+ 569       const itemPaidAmount = validateAmount(cell(record, "item_paid_amount"), "item_paid_amount", row, errors, { required: true, min: 0 });
+ 570       const currency = validateCurrency(cell(record, "currency"), "currency", row, errors);
+ 571       if (errors.length) return null;
+ 572       return {
+ 573         kind,
+ 574         storeExternalId,
+ 575         sourceUpdatedAt: sourceUpdatedAt!,
+ 576         externalOrderId: externalOrderId!,
+ 577         externalOrderItemId: externalOrderItemId!,
+ 578         externalSkuId: externalSkuId!,
+ 579         quantity: quantity!,
+ 580         itemPaidAmount: itemPaidAmount!,
+ 581         currency: currency!,
+ 582       };
+ 583     }
+ 584     case "ads": {
+ 585       const campaignId = validateExternalId(cell(record, "campaign_id"), "campaign_id", row, errors);
+ 586       const campaignName = validateText(cell(record, "campaign_name"), "campaign_name", row, errors, { required: true, max: 300 });
+ 587       const reportDate = validateDate(cell(record, "report_date"), "report_date", row, errors, { required: true });
+ 588       const attributionModel = validateText(cell(record, "attribution_model"), "attribution_model", row, errors, { required: true, max: 64 });
+ 589       const attributionWindowDays = validateInteger(cell(record, "attribution_window_days"), "attribution_window_days", row, errors, { required: true, min: 0, max: 90 });
+ 590       const spend = validateAmount(cell(record, "spend"), "spend", row, errors, { required: true, min: 0 });
+ 591       const attributedSales = validateAmount(cell(record, "attributed_sales"), "attributed_sales", row, errors, { required: true, min: 0 });
+ 592       const currency = validateCurrency(cell(record, "currency"), "currency", row, errors);
+ 593       if (errors.length) return null;
+ 594       return {
+ 595         kind,
+ 596         storeExternalId,
+ 597         sourceUpdatedAt: sourceUpdatedAt!,
+ 598         campaignId: campaignId!,
+ 599         campaignName: campaignName!,
+ 600         reportDate: reportDate!,
+ 601         attributionModel: attributionModel!,
+ 602         attributionWindowDays: attributionWindowDays!,
+ 603         spend: spend!,
+ 604         attributedSales: attributedSales!,
+ 605         currency: currency!,
+ 606       };
+ 607     }
+ 608     case "customer_messages": {
+ 609       const externalMessageId = validateExternalId(cell(record, "external_message_id"), "external_message_id", row, errors);
+ 610       const externalConversationId = validateExternalId(cell(record, "external_conversation_id"), "external_conversation_id", row, errors);
+ 611       const messageAt = validateTimestamp(cell(record, "message_at"), "message_at", row, errors, { required: true });
+ 612       const externalSkuId = cell(record, "external_sku_id")
+ 613         ? validateExternalId(cell(record, "external_sku_id"), "external_sku_id", row, errors)
+ 614         : null;
+ 615       const messageText = validateText(cell(record, "message_text"), "message_text", row, errors, { required: true, max: 10000 });
+ 616       const isComplaint = validateBooleanTri(cell(record, "is_complaint"), "is_complaint", row, errors);
+ 617       const channel = validateText(cell(record, "channel"), "channel", row, errors, { required: true, max: 32 });
+ 618       const language = validateText(cell(record, "language"), "language", row, errors, { required: true, max: 16 });
+ 619       if (errors.length) return null;
+ 620       return {
+ 621         kind,
+ 622         storeExternalId,
+ 623         sourceUpdatedAt: sourceUpdatedAt!,
+ 624         externalMessageId: externalMessageId!,
+ 625         externalConversationId: externalConversationId!,
+ 626         messageAt: messageAt!,
+ 627         externalSkuId,
+ 628         messageText: messageText!,
+ 629         isComplaint,
+ 630         channel: channel!,
+ 631         language: language!,
+ 632       };
+ 633     }
+ 634     case "after_sales": {
+ 635       const recordType = validateEnum(cell(record, "record_type"), ["case", "refund"] as const, "record_type", row, errors);
+ 636       const externalRecordId = validateExternalId(cell(record, "external_record_id"), "external_record_id", row, errors);
+ 637       const externalOrderId = validateExternalId(cell(record, "external_order_id"), "external_order_id", row, errors);
+ 638       const externalOrderItemId = validateExternalId(cell(record, "external_order_item_id"), "external_order_item_id", row, errors);
+ 639       const relatedCaseId = cell(record, "related_case_id")
+ 640         ? validateExternalId(cell(record, "related_case_id"), "related_case_id", row, errors)
+ 641         : null;
+ 642       const occurredAt = validateTimestamp(cell(record, "occurred_at"), "occurred_at", row, errors, { required: true });
+ 643       const reasonCode = validateText(cell(record, "reason_code"), "reason_code", row, errors, { required: true, max: 64 });
+ 644       const reasonText = validateText(cell(record, "reason_text"), "reason_text", row, errors, { required: false, max: 2000 });
+ 645       let status: string | null;
+ 646       let completedAt: string | null = null;
+ 647       let refundAmount: string | null = null;
+ 648       let refundedQuantityCumulative: number | null = null;
+ 649       let currency: string | null = null;
+ 650       if (recordType === "case") {
+ 651         status = validateEnum(cell(record, "status"), ["requested", "processing", "closed", "rejected"] as const, "status", row, errors);
+ 652         if (cell(record, "completed_at")) {
+ 653           errors.push({ row, column: "completed_at", code: "OUT_OF_RANGE", message: "case 行不得携带 completed_at" });
+ 654         }
+ 655         if (cell(record, "refund_amount")) {
+ 656           errors.push({ row, column: "refund_amount", code: "OUT_OF_RANGE", message: "case 行不得携带 refund_amount" });
+ 657         }
+ 658         if (cell(record, "refunded_quantity_cumulative")) {
+ 659           errors.push({ row, column: "refunded_quantity_cumulative", code: "OUT_OF_RANGE", message: "case 行不得携带累计退件数" });
+ 660         }
+ 661         if (cell(record, "currency")) {
+ 662           errors.push({ row, column: "currency", code: "OUT_OF_RANGE", message: "case 行 currency 应为空" });
+ 663         }
+ 664       } else if (recordType === "refund") {
+ 665         status = validateEnum(cell(record, "status"), ["pending", "succeeded", "failed"] as const, "status", row, errors);
+ 666         currency = validateCurrency(cell(record, "currency"), "currency", row, errors);
+ 667         if (status === "succeeded") {
+ 668           completedAt = validateTimestamp(cell(record, "completed_at"), "completed_at", row, errors, { required: true });
+ 669           refundAmount = validateAmount(cell(record, "refund_amount"), "refund_amount", row, errors, { required: true, min: 0.000001 });
+ 670           refundedQuantityCumulative = validateInteger(cell(record, "refunded_quantity_cumulative"), "refunded_quantity_cumulative", row, errors, { required: true, min: 0 });
+ 671           if (!errors.length && completedAt && occurredAt && completedAt < occurredAt) {
+ 672             // G2-H03：退款完成时间早于发生时间是行级矛盾，直接拒绝
+ 673             errors.push({ row, column: "completed_at", code: "OUT_OF_RANGE", message: "completed_at 不得早于 occurred_at" });
+ 674           }
+ 675         } else {
+ 676           if (cell(record, "completed_at")) {
+ 677             errors.push({ row, column: "completed_at", code: "OUT_OF_RANGE", message: "非 succeeded 退款不得携带 completed_at" });
+ 678           }
+ 679           if (cell(record, "refund_amount")) {
+ 680             errors.push({ row, column: "refund_amount", code: "OUT_OF_RANGE", message: "非 succeeded 退款不得携带 refund_amount" });
+ 681           }
+ 682           if (cell(record, "refunded_quantity_cumulative")) {
+ 683             errors.push({ row, column: "refunded_quantity_cumulative", code: "OUT_OF_RANGE", message: "非 succeeded 退款不得携带累计退件数" });
+ 684           }
+ 685         }
+ 686       } else {
+ 687         // record_type 缺失/非法：validateEnum 已记错误，保证 status 也有错误占位
+ 688         status = null;
+ 689       }
+ 690       if (errors.length) return null;
+ 691       return {
+ 692         kind,
+ 693         storeExternalId,
+ 694         sourceUpdatedAt: sourceUpdatedAt!,
+ 695         recordType: recordType!,
+ 696         externalRecordId: externalRecordId!,
+ 697         externalOrderId: externalOrderId!,
+ 698         externalOrderItemId: externalOrderItemId!,
+ 699         relatedCaseId,
+ 700         occurredAt: occurredAt!,
+ 701         status: status!,
+ 702         completedAt,
+ 703         refundAmount,
+ 704         refundedQuantityCumulative,
+ 705         currency,
+ 706         reasonCode: reasonCode!,
+ 707         reasonText,
+ 708       };
+ 709     }
+ 710   }
+ 711 }
+ 712 
+ 713 function optsStore(record: Record<string, Cell>): Cell {
+ 714   return record["store_external_id"];
+ 715 }
+ 716 
+ 717 // ---------- CanonicalBatch 合同（04 §11.2 / §12.8；G2-H04） ----------
+ 718 
+ 719 /** 固定 adapter 版本（解析行为变更时递增；mapping_version 之外的第二稳定标识） */
+ 720 export const ADAPTER_VERSION = "adapter-v1";
+ 721 
+ 722 /**
+ 723  * 覆盖声明单项（04 §12.1：source_kind/channel/from/to/status/explicit_zero_dates）。
+ 724  * status 仅允许用户声明 complete/partial；missing 是"没有声明"的系统状态。
+ 725  * after_sales 需按 case/refund 分别声明（channel 承载子通道）。
+ 726  */
+ 727 export interface CoverageDeclarationItem {
+ 728   source_kind: FileKind;
+ 729   /** orders/default、after_sales/case 等（04 §10.7 渠道命名） */
+ 730   channel: string;
+ 731   /** 本地日期（含） */
+ 732   from: string;
+ 733   /** 本地日期（不含，右开） */
+ 734   to: string;
+ 735   status: "complete" | "partial";
+ 736   /** 显式零事件日期（本地日期逐日展开；缺事件 ≠ 零事件） */
+ 737   explicit_zero_dates: string[];
+ 738 }
+ 739 
+ 740 /**
+ 741  * 统一批次（04 §11.2）：records 之外的元数据全部由服务端赋值——
+ 742  * store_id 是服务端解析出的 UUID；namespace 来自 DataSource；checksum 来自原始文件；
+ 743  * coverage_declaration 来自用户的映射/预览确认（不来自 CSV 文件内容）。
+ 744  */
+ 745 export interface CanonicalBatch<K extends FileKind = FileKind> {
+ 746   source_kind: K;
+ 747   source_namespace: string;
+ 748   store_id: string;
+ 749   adapter_kind: "csv" | "mock";
+ 750   adapter_version: string;
+ 751   raw_checksum: string;
+ 752   records: StandardRecords[K][];
+ 753   row_errors: RowError[];
+ 754   coverage_declaration: CoverageDeclarationItem[];
+ 755 }
+ 756 
+ 757 function assertLocalDate(value: string, field: string): void {
+ 758   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+ 759   if (
+ 760     !m ||
+ 761     !isRealCalendarDate(Number(m[1]), Number(m[2]), Number(m[3]), 0, 0, 0)
+ 762   ) {
+ 763     throw new Error(`coverage_declaration.${field} 必须为合法本地日期（YYYY-MM-DD）：${value}`);
+ 764   }
+ 765 }
+ 766 
+ 767 /**
+ 768  * 组装 typed CanonicalBatch（纯函数）：校验覆盖声明结构与日期边界，
+ 769  * 拒绝 from>=to（右开）与未登记 source_kind/channel 形态。
+ 770  */
+ 771 export function createCanonicalBatch<K extends FileKind>(args: {
+ 772   sourceKind: K;
+ 773   sourceNamespace: string;
+ 774   storeId: string;
+ 775   adapterKind: "csv" | "mock";
+ 776   rawChecksum: string;
+ 777   parse: ParseResult<K>;
+ 778   coverageDeclaration?: CoverageDeclarationItem[];
+ 779 }): CanonicalBatch<K> {
+ 780   if (!isFileKind(args.sourceKind)) {
+ 781     throw new Error(`未知来源类型：${String(args.sourceKind)}`);
+ 782   }
+ 783   if (!args.storeId) {
+ 784     throw new Error("CanonicalBatch.store_id 必须由服务端赋值");
+ 785   }
+ 786   if (!/^[0-9a-f]{64}$/i.test(args.rawChecksum)) {
+ 787     throw new Error("CanonicalBatch.raw_checksum 必须为 sha256 hex");
+ 788   }
+ 789   const declaration = (args.coverageDeclaration ?? []).map((item) => {
+ 790     if (!isFileKind(item.source_kind)) {
+ 791       throw new Error(`coverage_declaration.source_kind 非法：${String(item.source_kind)}`);
+ 792     }
+ 793     if (!item.channel || item.channel.length > 64) {
+ 794       throw new Error(`coverage_declaration.channel 非法：${String(item.channel)}`);
+ 795     }
+ 796     if (item.status !== "complete" && item.status !== "partial") {
+ 797       throw new Error(`coverage_declaration.status 仅允许 complete/partial：${String(item.status)}`);
+ 798     }
+ 799     assertLocalDate(item.from, "from");
+ 800     assertLocalDate(item.to, "to");
+ 801     if (Date.parse(`${item.to}T00:00:00Z`) <= Date.parse(`${item.from}T00:00:00Z`)) {
+ 802       throw new Error(`coverage_declaration [${item.from}, ${item.to}) 为空区间（to 必须晚于 from）`);
+ 803     }
+ 804     for (const zero of item.explicit_zero_dates) {
+ 805       assertLocalDate(zero, "explicit_zero_dates");
+ 806     }
+ 807     return { ...item, explicit_zero_dates: [...item.explicit_zero_dates] };
+ 808   });
+ 809   return {
+ 810     source_kind: args.sourceKind,
+ 811     source_namespace: args.sourceNamespace,
+ 812     store_id: args.storeId,
+ 813     adapter_kind: args.adapterKind,
+ 814     adapter_version: ADAPTER_VERSION,
+ 815     raw_checksum: args.rawChecksum,
+ 816     records: args.parse.records,
+ 817     row_errors: args.parse.errors,
+ 818     coverage_declaration: declaration,
+ 819   };
+ 820 }
+ 821 
+ 822 // ---------- DataAdapter 契约 ----------
+ 823 
+ 824 export interface AdapterContext {
+ 825   storeExternalId: string;
+ 826 }
+ 827 
+ 828 export interface DataAdapter {
+ 829   readonly kind: "csv" | "mock";
+ 830   /** CSV：content 为文件文本；Mock：content 为合成数据集（与 CSV 同一逻辑数据的对象形态） */
+ 831   parse(kind: FileKind, ctx: AdapterContext, content: string): ParseResult;
+ 832 }
+ 833 
+ 834 export const csvAdapter: DataAdapter = {
+ 835   kind: "csv",
+ 836   parse(kind, ctx, content) {
+ 837     return parseStandardFile(kind, content, { storeExternalId: ctx.storeExternalId });
+ 838   },
+ 839 };
+ 840 
+ 841 /** Mock 合成数据集：与 CSV 同一逻辑数据的对象形态（value 语义同 CSV 单元格） */
+ 842 export type MockDataset = Record<FileKind, Record<string, string | null>[]>;
+ 843 
+ 844 export const mockAdapter: DataAdapter = {
+ 845   kind: "mock",
+ 846   parse(kind, ctx, content) {
+ 847     let dataset: MockDataset;
+ 848     try {
+ 849       dataset = JSON.parse(content) as MockDataset;
+ 850     } catch {
+ 851       return { kind, records: [], errors: [{ row: 0, code: "INVALID_MOCK_DATASET", message: "mock 数据集不是合法 JSON" }] };
+ 852     }
+ 853     const rows = dataset[kind];
+ 854     if (!Array.isArray(rows)) {
+ 855       return { kind, records: [], errors: [{ row: 0, code: "INVALID_MOCK_DATASET", message: `mock 数据集缺少 ${kind}` }] };
+ 856     }
+ 857     // 与 CSV 完全同一解析/校验路径：把对象行序列化为 CSV 文本后复用 parseStandardFile，
+ 858     // 保证“同一逻辑数据经 CSV 和 Mock 所得标准记录一致”。
+ 859     const headers = FILE_HEADERS[kind];
+ 860     const escape = (v: string | null) => {
+ 861       if (v === null) return "";
+ 862       if (/[",\r\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
+ 863       return v;
+ 864     };
+ 865     const text = [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h] ?? null)).join(","))].join("\r\n");
+ 866     return parseStandardFile(kind, text, { storeExternalId: ctx.storeExternalId });
+ 867   },
+ 868 };
+ 869 
+ 870 export function getAdapter(kind: "csv" | "mock"): DataAdapter {
+ 871   if (kind !== "csv" && kind !== "mock") {
+ 872     // P0 仅 csv/mock；Excel 等类型明确不支持（09_TASKS 禁止项）
+ 873     throw new AccessErrorLike(`不支持的适配器类型：${String(kind)}`);
+ 874   }
+ 875   return kind === "csv" ? csvAdapter : mockAdapter;
+ 876 }
+ 877 
+ 878 /** 轻量错误（避免 adapters 依赖 services 层） */
+ 879 class AccessErrorLike extends Error {}

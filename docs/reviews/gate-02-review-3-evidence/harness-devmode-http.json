@@ -1,0 +1,11 @@
+{
+  "name": "http-probes",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-http.ts"
+  ],
+  "exit": 2,
+  "seconds": 2.38
+}

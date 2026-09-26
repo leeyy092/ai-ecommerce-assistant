@@ -1,0 +1,27 @@
+   1 /**
+   2  * ali-oss 客户端工厂（独立文件：便于 serverExternalPackages 标记外部化，
+   3  * Web/Worker 均在运行时从 node_modules 解析，不参与打包）。
+   4  */
+   5 import { loadEnv } from "@/lib/env";
+   6 import type { OssClientLike } from "./oss";
+   7 
+   8 export function createOssClient(): OssClientLike {
+   9   // oss 驱动配置缺失时给出明确变量名（EnvValidationError 只含变量名不含值）
+  10   const env = loadEnv(["auth"]); // STORAGE_DRIVER=oss 时 oss 段被隐式启用
+  11   if (!env.oss) {
+  12     throw new Error("STORAGE_DRIVER=oss 需要配置 OSS_BUCKET/OSS_REGION/OSS_ACCESS_KEY_ID/OSS_ACCESS_KEY_SECRET");
+  13   }
+  14   // eslint-disable-next-line @typescript-eslint/no-require-imports
+  15   const Oss = require("ali-oss") as new (opts: {
+  16     region: string;
+  17     bucket: string;
+  18     accessKeyId: string;
+  19     accessKeySecret: string;
+  20   }) => OssClientLike;
+  21   return new Oss({
+  22     region: env.oss.region,
+  23     bucket: env.oss.bucket,
+  24     accessKeyId: env.oss.accessKeyId,
+  25     accessKeySecret: env.oss.accessKeySecret,
+  26   });
+  27 }

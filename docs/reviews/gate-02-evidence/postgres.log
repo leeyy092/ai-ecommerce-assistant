@@ -1,0 +1,267 @@
+2026-09-15 19:27:22.281 CST [91236] LOG:  starting PostgreSQL 17.11 (Homebrew) on aarch64-apple-darwin25.6.0, compiled by Apple clang version 21.0.0 (clang-2100.1.1.101), 64-bit
+2026-09-15 19:27:22.282 CST [91236] LOG:  listening on IPv4 address "127.0.0.1", port 55572
+2026-09-15 19:27:22.282 CST [91236] LOG:  listening on Unix socket "/tmp/aiea-g2-review-h99ruviq/.s.PGSQL.55572"
+2026-09-15 19:27:22.287 CST [91240] LOG:  database system was shut down at 2026-09-15 19:27:22 CST
+2026-09-15 19:27:22.290 CST [91236] LOG:  database system is ready to accept connections
+2026-09-15 19:28:11.343 CST [91437] ERROR:  new row for relation "audit_log" violates check constraint "ck_inject_audit_fail"
+2026-09-15 19:28:11.343 CST [91437] DETAIL:  Failing row contains (44550211-b2d0-45d0-badf-94283dcda41e, 95734b3f-e6ab-4eaa-a266-fe705358ac68, null, cf4df092-f7f0-483e-84b0-9e5ead881b1f, user, invite_create, invitation, 19f9c7dc-ae47-4bd8-a550-315e79b4626f, null, {"role": "operator", "email": "a*****************@example.com", ..., 0510a8c9-67b7-42c3-9f5b-5844c935f685, 2026-09-15 11:28:11.343+00, 2026-09-15 11:28:11.343+00, 1).
+2026-09-15 19:28:11.343 CST [91437] STATEMENT:  INSERT INTO "public"."audit_log" ("id","org_id","store_id","actor_user_id","actor_type","action","entity_type","entity_id","after_summary","request_id","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ActorType"),$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."audit_log"."id", "public"."audit_log"."org_id", "public"."audit_log"."store_id", "public"."audit_log"."actor_user_id", "public"."audit_log"."actor_type"::text, "public"."audit_log"."action", "public"."audit_log"."entity_type", "public"."audit_log"."entity_id", "public"."audit_log"."before_summary", "public"."audit_log"."after_summary", "public"."audit_log"."request_id", "public"."audit_log"."created_at", "public"."audit_log"."updated_at", "public"."audit_log"."row_version"
+2026-09-15 19:28:12.921 CST [91437] ERROR:  new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"
+2026-09-15 19:28:12.921 CST [91437] DETAIL:  Failing row contains (8bd66ce0-e4b0-4382-86df-1c083c42e1f8, invite-preview:direct, 1, 2026-09-15 11:29:12.920962+00, 2026-09-15 11:28:12.920962+00).
+2026-09-15 19:28:12.921 CST [91437] STATEMENT:  
+	    INSERT INTO auth_rate_limit (id, key, count, expires_at, updated_at)
+	    VALUES (gen_random_uuid(), $1, 1, now() + make_interval(secs => $2), now())
+	    ON CONFLICT (key) DO UPDATE SET
+	      count = CASE WHEN auth_rate_limit.expires_at <= now() THEN 1 ELSE auth_rate_limit.count + 1 END,
+	      expires_at = CASE WHEN auth_rate_limit.expires_at <= now()
+	                        THEN now() + make_interval(secs => $3)
+	                        ELSE auth_rate_limit.expires_at END,
+	      updated_at = now()
+	    RETURNING count, CEIL(EXTRACT(EPOCH FROM (auth_rate_limit.expires_at - now())))::bigint AS retry_after_s
+2026-09-15 19:28:12.924 CST [91438] ERROR:  new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"
+2026-09-15 19:28:12.924 CST [91438] DETAIL:  Failing row contains (7dc14ece-5223-4b39-9555-5e43b1f1665d, invite-accept:direct, 1, 2026-09-15 11:29:12.92413+00, 2026-09-15 11:28:12.92413+00).
+2026-09-15 19:28:12.924 CST [91438] STATEMENT:  
+	    INSERT INTO auth_rate_limit (id, key, count, expires_at, updated_at)
+	    VALUES (gen_random_uuid(), $1, 1, now() + make_interval(secs => $2), now())
+	    ON CONFLICT (key) DO UPDATE SET
+	      count = CASE WHEN auth_rate_limit.expires_at <= now() THEN 1 ELSE auth_rate_limit.count + 1 END,
+	      expires_at = CASE WHEN auth_rate_limit.expires_at <= now()
+	                        THEN now() + make_interval(secs => $3)
+	                        ELSE auth_rate_limit.expires_at END,
+	      updated_at = now()
+	    RETURNING count, CEIL(EXTRACT(EPOCH FROM (auth_rate_limit.expires_at - now())))::bigint AS retry_after_s
+2026-09-15 19:28:12.941 CST [91238] LOG:  checkpoint starting: immediate force wait
+2026-09-15 19:28:13.066 CST [91238] LOG:  checkpoint complete: wrote 1131 buffers (6.9%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.064 s, sync=0.038 s, total=0.125 s; sync files=994, longest=0.002 s, average=0.001 s; distance=15097 kB, estimate=15097 kB; lsn=0/23D8F58, redo lsn=0/23D8F00
+2026-09-15 19:28:13.683 CST [91446] ERROR:  audit_log store_id 82a80a8c-51e1-462a-b95f-bf08fc8809a6 不属于 org_id 对应组织（同域校验失败）
+2026-09-15 19:28:13.683 CST [91446] CONTEXT:  PL/pgSQL function audit_log_store_same_domain() line 6 at RAISE
+2026-09-15 19:28:13.683 CST [91446] STATEMENT:  INSERT INTO "public"."audit_log" ("id","org_id","store_id","actor_type","action","entity_type","entity_id","request_id","created_at","updated_at","row_version") VALUES ($1,$2,$3,CAST($4::text AS "public"."ActorType"),$5,$6,$7,$8,$9,$10,$11) RETURNING "public"."audit_log"."id", "public"."audit_log"."org_id", "public"."audit_log"."store_id", "public"."audit_log"."actor_user_id", "public"."audit_log"."actor_type"::text, "public"."audit_log"."action", "public"."audit_log"."entity_type", "public"."audit_log"."entity_id", "public"."audit_log"."before_summary", "public"."audit_log"."after_summary", "public"."audit_log"."request_id", "public"."audit_log"."created_at", "public"."audit_log"."updated_at", "public"."audit_log"."row_version"
+2026-09-15 19:28:14.022 CST [91449] ERROR:  insert or update on table "audit_log" violates foreign key constraint "audit_log_org_id_store_id_fkey"
+2026-09-15 19:28:14.022 CST [91449] DETAIL:  Key (org_id, store_id)=(937751e8-070b-4a5f-a679-77e2461a8cf0, ce25ceda-a784-44d3-980a-27af5c1176a8) is not present in table "store".
+2026-09-15 19:28:14.022 CST [91449] STATEMENT:  INSERT INTO audit_log (id,org_id,store_id,action,entity_type,entity_id,request_id,updated_at)
+	         VALUES ($1,$2,$3,'race','probe',$4,$5,now())
+2026-09-15 19:28:14.350 CST [91450] ERROR:  store aee9bf76-5aa5-4598-8a27-92172fd7d644 的组织归属变更会使既有审计引用脱离同域，已阻断
+2026-09-15 19:28:14.350 CST [91450] CONTEXT:  PL/pgSQL function store_org_reassign_guard() line 7 at RAISE
+2026-09-15 19:28:14.350 CST [91450] STATEMENT:  UPDATE store SET org_id=$1 WHERE id=$2
+2026-09-15 19:28:14.373 CST [91447] ERROR:  new row for relation "job_run" violates check constraint "ck_domain_uuid_job_run"
+2026-09-15 19:28:14.373 CST [91447] DETAIL:  Failing row contains (not-a-uuid-review, 4adf0d61-937b-4d9d-933c-f2380fa25160, 7b21a461-7cc8-4cb9-b9fc-84774367f31d, recompute_snapshot, idem-ae6e7307, {}, null, user, null, 1, v1, succeeded, 1, pending, null, null, null, 2026-09-15 11:28:14.372697+00, 2026-09-15 11:28:14.372697+00, 1).
+2026-09-15 19:28:14.373 CST [91447] STATEMENT:  
+	      INSERT INTO job_run (id, org_id, store_id, job_kind, idempotency_key, context, dataset_version, ruleset_version, status, attempt_count, created_at, updated_at, row_version)
+	      VALUES ('not-a-uuid-review', $1, $2, 'recompute_snapshot', $3, '{}'::jsonb, 1, 'v1', 'succeeded', 1, now(), now(), 1)
+2026-09-15 19:28:14.434 CST [91453] ERROR:  store a0b681ff-07ea-4162-b3ef-4c66b160502b 的组织归属变更会使既有审计引用脱离同域，已阻断
+2026-09-15 19:28:14.434 CST [91453] CONTEXT:  PL/pgSQL function store_org_reassign_guard() line 7 at RAISE
+2026-09-15 19:28:14.434 CST [91453] STATEMENT:  UPDATE "public"."store" SET "org_id" = $1, "updated_at" = $2 WHERE ("public"."store"."id" = $3 AND 1=1) RETURNING "public"."store"."id", "public"."store"."org_id", "public"."store"."name", "public"."store"."external_store_id", "public"."store"."status"::text, "public"."store"."demo_mode", "public"."store"."platform", "public"."store"."currency", "public"."store"."timezone", "public"."store"."dataset_version", "public"."store"."input_evaluation_at", "public"."store"."last_evaluation_date", "public"."store"."current_snapshot_version", "public"."store"."ruleset_version", "public"."store"."current_snapshot_ruleset_version", "public"."store"."current_snapshot_evaluation_at", "public"."store"."previous_snapshot_version", "public"."store"."previous_snapshot_ruleset_version", "public"."store"."previous_snapshot_evaluation_at", "public"."store"."snapshot_status"::text, "public"."store"."settings", "public"."store"."created_at", "public"."store"."updated_at", "public"."store"."row_version"
+2026-09-15 19:28:14.929 CST [91459] ERROR:  audit_log 存在 1 条跨组织店铺引用，拒绝升级；请先人工核对这些历史行
+2026-09-15 19:28:14.929 CST [91459] CONTEXT:  PL/pgSQL function inline_code_block line 8 at RAISE
+2026-09-15 19:28:14.929 CST [91459] STATEMENT:  -- Gate-01 H08（正式复核）｜审计同域的持续维护：
+	-- 1) 升级守卫：存在跨域审计引用时拒绝静默通过（明确报错并给出数量，不自动改写历史）；
+	-- 2) 父行保护：store.org_id 变更若使既有 audit_log 引用脱离同域，则阻断该变更；
+	-- 3) 删除语义维持既有单列 FK：删除店铺仅清空可空 store_id、保留 org_id。
+	-- 说明：p0_audit_tenant_fk 的 audit 行级触发器继续生效（插入/更新同域校验）。
+	
+	-- 1) 升级守卫（DO 块在迁移事务内失败即整体回滚）
+	DO $$
+	DECLARE bad BIGINT;
+	BEGIN
+	  SELECT count(*) INTO bad FROM audit_log a
+	  WHERE a.store_id IS NOT NULL
+	    AND NOT EXISTS (SELECT 1 FROM store s WHERE s.org_id = a.org_id AND s.id = a.store_id);
+	  IF bad > 0 THEN
+	    RAISE EXCEPTION 'audit_log 存在 % 条跨组织店铺引用，拒绝升级；请先人工核对这些历史行', bad;
+	  END IF;
+	END $$;
+	
+	-- 2) 父行保护函数与触发器
+	CREATE FUNCTION "store_org_reassign_guard"() RETURNS trigger AS $$
+	BEGIN
+	  IF NEW."org_id" IS DISTINCT FROM OLD."org_id" AND EXISTS (
+	    SELECT 1 FROM audit_log al
+	    WHERE al."store_id" = NEW."id" AND al."org_id" IS DISTINCT FROM NEW."org_id"
+	  ) THEN
+	    RAISE EXCEPTION 'store % 的组织归属变更会使既有审计引用脱离同域，已阻断', NEW."id";
+	  END IF;
+	  RETURN NEW;
+	END;
+	$$ LANGUAGE plpgsql;
+	
+	CREATE TRIGGER "store_org_reassign_guard_trg"
+	  BEFORE UPDATE OF "org_id" ON "store"
+	  FOR EACH ROW EXECUTE FUNCTION "store_org_reassign_guard"();
+	
+2026-09-15 19:28:14.935 CST [91458] FATAL:  terminating connection due to administrator command
+2026-09-15 19:28:14.936 CST [91238] LOG:  checkpoint starting: immediate force wait
+2026-09-15 19:28:15.017 CST [91238] LOG:  checkpoint complete: wrote 1203 buffers (7.3%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.034 s, sync=0.031 s, total=0.081 s; sync files=993, longest=0.001 s, average=0.001 s; distance=14924 kB, estimate=15080 kB; lsn=0/326C088, redo lsn=0/326C030
+2026-09-15 19:28:15.076 CST [91454] ERROR:  insert or update on table "domain_user" violates foreign key constraint "domain_user_auth_user_id_fkey"
+2026-09-15 19:28:15.076 CST [91454] DETAIL:  Key (auth_user_id)=(ghost-f7c14ee0) is not present in table "user".
+2026-09-15 19:28:15.076 CST [91454] STATEMENT:  INSERT INTO "public"."domain_user" ("id","auth_user_id","email","display_name","status","created_at","updated_at") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."UserStatus"),$6,$7) RETURNING "public"."domain_user"."id", "public"."domain_user"."auth_user_id", "public"."domain_user"."email", "public"."domain_user"."display_name", "public"."domain_user"."status"::text, "public"."domain_user"."created_at", "public"."domain_user"."updated_at"
+2026-09-15 19:28:15.444 CST [91238] LOG:  checkpoint starting: immediate force wait
+2026-09-15 19:28:15.447 CST [91238] LOG:  checkpoint complete: wrote 39 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.001 s, total=0.003 s; sync files=26, longest=0.001 s, average=0.001 s; distance=6949 kB, estimate=14267 kB; lsn=0/3935498, redo lsn=0/3935440
+2026-09-15 19:28:16.450 CST [91238] LOG:  checkpoint starting: immediate force wait
+2026-09-15 19:28:16.452 CST [91238] LOG:  checkpoint complete: wrote 2 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=2, longest=0.001 s, average=0.001 s; distance=61 kB, estimate=12846 kB; lsn=0/3944C40, redo lsn=0/3944BE8
+2026-09-15 19:28:17.573 CST [91238] LOG:  checkpoint starting: immediate force wait
+2026-09-15 19:28:17.574 CST [91238] LOG:  checkpoint complete: wrote 4 buffers (0.0%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=4, longest=0.001 s, average=0.001 s; distance=7518 kB, estimate=12313 kB; lsn=0/409C4D0, redo lsn=0/409C478
+2026-09-15 19:28:19.150 CST [91486] ERROR:  new row for relation "audit_log" violates check constraint "ck_inject_member_audit"
+2026-09-15 19:28:19.150 CST [91486] DETAIL:  Failing row contains (40d189fe-6fd0-4108-8160-51730680ca6f, da1340b1-efa4-4ac4-a69b-1a089fe7c4c9, null, 0f054bba-c71f-47e8-962e-17ee022021c5, user, member_update, membership, 9671b41e-baf0-48fc-b002-008c14a9c68e, {"role": "operator", "status": "active"}, {"role": "admin", "status": "active"}, 4a1ca206-f52a-4bfd-aebc-12b7d6c2edd0, 2026-09-15 11:28:19.15+00, 2026-09-15 11:28:19.15+00, 1).
+2026-09-15 19:28:19.150 CST [91486] STATEMENT:  INSERT INTO "public"."audit_log" ("id","org_id","store_id","actor_user_id","actor_type","action","entity_type","entity_id","before_summary","after_summary","request_id","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ActorType"),$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "public"."audit_log"."id", "public"."audit_log"."org_id", "public"."audit_log"."store_id", "public"."audit_log"."actor_user_id", "public"."audit_log"."actor_type"::text, "public"."audit_log"."action", "public"."audit_log"."entity_type", "public"."audit_log"."entity_id", "public"."audit_log"."before_summary", "public"."audit_log"."after_summary", "public"."audit_log"."request_id", "public"."audit_log"."created_at", "public"."audit_log"."updated_at", "public"."audit_log"."row_version"
+2026-09-15 19:28:19.163 CST [91486] ERROR:  new row for relation "audit_log" violates check constraint "ck_inject_org_audit"
+2026-09-15 19:28:19.163 CST [91486] DETAIL:  Failing row contains (76d7b81b-66b1-4bd2-bb3a-f84e9e78e037, da1340b1-efa4-4ac4-a69b-1a089fe7c4c9, null, 0f054bba-c71f-47e8-962e-17ee022021c5, user, org_update, organization, da1340b1-efa4-4ac4-a69b-1a089fe7c4c9, null, {"name": "不该生效"}, 606aa4dc-4199-4729-bee0-e5020b892390, 2026-09-15 11:28:19.162+00, 2026-09-15 11:28:19.162+00, 1).
+2026-09-15 19:28:19.163 CST [91486] STATEMENT:  INSERT INTO "public"."audit_log" ("id","org_id","store_id","actor_user_id","actor_type","action","entity_type","entity_id","after_summary","request_id","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ActorType"),$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."audit_log"."id", "public"."audit_log"."org_id", "public"."audit_log"."store_id", "public"."audit_log"."actor_user_id", "public"."audit_log"."actor_type"::text, "public"."audit_log"."action", "public"."audit_log"."entity_type", "public"."audit_log"."entity_id", "public"."audit_log"."before_summary", "public"."audit_log"."after_summary", "public"."audit_log"."request_id", "public"."audit_log"."created_at", "public"."audit_log"."updated_at", "public"."audit_log"."row_version"
+2026-09-15 19:28:19.173 CST [91238] LOG:  checkpoint starting: immediate force wait
+2026-09-15 19:28:19.174 CST [91238] LOG:  checkpoint complete: wrote 4 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=4, longest=0.001 s, average=0.001 s; distance=7519 kB, estimate=11834 kB; lsn=0/47F4138, redo lsn=0/47F40E0
+2026-09-15 19:28:20.410 CST [91492] FATAL:  terminating connection due to administrator command
+2026-09-15 19:28:20.410 CST [91493] FATAL:  terminating connection due to administrator command
+2026-09-15 19:28:20.411 CST [91238] LOG:  checkpoint starting: immediate force wait
+2026-09-15 19:28:20.413 CST [91238] LOG:  checkpoint complete: wrote 4 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=4, longest=0.001 s, average=0.001 s; distance=7921 kB, estimate=11442 kB; lsn=0/4FB06F8, redo lsn=0/4FB06A0
+2026-09-15 19:28:21.278 CST [91497] ERROR:  duplicate key value violates unique constraint "uq_membership_single_owner"
+2026-09-15 19:28:21.278 CST [91497] DETAIL:  Key (org_id)=(f4ab6e34-4cfc-4d10-9558-9561f5059b3e) already exists.
+2026-09-15 19:28:21.278 CST [91497] STATEMENT:  INSERT INTO "public"."membership" ("id","org_id","user_id","role","status","created_at","updated_at","row_version") VALUES ($1,$2,$3,CAST($4::text AS "public"."MemberRole"),CAST($5::text AS "public"."MemberStatus"),$6,$7,$8) RETURNING "public"."membership"."id", "public"."membership"."org_id", "public"."membership"."user_id", "public"."membership"."role"::text, "public"."membership"."status"::text, "public"."membership"."created_at", "public"."membership"."updated_at", "public"."membership"."row_version"
+2026-09-15 19:28:21.997 CST [91238] LOG:  checkpoint starting: immediate force wait
+2026-09-15 19:28:21.998 CST [91238] LOG:  checkpoint complete: wrote 4 buffers (0.0%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=4, longest=0.001 s, average=0.001 s; distance=7543 kB, estimate=11053 kB; lsn=0/570E618, redo lsn=0/570E5C0
+2026-09-15 19:28:23.462 CST [91238] LOG:  checkpoint starting: immediate force wait
+2026-09-15 19:28:23.463 CST [91238] LOG:  checkpoint complete: wrote 4 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=4, longest=0.001 s, average=0.001 s; distance=7527 kB, estimate=10700 kB; lsn=0/5E68408, redo lsn=0/5E683B0
+2026-09-15 19:28:23.977 CST [91513] ERROR:  insert or update on table "order_item" violates foreign key constraint "order_item_org_id_store_id_import_task_id_fkey"
+2026-09-15 19:28:23.977 CST [91513] DETAIL:  Key (org_id, store_id, import_task_id)=(6db69899-dfc8-4b55-9a85-de474fd69ecb, 102dd1a6-7b1c-4b79-8e91-78f8fb113420, 27cd71b9-8d57-4e9e-8145-17591043bc4e) is not present in table "import_task".
+2026-09-15 19:28:23.977 CST [91513] STATEMENT:  INSERT INTO "public"."order_item" ("id","org_id","store_id","source_namespace","source_updated_at","import_task_id","row_hash","order_id","external_order_item_id","sku_id","quantity","item_paid_amount","currency","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING "public"."order_item"."id", "public"."order_item"."org_id", "public"."order_item"."store_id", "public"."order_item"."source_namespace", "public"."order_item"."source_updated_at", "public"."order_item"."import_task_id", "public"."order_item"."row_hash", "public"."order_item"."order_id", "public"."order_item"."external_order_item_id", "public"."order_item"."sku_id", "public"."order_item"."quantity", "public"."order_item"."item_paid_amount", "public"."order_item"."currency", "public"."order_item"."created_at", "public"."order_item"."updated_at", "public"."order_item"."row_version"
+2026-09-15 19:28:23.993 CST [91514] ERROR:  duplicate key value violates unique constraint "sku_org_id_store_id_source_namespace_external_sku_id_key"
+2026-09-15 19:28:23.993 CST [91514] DETAIL:  Key (org_id, store_id, source_namespace, external_sku_id)=(2596d065-e4eb-411f-a05c-a1c43752c5c0, 5a738ec4-d5c0-482d-8aa6-42127af3102a, ns-dup, S-dup) already exists.
+2026-09-15 19:28:23.993 CST [91514] STATEMENT:  INSERT INTO "public"."sku" ("id","org_id","store_id","source_namespace","source_updated_at","import_task_id","row_hash","product_id","external_sku_id","sku_code","name","status","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,CAST($12::text AS "public"."SkuStatus"),$13,$14,$15) RETURNING "public"."sku"."id", "public"."sku"."org_id", "public"."sku"."store_id", "public"."sku"."source_namespace", "public"."sku"."source_updated_at", "public"."sku"."import_task_id", "public"."sku"."row_hash", "public"."sku"."product_id", "public"."sku"."external_sku_id", "public"."sku"."sku_code", "public"."sku"."name", "public"."sku"."specification", "public"."sku"."status"::text, "public"."sku"."created_at", "public"."sku"."updated_at", "public"."sku"."row_version"
+2026-09-15 19:28:24.008 CST [91515] ERROR:  duplicate key value violates unique constraint "uq_membership_single_owner"
+2026-09-15 19:28:24.008 CST [91515] DETAIL:  Key (org_id)=(29280a45-0fdb-48d8-b695-600b7212f09c) already exists.
+2026-09-15 19:28:24.008 CST [91515] STATEMENT:  INSERT INTO "public"."membership" ("id","org_id","user_id","role","status","created_at","updated_at","row_version") VALUES ($1,$2,$3,CAST($4::text AS "public"."MemberRole"),CAST($5::text AS "public"."MemberStatus"),$6,$7,$8) RETURNING "public"."membership"."id", "public"."membership"."org_id", "public"."membership"."user_id", "public"."membership"."role"::text, "public"."membership"."status"::text, "public"."membership"."created_at", "public"."membership"."updated_at", "public"."membership"."row_version"
+2026-09-15 19:28:24.021 CST [91516] ERROR:  new row for relation "order_item" violates check constraint "ck_order_item_quantity_range"
+2026-09-15 19:28:24.021 CST [91516] DETAIL:  Failing row contains (d89de327-7c30-48c6-87e3-c38fd955ff68, 76209186-1c92-4c3d-824f-572ed79cdb56, 2e95c9eb-4f65-4772-baca-dbccd8358265, ns-negqty, 2026-09-15 11:28:24.02+00, 08cf845f-9ee2-428f-ab41-41110061de7d, ab9ba863-bdd8-4e1a-ba2f-10786fe06596, ba2d45eb-882d-483a-bfdf-cc2c98e16493, L2, aea995ca-7593-4990-9b84-5feb98b5f258, -1, 5.000000, CNY, 2026-09-15 11:28:24.021+00, 2026-09-15 11:28:24.021+00, 1).
+2026-09-15 19:28:24.021 CST [91516] STATEMENT:  INSERT INTO "public"."order_item" ("id","org_id","store_id","source_namespace","source_updated_at","import_task_id","row_hash","order_id","external_order_item_id","sku_id","quantity","item_paid_amount","currency","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING "public"."order_item"."id", "public"."order_item"."org_id", "public"."order_item"."store_id", "public"."order_item"."source_namespace", "public"."order_item"."source_updated_at", "public"."order_item"."import_task_id", "public"."order_item"."row_hash", "public"."order_item"."order_id", "public"."order_item"."external_order_item_id", "public"."order_item"."sku_id", "public"."order_item"."quantity", "public"."order_item"."item_paid_amount", "public"."order_item"."currency", "public"."order_item"."created_at", "public"."order_item"."updated_at", "public"."order_item"."row_version"
+2026-09-15 19:28:24.036 CST [91517] ERROR:  new row for relation "order" violates check constraint "ck_order_currency"
+2026-09-15 19:28:24.036 CST [91517] DETAIL:  Failing row contains (ddf03885-5ec8-4ccd-a05e-3abce6775e0e, a1e2cd27-47c6-48b4-8669-4c2a8e990031, 0112102d-6037-45d0-be8a-e9ed7209b7dc, ns-badcur, 2026-09-15 11:28:24.035+00, bf255dad-9d31-478b-b278-27a11a9af351, 4575767c-2e25-43ce-a278-cab6edc8e549, O-badcur-1, unpaid, null, 2026-09-15 11:28:24.035+00, cny, 1, 2026-09-15 11:28:24.036+00, 2026-09-15 11:28:24.036+00, 1).
+2026-09-15 19:28:24.036 CST [91517] STATEMENT:  INSERT INTO "public"."order" ("id","org_id","store_id","source_namespace","source_updated_at","import_task_id","row_hash","external_order_id","payment_status","ordered_at","currency","expected_item_count","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,CAST($9::text AS "public"."OrderPaymentStatus"),$10,$11,$12,$13,$14,$15) RETURNING "public"."order"."id", "public"."order"."org_id", "public"."order"."store_id", "public"."order"."source_namespace", "public"."order"."source_updated_at", "public"."order"."import_task_id", "public"."order"."row_hash", "public"."order"."external_order_id", "public"."order"."payment_status"::text, "public"."order"."paid_at", "public"."order"."ordered_at", "public"."order"."currency", "public"."order"."expected_item_count", "public"."order"."created_at", "public"."order"."updated_at", "public"."order"."row_version"
+2026-09-15 19:28:24.042 CST [91518] ERROR:  value too long for type character(3)
+2026-09-15 19:28:24.042 CST [91518] STATEMENT:  UPDATE "public"."store" SET "currency" = $1, "updated_at" = $2 WHERE (("public"."store"."org_id" = $3 AND "public"."store"."external_store_id" = $4) AND 1=1) RETURNING "public"."store"."id", "public"."store"."org_id", "public"."store"."name", "public"."store"."external_store_id", "public"."store"."status"::text, "public"."store"."demo_mode", "public"."store"."platform", "public"."store"."currency", "public"."store"."timezone", "public"."store"."dataset_version", "public"."store"."input_evaluation_at", "public"."store"."last_evaluation_date", "public"."store"."current_snapshot_version", "public"."store"."ruleset_version", "public"."store"."current_snapshot_ruleset_version", "public"."store"."current_snapshot_evaluation_at", "public"."store"."previous_snapshot_version", "public"."store"."previous_snapshot_ruleset_version", "public"."store"."previous_snapshot_evaluation_at", "public"."store"."snapshot_status"::text, "public"."store"."settings", "public"."store"."created_at", "public"."store"."updated_at", "public"."store"."row_version"
+2026-09-15 19:28:24.056 CST [91519] ERROR:  new row for relation "refund_event" violates check constraint "ck_refund_succeeded_fields"
+2026-09-15 19:28:24.056 CST [91519] DETAIL:  Failing row contains (b3583f6d-6fdf-4138-80a6-3241a8702eb6, 13a99cea-a41a-4b2e-b1a7-3ea4c4139229, bf5d1847-d470-41e0-ab84-6b5452f0f4a4, ns-refund, 2026-09-15 11:28:24.055+00, 0e94e60d-479b-4b35-bace-83c107456160, 3c0f7012-fff0-4a14-a8e7-34f23c6f5c85, RF-1, 52fd57a2-6b59-401f-8ed1-673282e476fb, 135edbfb-c0b7-458a-abed-c1813ea4e414, null, 2026-09-15 11:28:24.055+00, succeeded, 2026-09-15 11:28:24.055+00, null, null, CNY, quality, null, 2026-09-15 11:28:24.056+00, 2026-09-15 11:28:24.056+00, 1).
+2026-09-15 19:28:24.056 CST [91519] STATEMENT:  INSERT INTO "public"."refund_event" ("id","org_id","store_id","source_namespace","source_updated_at","import_task_id","row_hash","external_record_id","order_id","order_item_id","occurred_at","status","completed_at","currency","reason_code","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,CAST($12::text AS "public"."RefundStatus"),$13,$14,$15,$16,$17,$18) RETURNING "public"."refund_event"."id", "public"."refund_event"."org_id", "public"."refund_event"."store_id", "public"."refund_event"."source_namespace", "public"."refund_event"."source_updated_at", "public"."refund_event"."import_task_id", "public"."refund_event"."row_hash", "public"."refund_event"."external_record_id", "public"."refund_event"."order_id", "public"."refund_event"."order_item_id", "public"."refund_event"."after_sale_record_id", "public"."refund_event"."occurred_at", "public"."refund_event"."status"::text, "public"."refund_event"."completed_at", "public"."refund_event"."refund_amount", "public"."refund_event"."refunded_quantity_cumulative", "public"."refund_event"."currency", "public"."refund_event"."reason_code", "public"."refund_event"."reason_text", "public"."refund_event"."created_at", "public"."refund_event"."updated_at", "public"."refund_event"."row_version"
+2026-09-15 19:28:24.068 CST [91238] LOG:  checkpoint starting: immediate force wait
+2026-09-15 19:28:24.069 CST [91238] LOG:  checkpoint complete: wrote 4 buffers (0.0%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=4, longest=0.001 s, average=0.001 s; distance=7578 kB, estimate=10388 kB; lsn=0/65CEE30, redo lsn=0/65CEDD8
+2026-09-15 19:33:24.066 CST [91238] LOG:  checkpoint starting: time
+2026-09-15 19:33:57.847 CST [91238] LOG:  checkpoint complete: wrote 334 buffers (2.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=33.774 s, sync=0.005 s, total=33.782 s; sync files=84, longest=0.001 s, average=0.001 s; distance=1215 kB, estimate=9471 kB; lsn=0/66FECC0, redo lsn=0/66FEC30
+2026-09-15 19:35:48.629 CST [92217] ERROR:  duplicate key value violates unique constraint "import_task_org_id_store_id_idempotency_key_key"
+2026-09-15 19:35:48.629 CST [92217] DETAIL:  Key (org_id, store_id, idempotency_key)=(5d81e55a-928a-4ff3-8c75-07f4132b37b9, e24de9fa-2e4c-4079-bdd8-2224e95bb2aa, g2-same-http-key) already exists.
+2026-09-15 19:35:48.629 CST [92217] STATEMENT:  INSERT INTO "public"."import_task" ("id","org_id","store_id","data_source_id","source_kind","status","original_filename","raw_object_key","file_sha256","mapping","coverage_declaration","upload_request_key","idempotency_key","preview_version","base_dataset_version","row_count","valid_count","error_count","insert_count","update_count","unchanged_count","outbox_status","created_by","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ImportSourceKind"),CAST($6::text AS "public"."ImportStatus"),$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,CAST($22::text AS "public"."OutboxStatus"),$23,$24,$25,$26) RETURNING "public"."import_task"."id", "public"."import_task"."org_id", "public"."import_task"."store_id", "public"."import_task"."data_source_id", "public"."import_task"."source_kind"::text, "public"."import_task"."status"::text, "public"."import_task"."original_filename", "public"."import_task"."raw_object_key", "public"."import_task"."file_sha256", "public"."import_task"."mapping", "public"."import_task"."coverage_declaration", "public"."import_task"."upload_request_key", "public"."import_task"."idempotency_key", "public"."import_task"."preview_version", "public"."import_task"."base_dataset_version", "public"."import_task"."committed_dataset_version", "public"."import_task"."committed_ruleset_version", "public"."import_task"."committed_evaluation_at", "public"."import_task"."row_count", "public"."import_task"."valid_count", "public"."import_task"."error_count", "public"."import_task"."insert_count", "public"."import_task"."update_count", "public"."import_task"."unchanged_count", "public"."import_task"."staging_object_key", "public"."import_task"."error_object_key", "public"."import_task"."outbox_status"::text, "public"."import_task"."created_by", "public"."import_task"."confirmed_at", "public"."import_task"."committed_at", "public"."import_task"."error_code", "public"."import_task"."created_at", "public"."import_task"."updated_at", "public"."import_task"."row_version"
+2026-09-15 19:35:48.703 CST [92217] ERROR:  new row for relation "audit_log" violates check constraint "g2_block_audit"
+2026-09-15 19:35:48.703 CST [92217] DETAIL:  Failing row contains (35564252-1f3c-4d80-b021-aa4837dfe335, 5d81e55a-928a-4ff3-8c75-07f4132b37b9, f35a7b58-fecc-4867-a047-64f536d6b253, 56a6ad7b-9449-4cd3-9465-a98c39d2f849, user, store_create, store, f35a7b58-fecc-4867-a047-64f536d6b253, null, {"name": "Should Rollback", "currency": "CNY", "platform": "manu..., 34a168b5-0cfa-43d2-a1f6-0a53a408c2be, 2026-09-15 11:35:48.702+00, 2026-09-15 11:35:48.702+00, 1).
+2026-09-15 19:35:48.703 CST [92217] STATEMENT:  INSERT INTO "public"."audit_log" ("id","org_id","store_id","actor_user_id","actor_type","action","entity_type","entity_id","after_summary","request_id","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ActorType"),$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."audit_log"."id", "public"."audit_log"."org_id", "public"."audit_log"."store_id", "public"."audit_log"."actor_user_id", "public"."audit_log"."actor_type"::text, "public"."audit_log"."action", "public"."audit_log"."entity_type", "public"."audit_log"."entity_id", "public"."audit_log"."before_summary", "public"."audit_log"."after_summary", "public"."audit_log"."request_id", "public"."audit_log"."created_at", "public"."audit_log"."updated_at", "public"."audit_log"."row_version"
+2026-09-15 19:35:48.715 CST [92217] ERROR:  new row for relation "audit_log" violates check constraint "g2_block_audit"
+2026-09-15 19:35:48.715 CST [92217] DETAIL:  Failing row contains (a6be11dd-c5f9-48b4-ad10-eb826227fb19, 5d81e55a-928a-4ff3-8c75-07f4132b37b9, e24de9fa-2e4c-4079-bdd8-2224e95bb2aa, 56a6ad7b-9449-4cd3-9465-a98c39d2f849, user, store_update, store, e24de9fa-2e4c-4079-bdd8-2224e95bb2aa, {"name": "CAS-2", "status": "active", "currency": "CNY", "timezo..., {"name": "Should Rollback", "status": "active", "currency": "CNY..., 5a855fb0-f6d4-4c2e-bb81-233c925b4dd7, 2026-09-15 11:35:48.715+00, 2026-09-15 11:35:48.715+00, 1).
+2026-09-15 19:35:48.715 CST [92217] STATEMENT:  INSERT INTO "public"."audit_log" ("id","org_id","store_id","actor_user_id","actor_type","action","entity_type","entity_id","before_summary","after_summary","request_id","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ActorType"),$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "public"."audit_log"."id", "public"."audit_log"."org_id", "public"."audit_log"."store_id", "public"."audit_log"."actor_user_id", "public"."audit_log"."actor_type"::text, "public"."audit_log"."action", "public"."audit_log"."entity_type", "public"."audit_log"."entity_id", "public"."audit_log"."before_summary", "public"."audit_log"."after_summary", "public"."audit_log"."request_id", "public"."audit_log"."created_at", "public"."audit_log"."updated_at", "public"."audit_log"."row_version"
+2026-09-15 19:35:48.721 CST [92217] ERROR:  new row for relation "audit_log" violates check constraint "g2_block_audit"
+2026-09-15 19:35:48.721 CST [92217] DETAIL:  Failing row contains (2eff6b46-4ec0-437c-823d-bc21e19c5d0e, 5d81e55a-928a-4ff3-8c75-07f4132b37b9, e24de9fa-2e4c-4079-bdd8-2224e95bb2aa, 56a6ad7b-9449-4cd3-9465-a98c39d2f849, user, data_source_create, data_source, 7e58f2d3-7dda-4308-b2ec-fd595ffbedaa, null, {"name": "Should Rollback", "adapter_kind": "csv", "source_names..., c248c060-14db-42c1-9217-f83f4d0fa54e, 2026-09-15 11:35:48.721+00, 2026-09-15 11:35:48.721+00, 1).
+2026-09-15 19:35:48.721 CST [92217] STATEMENT:  INSERT INTO "public"."audit_log" ("id","org_id","store_id","actor_user_id","actor_type","action","entity_type","entity_id","after_summary","request_id","created_at","updated_at","row_version") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ActorType"),$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."audit_log"."id", "public"."audit_log"."org_id", "public"."audit_log"."store_id", "public"."audit_log"."actor_user_id", "public"."audit_log"."actor_type"::text, "public"."audit_log"."action", "public"."audit_log"."entity_type", "public"."audit_log"."entity_id", "public"."audit_log"."before_summary", "public"."audit_log"."after_summary", "public"."audit_log"."request_id", "public"."audit_log"."created_at", "public"."audit_log"."updated_at", "public"."audit_log"."row_version"
+2026-09-15 19:35:48.736 CST [92158] ERROR:  new row for relation "job_common" violates check constraint "g2_block_queue"
+2026-09-15 19:35:48.736 CST [92158] DETAIL:  Failing row contains (b43cf655-6e42-47d3-91a9-fbf363456316, import-validate, 0, {"taskId": "76cb30bc-6b0d-492b-9ceb-e4a8f437f274"}, created, 1, 0, 5, f, null, 900, 604800, null, null, null, null, 2026-09-15 19:35:48.735786+08, 2026-09-15 19:35:48.735786+08, null, null, 2026-09-29 19:35:48.735786+08, null, null, standard, null, null, f, f, 0, null, null, null, null).
+2026-09-15 19:35:48.736 CST [92158] STATEMENT:  
+	    INSERT INTO pgboss.job_common (
+	      id,
+	      name,
+	      data,
+	      priority,
+	      start_after,
+	      singleton_key,
+	      singleton_on,
+	      group_id,
+	      group_tier,
+	      expire_seconds,
+	      deletion_seconds,
+	      keep_until,
+	      retry_limit,
+	      retry_delay,
+	      retry_backoff,
+	      retry_delay_max,
+	      policy,
+	      dead_letter,
+	      heartbeat_seconds,
+	      blocked,
+	      blocking,
+	      pending_dependencies
+	    )
+	    SELECT
+	      COALESCE(id, gen_random_uuid()) as id,
+	      'import-validate' as name,
+	      data,
+	      COALESCE(priority, 0) as priority,
+	      j.start_after,
+	      "singletonKey",
+	      CASE
+	        
+	        WHEN "singletonSeconds" IS NOT NULL THEN 'epoch'::timestamp + '1s'::interval * ("singletonSeconds"::float8 * floor(( date_part('epoch', now()) + COALESCE("singletonOffset",0)::float8) / "singletonSeconds"::float8 ))
+	        ELSE NULL
+	        END as singleton_on,
+	      "groupId" as group_id,
+	      "groupTier" as group_tier,
+	      COALESCE("expireInSeconds", q.expire_seconds) as expire_seconds,
+	      COALESCE("deleteAfterSeconds", q.deletion_seconds) as deletion_seconds,
+	      j.start_after + (COALESCE("retentionSeconds", q.retention_seconds) * interval '1s') as keep_until,
+	      COALESCE("retryLimit", q.retry_limit) as retry_limit,
+	      COALESCE("retryDelay", q.retry_delay) as retry_delay,
+	      COALESCE("retryBackoff", q.retry_backoff, false) as retry_backoff,
+	      COALESCE("retryDelayMax", q.retry_delay_max) as retry_delay_max,
+	      q.policy,
+	      COALESCE("deadLetter", q.dead_letter) as dead_letter,
+	      COALESCE("heartbeatSeconds", q.heartbeat_seconds) as heartbeat_seconds,
+	      COALESCE(blocked, false) as blocked,
+	      COALESCE(blocking, false) as blocking,
+	      COALESCE("pendingDependencies", 0) as pending_dependencies
+	    FROM (
+	      SELECT *,
+	        CASE
+	          WHEN (right("startAfter", 1) = 'Z' OR "startAfter" ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}') THEN CAST("startAfter" as timestamp with time zone)
+	          ELSE now() + CAST(COALESCE("startAfter",'0') as interval)
+	          END as start_after
+	      FROM json_to_recordset($1::text::json) as x (
+	        id uuid,
+	        priority integer,
+	        data jsonb,
+	        "startAfter" text,
+	        "retryLimit" integer,
+	        "retryDelay" integer,
+	        "retryDelayMax" integer,
+	        "retryBackoff" boolean,
+	        "singletonKey" text,
+	        "singletonSeconds" integer,
+	        "singletonOffset" integer,
+	        
+	        "groupId" text,
+	        "groupTier" text,
+	        "expireInSeconds" integer,
+	        "deleteAfterSeconds" integer,
+	        "retentionSeconds" integer,
+	        "deadLetter" text,
+	        "heartbeatSeconds" integer,
+	        blocked boolean,
+	        blocking boolean,
+	        "pendingDependencies" integer
+	      )
+	    ) j
+	    JOIN pgboss.queue q ON q.name = 'import-validate'
+	    ON CONFLICT DO NOTHING
+	    RETURNING id
+	  
+2026-09-15 19:38:24.949 CST [91238] LOG:  checkpoint starting: time
+2026-09-15 19:38:52.154 CST [91238] LOG:  checkpoint complete: wrote 272 buffers (1.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=27.197 s, sync=0.007 s, total=27.205 s; sync files=180, longest=0.001 s, average=0.001 s; distance=1352 kB, estimate=8659 kB; lsn=0/6851E20, redo lsn=0/6850DE0
+2026-09-15 19:40:44.606 CST [92501] ERROR:  column "retrycount" does not exist at character 14
+2026-09-15 19:40:44.606 CST [92501] HINT:  Perhaps you meant to reference the column "job.retry_count".
+2026-09-15 19:40:44.606 CST [92501] STATEMENT:  SELECT state,retrycount,output FROM pgboss.job WHERE data->>'taskId'=$1 ORDER BY createdon DESC
+2026-09-15 19:43:24.156 CST [91238] LOG:  checkpoint starting: time
+2026-09-15 19:43:30.159 CST [91238] LOG:  checkpoint complete: wrote 60 buffers (0.4%); 0 WAL file(s) added, 0 removed, 0 recycled; write=5.998 s, sync=0.003 s, total=6.004 s; sync files=42, longest=0.001 s, average=0.001 s; distance=324 kB, estimate=7825 kB; lsn=0/68A22E0, redo lsn=0/68A1E50
+2026-09-15 19:48:24.161 CST [91238] LOG:  checkpoint starting: time
+2026-09-15 19:48:31.132 CST [91238] LOG:  checkpoint complete: wrote 71 buffers (0.4%); 0 WAL file(s) added, 0 removed, 0 recycled; write=6.964 s, sync=0.004 s, total=6.972 s; sync files=48, longest=0.001 s, average=0.001 s; distance=284 kB, estimate=7071 kB; lsn=0/68E9688, redo lsn=0/68E8E98
+2026-09-15 19:53:24.134 CST [91238] LOG:  checkpoint starting: time
+2026-09-15 19:53:24.960 CST [91238] LOG:  checkpoint complete: wrote 9 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.820 s, sync=0.002 s, total=0.827 s; sync files=6, longest=0.001 s, average=0.001 s; distance=61 kB, estimate=6370 kB; lsn=0/68F86B8, redo lsn=0/68F8660
+2026-09-15 19:58:24.963 CST [91238] LOG:  checkpoint starting: time
+2026-09-15 19:58:26.913 CST [91238] LOG:  checkpoint complete: wrote 20 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.946 s, sync=0.002 s, total=1.951 s; sync files=8, longest=0.001 s, average=0.001 s; distance=124 kB, estimate=5745 kB; lsn=0/6918778, redo lsn=0/69178A0
+2026-09-15 19:59:57.854 CST [91236] LOG:  received fast shutdown request
+2026-09-15 19:59:57.855 CST [91236] LOG:  aborting any active transactions
+2026-09-15 19:59:57.855 CST [92221] FATAL:  terminating connection due to administrator command
+2026-09-15 19:59:57.855 CST [92192] FATAL:  terminating connection due to administrator command
+2026-09-15 19:59:57.856 CST [91236] LOG:  background worker "logical replication launcher" (PID 91243) exited with exit code 1
+2026-09-15 19:59:57.857 CST [91238] LOG:  shutting down
+2026-09-15 19:59:57.857 CST [91238] LOG:  checkpoint starting: shutdown immediate
+2026-09-15 19:59:57.858 CST [91238] LOG:  checkpoint complete: wrote 12 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=7, longest=0.001 s, average=0.001 s; distance=56 kB, estimate=5176 kB; lsn=0/6925990, redo lsn=0/6925990
+2026-09-15 19:59:57.862 CST [91236] LOG:  database system is shut down

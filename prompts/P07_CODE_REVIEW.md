@@ -1,8 +1,39 @@
+# P07 · GATE_02 REVIEW 3后修复候选复审（当前）
+
+更新：2026-09-26T14:29:41+08:00。ZCode 已按 G2R3-20260926-01 交回新候选 83e33e7；本首个text块为本轮独立复审完整提示词。
+
+```text
+请接手AI电商运营助手下一轮GATE_02独立复审，只审Phase 2 / TASK-007修复及被触发的005–006边界；不改业务代码、不开始TASK-008、不合并main、不部署。
+根目录：/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用：/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant；总控：/Users/yuyuyu/Documents/AI-Workspace。
+先按序读取：
+1. /Users/yuyuyu/Documents/ChatGPT/产品-开发/AGENTS.md
+2. /Users/yuyuyu/Documents/ChatGPT/产品-开发/.product-os.json
+3. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/STATE_PROTOCOL.md
+4. /Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.md
+5. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/ai-ecommerce-assistant/12_PROGRESS.md
+6. /Users/yuyuyu/Documents/ChatGPT/产品-开发/CODEX_REVIEW_HANDOFF.md
+7. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_3_2026-09-25.md
+8. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/GATE_02_REVIEW_3_EVIDENCE_2026-09-25.json
+9. /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/gate-02-review-3-evidence/README.md
+再读 /Users/yuyuyu/Documents/ChatGPT/产品-开发/prompts/P08_FIX.md 与09_TASKS/08_API_SPEC/04_DATA_MODEL/02_USER_ROLES/11_DEVELOPMENT_RULES及FINAL_DECISIONS/PHASE_PLAN/DEVELOPMENT_HANDOFF中的本轮合同。
+上一轮REVIEW 3=FAIL，冻结a4652611e29d3e316de7f41bf46550fe02a64c2d（业务a6f141f177d5aa4f08077fd93edab7642180cd2b）。ZCode 已按交接编号G2R3-20260926-01交回新候选：业务修复止于 **83e33e7**（本地/远端phase/02-data-ingestion，推送a465261..83e33e7），本轮复审差异 **a465261..实际新HEAD**，管理差异单列且全部保留。先核对磁盘实际HEAD/分支/工作树/执行者，业务差异应仅83e33e7一个提交（src/services/imports.ts、src/app/api/v1/imports/route.ts、tests/integration/imports.test.ts、tests/unit/spool-interruption.test.ts新增、docs/reviews/gate-02-r3fix-evidence/证据）。
+ZCode修复声明（须独立验证，不得采信自测）：①H06/H08统一收尾——spoolUpload全部中止路径共用唯一fail()：销毁上游→onAbort恰一次→等写流close→删未被任务拥有的tmp→原始业务错误落定；修前输入error分支tmp=1/abort=0（R3反例）。②同根因：mkdir由await改mkdirSync，消除监听挂接前异步间隙（间隙内中断以无监听error逃逸→进程崩溃/请求悬挂；截断/断开反例修前实际挂起）。③route请求源error挂接（记UPLOAD_INTERRUPTED并销毁busboy联动文件流收尾）；catch先等spool promise结算再映射——修前multipart"Unexpected end of form"先落定致行超限返回通用VALIDATION_ERROR，修后稳定422 TOO_MANY_ROWS（字节FILE_TOO_LARGE保持）。④G2-M06：bindHttpArchiveForReuse同hash冲突返回已存档首次响应，同key同body并发全201（修前败者200）；无key复用仍200。修前红/修后绿断言矩阵与全套件日志在 ai-ecommerce-assistant/docs/reviews/gate-02-r3fix-evidence/。
+TASK-005/006已经PASS，H03/H04/H05/M05关闭；H07原HIGH事务风险关闭，残余M06 MEDIUM。重点按报告§13复核H06/H08共用中断清理：流error、真实截断multipart/socket取消不留tmp，不留悬挂；写流关闭后清理、错误单次传播，行超限稳定TOO_MANY_ROWS；EACCES/注入ENOSPC、正常上传/权限/文件所有权/队列恢复不回退。核定M06同key同body并发首次响应重放是否处理，保留异body原子409等已过回归。M04本机OSS链已通过，真实云仅延期至TASK-029或启用/部署前，若相关代码变更则重验。
+验证仅用新/tmp归档及新可丢弃PG17；独立实际重跑有效反例和正常路径，依据期望值判断，不用ZCode日志/exit0替代。上轮Docker链阻塞根因已定位为colima VM resolv.conf悬空符号链接（[::1]:53拒绝），宿主侧替换DNS后镜像经daocloud镜像源拉取成功；需补当前候选真实隔离构建/canary/共享卷上传→Worker→签名下载→重启读回；环境处理与业务缺陷分开记录，旧历史不能冒作本轮通过。Schema未变则引用12迁移/M07证据并写适用条件；不重开Phase1或D01，不实现mapping/提交。ZCode另报：主副本.git存在iCloud dataless（本地git archive/cp工具链挂起），如遇同症可改用远端clone同SHA副本。
+保持Owner2026-09-21完整P0决定；独立开户另补合同，不扩本轮范围。
+按15节输出新的PASS/FAIL/BLOCKED报告和机器证据索引，保留全部历史。重读最新12_PROGRESS后更新任务表/当前摘要/唯一状态块/交接/下一提示词，执行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 并读回项目md/html与总控PROJECTS。FAIL回ZCode/P08；PASS仍等Owner明确“放行 Phase 2”。测试、审查、Owner放行、GitHub、部署分开记录。
+```
+
+---
+
+## 历史：本轮复审使用过的提示词（保留原文）
+
 # P07 · GATE_02 REVIEW 2 复修完成后的独立复审入口
 
 2026-09-16：ZCode 已完成 REVIEW 2 剩余修复并推送（0882e06 → eee45c1 → a6f141f）。下方首个 text 块为本轮（072f9ba..实际 HEAD）独立复审完整提示词；REVIEW 2 审查结论保留为历史。
 
 ```text
+Owner 于2026-09-21重申保持最初完整P0中台；历史商品＋反馈等A/B缩减提案不采用，原TASK/合同/Gate不变。线上自助独立开户为另需补合同的新增要求，本轮Gate02复审不实施该功能，不因方向重申重开旧Phase或扩大本轮范围。
 请接手 AI 电商运营助手下一轮 GATE_02 独立复审。只审 Phase 2 / TASK-005–007 的修复差异，不改业务代码，不推进 TASK-008、不合并 main、不部署。
 根目录 /Users/yuyuyu/Documents/ChatGPT/产品-开发；应用目录 /Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant；总控 /Users/yuyuyu/Documents/AI-Workspace。
 依次读取根目录AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、docs/ai-ecommerce-assistant/12_PROGRESS.md、CODEX_REVIEW_HANDOFF.md，以及 /Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_2_2026-09-16.md、/Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/GATE_02_REVIEW_2_EVIDENCE_2026-09-16.json、/Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/gate-02-review-2-evidence/README.md 和 /Users/yuyuyu/Documents/ChatGPT/产品-开发/prompts/P08_FIX.md。合同与决策仍为docs/ai-ecommerce-assistant/09_TASKS.md、08_API_SPEC.md、04_DATA_MODEL.md、02_USER_ROLES.md、11_DEVELOPMENT_RULES.md以及根目录FINAL_DECISIONS.md、PHASE_PLAN.md、DEVELOPMENT_HANDOFF.md。

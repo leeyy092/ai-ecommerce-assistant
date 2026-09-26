@@ -1,0 +1,16 @@
+{
+  "web_process_group_stopped": 91773,
+  "pg_stop_exit": 0,
+  "baseline_private_storage_removed": [
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-wYwbaZ"
+  ],
+  "ports_released": {
+    "55572": true,
+    "3322": true,
+    "3000": true
+  },
+  "temporary_workcopy_removal": "complete",
+  "temporary_workcopy_removed": "/tmp/aiea-g2-review-h99ruviq",
+  "private_credentials_and_cookies_removed": true,
+  "completed_at": "2026-09-15T20:01:42.405222+08:00"
+}

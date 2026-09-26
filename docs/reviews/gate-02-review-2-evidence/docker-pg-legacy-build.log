@@ -1,0 +1,57 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  2.048kB
+
+Step 1/1 : FROM postgres:17
+17: Pulling from library/postgres
+bf7af0229701: Pulling fs layer
+639367129460: Pulling fs layer
+e40fd1d2ec35: Pulling fs layer
+b7dc84d6a4aa: Pulling fs layer
+77e21c5caf16: Pulling fs layer
+c9bb874831b5: Pulling fs layer
+db5f4502682d: Pulling fs layer
+b5062ef65109: Pulling fs layer
+232aaadd6958: Pulling fs layer
+c6154fb0eb00: Pulling fs layer
+a9d76beabaee: Pulling fs layer
+6a4fdeb764c3: Pulling fs layer
+7a3d617a86b0: Pulling fs layer
+c9c6f60102f8: Pulling fs layer
+0ce00f052b08: Download complete
+639367129460: Download complete
+c9bb874831b5: Download complete
+b5062ef65109: Download complete
+e40fd1d2ec35: Download complete
+232aaadd6958: Download complete
+c9c6f60102f8: Download complete
+7a3d617a86b0: Download complete
+c6154fb0eb00: Download complete
+a9d76beabaee: Download complete
+db5f4502682d: Download complete
+099eb6d96a4e: Download complete
+b7dc84d6a4aa: Download complete
+6a4fdeb764c3: Download complete
+bf7af0229701: Download complete
+639367129460: Pull complete
+bf7af0229701: Pull complete
+b7dc84d6a4aa: Pull complete
+db5f4502682d: Pull complete
+6a4fdeb764c3: Pull complete
+c9c6f60102f8: Pull complete
+7a3d617a86b0: Pull complete
+a9d76beabaee: Pull complete
+77e21c5caf16: Download complete
+c9bb874831b5: Pull complete
+77e21c5caf16: Pull complete
+b5062ef65109: Pull complete
+e40fd1d2ec35: Pull complete
+232aaadd6958: Pull complete
+c6154fb0eb00: Pull complete
+Digest: sha256:67f41722b7a8cbdb868a44a4995c846eddfdc2973bccb291ce937dce88ad5675
+Status: Downloaded newer image for postgres:17
+ ---> 67f41722b7a8
+Successfully built 67f41722b7a8
+Successfully tagged aiea-g2r2-pg:17

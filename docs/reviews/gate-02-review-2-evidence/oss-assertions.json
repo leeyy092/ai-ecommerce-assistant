@@ -1,0 +1,52 @@
+{
+  "results": [
+    {
+      "name": "M04 isolated object adapter put/get/move works",
+      "expected": true,
+      "actual": true,
+      "status": "PASS"
+    },
+    {
+      "name": "M04 actual spool then strict read works with OSS",
+      "expected": true,
+      "status": "FAIL",
+      "error": "NoSuchKey"
+    },
+    {
+      "name": "M04 failed upload cleanup removes local temporary object",
+      "expected": true,
+      "actual": false,
+      "status": "FAIL",
+      "error": "Expected values to be strictly deep-equal:\n\nfalse !== true\n"
+    }
+  ],
+  "calls": [
+    [
+      "put",
+      "test/a"
+    ],
+    [
+      "copy",
+      "test/b",
+      "test/a"
+    ],
+    [
+      "delete",
+      "test/a"
+    ],
+    [
+      "get",
+      "test/b"
+    ],
+    [
+      "getStream",
+      "tmp/upload-c27f3e65-5162-4317-adab-a3a0c64599e2.csv"
+    ],
+    [
+      "delete",
+      "tmp/upload-c27f3e65-5162-4317-adab-a3a0c64599e2.csv"
+    ]
+  ],
+  "localSpoolExists": true,
+  "note": "Injected client is a memory-backed object store; no cloud credentials or cloud requests used."
+}

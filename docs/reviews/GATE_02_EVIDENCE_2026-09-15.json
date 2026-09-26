@@ -1,0 +1,715 @@
+{
+  "schema_version": 1,
+  "gate": "CODEX_REVIEW_GATE_02",
+  "date": "2026-09-15",
+  "reviewer": "Codex",
+  "report": "CODEX_REVIEW_GATE_02_2026-09-15.md",
+  "report_sha256": "0d46044cc8aba012804fa77b080777c8a568ad03a7be8a0ac477c4ab0ce1de42",
+  "baseline": "4c7e95b925c2b04aa2c1116979678cac7af091f2",
+  "candidate": "ce5f28699910e19310b790d31a6e8871a78b5e58",
+  "branch": "phase/02-data-ingestion",
+  "scope": [
+    "TASK-005",
+    "TASK-006",
+    "TASK-007"
+  ],
+  "verdict": "FAIL",
+  "task_results": {
+    "TASK-005": "FAIL",
+    "TASK-006": "FAIL",
+    "TASK-007": "FAIL"
+  },
+  "severity_counts": {
+    "CRITICAL": 0,
+    "HIGH": 9,
+    "MEDIUM": 4,
+    "LOW": 2
+  },
+  "findings": [
+    {
+      "id": "G2-H01",
+      "severity": "HIGH",
+      "title": "客服数据源摘要返回经营统计，覆盖历史还被重复累计",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "http-probes.json"
+      ]
+    },
+    {
+      "id": "G2-H02",
+      "severity": "HIGH",
+      "title": "店铺 expected_version 不是原子版本锁",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "http-probes.json"
+      ]
+    },
+    {
+      "id": "G2-H03",
+      "severity": "HIGH",
+      "title": "Adapter 接受超界数值、非法日期，并补造来源更新时间",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "adapter-probes.json"
+      ]
+    },
+    {
+      "id": "G2-H04",
+      "severity": "HIGH",
+      "title": "TASK-006 没有 coverage manifest，黄金样本也未遵循独立规范",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "adapter-probes.json"
+      ]
+    },
+    {
+      "id": "G2-H05",
+      "severity": "HIGH",
+      "title": "上传、查询、下载与 Worker 执行没有贯通相同权限",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "http-probes.json",
+        "worker-probes.json"
+      ]
+    },
+    {
+      "id": "G2-H06",
+      "severity": "HIGH",
+      "title": "HTTP 上传在限额检查前已经完整缓冲，行数按物理换行误算",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "wire-probes.json",
+        "http-probes.json"
+      ]
+    },
+    {
+      "id": "G2-H07",
+      "severity": "HIGH",
+      "title": "并发内容幂等和 Idempotency-Key 合同都失效",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "http-probes.json",
+        "extra-probes.json"
+      ]
+    },
+    {
+      "id": "G2-H08",
+      "severity": "HIGH",
+      "title": "文件、投递和 Worker 重试的失败窗口会永久遗留任务",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "http-probes.json",
+        "worker-probes.json"
+      ]
+    },
+    {
+      "id": "G2-H09",
+      "severity": "HIGH",
+      "title": "新私有存储没有接入 Web/Worker 运行配置及打包排除",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "static-probes.json",
+        "worker-probes.json",
+        "worker-compose-environment.log",
+        "storage-env-probe.log"
+      ]
+    },
+    {
+      "id": "G2-M01",
+      "severity": "MEDIUM",
+      "title": "上传字段与既定客户端合同不一致",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "http-probes.json"
+      ]
+    },
+    {
+      "id": "G2-M02",
+      "severity": "MEDIUM",
+      "title": "店铺同名约束只有顺序创建检查",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "http-probes.json",
+        "extra-probes.json"
+      ]
+    },
+    {
+      "id": "G2-M03",
+      "severity": "MEDIUM",
+      "title": "上传入口没有文件格式/编码拒绝及已分配的限流",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "http-probes.json",
+        "extra-probes.json",
+        "source-excerpts.txt"
+      ]
+    },
+    {
+      "id": "G2-M04",
+      "severity": "MEDIUM",
+      "title": "OSS 适配未实现，不能将其默认视为已批准延期",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "source-excerpts.txt"
+      ]
+    },
+    {
+      "id": "G2-L01",
+      "severity": "LOW",
+      "title": "新增了两份未使用的 Auth/DB URL 重复源码",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "static-probes.json"
+      ]
+    },
+    {
+      "id": "G2-L02",
+      "severity": "LOW",
+      "title": "本地签名默认有效期为 10 分钟",
+      "status": "OPEN",
+      "phase": 2,
+      "evidence": [
+        "source-excerpts.txt"
+      ]
+    }
+  ],
+  "executions": [
+    {
+      "name": "install",
+      "args": [
+        "pnpm",
+        "install",
+        "--offline",
+        "--frozen-lockfile"
+      ],
+      "exit": 0,
+      "seconds": 7.88,
+      "product_status": "PASS"
+    },
+    {
+      "name": "typecheck",
+      "args": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exit": 0,
+      "seconds": 5.03,
+      "product_status": "PASS"
+    },
+    {
+      "name": "unit",
+      "args": [
+        "pnpm",
+        "test"
+      ],
+      "exit": 0,
+      "seconds": 3.94,
+      "product_status": "PASS"
+    },
+    {
+      "name": "migrate",
+      "args": [
+        "pnpm",
+        "exec",
+        "prisma",
+        "migrate",
+        "deploy"
+      ],
+      "exit": 0,
+      "seconds": 2.29,
+      "product_status": "PASS"
+    },
+    {
+      "name": "integration",
+      "args": [
+        "pnpm",
+        "test:integration"
+      ],
+      "exit": 0,
+      "seconds": 16.38,
+      "product_status": "PASS"
+    },
+    {
+      "name": "build",
+      "args": [
+        "pnpm",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 15.97,
+      "product_status": "PASS"
+    },
+    {
+      "name": "e2e",
+      "args": [
+        "pnpm",
+        "test:e2e"
+      ],
+      "exit": 0,
+      "seconds": 8.82,
+      "product_status": "PASS"
+    },
+    {
+      "name": "review-adapter",
+      "args": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "review-adapter.ts"
+      ],
+      "exit": 0,
+      "seconds": 0.55,
+      "product_status": "FAIL_EVIDENCE_RECORDED"
+    },
+    {
+      "name": "review-http",
+      "args": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "review-http.ts"
+      ],
+      "exit": 0,
+      "seconds": 2.77,
+      "product_status": "FAIL_EVIDENCE_RECORDED"
+    },
+    {
+      "name": "review-worker",
+      "args": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "review-worker.ts"
+      ],
+      "exit": 0,
+      "seconds": 18.65,
+      "product_status": "FAIL_EVIDENCE_RECORDED"
+    },
+    {
+      "name": "review-wire",
+      "args": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "review-wire.ts"
+      ],
+      "exit": 0,
+      "seconds": 1.59,
+      "product_status": "FAIL_EVIDENCE_RECORDED"
+    },
+    {
+      "name": "review-extra",
+      "args": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "review-extra.ts"
+      ],
+      "exit": 0,
+      "seconds": 0.99,
+      "product_status": "FAIL_EVIDENCE_RECORDED"
+    }
+  ],
+  "inherited_evidence": {
+    "report": "CODEX_REVIEW_GATE_01_REVIEW_5_2026-09-14.md",
+    "status": "RETAIN_CLOSED",
+    "condition": "Unchanged Schema/migration/auth/connection behavior only; corresponding regressions required if changed. M07 custom SQL maintenance remains mandatory.",
+    "not_rerun_this_round": [
+      "8-to-10 upgrade and full bad-row matrix",
+      "Phase1 Docker dual-password chain",
+      "full historical security review"
+    ]
+  },
+  "not_run": [
+    "Phase2 full Docker file chain",
+    "real OSS cloud IO",
+    "deployment",
+    "real customer trial",
+    "future TASK008+ business pipeline"
+  ],
+  "execution_deviations_accepted": [
+    "pg-boss v12 array work handler verified by built worker",
+    "esbuild import.meta.url shim verified by build and worker",
+    "same-origin multipart guard verified; stream limits independently FAIL"
+  ],
+  "owner_phase2_release": false,
+  "next_owner": "ZCode",
+  "next_prompt": "../../prompts/P08_FIX.md",
+  "evidence_directory": "gate-02-evidence",
+  "artifacts": [
+    {
+      "path": "12_PROGRESS.md.before",
+      "bytes": 88543,
+      "sha256": "4a08b0b986d6b000f6204c6ca3379956e3fccfda9f2319968ae8091b6f1a2595"
+    },
+    {
+      "path": "CODEX_REVIEW_HANDOFF.md.before",
+      "bytes": 49473,
+      "sha256": "5ff69b14dbfbce5dfa2af9753e114607d6d00d5641c55f9bf22e7f50c719cd1a"
+    },
+    {
+      "path": "P07_CODE_REVIEW.md.before",
+      "bytes": 4484,
+      "sha256": "bfad67f0d10f9780b1d309ec0c29c90497e0370b3218887ebbec5cf49334cc77"
+    },
+    {
+      "path": "P08_FIX.md.before",
+      "bytes": 22806,
+      "sha256": "ed7b43d1af9f8b9215944b8b77bc5cfbd799a492144aab0a19f24d5c280b1458"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4491,
+      "sha256": "cd58b3b12021a06bbb74039475a0b3e9e5ff174b927967dacdc4dd2f50661bf7"
+    },
+    {
+      "path": "adapter-probes.json",
+      "bytes": 7083,
+      "sha256": "bf253e73508ac88335d51c4499ce683a98bc71197cbbf456a6725885c74393fa"
+    },
+    {
+      "path": "build.json",
+      "bytes": 95,
+      "sha256": "d4625c762e2cd6f620d458302fc849c5dbfe5e1f484d2737a3adcd782c8ccff9"
+    },
+    {
+      "path": "build.log",
+      "bytes": 1758,
+      "sha256": "dfcdb2cbddeaa515c8db5bee8a7917d0093d7561d648447d2d72db7138794cc3"
+    },
+    {
+      "path": "cleanup.json",
+      "bytes": 475,
+      "sha256": "01802b89014b02f4d957315970ddcc9f13c5d067772f4eb094a712fe2822cf6b"
+    },
+    {
+      "path": "createdb.json",
+      "bytes": 178,
+      "sha256": "9952663c4eed511ea7941b9cf65505ed4af2d1238dc7968373fbd0cbc7d72580"
+    },
+    {
+      "path": "createdb.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "diff-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "e2e.json",
+      "bytes": 95,
+      "sha256": "16275fca87c66c0fe8e58e05dec7c5daee26128782fc7fc7d8f6f78357070b97"
+    },
+    {
+      "path": "e2e.log",
+      "bytes": 2375,
+      "sha256": "654614f7703708233c48bcfc661b8a58a5c77a08f246fdfd6679142730ead0dd"
+    },
+    {
+      "path": "extra-probes.json",
+      "bytes": 2169,
+      "sha256": "46676a293d66ddc0ee1f309dd52b385652882901c2781b8cc0c8bda835b6a7b5"
+    },
+    {
+      "path": "final-verification.json",
+      "bytes": 3059,
+      "sha256": "b54fdc74714d8e81aa538acceeeceb9ee2a9ea15f71c254f9bcb82dcd3b53c1e"
+    },
+    {
+      "path": "http-probes-partial.json",
+      "bytes": 5809,
+      "sha256": "1a08a7ab283040c1be29c8963fe69538fec96546a93bc27d3e14db0875103d61"
+    },
+    {
+      "path": "http-probes.json",
+      "bytes": 16362,
+      "sha256": "b82d73a54cf467222ccb654df2d33e04ea8d5173491f1366cfdb79e1f39d5f79"
+    },
+    {
+      "path": "initdb.json",
+      "bytes": 227,
+      "sha256": "98a4f84b38c949ee7a57d757c231ed29d2d7cb67c1e21e096b8481f07c31c9b2"
+    },
+    {
+      "path": "initdb.log",
+      "bytes": 832,
+      "sha256": "3f67bb97642459235ab472c01dfe767896b3e7f76a6dd42756f9ad2d9e7bf490"
+    },
+    {
+      "path": "initial-diff.patch",
+      "bytes": 1237,
+      "sha256": "7dc11367e2b90cbc7e63d674a1cbca9726469ab9280d8433cabd3b287e07c3f9"
+    },
+    {
+      "path": "install.json",
+      "bytes": 140,
+      "sha256": "366ccd5364e330c2b61308d0c054f94075936b750ce85a88e373d8b466ede34d"
+    },
+    {
+      "path": "install.log",
+      "bytes": 2145,
+      "sha256": "b477e023a94ca9baf001db18cd394a53dd4cae8dbb4e592743a579e47ec54dfb"
+    },
+    {
+      "path": "integration.json",
+      "bytes": 112,
+      "sha256": "5056a512864d83242c267bd961e17c042d8af4135c87b9a6cabc0050619f539f"
+    },
+    {
+      "path": "integration.log",
+      "bytes": 4561,
+      "sha256": "ea6f62fc873282d549a8257c4f793f226baf710c87500e57a4e75a7d56dcfd18"
+    },
+    {
+      "path": "management-write.json",
+      "bytes": 269,
+      "sha256": "5b287aed0478a50a016a741303e8e385e160dfa80324a9a6813198e55538087b"
+    },
+    {
+      "path": "migrate.json",
+      "bytes": 138,
+      "sha256": "69b1b2e49ece6a0afc735849aa5729269cd885fea46e95da4bba2d22a0f3e71f"
+    },
+    {
+      "path": "migrate.log",
+      "bytes": 2484,
+      "sha256": "e8c2defa237be9ca224f1558ff94ec4fba7f53998d527d9494b1766b539fc501"
+    },
+    {
+      "path": "pg-start.json",
+      "bytes": 230,
+      "sha256": "2dc7631b364ded23f413d7be119558a0c2343ad9846ff3f71c17b09268856090"
+    },
+    {
+      "path": "pg-start.log",
+      "bytes": 52,
+      "sha256": "66afd0411ccc09366e99fdd99b85f21899c8d2d064f5835126859618802153ad"
+    },
+    {
+      "path": "pg-stop.log",
+      "bytes": 56,
+      "sha256": "ca19178a35ab4153b75b494963b66ce8243e1b94c173107c87b44d09db23652d"
+    },
+    {
+      "path": "postgres.log",
+      "bytes": 41564,
+      "sha256": "39bf779d8f279eca2b6c76ad6fda446fde586adcb711d9ce406ab076e95c13c7"
+    },
+    {
+      "path": "pre-write-verification.json",
+      "bytes": 129,
+      "sha256": "4deee3b58f82a3304e5b2f042e778ea91d0cd8b51b076c2a52b7651f70e093e2"
+    },
+    {
+      "path": "product-os-sync.log",
+      "bytes": 101,
+      "sha256": "302956467127dd125c458a5209d1e77a6b5e9f5bb52021281b50de48c718cbf1"
+    },
+    {
+      "path": "remote-refs-final.txt",
+      "bytes": 133,
+      "sha256": "c65c5ad01a1b8893899ea953f253e12fbde6ff494f26d9842bce355a05484708"
+    },
+    {
+      "path": "remote-refs.txt",
+      "bytes": 133,
+      "sha256": "c65c5ad01a1b8893899ea953f253e12fbde6ff494f26d9842bce355a05484708"
+    },
+    {
+      "path": "review-adapter.json",
+      "bytes": 138,
+      "sha256": "4719d765b1716f86e9c0cb97c8d94c48c5dd8e85ab6f1e0f5cc64b6b64495fa0"
+    },
+    {
+      "path": "review-adapter.log",
+      "bytes": 694,
+      "sha256": "6da742fcc74dc34c87770c9ff96f44b69d89e05cb5ae9e5b5c7cad4a382eebc9"
+    },
+    {
+      "path": "review-extra.json",
+      "bytes": 134,
+      "sha256": "f28c3b9a0939515a8724e95be164bad8619bddee39652c88bab0e6b746dd0c56"
+    },
+    {
+      "path": "review-extra.log",
+      "bytes": 1768,
+      "sha256": "0c5d68658dab270b70ca3faa5311e934f95cfb9d346c7e45a580a1b562d7c0ed"
+    },
+    {
+      "path": "review-http-setup-cookie-mode.log",
+      "bytes": 689,
+      "sha256": "67fde067c181d1255351367b45a92e448f4603dd7f6b5adfc159359860167559"
+    },
+    {
+      "path": "review-http-setup-enum.log",
+      "bytes": 2637,
+      "sha256": "dc5153ebee941ca58e01c61a7b33ddf2340defbb743dfa3dddeae9228d9dfd6f"
+    },
+    {
+      "path": "review-http-setup-rate-limit.log",
+      "bytes": 797,
+      "sha256": "b08c7bc25cedcf4c74c616faf8ffaa649ee89d4e0b71961b298a32c5e27ead24"
+    },
+    {
+      "path": "review-http.json",
+      "bytes": 132,
+      "sha256": "fa60b7dc2575225883975b53c22d312cf7b02134d2e23e21f1bed9a48b772d00"
+    },
+    {
+      "path": "review-http.log",
+      "bytes": 1001,
+      "sha256": "a452c96e698103bd5ed7ca9e9edd2dc508d9f7263866b01b183ab38f2f04cf85"
+    },
+    {
+      "path": "review-wire.json",
+      "bytes": 132,
+      "sha256": "8d53ca0ec15ebac87a7d9cf146e35259fc57724dbe7846ce78d29bb7300449ac"
+    },
+    {
+      "path": "review-wire.log",
+      "bytes": 302,
+      "sha256": "45b5debda9c64745b2e4ee5d2098200a27b7c7d7dac6b2bbd2da5b50b67f5084"
+    },
+    {
+      "path": "review-worker-setup-columns.log",
+      "bytes": 1202,
+      "sha256": "5d2c24cb53368a5db1d8a892557956eeb66be1794d6afd1ff44c9345d14579c5"
+    },
+    {
+      "path": "review-worker.json",
+      "bytes": 137,
+      "sha256": "7c43c40a693590fff81e149c66847dce3c512484312773706762a68363540e74"
+    },
+    {
+      "path": "review-worker.log",
+      "bytes": 3592,
+      "sha256": "865ef1ca83ef5ca0a5557ba8ca370eb2204a7aee42b9decc94aa36847c798781"
+    },
+    {
+      "path": "scripts/bootstrap.py",
+      "bytes": 1832,
+      "sha256": "46db0bf2a88a0724b887da94b6936d872896b8acdc4832e410be5af0d59e7a16"
+    },
+    {
+      "path": "scripts/review-adapter.ts",
+      "bytes": 3706,
+      "sha256": "7c476638a70ac4b3b7375f6a7c3902d2b48bb3322606d81e4bbadde1e008dee4"
+    },
+    {
+      "path": "scripts/review-extra.ts",
+      "bytes": 2967,
+      "sha256": "f05f2d73a986bd6afc1eaa3fd2c2cbe19a28b5ec5e04f11cc73d294044a4be29"
+    },
+    {
+      "path": "scripts/review-http.ts",
+      "bytes": 14092,
+      "sha256": "f920d2e186b68513fcff822f11819e73f3da933dcdcdc4457ce219fda8608e08"
+    },
+    {
+      "path": "scripts/review-wire.ts",
+      "bytes": 1676,
+      "sha256": "588eef16e736f3b262ea5d3f97cc9dec0a33101564b090483f179de04a3fdf76"
+    },
+    {
+      "path": "scripts/review-worker.ts",
+      "bytes": 4279,
+      "sha256": "fef981dc93c33668b45a54bc6aef1d7205f3ce0aee6d5d2a73e24c46e143e2a6"
+    },
+    {
+      "path": "scripts/run.py",
+      "bytes": 2592,
+      "sha256": "ab16c5862fec9b335e88e1937af6dbf51be0d5eeb16b2144487295a83bfe2405"
+    },
+    {
+      "path": "secrets-source.json",
+      "bytes": 332,
+      "sha256": "96d49e15f5fddab670012f7b432c67b39ed0c868356af8cf5cb1ce35e30eca29"
+    },
+    {
+      "path": "snapshot.json",
+      "bytes": 71520,
+      "sha256": "ae4022f09f4156606d441e2ffac594b9e0b0991ee1957713b02066621b3cab3b"
+    },
+    {
+      "path": "source-excerpts.txt",
+      "bytes": 36154,
+      "sha256": "adac5af46638d7e0cffc2bdcff9e1f8d36eb1f13a4dac9a03b25c66b1f874609"
+    },
+    {
+      "path": "start.json",
+      "bytes": 295,
+      "sha256": "e04bb5283ad235855550847e955e8e60b4bd05913494828f2bed076419b945ef"
+    },
+    {
+      "path": "static-probes.json",
+      "bytes": 4424,
+      "sha256": "d4f86d02688efb655168d5a08a8ef02d98ffdd070cc182fcf2f631c89009662e"
+    },
+    {
+      "path": "storage-env-probe.log",
+      "bytes": 223,
+      "sha256": "28e567b47b29dd3acd1fbdabf6158d94d1e84ca1a4acbdad1514ed7aefdde186"
+    },
+    {
+      "path": "typecheck.json",
+      "bytes": 102,
+      "sha256": "5d4f369a2b349d980675430c5fdc28d9c94a11c404fb2bf48d96768bf8f344c6"
+    },
+    {
+      "path": "typecheck.log",
+      "bytes": 123,
+      "sha256": "810a2163e8cb2b5578b8653c7276d0a8d0b58512224f9478c07fe8d5ca941a6b"
+    },
+    {
+      "path": "unit.json",
+      "bytes": 92,
+      "sha256": "fdc1654266fb11d0b93edbd704b616d91a918dd9562a64f09cff7123d2f26473"
+    },
+    {
+      "path": "unit.log",
+      "bytes": 535,
+      "sha256": "80447916a92a37998210635af9a88c59eafde9ed41bd98fc3d8a0af00eca6739"
+    },
+    {
+      "path": "web.log",
+      "bytes": 2175,
+      "sha256": "8bd65ec65122f4589f4489d0d2d6dda4d342bf3ff3870a1eaf28632832a4a36e"
+    },
+    {
+      "path": "wire-probes.json",
+      "bytes": 393,
+      "sha256": "b007181f763ba70b1bb7c8e3de75eb2ca5d61d6428dc5ffe62cfadd5ac48558a"
+    },
+    {
+      "path": "worker-built.log",
+      "bytes": 2641,
+      "sha256": "95572e6091fef9d55f0d41b65349c9feb51630c40cca26d150cc1f01158f7f8c"
+    },
+    {
+      "path": "worker-compose-environment.log",
+      "bytes": 1315,
+      "sha256": "3ed1de0cd6be3e35661dae9a6b1afbb4e1e745440a0980e3032f93cb4c3a26f0"
+    },
+    {
+      "path": "worker-probes.json",
+      "bytes": 4487,
+      "sha256": "ee6bc10f20065c68f4b7b8d794e7f393ad435954b5e0ba5807e447dc83867219"
+    }
+  ]
+}

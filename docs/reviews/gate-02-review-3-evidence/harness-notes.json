@@ -1,0 +1,25 @@
+{
+  "harness_only": [
+    "Initial HTTP fixture cookies used development NODE_ENV against next start production; corrected probe NODE_ENV and reran HTTP/wire/recovery. Initial dependent probes had no actors file and do not count as product failures.",
+    "Added Mock oracle initially passed object, corrected to JSON string required by DataAdapter; final 44 assertions pass.",
+    "Prisma CoverageChannel uses default_channel mapped to SQL default; corrected independent date fixture; final 5 assertions pass.",
+    "Full OSS chain loads global env validation; added explicitly synthetic OSS values with injected client, zero cloud calls; final 5 assertions pass.",
+    "Python3.9 tarfile.extractall lacks filter argument; verified archive member paths before extraction.",
+    "Official Node distribution sha verified; initial SSH clone URL missing git user corrected."
+  ],
+  "not_product_failures": true,
+  "retained_failure_logs": [
+    "harness-devmode-http.log",
+    "harness-devmode-wire.log",
+    "harness-devmode-recovery.log",
+    "clone.log"
+  ],
+  "excluded_setup_logs": [
+    "adapter-expanded-probes.json",
+    "adapter-expanded-probes.log",
+    "m05-probes.json",
+    "m05-probes.log",
+    "oss-expanded-probes.json",
+    "oss-expanded-probes.log"
+  ]
+}

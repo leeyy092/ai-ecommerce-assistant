@@ -1,0 +1,131 @@
+   1 /**
+   2  * 独立 Worker 入口（TASK-001）。
+   3  * 职责限定：启动 → 校验环境 → PostgreSQL 连通检查 → 周期心跳状态 → 正常退出。
+   4  * pg-boss 队列、业务 handler 与 dispatcher 在 TASK-007 起实施，
+   5  * 此处不注册空的导入/AI/日报任务冒充可用。
+   6  */
+   7 import pino from "pino";
+   8 import { loadDotEnvIfPresent } from "../lib/dotenv";
+   9 import { EnvValidationError, loadEnv } from "../lib/env";
+  10 import { createDbPool, pingDb } from "../lib/db";
+  11 import {
+  12   HEARTBEAT_INTERVAL_MS,
+  13   writeWorkerStatus,
+  14   type WorkerStatus,
+  15 } from "../lib/workerStatus";
+  16 
+  17 const startedAt = new Date().toISOString();
+  18 const pid = process.pid;
+  19 
+  20 function beat(state: WorkerStatus["state"], dbOk: boolean): WorkerStatus {
+  21   const status: WorkerStatus = {
+  22     state,
+  23     pid,
+  24     started_at: startedAt,
+  25     last_beat_at: new Date().toISOString(),
+  26     db_ok: dbOk,
+  27   };
+  28   writeWorkerStatus(status);
+  29   return status;
+  30 }
+  31 
+  32 async function main(): Promise<number> {
+  33   loadDotEnvIfPresent();
+  34 
+  35   let env;
+  36   try {
+  37     env = loadEnv();
+  38   } catch (error) {
+  39     if (error instanceof EnvValidationError) {
+  40       process.stderr.write(`${error.message}\n`);
+  41     } else {
+  42       process.stderr.write("环境变量校验发生未知错误\n");
+  43     }
+  44     beat("failed", false);
+  45     return 1;
+  46   }
+  47 
+  48   const logger = pino({ level: env.logLevel, base: { service: "worker" } });
+  49   logger.info("worker 启动中：开始 PostgreSQL 连通检查");
+  50 
+  51   beat("starting", false);
+  52   const pool = createDbPool(env);
+  53   const dbOk = await pingDb(pool, 5000);
+  54   if (!dbOk) {
+  55     logger.error(
+  56       "worker 启动失败：无法连接 PostgreSQL（DATABASE_URL 指向的数据库不可达或凭据无效）",
+  57     );
+  58     beat("failed", false);
+  59     await pool.end().catch(() => {});
+  60     return 1;
+  61   }
+  62 
+  63   logger.info("worker 运行中：数据库连接正常，心跳间隔 %dms", HEARTBEAT_INTERVAL_MS);
+  64   beat("running", true);
+  65 
+  66   // TASK-007：pg-boss 持久队列与 dispatcher——注册 validate/commit 边界
+  67   const { getBoss, ensureQueues, QUEUE_VALIDATE, QUEUE_COMMIT } = await import("./queue");
+  68   const { handleValidateTask, handleCommitTask } = await import("./handlers/imports");
+  69   const { sweepDispatches } = await import("./dispatcher");
+  70   try {
+  71     const boss = await getBoss();
+  72     await ensureQueues(boss);
+  73     await boss.work<{ taskId: string }>(QUEUE_VALIDATE, async (jobs) => {
+  74       const results = [];
+  75       for (const job of jobs) {
+  76         logger.info({ job_id: job.id, task: job.data }, "import-validate 开始");
+  77         // pg-boss 12 work 类型未暴露 retry 计数，运行时字段存在（重试耗尽判定用）
+  78         const retry = job as typeof job & { retryCount?: number; retryLimit?: number };
+  79         const result = await handleValidateTask(job.data, {
+  80           retryCount: retry.retryCount,
+  81           retryLimit: retry.retryLimit,
+  82         });
+  83         logger.info({ job_id: job.id, ...result }, "import-validate 完成");
+  84         results.push(result);
+  85       }
+  86       return results;
+  87     });
+  88     await boss.work<{ taskId: string }>(QUEUE_COMMIT, async (jobs) => {
+  89       for (const job of jobs) {
+  90         logger.warn({ job_id: job.id, task: job.data }, "import-commit 边界被触发（TASK-008 实现前不应入队）");
+  91         await handleCommitTask(job.data);
+  92       }
+  93     });
+  94     logger.info("pg-boss 队列就绪：%s / %s", QUEUE_VALIDATE, QUEUE_COMMIT);
+  95   } catch (error) {
+  96     logger.error({ err: error instanceof Error ? error.message : error }, "pg-boss 队列初始化失败");
+  97     beat("failed", true);
+  98     await pool.end().catch(() => {});
+  99     return 1;
+ 100   }
+ 101 
+ 102   // G2-H08：dispatcher 周期兜底——投递丢失窗口与悬挂 validating 的恢复边界
+ 103   const dispatchTimer = setInterval(() => {
+ 104     void sweepDispatches().catch((error: unknown) => {
+ 105       logger.warn({ err: error instanceof Error ? error.message : error }, "dispatcher sweep 失败（下轮重试）");
+ 106     });
+ 107   }, 30_000);
+ 108   void sweepDispatches().catch(() => undefined);
+ 109 
+ 110   const heartbeat = setInterval(() => beat("running", true), HEARTBEAT_INTERVAL_MS);
+ 111 
+ 112   let stopping = false;
+ 113   const shutdown = (signal: string) => {
+ 114     if (stopping) return;
+ 115     stopping = true;
+ 116     clearInterval(heartbeat);
+ 117     clearInterval(dispatchTimer);
+ 118     logger.info({ signal }, "worker 收到退出信号，正在停止");
+ 119     beat("stopped", true);
+ 120     void pool.end().catch(() => {});
+ 121     process.exit(0);
+ 122   };
+ 123   process.on("SIGINT", () => shutdown("SIGINT"));
+ 124   process.on("SIGTERM", () => shutdown("SIGTERM"));
+ 125 
+ 126   return 0;
+ 127 }
+ 128 
+ 129 main().then((code) => {
+ 130   if (code !== 0) process.exit(code);
+ 131 });

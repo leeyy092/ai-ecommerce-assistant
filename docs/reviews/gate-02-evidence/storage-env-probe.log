@@ -1,0 +1,1 @@
+{"error":"EnvValidationError","message":"缺少或非法的启动必需环境变量：BETTER_AUTH_SECRET, BETTER_AUTH_URL。请检查 .env（参考 .env.example）或进程环境；出于安全考虑不输出变量值。"}

@@ -1,0 +1,13 @@
+worker-1  | {"level":30,"time":1789538454956,"service":"worker","msg":"worker 启动中：开始 PostgreSQL 连通检查"}
+worker-1  | {"level":30,"time":1789538454995,"service":"worker","msg":"worker 运行中：数据库连接正常，心跳间隔 5000ms"}
+worker-1  | {"level":30,"time":1789538455072,"service":"worker","msg":"pg-boss 队列就绪：import-validate / import-commit"}
+worker-1  | (node:1) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+worker-1  | (Use `node --trace-deprecation ...` to show where the warning was created)
+worker-1  | {"level":30,"time":1789538503167,"service":"worker","job_id":"6471cd35-b17b-4081-a71b-464009268b26","task":{"taskId":"1cd5199d-66a4-492b-b464-74cf67a6ce2e"},"msg":"import-validate 开始"}
+worker-1  | {"level":30,"time":1789538503228,"service":"worker","job_id":"6471cd35-b17b-4081-a71b-464009268b26","status":"preview_ready","valid":2,"errors":0,"msg":"import-validate 完成"}
+worker-1  | {"level":30,"time":1789538504073,"service":"worker","signal":"SIGTERM","msg":"worker 收到退出信号，正在停止"}
+worker-1  | {"level":30,"time":1789538504547,"service":"worker","msg":"worker 启动中：开始 PostgreSQL 连通检查"}
+worker-1  | {"level":30,"time":1789538504569,"service":"worker","msg":"worker 运行中：数据库连接正常，心跳间隔 5000ms"}
+worker-1  | {"level":30,"time":1789538504617,"service":"worker","msg":"pg-boss 队列就绪：import-validate / import-commit"}
+worker-1  | (node:1) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+worker-1  | (Use `node --trace-deprecation ...` to show where the warning was created)

@@ -1,0 +1,197 @@
+   1 /**
+   2  * 私有存储适配器（TASK-007；20_FILE_STORAGE 契约）。
+   3  * - 双驱动：STORAGE_DRIVER=local（默认，开发）→ 私有根目录 <app>/.data/private；
+   4  *   STORAGE_DRIVER=oss → 私有阿里云 OSS（src/storage/oss.ts，M04 可测试适配）。
+   5  *   全部对象位于私有根，绝不位于 public/（验收：客户消息不进 public）。
+   6  * - 下载走 HMAC 签名 URL（exp 过期 + 绑定对象键），默认 300 秒（合同 5 分钟），
+   7  *   不暴露目录；签名校验为应用侧恒时比较。
+   8  */
+   9 import { createHmac, timingSafeEqual } from "node:crypto";
+  10 import { createReadStream, createWriteStream } from "node:fs";
+  11 import { mkdir, rename, stat, unlink } from "node:fs/promises";
+  12 import path from "node:path";
+  13 import { pipeline } from "node:stream/promises";
+  14 import { Readable } from "node:stream";
+  15 import { loadEnv } from "@/lib/env";
+  16 import { getOssClient } from "./oss";
+  17 
+  18 const gRoot = globalThis as typeof globalThis & { __aieaStorageRoot?: string };
+  19 
+  20 function useOss(): boolean {
+  21   return process.env.STORAGE_DRIVER === "oss";
+  22 }
+  23 
+  24 /** 私有根目录（local 驱动；进程内单例，测试可 setStorageRoot 覆盖为临时目录） */
+  25 export function storageRoot(): string {
+  26   if (!gRoot.__aieaStorageRoot) {
+  27     gRoot.__aieaStorageRoot = process.env.STORAGE_PRIVATE_ROOT ?? path.join(process.cwd(), ".data", "private");
+  28   }
+  29   return gRoot.__aieaStorageRoot;
+  30 }
+  31 
+  32 export function setStorageRoot(root: string): void {
+  33   gRoot.__aieaStorageRoot = root;
+  34 }
+  35 
+  36 /** 对象键 → 绝对路径（拒绝路径遍历；键必须落在私有根内） */
+  37 function resolveKey(key: string): string {
+  38   const root = storageRoot();
+  39   const full = path.resolve(root, key);
+  40   if (full !== root && !full.startsWith(root + path.sep)) {
+  41     throw new Error(`非法存储键：${key}`);
+  42   }
+  43   return full;
+  44 }
+  45 
+  46 function signingKey(): string {
+  47   // 下载签名的密钥与应用认证秘密同源；缺失时仅本地开发允许回退默认值
+  48   try {
+  49     const secret = loadEnv(["auth"]).auth?.secret;
+  50     if (secret) return secret;
+  51   } catch {
+  52     // env 缺失（纯本地工具场景）→ 回退；生产经 compose 注入 BETTER_AUTH_SECRET
+  53   }
+  54   return "aiea-local-signing";
+  55 }
+  56 
+  57 function hmac(payload: string): string {
+  58   return createHmac("sha256", signingKey()).update(payload).digest("hex");
+  59 }
+  60 
+  61 export interface DownloadSignature {
+  62   key: string;
+  63   expiresAt: number;
+  64   signature: string;
+  65 }
+  66 
+  67 /** 生成签名下载参数（G2-L02：默认 300 秒，与 11:87 五分钟约定一致） */
+  68 export function signDownload(key: string, ttlSeconds = 300): DownloadSignature {
+  69   const expiresAt = Date.now() + ttlSeconds * 1000;
+  70   return { key, expiresAt, signature: hmac(`${key}:${expiresAt}`) };
+  71 }
+  72 
+  73 /** 校验签名（恒时比较；过期无效） */
+  74 export function verifyDownload(sig: DownloadSignature): boolean {
+  75   if (typeof sig.expiresAt !== "number" || sig.expiresAt < Date.now()) return false;
+  76   const expected = Buffer.from(hmac(`${sig.key}:${sig.expiresAt}`));
+  77   const got = Buffer.from(String(sig.signature));
+  78   return got.length === expected.length && timingSafeEqual(got, expected);
+  79 }
+  80 
+  81 export interface PutOptions {
+  82   /** 来源流（如上传文件体）；写入过程由调用方负责限流/计数 */
+  83   content: NodeJS.ReadableStream;
+  84 }
+  85 
+  86 function streamToBuffer(content: NodeJS.ReadableStream, maxBytes: number): Promise<Buffer> {
+  87   return new Promise((resolve, reject) => {
+  88     const chunks: Buffer[] = [];
+  89     let bytes = 0;
+  90     content.on("data", (chunk: Buffer | string) => {
+  91       const buf = typeof chunk === "string" ? Buffer.from(chunk, "utf8") : chunk;
+  92       bytes += buf.length;
+  93       if (bytes > maxBytes) {
+  94         (content as { destroy?: (error?: Error) => void }).destroy?.(new Error(`对象超过 ${maxBytes} 字节上限`));
+  95         reject(new Error(`对象超过 ${maxBytes} 字节上限`));
+  96         return;
+  97       }
+  98       chunks.push(buf);
+  99     });
+ 100     content.on("end", () => resolve(Buffer.concat(chunks)));
+ 101     content.on("error", reject);
+ 102   });
+ 103 }
+ 104 
+ 105 /** 落盘到私有存储；返回最终键与字节数 */
+ 106 export async function putObject(key: string, content: NodeJS.ReadableStream): Promise<{ key: string; bytes: number }> {
+ 107   if (useOss()) {
+ 108     const buffer = await streamToBuffer(content, 64 * 1024 * 1024);
+ 109     const client = await getOssClient();
+ 110     await client.put(key, buffer);
+ 111     return { key, bytes: buffer.length };
+ 112   }
+ 113   const full = resolveKey(key);
+ 114   await mkdir(path.dirname(full), { recursive: true });
+ 115   let bytes = 0;
+ 116   await pipeline(
+ 117     async function* () {
+ 118       for await (const chunk of content as AsyncIterable<Buffer | string>) {
+ 119         const buf = typeof chunk === "string" ? Buffer.from(chunk, "utf8") : chunk;
+ 120         bytes += buf.length;
+ 121         yield buf;
+ 122       }
+ 123     }(),
+ 124     createWriteStream(full),
+ 125   );
+ 126   return { key, bytes };
+ 127 }
+ 128 
+ 129 /** 读取对象为流（下载/后续解析用） */
+ 130 export function getObjectStream(key: string): NodeJS.ReadableStream {
+ 131   if (useOss()) {
+ 132     // getStream 为异步 API：以惰性流包装，错误经 error 事件冒泡
+ 133     const lazy = new Readable({ read() {} });
+ 134     void getOssClient()
+ 135       .then((client) => client.getStream(key))
+ 136       .then(({ stream }) => {
+ 137         stream.on("data", (c: Buffer) => lazy.push(c));
+ 138         stream.on("end", () => lazy.push(null));
+ 139         stream.on("error", (e: Error) => lazy.destroy(e));
+ 140       })
+ 141       .catch((e: Error) => lazy.destroy(e));
+ 142     return lazy;
+ 143   }
+ 144   return createReadStream(resolveKey(key));
+ 145 }
+ 146 
+ 147 /** 读小对象全文（validate handler 用；20MB 上限内） */
+ 148 export async function getObjectText(key: string): Promise<string> {
+ 149   if (useOss()) {
+ 150     const client = await getOssClient();
+ 151     const { content } = await client.get(key);
+ 152     return content.toString("utf8");
+ 153   }
+ 154   const { readFile } = await import("node:fs/promises");
+ 155   return readFile(resolveKey(key), "utf8");
+ 156 }
+ 157 
+ 158 export async function objectExists(key: string): Promise<boolean> {
+ 159   if (useOss()) {
+ 160     try {
+ 161       const client = await getOssClient();
+ 162       await client.head(key);
+ 163       return true;
+ 164     } catch {
+ 165       return false;
+ 166     }
+ 167   }
+ 168   try {
+ 169     await stat(resolveKey(key));
+ 170     return true;
+ 171   } catch {
+ 172     return false;
+ 173   }
+ 174 }
+ 175 
+ 176 /** 原子移动（同驱动内；local 为 rename，oss 为 copy+delete）——上传落位用 */
+ 177 export async function moveObject(fromKey: string, toKey: string): Promise<void> {
+ 178   if (useOss()) {
+ 179     const client = await getOssClient();
+ 180     await client.copy(toKey, fromKey);
+ 181     await client.delete(fromKey);
+ 182     return;
+ 183   }
+ 184   const from = resolveKey(fromKey);
+ 185   const to = resolveKey(toKey);
+ 186   await mkdir(path.dirname(to), { recursive: true });
+ 187   await rename(from, to);
+ 188 }
+ 189 
+ 190 export async function deleteObject(key: string): Promise<void> {
+ 191   if (useOss()) {
+ 192     const client = await getOssClient();
+ 193     await client.delete(key).catch(() => undefined);
+ 194     return;
+ 195   }
+ 196   await unlink(resolveKey(key)).catch(() => undefined);
+ 197 }
