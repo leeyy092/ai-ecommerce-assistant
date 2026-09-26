@@ -122,23 +122,27 @@ export async function POST(req: NextRequest) {
       }
       spooled = await seen;
       await finished;
-    } catch (caught) {
+    } catch {
       nodeReq.destroy();
-      // G2-R3-H06：multipart 收尾错误可能先于 spool 结算（如 busboy "Unexpected end of
-      // form" 早于清理后的业务拒绝落定）。先等 spool promise 结算，保证响应映射的是
-      // 真实业务错误（TOO_MANY_ROWS/FILE_TOO_LARGE/UPLOAD_INTERRUPTED/…），
-      // 而非通用 multipart 失败。
-      if (received.spoolPromise) {
-        await received.spoolPromise.then(
-          () => undefined,
-          (error: unknown) => {
-            spoolError = spoolError ?? error;
-          },
-        );
+      // G2-R4-H06/H08：multipart 失败时本出口统一接管请求级收尾——
+      // 无论失败先于还是后于 spool 落定，先等 spool 结算：
+      // 失败→保留其原始业务错误；成功→接管 tempKey 并删除未被任何任务
+      // 拥有的临时文件（整个上传请求失败，建账从未发生，文件属无主私有数据）。
+      const settled: SpooledUpload | null = received.spoolPromise
+        ? await received.spoolPromise.then(
+            (value) => value,
+            (error: unknown) => {
+              spoolError = spoolError ?? error;
+              return null;
+            },
+          )
+        : null;
+      if (settled) {
+        await deleteObjectSafe(settled.tempKey);
+        spooled = null; // 已接管清理，交由本出口统一响应，不走外层重复清理
       }
-      // 优先映射 spool 的真实业务错误；无 spool 错误时映射 multipart 本身的异常
-      const mapped = serviceFailure(spoolError ?? caught);
-      return mapped ?? fail(422, "multipart 解析失败");
+      const mapped = serviceFailure(spoolError) ?? fail(400, "上传中断", { code: "UPLOAD_INTERRUPTED" });
+      return mapped;
     }
 
     // ---- multipart 结束后的合同校验 ----

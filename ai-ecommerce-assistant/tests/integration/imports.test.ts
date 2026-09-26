@@ -935,3 +935,161 @@ describe("GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态�
     expect(long.status).toBe(422);
   });
 });
+
+describe("GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾", () => {
+  const { readdirSync } = require("node:fs") as typeof import("node:fs");
+  const tmpFileCount = (): number => {
+    try {
+      return readdirSync(join(storageRoot(), "tmp")).length;
+    } catch {
+      return 0;
+    }
+  };
+
+  const MESSAGE_HEADER = "store_external_id,source_updated_at,external_message_id,external_conversation_id,message_at,external_sku_id,message_text,is_complaint,channel,language";
+
+  /**
+   * 原生 multipart：文件部分【完整终止】后跟随一个后续文本字段；
+   * tail=complete 送最终边界；truncate 只缺最终边界即结束；cancel 直接断开。
+   * tailDelayMs 模拟延迟截断（等待 spool 已成功落定的变体）。
+   */
+  async function postTail(cookie: string, opts: {
+    kind: string; filename: string; content: string;
+    tail: "complete" | "truncate" | "cancel"; tailDelayMs?: number;
+  }): Promise<Response> {
+    const boundary = `----r4-${randomUUID().slice(0, 8)}`;
+    const head = [
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="store_id"',
+      "",
+      storeId,
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="data_source_id"',
+      "",
+      dataSourceId,
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="entity_type"',
+      "",
+      opts.kind,
+      `--${boundary}`,
+      `Content-Disposition: form-data; name="file"; filename="${opts.filename}"`,
+      "Content-Type: text/csv",
+      "",
+      "",
+    ].join("\r\n");
+    // 文件部分完整终止（携带其结束边界），随后一个未完成的文本字段
+    const bodyText =
+      `${head}${opts.content}\r\n--${boundary}\r\n` +
+      'Content-Disposition: form-data; name="note"\r\n\r\nincomplete-tail';
+    let terminated = false;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(Buffer.from(bodyText, "utf8")));
+        const terminate = () => {
+          if (terminated) return;
+          terminated = true;
+          if (opts.tail === "complete") {
+            controller.enqueue(new Uint8Array(Buffer.from(`\r\n--${boundary}--\r\n`, "utf8")));
+            controller.close();
+          } else if (opts.tail === "truncate") {
+            controller.close();
+          } else {
+            controller.error(new Error("client disconnected"));
+          }
+        };
+        if ((opts.tailDelayMs ?? 0) > 0) setTimeout(terminate, opts.tailDelayMs);
+        else terminate();
+      },
+    });
+    const { POST } = await import("@/app/api/v1/imports/route");
+    return POST(
+      req("/api/v1/imports", {
+        method: "POST",
+        body,
+        headers: { "content-type": `multipart/form-data; boundary=${boundary}` },
+        duplex: "half",
+      } as RequestInit,
+      cookie),
+    );
+  }
+
+  it("R4 对照：完整合法尾部（products）→ 201、恰 1 任务、tmp=0", { timeout: 120_000 }, async () => {
+    const content = `${FILE_HEADERS.products.join(",")}\nR4-1,2026-09-11T01:00:00Z,R4P,杯,杯具,active,R4S,CUP-R4,杯,,active`;
+    const sha = createHash("sha256").update(content).digest("hex");
+    const before = tmpFileCount();
+    const res = await postTail(operator.cookie, { kind: "products", filename: "r4.csv", content, tail: "complete" });
+    expect(res.status).toBe(201);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tmpFileCount()).toBe(before);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(1);
+  });
+
+  it("R4 H06/H08：文件部分完成后尾部截断（products）→ 4xx，不留 tmp、无新任务", { timeout: 120_000 }, async () => {
+    const content = `${FILE_HEADERS.products.join(",")}\nR4-1,2026-09-11T01:00:00Z,R4T,杯,杯具,active,R4S,CUP-R4T,杯,,active`;
+    const sha = createHash("sha256").update(content).digest("hex");
+    const before = tmpFileCount();
+    const res = await postTail(operator.cookie, { kind: "products", filename: "r4t.csv", content, tail: "truncate" });
+    expect(res.status).toBeGreaterThanOrEqual(400);
+    expect(res.status).toBeLessThan(500);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tmpFileCount()).toBe(before);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(0);
+  });
+
+  it("R4 H06/H08：文件部分完成后 socket 取消（products）→ 不留 tmp、无新任务", { timeout: 120_000 }, async () => {
+    const content = `${FILE_HEADERS.products.join(",")}\nR4-1,2026-09-11T01:00:00Z,R4C,杯,杯具,active,R4S,CUP-R4C,杯,,active`;
+    const sha = createHash("sha256").update(content).digest("hex");
+    const before = tmpFileCount();
+    const res = await postTail(operator.cookie, { kind: "products", filename: "r4c.csv", content, tail: "cancel" });
+    expect(res.status).toBeGreaterThanOrEqual(400);
+    expect(res.status).toBeLessThan(500);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tmpFileCount()).toBe(before);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(0);
+  });
+
+  it("R4 对照：CustomerService 合成消息完整尾部 → 201、tmp=0", { timeout: 120_000 }, async () => {
+    const content = `${MESSAGE_HEADER}\nR4-1,2026-09-11T01:00:00Z,R4M1,R4C1,2026-09-01T11:00:00Z,,你好，请问发货了吗,,platform_chat,zh-CN`;
+    const before = tmpFileCount();
+    const res = await postTail(cs.cookie, { kind: "customer_messages", filename: "msg.csv", content, tail: "complete" });
+    expect(res.status).toBe(201);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tmpFileCount()).toBe(before);
+  });
+
+  it("R4 H06/H08：CS 消息 0ms 快速截断 → 不留 tmp、无新任务", { timeout: 120_000 }, async () => {
+    const content = `${MESSAGE_HEADER}\nR4-1,2026-09-11T01:00:00Z,R4M2,R4C2,2026-09-01T11:00:00Z,,快速截断消息,,platform_chat,zh-CN`;
+    const sha = createHash("sha256").update(content).digest("hex");
+    const before = tmpFileCount();
+    const res = await postTail(cs.cookie, { kind: "customer_messages", filename: "msg.csv", content, tail: "truncate", tailDelayMs: 0 });
+    expect(res.status).toBeGreaterThanOrEqual(400);
+    expect(res.status).toBeLessThan(500);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tmpFileCount()).toBe(before);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(0);
+  });
+
+  it("R4 H06/H08：CS 消息 350ms 延迟截断（spool 已成功落定）→ 不留 tmp、无新任务", { timeout: 120_000 }, async () => {
+    const content = `${MESSAGE_HEADER}\nR4-1,2026-09-11T01:00:00Z,R4M3,R4C3,2026-09-01T11:00:00Z,,延迟截断消息,,platform_chat,zh-CN`;
+    const sha = createHash("sha256").update(content).digest("hex");
+    const before = tmpFileCount();
+    const res = await postTail(cs.cookie, { kind: "customer_messages", filename: "msg.csv", content, tail: "truncate", tailDelayMs: 350 });
+    expect(res.status).toBeGreaterThanOrEqual(400);
+    expect(res.status).toBeLessThan(500);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tmpFileCount()).toBe(before);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(0);
+  });
+
+  it("R4 H06/H08：CS 消息 350ms 后取消（spool 已成功落定）→ 不留 tmp、无新任务", { timeout: 120_000 }, async () => {
+    const content = `${MESSAGE_HEADER}\nR4-1,2026-09-11T01:00:00Z,R4M4,R4C4,2026-09-01T11:00:00Z,,延迟取消消息,,platform_chat,zh-CN`;
+    const sha = createHash("sha256").update(content).digest("hex");
+    const before = tmpFileCount();
+    const res = await postTail(cs.cookie, { kind: "customer_messages", filename: "msg.csv", content, tail: "cancel", tailDelayMs: 350 });
+    expect(res.status).toBeGreaterThanOrEqual(400);
+    expect(res.status).toBeLessThan(500);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tmpFileCount()).toBe(before);
+    expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(0);
+  });
+});

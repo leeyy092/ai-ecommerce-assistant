@@ -1,0 +1,80 @@
+
+> ai-ecommerce-assistant@0.1.0 test:integration /private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant
+> env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1
+
+
+ RUN  v3.2.7 /private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant
+
+(node:54519) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stderr | tests/integration/imports.test.ts > GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H07：存档写入失败 → 上传不无保护成功（503），无任务残留
+[internal] request_id=bfdb4270-3c18-4af8-8a30-fc59ef405474 
+Invalid `ctx.db.httpIdempotency.findUnique()` invocation in
+/private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant/src/services/imports.ts:271:44
+
+  268 }
+  269 
+  270 async function readHttpArchive(ctx: ImportsContext, input: UploadInput, requestKey: string): Promise<HttpArchive | null> {
+→ 271   const row = await ctx.db.httpIdempotency.findUnique(
+The column `http_idempotency.request_hash` does not exist in the current database.
+
+ ✓ tests/integration/imports.test.ts (39 tests) 8674ms
+   ✓ TASK-007｜限制与拒绝 > 超过 20MB 真实分块流在接收链路立即中止（422 FILE_TOO_LARGE，不等 multipart 结束）  3828ms
+   ✓ GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放 > G2-R3-H06：请求未结束但行数超限 → 稳定 422 TOO_MANY_ROWS（不降级为通用 multipart 错误）  411ms
+   ✓ GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 H06/H08：CS 消息 350ms 延迟截断（spool 已成功落定）→ 不留 tmp、无新任务  559ms
+   ✓ GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 H06/H08：CS 消息 350ms 后取消（spool 已成功落定）→ 不留 tmp、无新任务  558ms
+ ✓ tests/integration/stores.test.ts (14 tests) 571ms
+stderr | tests/integration/gate01.auth.test.ts > Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封） > M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[internal] request_id=21ace1ef-d4be-4cf5-88c0-674076654ade 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+stderr | tests/integration/gate01.auth.test.ts > Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封） > M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[internal] request_id=0b110448-06e8-457d-8be8-b90dc19bfa1f 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+ ✓ tests/integration/gate01.auth.test.ts (17 tests) 1438ms
+Loaded Prisma config from prisma.config.ts.
+
+ ✓ tests/integration/gate01.db.test.ts (13 tests) 2361ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 A——父行改归属未提交时插入旧组织审计引用，后者必须失败  321ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 B——审计引用未提交时改父行归属，后者必须失败且引用方正常提交  321ms
+   ✓ Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏） > M07：官方 migrate diff 不再净删除审计同域复合外键（重建必须同引用且配平）  981ms
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 成员 PATCH：审计故障 → 角色与版本零提交
+[internal] request_id=c6651c10-bada-486d-88ed-473de7943ac0 
+Invalid `db.auditLog.create()` invocation in
+/private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_member_audit"`
+
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 组织 PATCH：审计故障 → 名称与版本零提交
+[internal] request_id=0ea00bfb-da0d-4eb1-9ce5-6e74310ce469 
+Invalid `db.auditLog.create()` invocation in
+/private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_org_audit"`
+
+ ✓ tests/integration/gate01.access.test.ts (7 tests) 733ms
+ ✓ tests/integration/auth.test.ts (8 tests) 697ms
+ ✓ tests/integration/permissions.test.ts (7 tests) 650ms
+ ✓ tests/integration/database.test.ts (9 tests) 261ms
+ ✓ tests/integration/db.test.ts (4 tests) 3ms
+
+ Test Files  9 passed (9)
+      Tests  118 passed (118)
+   Start at  15:38:27
+   Duration  16.23s (transform 205ms, setup 270ms, collect 427ms, tests 15.39s, environment 0ms, prepare 25ms)
+
