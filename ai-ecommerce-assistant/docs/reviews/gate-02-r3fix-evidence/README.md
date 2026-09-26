@@ -40,3 +40,18 @@ canary（.data/private/raw/canary-secret.txt 置于构建上下文）不进镜�
 - 工具链在 /tmp 远端 clone 副本执行（主副本 .git 数据文件 iCloud dataless：本地 `git archive` 挂起，`cp -R .tools/node24` 挂起；Node 24.21.0 官方下载并 SHA256 校验 6239d4cf…）。
 - tsc `incremental: true` + 陈旧 tsconfig.tsbuildinfo 会复用过期程序状态——本轮全部 typecheck 以 `--incremental false` + 预先删除 tsbuildinfo 执行。
 - 真实 OSS 云账号/桶/网络验证维持 REVIEW 3 §5 限定延期（TASK-029 或启用 OSS/部署前，以更早者为准）；本轮未触碰。
+
+## N1 补充（2026-09-26 14:36–14:44 · Codex 技术补充落实）
+
+**1. 构建退出码与完整日志（响应 N1-1）**：首轮展示用 `| tail; echo $?` 读到的是 tail 退出码，不作为证据。已在 `compose-n1/` 以脚本重跑全链：构建重定向完整日志 `s1-build.log` 并直接捕获 docker compose 真实退出码（**S1 exit=0**），各步骤独立日志+退出码见 `summary.jsonl`。**S10 如实记录首跑失败**：`down -v --rmi local` 未删带 tag 的本构建镜像（img=2，exit=1 原样保留在 summary.jsonl），S10b 显式 `docker rmi` 后 img=0。链路重跑结果：S1–S9 全部 exit=0（构建/镜像+canary 排除/健康/12 迁移/init-owner/登录建店源上传/preview_ready/签名下载一致/重启读回一致），本轮候选文件链断言成立。
+
+**2. Colima/VM 配置改动与恢复情况（响应 N1-2，准确台账）**：
+
+| 对象 | 原值（本轮前） | 本轮改动 | 现状（测试结束后） |
+|---|---|---|---|
+| colima 运行状态 | 未运行（14:06 `colima status`="colima is not running"） | 14:06 start；14:28 stop；14:36 为 N1 重验再 start；14:44 stop | **已恢复原状（未运行）** |
+| VM `/etc/resolv.conf` | 悬空符号链接 `→ ../run/systemd/resolve/stub-resolv.conf`（[::1]:53 拒绝；原值证据=14:09 替换前 `ls -la` 输出，存本轮会话记录） | 14:09 替换为静态文件 `nameserver 192.168.101.1` + `8.8.8.8` | **修改保持中，未恢复**——恢复悬空链接将使 VM DNS 重新不可用；该改动仅存在于 VM 内，不影响宿主与仓库。恢复方法：`colima ssh -- sudo sh -c 'ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf'` |
+| VM `/etc/docker/daemon.json` | colima 模板（cgroupdriver/buildkit，无 registry-mirrors） | 14:09 曾覆写为 `registry-mirrors: [docker.m.daocloud.io]` | **已恢复原模板**——14:36 `colima start` 按 profile 重生成 daemon.json（原值已回，cat 输出存 compose-n1 证据；`docker info` 无 Registry Mirrors，14:44 实查）。原值是否存在更早内容：无更早快照，间接证据=14:07 拉取错误路径无 mirror，**标待核（推断为 colima 默认模板）** |
+| 本轮 Docker 资源 | — | 独立项目 aiea-r3fix（容器/卷/网络/镜像） | **已全部清理**（S10 首跑 img=2 → S10b 补清为 0；`docker ps -a`/`volume ls`/`images` grep=0） |
+
+本轮一次性凭据（compose .env、owner 密码、cookie jar）仅存在于 /tmp 与证据目录：cookie jar 已从证据中删除，/tmp 上下文随系统清理。

@@ -75,6 +75,8 @@ Codex 于2026-09-25独立复审 `072f9ba..a465261`（业务止于`a6f141f`）。
 ```
 <!-- PRODUCT_OS_STATE_END -->
 
+- N1 补充（Codex 技术补充 G2R3-20260926-01-N1，14:36–14:44）：①首轮 `| tail; echo $?` 读到的是 tail 退出码不作证据——已在 compose-n1/ 以脚本重跑全链，构建完整日志+真实退出码（S1 exit=0），S1–S9 全部 exit=0（镜像+canary 排除/健康/12 迁移/Owner/上传/preview_ready/签名下载/重启读回）；S10 首跑 `--rmi local` 未删带 tag 镜像（img=2）如实保留 exit=1 并以 S10b 显式 rmi 补清为 0。②Colima 配置台账已入证据 README：colima 运行状态已恢复原状（未运行）；resolv.conf 修改保持中未恢复（原值=悬空符号链接有据，恢复命令已记录）；daemon.json 被 colima start 重生成恢复原模板（mirror 改动随之失效，docker info 实查无 mirrors）。日志在 ai-ecommerce-assistant/docs/reviews/gate-02-r3fix-evidence/compose-n1/。候选仍为 83e33e7，无业务变化。
+
 ## 2026-09-26 · ZCode 完成 REVIEW 3 复修（G2R3-20260926-01，候选冻结）
 
 - 时间/执行人：2026-09-26T14:29+08:00 · ZCode。执行 P08 首个 text 块；与 Codex 直接协作，写回期间为主副本唯一写入者。
