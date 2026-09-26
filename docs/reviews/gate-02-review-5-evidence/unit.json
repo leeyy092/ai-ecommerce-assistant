@@ -1,0 +1,9 @@
+{
+  "name": "unit",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "test"
+  ],
+  "exit": 0,
+  "seconds": 2.82
+}

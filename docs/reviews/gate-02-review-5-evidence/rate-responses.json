@@ -1,0 +1,542 @@
+[
+  {
+    "status": 201,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": false,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "9c5181da-240b-4697-8b5c-14d6b6a02de6"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "871afe5c-388b-4a66-be06-aee894a20176"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "9d9d3f87-95fa-49ea-acd1-1bb0ce3b7a04"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "a2924f37-2455-4976-a392-74363081e784"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "89ac55d1-09cb-4f65-9b94-dc6f20359524"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "91b13351-cffe-494a-87ff-86be9e71205c"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "c91227bf-578b-45cf-a627-c36f41419bc2"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "899bde84-45ef-4fe6-9fc5-88f046e45ce3"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "5429b2e3-37bf-483b-b9e2-defad7f8a031"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "f680eb90-6f7f-4455-a437-d216ef5a25af"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "d5f57990-8e70-4dd0-aa1b-277536171391"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "3ccc3f8f-828a-49bd-852f-e28bfdc458dd"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "3337d57b-59cb-4915-a5ac-6dea5686b27a"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "c3b6e488-326a-49f8-875e-fb118f516333"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "6691fecf-f4ba-488d-bd6b-3a34ce80e7b1"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "86ae36d3-bca9-4ff3-a780-ee9a23b75294"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "61d9fde8-4042-4b25-a445-853a35a93798"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "54cdb74d-2f9d-4be1-bb03-ce1e46580407"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "e39e6dcb-7bc2-4f6a-ae57-e1287ea297fe"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "99a6ca22-4acc-4c63-b048-3b56be1c91a8",
+        "status": "uploaded",
+        "file_sha256": "4a493216803a0606b8545792476958a451a16fd9184ee7c09b595bff356b352c",
+        "row_count": 1,
+        "reused": true,
+        "filename": "r.csv",
+        "bytes": 241
+      },
+      "meta": {
+        "request_id": "5f1388f7-3f97-4b1f-ad3e-f0e3593cb548"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  },
+  {
+    "status": 429,
+    "body": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "上传过于频繁，请稍后重试",
+        "retryable": true,
+        "request_id": "99fd2c34-2963-47b6-856a-90f4ea3faa44"
+      }
+    },
+    "headers": {
+      "cache-control": "private, no-store",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "date": "Sat, 26 Sep 2026 07:59:54 GMT",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  }
+]

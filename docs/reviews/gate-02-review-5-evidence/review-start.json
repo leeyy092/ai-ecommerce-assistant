@@ -1,0 +1,9 @@
+{
+  "id": "G2R5-20260926-01",
+  "delivered": true,
+  "visible_message": true,
+  "freeze": "4b9e13902588724d0cfb2d489ef07d49d0a3489d",
+  "writer": "Codex after ZCode N1 final handback",
+  "sent_observed_at": "2026-09-26T16:01:21.320933+08:00",
+  "ack": "ZCode 16:01 read-only ACK; HEAD4b9e139; no tracked changes; all writing/sync/commit stopped"
+}

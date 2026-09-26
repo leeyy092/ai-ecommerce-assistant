@@ -1,0 +1,14 @@
+(node:61678) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+H08 built Worker normal parse PASS
+H05 disabled Membership rejected PASS
+H05 downgrade rejected PASS
+H05 disabled global user rejected PASS
+H08 missing source terminal PASS
+H08 malformed header private errors PASS
+H08 terminal replay keeps preview version PASS
+H08 dispatcher lost dispatch reaches ready PASS
+H08 interrupted validation finalizes PASS
+H03 invalid offset reaches row error without worker crash PASS
+H08 retry exhausted immediately finalizes task PASS
+commit explicitly refused no fact writes PASS

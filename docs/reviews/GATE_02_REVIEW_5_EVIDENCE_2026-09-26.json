@@ -1,0 +1,658 @@
+{
+  "schema_version": 1,
+  "review": "CODEX_REVIEW_GATE_02 REVIEW 5",
+  "result": "PASS",
+  "reviewer": "Codex",
+  "coordination_id": "G2R5-20260926-01",
+  "baseline": {
+    "freeze": "4b9e13902588724d0cfb2d489ef07d49d0a3489d",
+    "business": "b32f7318367b8d56f1dfb51dd4bb4df043f16f3a",
+    "base": "a80d62a51d24dc92f9fb55a3549abaaac1978803",
+    "branch": "phase/02-data-ingestion",
+    "archive": "5b51908b8404e4e0257fe0fd4bd2202f466e6c10",
+    "archive_to_final_paths": [
+      "00_START_HERE.html",
+      "00_START_HERE.md",
+      "ai-ecommerce-assistant/docs/reviews/gate-02-r4fix-evidence/README.md",
+      "docs/ai-ecommerce-assistant/12_PROGRESS.md"
+    ],
+    "executable_content_identical": true,
+    "workingtree": "",
+    "main": "4c7e95b925c2b04aa2c1116979678cac7af091f2",
+    "verified_at": "2026-09-26T16:01:21.320485+08:00"
+  },
+  "assertions": {
+    "total": 58,
+    "PASS": 58,
+    "FAIL": 0,
+    "by_file": {
+      "http-assertions.json": {
+        "PASS": 21,
+        "FAIL": 0
+      },
+      "http-interruption-assertions.json": {
+        "PASS": 2,
+        "FAIL": 0
+      },
+      "late-message-assertions.json": {
+        "PASS": 4,
+        "FAIL": 0
+      },
+      "oss-assertions.json": {
+        "PASS": 5,
+        "FAIL": 0
+      },
+      "preservation-assertions.json": {
+        "PASS": 3,
+        "FAIL": 0
+      },
+      "samebody-assertions.json": {
+        "PASS": 1,
+        "FAIL": 0
+      },
+      "stream-faults-assertions.json": {
+        "PASS": 5,
+        "FAIL": 0
+      },
+      "upload-lifecycle-assertions.json": {
+        "PASS": 3,
+        "FAIL": 0
+      },
+      "wire-longwait-assertions.json": {
+        "PASS": 2,
+        "FAIL": 0
+      },
+      "worker-assertions.json": {
+        "PASS": 12,
+        "FAIL": 0
+      }
+    }
+  },
+  "tests": {
+    "install": {
+      "command": "pnpm install --frozen-lockfile --prefer-offline",
+      "exit": 0,
+      "seconds": 5.36
+    },
+    "migrate-deploy": {
+      "name": "migrate-deploy",
+      "args": [
+        "/Users/yuyuyu/.local/bin/pnpm",
+        "exec",
+        "prisma",
+        "migrate",
+        "deploy"
+      ],
+      "exit": 0,
+      "seconds": 1.52
+    },
+    "typecheck": {
+      "name": "typecheck",
+      "args": [
+        "/Users/yuyuyu/.local/bin/pnpm",
+        "exec",
+        "tsc",
+        "--noEmit",
+        "--incremental",
+        "false"
+      ],
+      "exit": 0,
+      "seconds": 2.5
+    },
+    "unit": {
+      "name": "unit",
+      "args": [
+        "/Users/yuyuyu/.local/bin/pnpm",
+        "test"
+      ],
+      "exit": 0,
+      "seconds": 2.82
+    },
+    "integration": {
+      "name": "integration",
+      "args": [
+        "/Users/yuyuyu/.local/bin/pnpm",
+        "test:integration"
+      ],
+      "exit": 0,
+      "seconds": 17.3
+    },
+    "build": {
+      "name": "build",
+      "args": [
+        "/Users/yuyuyu/.local/bin/pnpm",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 9.96
+    },
+    "e2e": {
+      "name": "e2e",
+      "args": [
+        "/Users/yuyuyu/.local/bin/pnpm",
+        "test:e2e"
+      ],
+      "exit": 0,
+      "seconds": 5.07
+    }
+  },
+  "closed": [
+    "H06/H08 remaining request-level cleanup"
+  ],
+  "task_results": {
+    "TASK-005": "PASS",
+    "TASK-006": "PASS",
+    "TASK-007": "PASS"
+  },
+  "remaining_critical_high": [],
+  "deferred": [
+    {
+      "id": "M04",
+      "scope": "real OSS cloud validation only",
+      "deadline": "TASK-029 or first OSS enablement/deployment, whichever earlier"
+    }
+  ],
+  "not_run": [
+    {
+      "scope": "independent Docker/Compose rerun",
+      "reason": "Route-only change; unchanged infrastructure evidence from REVIEW4 conditionally retained, current production Web/built Worker/restart tested independently"
+    },
+    {
+      "scope": "real OSS cloud",
+      "reason": "limited defer above"
+    }
+  ],
+  "owner_phase_release": false,
+  "automatic_phase_continuation": "unconfirmed",
+  "merged_to_main": false,
+  "deployed": false,
+  "task008_started": false,
+  "report": "docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_5_2026-09-26.md",
+  "indexed_at": "2026-09-26T16:20:31+08:00",
+  "artifact_count": 96,
+  "artifacts": [
+    {
+      "path": "docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_5_2026-09-26.md",
+      "bytes": 10302,
+      "sha256": "75d42703b0be5c2f5df61a7fd675b4056620d892f1d02babaded75770fceebe3"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/README.md",
+      "bytes": 3617,
+      "sha256": "e689e8f18944596ef0b8620611002580ef26ed840ddbe346791cb6bdbfe52d55"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/assertion-summary.json",
+      "bytes": 829,
+      "sha256": "f671e95c59d2cbfcaa990f462c0d86782e1f48ca1b06a60325057fa4dfc7b22a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/baseline.json",
+      "bytes": 644,
+      "sha256": "3233f68456f7f8d0cccaffbc973846066edb4e6e2c96ed76aecdbcfae1adb511"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/build.json",
+      "bytes": 119,
+      "sha256": "bae9f0425e57f10577474bc6bb07d04670d3cbe666cff4964ae647cb420c00c9"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/build.log",
+      "bytes": 2519,
+      "sha256": "c72b313d35b89d1cc1b3017010421ff04c62a3551187d01800c3484f6e728d1b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/business.diff",
+      "bytes": 10957,
+      "sha256": "d24011e9655a51e909e0cf3972c28f3691d061d4dd6fb0d343ad4a93b2a0d4ae"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/cleanup-files.json",
+      "bytes": 998,
+      "sha256": "565fd626b0dac50a8e342c50ed6a25259ae73b6eb0b0f0002299b6c8cee039dd"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/cleanup-running-resources.json",
+      "bytes": 120,
+      "sha256": "4c3fae5cf22c5c0d7b065b72984a3f4bef1ab58aa5f9bb196575cb61af27a931"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/clone.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/container-scope-decision.json",
+      "bytes": 869,
+      "sha256": "c5c54614e856090f530e703ec9f6be6023ffa3384238e7cabcf3985f02d46823"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/coordination-receipt.json",
+      "bytes": 1554,
+      "sha256": "2deb4aa62c91c493da10f017510918622f23ad5899695d65e300e1e16087174b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/createdb.json",
+      "bytes": 214,
+      "sha256": "cd5058b3fc08b3fc54a5a0339e49015f977b391322fe561d1f3350eed20c055a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/createdb.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/e2e.json",
+      "bytes": 120,
+      "sha256": "38b2dc1f802a245b781bcc6df53636f4649e06e58bcfba3e6e23b235a746186c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/e2e.log",
+      "bytes": 2377,
+      "sha256": "693fbe502751c8475f46eda48b3df17269edf2fd0a414b68433b7deda168dc04"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/environment.json",
+      "bytes": 277,
+      "sha256": "12f36f650f3c3d4b0d976b97133e070aad2c8fd4c04c3fa5eb2e555aa709f55b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/evidence-secret-scan.json",
+      "bytes": 119,
+      "sha256": "6a4b55350dc1951af1ecbd6133fa3ef7841229bfd6bc99044b78cf800c0792e6"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/final-verification.json",
+      "bytes": 860,
+      "sha256": "626fa30bcc8a9b66d52e9a98545f8d1419879db6556fcb4f5b1d169b4f48fed9"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/harness-notes.json",
+      "bytes": 400,
+      "sha256": "e50f014bd4457bc6187b71e2dd3765d04d0479979ce72d89b0416401948f5bee"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/historical-integrity.json",
+      "bytes": 97,
+      "sha256": "e853598f3c2ced776948f08519f6d5ab58e85a172562e9a7cf1c8f7be729c288"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/http-assertions.json",
+      "bytes": 4450,
+      "sha256": "1b06347c2148ad60d0afd5919dafa32114c083222a010e5b8035f38dd7343972"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/http-interruption-assertions.json",
+      "bytes": 728,
+      "sha256": "5b27822d61037de96bca2a192766cacb1d4c03ae4745a62a62609fd58bb86a28"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/http-interruption.json",
+      "bytes": 176,
+      "sha256": "8190c2d1a56a2600aa0f7baca964b3fd4c15529d836c7501fbf1957ea5a6a615"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/http-interruption.log",
+      "bytes": 496,
+      "sha256": "d7e72dd9f261b2f0bd60e5f747ceeee19d8d5bcafb3e78a231ec46bd4759c633"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/http.json",
+      "bytes": 150,
+      "sha256": "14e008c3322c3fd0ea762a0c6db23294b9f17d28d43828e572e09e3ac23a0eed"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/http.log",
+      "bytes": 1164,
+      "sha256": "c12c0f0f2264d7fe64fecfd2ec5574b8c8f6cba20e421b2f2f314e71abc98a48"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/initdb.json",
+      "bytes": 244,
+      "sha256": "b4b428df4cbc3fe87c09b7c863eef8fc08b9809cde824731f909e2a2011248cf"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/initdb.log",
+      "bytes": 886,
+      "sha256": "6893773c1ccd4a5b79acae68fb648542f70b47f3668e61b796e3c71c3ee16db1"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/install.json",
+      "bytes": 98,
+      "sha256": "8fbb7ff6a4c740b8ae1a5f90e81d7ca38bd3f52e223d9d3b99475f2634ee9bee"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/install.log",
+      "bytes": 2119,
+      "sha256": "947f86a508e0d0f33ae6198d280eb743f4f2ec056ca1c361ddfe401fceab874f"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/integration.json",
+      "bytes": 136,
+      "sha256": "c8f5437a6cbbcfe0e87f348e478da7efe1c0b6dabb42264702778b21b8240697"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/integration.log",
+      "bytes": 5831,
+      "sha256": "a453fbd0b76890244a2877e17f11390a92ed42355cb5ab8a496984dd4f47d25e"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/late-message-assertions.json",
+      "bytes": 1633,
+      "sha256": "9f3c927618b31e9862840afad4c3a5bdcba6ebdcef615a7c16b6ec569610b223"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/late-message.json",
+      "bytes": 166,
+      "sha256": "74ab91c1132b7b8dc67d417f2a4d54f759832e613a8a90c735e0c3238da00aad"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/late-message.log",
+      "bytes": 874,
+      "sha256": "9053232d1e135976168d84e0ddad028c6db379a1067102e7b56077f8eaa987e5"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/migrate-deploy.json",
+      "bytes": 170,
+      "sha256": "aa71e46667256b777ecb2253ccf9c6165eb3933f37a8f0f11d7d6932863410ba"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/migrate-deploy.log",
+      "bytes": 1887,
+      "sha256": "d0613534eaf21911a87fcf4c247c311584953e9dfad527546497e5aeb34883e8"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/node-runtime.json",
+      "bytes": 212,
+      "sha256": "d5c9842b5f7886e13e4b460af54f5ad84da8bd2e86ac2f348602d407dbad38a1"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/oss-assertions.json",
+      "bytes": 2070,
+      "sha256": "6fdcd442def15310ea3bfdb5d630518b590bf6410c68bb19e828974d02f5ce75"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/oss.json",
+      "bytes": 148,
+      "sha256": "5d3e6d6f90fa20d8f55f8f66a7fcbfc4139c60b9c356c313762f47d15e7a1a5a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/oss.log",
+      "bytes": 1330,
+      "sha256": "63011fda516084460bafb8d429509d7488fada1c9c25278f6280baa96f2b8819"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/pass-delivery-sync-readback.json",
+      "bytes": 550,
+      "sha256": "75ed90227753d96081734041910f05bf78ba8cf8b77c0e6debdcbaf372f53e09"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/pg-start.json",
+      "bytes": 342,
+      "sha256": "8163a929c9e9995294fa93ea75360e0e5f5da0d72c0c66ff38cd0bfb1467f893"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/pg-start.log",
+      "bytes": 52,
+      "sha256": "66afd0411ccc09366e99fdd99b85f21899c8d2d064f5835126859618802153ad"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/pg-stop.log",
+      "bytes": 56,
+      "sha256": "ca19178a35ab4153b75b494963b66ce8243e1b94c173107c87b44d09db23652d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/pre-writeback/12_PROGRESS.md",
+      "bytes": 149160,
+      "sha256": "45d6c147f1703679d862c0800ba531fa55eea3f1b73f4c5f4c0567e83e918376"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/pre-writeback/CODEX_REVIEW_HANDOFF.md",
+      "bytes": 78494,
+      "sha256": "dd030996f1d4a663b0fa9435cd66eef1782999053cb461699a484a2310ce0f73"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/pre-writeback/P07_CODE_REVIEW.md",
+      "bytes": 22605,
+      "sha256": "86dec2b4d0ee9672494d89de4016981f6453a1ec1f117b5b0d766ca2bc994943"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/pre-writeback/P08_FIX.md",
+      "bytes": 46363,
+      "sha256": "5e1c57542b6310cb53521e6a373caa1c8f484107a64b1583c3330292d13db968"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/pre-writeback/P09_PHASE_RELEASE.md",
+      "bytes": 2428,
+      "sha256": "979a1a3bf06a5a4d9fbdec03165424d94fba3a9503b94943780264b80c3a1f21"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/pre-writeback-git.json",
+      "bytes": 1036,
+      "sha256": "2192d596cf628634db41a0bb305e0cdf3112df65ea75fcc824f081530d470b3b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/preservation-assertions.json",
+      "bytes": 904,
+      "sha256": "a0058d344a9e7ec9d2099c3da110f2fd526adeacbd2736e17f41935b8e2fa1ea"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/preservation.json",
+      "bytes": 166,
+      "sha256": "23d1e7bc468d39d508192eb03433b8f4921061567dc55c241e8057a5d8a94db8"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/preservation.log",
+      "bytes": 819,
+      "sha256": "cbe6fdf66583209cb5252cf0b7fa975dbd54d31117b112d63206b07b6eb431df"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/product-os-readback-final.json",
+      "bytes": 406,
+      "sha256": "c0bc0403713cacb0aa4361d067ddec082f395d69803959348181107f3159da06"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/product-os-readback.json",
+      "bytes": 810,
+      "sha256": "8108e5df152e8db3fc4e76bf2cecdef7563b8ad0995253f4bbbc11ba953b662d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/product-os-sync-final.json",
+      "bytes": 209,
+      "sha256": "3cd2f2b7de752acd753231035e9de3deba74635ba895f3ac75ea83538ba6db3b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/product-os-sync-final.log",
+      "bytes": 101,
+      "sha256": "0491b8903d7c2a192bfbd714caa5555e3fca08789b60aba764bf1304af346999"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/product-os-sync.json",
+      "bytes": 209,
+      "sha256": "01cc089e2f15727aae23c58de7f04e2b3241344450ebc76b0ce7179f262ae1a4"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/product-os-sync.log",
+      "bytes": 101,
+      "sha256": "6853ede290d9bf8d562cb5f34d049f22bf52cbeccd155ac377481faaf635db4f"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/rate-responses.json",
+      "bytes": 16393,
+      "sha256": "df25c50752611c218a4adfee1fb0ff600bf8cf5ee85f9c5b7e9d2dc74cbd2ef6"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/review-start.json",
+      "bytes": 347,
+      "sha256": "c8acdea2af79f037a654151b68a39e21697deed246f28cc4917719f32456640b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/samebody-assertions.json",
+      "bytes": 674,
+      "sha256": "e3ca7976c45880af0e2f060b8141f759805a8198d7b67d7adfadbfa56463f9aa"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/samebody.json",
+      "bytes": 158,
+      "sha256": "8fb7fa5409b1b4678eb069affcdc64db248d3178c753a5930493dbbf494c049a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/samebody.log",
+      "bytes": 584,
+      "sha256": "3b5c9341f134dec12464d7ba303105afe84e445d21db226ff689e1f158349aad"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scope-initial.json",
+      "bytes": 411,
+      "sha256": "0b93abf52d0b729dce00c63782908a65d1d9c3a6a79c03bdb52f7d16125c6963"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scripts/review-http-interruption.ts",
+      "bytes": 2763,
+      "sha256": "3141c32d154d547f9557c85633edc7b049082b549ba4621155830b9dac3aabe3"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scripts/review-http.ts",
+      "bytes": 13785,
+      "sha256": "241f0328f5123a0608aa9e027cb91e72a2960563da7a10c81345c910c6022f06"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scripts/review-late-message.ts",
+      "bytes": 3539,
+      "sha256": "3f7a947abb656b8a41313a87d1b3256f78829c15a514daf2bd6b53ad61db8598"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scripts/review-oss.ts",
+      "bytes": 5092,
+      "sha256": "882cebb4e689a0035f43ab864c83613e14fb1cccadeeb39b93ae197068c1a6f0"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scripts/review-preservation.ts",
+      "bytes": 2227,
+      "sha256": "d520560f798da95ed9ffd116fc6326517a4e0c72760629ec8c8a1af3be93b728"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scripts/review-samebody.ts",
+      "bytes": 3219,
+      "sha256": "1c4e34432498116c6294829a7081e16800c864fde79c232c8efe13add229acf4"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scripts/review-stream-faults.ts",
+      "bytes": 3946,
+      "sha256": "85c1a49ebcc9df9f61f1cf54575f1a40c00fb74cc3637ad5bf04b764334e076c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scripts/review-upload-lifecycle.ts",
+      "bytes": 3437,
+      "sha256": "ae4a80dd6ddfc9e7387c5717427ae52101ab9dfeaf74d8d8e8c18b6c7d6a389b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scripts/review-wire-longwait.ts",
+      "bytes": 2497,
+      "sha256": "61cc93623ff4d00df624ad694c1531100205f29fe7d37508e9eb372904833332"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/scripts/review-worker.ts",
+      "bytes": 8277,
+      "sha256": "6a5f366542d193d495cce10b14db1aaee0d0703dbb10816b198d45d218de1080"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/stream-faults-assertions.json",
+      "bytes": 1364,
+      "sha256": "ead07780181caaaef30e290e6fdb63f36fb9758ec2fab02e7bfbc3cdf214dea8"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/stream-faults.json",
+      "bytes": 168,
+      "sha256": "257ee074218607e723f6613822b58d34de5f759de889ffe1d9531ed39a149a29"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/stream-faults.log",
+      "bytes": 270,
+      "sha256": "b11b8b7fe97b2a8960e8fd0b77a34240dfb75bc7e16e291a68db75f656c9281c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/typecheck.json",
+      "bytes": 182,
+      "sha256": "bf026d2865ee44453d4751a5155b8ef620f880d0b624c8d749cb3fbe602282c6"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/unit.json",
+      "bytes": 117,
+      "sha256": "dd4f7ecdbba0f68c5f3af5c5bc7c60c47d8c4c0eb12f6d3665a1d285cc77da78"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/unit.log",
+      "bytes": 653,
+      "sha256": "905993ecd28e643f85a853af60764516734d32d93859006393b15f925d3932bd"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/upload-lifecycle-assertions.json",
+      "bytes": 1186,
+      "sha256": "89d574e2f2f93623ff687429fdcf697c7b553a81fb17e538d39cf9f3a93a807d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/upload-lifecycle.json",
+      "bytes": 174,
+      "sha256": "16243d784d2a7af0faf45269742ff6c89d95b1366809eeefedff0b15f0be185d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/upload-lifecycle.log",
+      "bytes": 716,
+      "sha256": "ea10a93b0ed5e82c07b653882fb14683f022b34f462e5a5ca1b4be2ba33229c8"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/web-restart.log",
+      "bytes": 444,
+      "sha256": "11b1ab8d95c7e3d5b3b8fe08d013a1b12cf28c79581e636b731d7905597d809c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/web.log",
+      "bytes": 691,
+      "sha256": "86ba9ed29ffd0579117af575448cff1ce153b1c0f47fb58e32c55d7630687d46"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/wire-longwait-assertions.json",
+      "bytes": 810,
+      "sha256": "28fa8050dc8a84a6257f50bd8d73a6a35f04e754c287d933264bcf94e9dd8ddc"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/wire-longwait.json",
+      "bytes": 167,
+      "sha256": "64de5e073bd68154558c43c6043eb129632f7e723aa4b8ede32a3b0bdd60ed00"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/wire-longwait.log",
+      "bytes": 701,
+      "sha256": "30b68f7539329798751bb5d1d28e03c04503a1607937db0fccf15f846bd06d96"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/worker-assertions.json",
+      "bytes": 4266,
+      "sha256": "fabeae6ad4d9257bfba9ffb2f8635b98530f88012b6da852d2f218a4bde25424"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/worker-built.log",
+      "bytes": 5171,
+      "sha256": "b42a7038afa83094252dc06df480f47e4e90dddec089380117b4109cb6871ebf"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/worker.json",
+      "bytes": 155,
+      "sha256": "0cc95514a5890f9d4a6b1a3246978492bd3520107bb43ed392db9cf3ad52fd31"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-5-evidence/worker.log",
+      "bytes": 802,
+      "sha256": "1967784b77f20e9319557f9645c4b7d24f8ab33daa6b7a6bb54d20bb07acad81"
+    }
+  ],
+  "communication": "delivered once; ZCode16:19 read-only ACK maintains freeze; Owner phase release pending",
+  "cleanup": "own disposable processes/database/files and test credentials removed",
+  "views_sync": "PASS; md/html/control read back"
+}

@@ -1,0 +1,19 @@
+{
+  "at": "2026-09-26T16:16:11.358018+08:00",
+  "all_pass": true,
+  "checks": {
+    "md_task": true,
+    "md_owner": true,
+    "md_pass": true,
+    "html_task": true,
+    "html_owner": true,
+    "html_pass": true,
+    "control_task": true,
+    "control_owner": true,
+    "control_pass": true,
+    "md_prompt": true,
+    "html_prompt": true,
+    "lock_blocker_md": true,
+    "lock_blocker_html": true
+  }
+}

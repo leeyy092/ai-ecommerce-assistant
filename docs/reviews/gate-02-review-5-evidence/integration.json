@@ -1,0 +1,9 @@
+{
+  "name": "integration",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "test:integration"
+  ],
+  "exit": 0,
+  "seconds": 17.3
+}

@@ -1,0 +1,9 @@
+{
+  "name": "e2e",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "test:e2e"
+  ],
+  "exit": 0,
+  "seconds": 5.07
+}

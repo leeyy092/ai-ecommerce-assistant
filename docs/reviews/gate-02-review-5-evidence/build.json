@@ -1,0 +1,9 @@
+{
+  "name": "build",
+  "args": [
+    "/Users/yuyuyu/.local/bin/pnpm",
+    "build"
+  ],
+  "exit": 0,
+  "seconds": 9.96
+}

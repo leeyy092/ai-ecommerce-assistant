@@ -1,0 +1,17 @@
+{
+  "freeze": "4b9e13902588724d0cfb2d489ef07d49d0a3489d",
+  "business": "b32f7318367b8d56f1dfb51dd4bb4df043f16f3a",
+  "base": "a80d62a51d24dc92f9fb55a3549abaaac1978803",
+  "branch": "phase/02-data-ingestion",
+  "archive": "5b51908b8404e4e0257fe0fd4bd2202f466e6c10",
+  "archive_to_final_paths": [
+    "00_START_HERE.html",
+    "00_START_HERE.md",
+    "ai-ecommerce-assistant/docs/reviews/gate-02-r4fix-evidence/README.md",
+    "docs/ai-ecommerce-assistant/12_PROGRESS.md"
+  ],
+  "executable_content_identical": true,
+  "workingtree": "",
+  "main": "4c7e95b925c2b04aa2c1116979678cac7af091f2",
+  "verified_at": "2026-09-26T16:01:21.320485+08:00"
+}

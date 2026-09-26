@@ -1,0 +1,97 @@
+{
+  "results": [
+    {
+      "name": "M04 isolated object adapter put/get/move works",
+      "expected": true,
+      "actual": true,
+      "status": "PASS"
+    },
+    {
+      "name": "M04 actual spool then strict read works with OSS",
+      "expected": true,
+      "actual": true,
+      "status": "PASS"
+    },
+    {
+      "name": "M04 failed upload cleanup removes local temporary object",
+      "expected": true,
+      "actual": true,
+      "status": "PASS"
+    },
+    {
+      "name": "M04 real service spool strictread promote ledger worker stream download chain",
+      "expected": {
+        "status": "preview_ready",
+        "valid": 2,
+        "localTemp": false,
+        "bodyMatches": true,
+        "remote": true
+      },
+      "actual": {
+        "status": "preview_ready",
+        "valid": 2,
+        "localTemp": false,
+        "bodyMatches": true,
+        "remote": true
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "M04 H08 OSS task transaction failure removes unowned remote file",
+      "expected": {
+        "threw": true,
+        "localTemp": false,
+        "newRemote": 0,
+        "newTask": 0
+      },
+      "actual": {
+        "threw": true,
+        "localTemp": false,
+        "newRemote": 0,
+        "newTask": 0
+      },
+      "status": "PASS"
+    }
+  ],
+  "calls": [
+    [
+      "put",
+      "test/a"
+    ],
+    [
+      "copy",
+      "test/b",
+      "test/a"
+    ],
+    [
+      "delete",
+      "test/a"
+    ],
+    [
+      "get",
+      "test/b"
+    ],
+    [
+      "put",
+      "raw/3139fa17-898a-4001-bfb8-fb28c10862a4/source.csv"
+    ],
+    [
+      "get",
+      "raw/3139fa17-898a-4001-bfb8-fb28c10862a4/source.csv"
+    ],
+    [
+      "getStream",
+      "raw/3139fa17-898a-4001-bfb8-fb28c10862a4/source.csv"
+    ],
+    [
+      "put",
+      "raw/9c5c8b19-acf2-4374-8c45-c46c17eaa4e3/source.csv"
+    ],
+    [
+      "delete",
+      "raw/9c5c8b19-acf2-4374-8c45-c46c17eaa4e3/source.csv"
+    ]
+  ],
+  "localSpoolExists": false,
+  "note": "Injected client is a memory-backed object store; no cloud credentials or cloud requests used."
+}

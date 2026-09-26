@@ -1,0 +1,15 @@
+{
+  "name": "initdb",
+  "args": [
+    "/opt/homebrew/opt/postgresql@17/bin/initdb",
+    "-D",
+    "/tmp/gate02-review5-20260926-siq330x3/pg",
+    "-U",
+    "review5",
+    "--auth=trust",
+    "-E",
+    "UTF8"
+  ],
+  "exit": 0,
+  "seconds": 0.5
+}

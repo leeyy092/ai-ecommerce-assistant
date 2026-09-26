@@ -1,0 +1,11 @@
+{
+  "base": "a80d62a51d24dc92f9fb55a3549abaaac1978803",
+  "archive": "5b51908b8404e4e0257fe0fd4bd2202f466e6c10",
+  "business": "b32f7318367b8d56f1dfb51dd4bb4df043f16f3a",
+  "business_paths": [
+    "ai-ecommerce-assistant/src/app/api/v1/imports/route.ts",
+    "ai-ecommerce-assistant/tests/integration/imports.test.ts"
+  ],
+  "management_evidence_paths": 220,
+  "unchanged_schema_migrations_dependencies": true
+}

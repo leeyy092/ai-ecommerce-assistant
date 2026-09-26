@@ -1,0 +1,34 @@
+[
+  {
+    "name": "H06 true HTTP incomplete multipart byte boundary",
+    "expected": {
+      "status": 422,
+      "code": "FILE_TOO_LARGE",
+      "multipart_closed": false
+    },
+    "actual": {
+      "status": 422,
+      "code": "FILE_TOO_LARGE",
+      "message": "文件超过 20971520 字节上限，已停止接收",
+      "bytes_sent": 23068672,
+      "multipart_closed": false
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H06 true HTTP incomplete multipart record boundary",
+    "expected": {
+      "status": 422,
+      "code": "TOO_MANY_ROWS",
+      "multipart_closed": false
+    },
+    "actual": {
+      "status": 422,
+      "code": "TOO_MANY_ROWS",
+      "message": "数据行超过 100000 行上限",
+      "bytes_sent": 440004,
+      "multipart_closed": false
+    },
+    "status": "PASS"
+  }
+]

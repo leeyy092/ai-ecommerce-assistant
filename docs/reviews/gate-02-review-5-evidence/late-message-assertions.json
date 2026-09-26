@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Customer message after complete file valid-tail lag=350",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 1,
+      "health": 200
+    },
+    "actual": {
+      "status": 201,
+      "hadSpoolBeforeTermination": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 1,
+      "health": 200
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "Customer message after complete file truncated-tail lag=0",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "actual": {
+      "status": 400,
+      "code": "UPLOAD_INTERRUPTED",
+      "hadSpoolBeforeTermination": false,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "Customer message after complete file truncated-tail lag=350",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "actual": {
+      "status": 400,
+      "code": "UPLOAD_INTERRUPTED",
+      "hadSpoolBeforeTermination": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "Customer message after complete file socket-abort lag=350",
+    "expected": {
+      "controlledResponse": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "actual": {
+      "aborted": true,
+      "hadSpoolBeforeTermination": true,
+      "newTemporaryFiles": 0,
+      "newTasks": 0,
+      "health": 200
+    },
+    "status": "PASS"
+  }
+]

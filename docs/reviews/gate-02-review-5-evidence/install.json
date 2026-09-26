@@ -1,0 +1,5 @@
+{
+  "command": "pnpm install --frozen-lockfile --prefer-offline",
+  "exit": 0,
+  "seconds": 5.36
+}

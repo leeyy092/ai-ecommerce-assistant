@@ -1,3 +1,15 @@
+# GATE_02 REVIEW5 PASS · 当前无需继续复审
+
+```text
+项目/Users/yuyuyu/Documents/ChatGPT/产品-开发已于2026-09-26完成Gate02 REVIEW5独立PASS（冻结4b9e139，业务b32f731）。先读唯一进度docs/ai-ecommerce-assistant/12_PROGRESS.md和当前CODEX_REVIEW_HANDOFF.md。TASK-005–007技术通过，H06/H08关闭；同一候选不再重复复审。当前下一责任人Owner，执行prompts/P09_PHASE_RELEASE.md核对阶段放行条件。没有Owner明确“放行 Phase 2”不得合并main、启动TASK-008或部署。新业务提交或有效新反例出现时才重定范围；本文件下方均为历史提示词，不能当作当前开工指令。
+
+执行Owner2026-09-26防跑偏要求：读取FINAL_DECISIONS.md第6/7节及docs/STATE_PROTOCOL.md“范围核对与停止规则”。开发和返修必须对应完整P0原合同/TASK及关闭标准；发现偏离或重大范围疑义立即停止当前工作与后续派发，保留现场交Owner决定。本条不构成阶段放行，不重开已通过同一候选。
+```
+
+---
+
+## 历史：REVIEW4阶段入口原文保留
+
 # P07 · GATE_02 REVIEW 4 修复后的下一轮复审（当前）
 
 更新：2026-09-26T15:50:00+08:00。ZCode 已按 G2R4-20260926-02 交回新候选 b32f731；本首个text块为本轮独立复审完整提示词。

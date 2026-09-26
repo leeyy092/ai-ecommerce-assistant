@@ -1,0 +1,19 @@
+{
+  "at": "2026-09-26T16:15:39+08:00",
+  "review_root": "/tmp/gate02-review5-20260926-siq330x3",
+  "review_root_removed": true,
+  "unit_temp_removed": [
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-after-UL7x9v",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-HdTvam",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-Wr0K6G",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-after-vWEn40",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-after-ObJXPr",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-spool-azKrBY",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-oss-QphYMo",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-oss-SkHu55",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-oss-3Q8LMi",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-oss-YzyNCE"
+  ],
+  "disposable_credentials_removed": true,
+  "other_executor_directories_untouched": true
+}
