@@ -40,3 +40,10 @@ multipart 失败时统一接管：`nodeReq.destroy()` → 等待 spool promise �
 
 - 本轮仅 `colima start`（链路重验需要）→ 结束后 `colima stop`，恢复未运行原状；未改 resolv.conf/daemon.json（N1 台账中的 resolv.conf 静态文件修改保持中，恢复命令见 gate-02-r3fix-evidence/README.md）。
 - 本轮一次性凭据（compose .env、owner 密码、cookie）仅存在于 /tmp 与证据目录；证据目录中 cookie jar 已删除。
+
+## N1 收尾补充（2026-09-26 15:57–15:58 · Codex 收尾核对落实）
+
+- **远端最终核对**：`git ls-remote` 实测 `phase/02-data-ingestion=5b51908`（=本地最终 HEAD；业务候选 b32f731 经 `git merge-base --is-ancestor` 确认在远端分支祖先链中），`main=4c7e95b` 未变动。Codex 15:56 clone 看到的 a80d62a 为本轮 push 完成前的中间态。
+- **VM 空闲块归还**：按已验证流程 `colima start` → `sudo fstrim -v /mnt/lima-colima`（输出：**93.7 MiB trimmed**）→ `colima stop`（恢复未运行）。宿主 `/` 可用空间 **7.4GiB → 11GiB**（df 实测前后）。未全局 prune、未改 DNS/其他项目资源。
+- **本轮剩余资源清理**：一次性 PG17 集群（/tmp/aiea-pg-r4，端口 5435）已 `pg_ctl stop -m fast`；/tmp 工作副本与上下文目录保留至会话结束随系统清理，不占主副本。
+- 最终写入权交回 Codex（Review5 独立环境）。
