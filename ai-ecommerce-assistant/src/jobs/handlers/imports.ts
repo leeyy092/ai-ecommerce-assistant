@@ -12,15 +12,32 @@
 import { createHash } from "node:crypto";
 import { getPrismaClient } from "@/database/prisma";
 import {
+  ADAPTER_VERSION,
   createCanonicalBatch,
   getAdapter,
   isFileKind,
   type CanonicalBatch,
   type CoverageDeclarationItem,
+  type RowError,
 } from "@/adapters/contracts";
+import {
+  buildIdempotencyKey,
+  classifyAndStage,
+  mappingVersion as mappingVersionOf,
+  transformCsvWithMapping,
+} from "@/services/importPreview";
 import { canImport } from "@/services/access";
 import { getObjectText, putObject } from "@/storage";
 import { Readable } from "node:stream";
+
+/** 逐行错误 CSV（行号/列/错误码/安全说明；不回显未脱敏原文） */
+function errorCsv(errors: RowError[]): string {
+  const header = "row,column,code,message";
+  const body = errors
+    .map((e) => [e.row, e.column ?? "", e.code, `"${String(e.message).replace(/"/g, '""')}"`].join(","))
+    .join("\r\n");
+  return `${header}\r\n${body}\r\n`;
+}
 
 export interface ValidateJobData {
   taskId: string;
@@ -102,7 +119,33 @@ export async function handleValidateTask(
   });
 
   try {
-    const text = await getObjectText(task.rawObjectKey);
+    const rawText = await getObjectText(task.rawObjectKey);
+    // TASK-008：字段映射——把用户映射的 CSV 列重排为标准列表后再解析；
+    // 未映射列列入 ignored_columns（预览列出），缺失必填列由解析层报 MISSING_COLUMN。
+    const mappingFields =
+      ((task.mapping as { fields?: Record<string, string> } | null)?.fields) ?? {};
+    let text = rawText;
+    let ignoredColumns: string[] = [];
+    // 总是经过映射转换（空映射=同名列直通），使未映射列在预览中被列出
+    const mapped = transformCsvWithMapping(task.sourceKind, rawText, mappingFields);
+    if ("error" in mapped) {
+      const rowErrors = [mapped.error];
+      const errorObjectKey = `errors/${task.id}/errors.csv`;
+      await putObject(errorObjectKey, Readable.from([errorCsv(rowErrors)]));
+      await db.importTask.updateMany({
+        where: { id: task.id, status: "validating" },
+        data: {
+          status: "failed",
+          errorCount: rowErrors.length,
+          errorObjectKey,
+          errorCode: mapped.error.code,
+          previewVersion: { increment: 1 },
+        },
+      });
+      return { status: "failed", valid: 0, errors: rowErrors.length };
+    }
+    text = mapped.text;
+    ignoredColumns = mapped.ignoredColumns;
     // G2-H03：来源更新时间必须来自文件本身，缺失即行级错误（不补造）
     const parsed = getAdapter("csv").parse(task.sourceKind, { storeExternalId: store.externalStoreId }, text);
     // G2-H04：统一 CanonicalBatch 合同——服务端赋值店铺/namespace/checksum，
@@ -119,33 +162,123 @@ export async function handleValidateTask(
         : [],
     });
 
-    const valid = batch.records.length;
-    const errors = batch.row_errors.length;
+    // TASK-008：全量校验与预览分类——文件内折叠/同刻冲突、自然键与既有事实对照
+    // （insert/update/unchanged/旧版本不覆盖）、未知 SKU/缺失引用/退款越界等
+    // 跨行与跨引用检查；staging manifest 写私有对象。
+    const timezone = (await db.store.findUniqueOrThrow({
+      where: { id: task.storeId },
+      select: { timezone: true },
+    })).timezone;
+    const staged = await classifyAndStage({
+      db,
+      kind: task.sourceKind,
+      orgId: task.orgId,
+      storeId: task.storeId,
+      namespace: dataSource.sourceNamespace,
+      timezone,
+      records: batch.records,
+      coverage: batch.coverage_declaration,
+    });
+
+    const allErrors: RowError[] = [
+      ...batch.row_errors,
+      ...staged.rowErrors,
+      ...ignoredColumns.map((c) => ({
+        row: 1,
+        column: c,
+        code: "IGNORED_COLUMN",
+        message: `未映射列 ${c} 已忽略（不导入）`,
+      })),
+    ];
+    const rejected = allErrors.length;
+    const rowCount = batch.records.length + batch.row_errors.length;
+
     let errorObjectKey: string | null = null;
-    if (errors > 0) {
+    if (allErrors.length > 0) {
       errorObjectKey = `errors/${task.id}/errors.csv`;
-      const header = "row,column,code,message";
-      const body = batch.row_errors
-        .map((e) => [e.row, e.column ?? "", e.code, `"${String(e.message).replace(/"/g, '""')}"`].join(","))
-        .join("\r\n");
-      await putObject(errorObjectKey, Readable.from([`${header}\r\n${body}\r\n`]));
+      await putObject(errorObjectKey, Readable.from([errorCsv(allErrors)]));
     }
 
-    const failure = batch.row_errors.find((e) =>
-      ["STORE_MISMATCH", "MISSING_COLUMN", "EMPTY_FILE", "INVALID_CSV", "DUPLICATE_COLUMN"].includes(e.code),
+    // staging manifest（私有对象；预览/提交边界都从这里读取）
+    const mappingArchived = (task.mapping as { mapping_version?: string } | null) ?? {};
+    const mappingVersion = mappingArchived.mapping_version ?? mappingVersionOf({});
+    const stagingObjectKey = `staging/${task.id}/manifest.json`;
+    const manifest = {
+      kind: task.sourceKind,
+      mapping_version: mappingVersion,
+      adapter_version: ADAPTER_VERSION,
+      file_sha256: task.fileSha256,
+      coverage_declaration: batch.coverage_declaration,
+      ignored_columns: ignoredColumns,
+      row_count: rowCount,
+      counts: {
+        insert: staged.counts.insert,
+        update: staged.counts.update,
+        unchanged: staged.counts.unchanged,
+        rejected,
+        duplicates_folded: staged.duplicatesFolded,
+        superseded_in_file: staged.supersededInFile,
+        superseded_by_db: staged.supersededByDb,
+      },
+      coverage_gaps: staged.coverageGaps,
+      coverage_only: staged.coverageOnly,
+      empty_file: staged.emptyFile,
+      rows: staged.rows,
+      generated_at: new Date().toISOString(),
+    };
+    await putObject(stagingObjectKey, Readable.from([JSON.stringify(manifest)]));
+
+    const failure = allErrors.find((e) =>
+      [
+        "STORE_MISMATCH",
+        "MISSING_COLUMN",
+        "EMPTY_FILE",
+        "INVALID_CSV",
+        "DUPLICATE_COLUMN",
+        "MAPPING_COLLISION",
+        "DUPLICATE_KEY_CONFLICT",
+        "VERSION_CONFLICT",
+        "PRODUCT_METADATA_CONFLICT",
+        "SKU_CODE_CONFLICT",
+        "SKU_NOT_FOUND",
+        "MISSING_ORDER_REFERENCE",
+        "ITEM_COUNT_EXCEEDED",
+        "REFUND_AMOUNT_EXCEEDS_PAID",
+        "REFUND_QUANTITY_CONFLICT",
+        "RELATED_CASE_NOT_FOUND",
+      ].includes(e.code),
     );
+    const success = !failure;
+    const idempotencyKey = success
+      ? buildIdempotencyKey({
+          fileSha256: task.fileSha256,
+          orgId: task.orgId,
+          storeId: task.storeId,
+          namespace: dataSource.sourceNamespace,
+          kind: task.sourceKind,
+          mappingVersion,
+          coverage: batch.coverage_declaration,
+          adapterVersion: ADAPTER_VERSION,
+        })
+      : null;
     await db.importTask.updateMany({
       where: { id: task.id, status: "validating" },
       data: {
         status: failure ? "failed" : "preview_ready",
-        validCount: valid,
-        errorCount: errors,
+        validCount: staged.rows.length,
+        errorCount: rejected,
+        rowCount,
+        insertCount: success ? staged.counts.insert : 0,
+        updateCount: success ? staged.counts.update : 0,
+        unchangedCount: success ? staged.counts.unchanged : 0,
         errorObjectKey,
+        stagingObjectKey,
         errorCode: failure ? failure.code : null,
+        idempotencyKey,
         previewVersion: { increment: 1 },
       },
     });
-    return { status: failure ? "failed" : "preview_ready", valid, errors };
+    return { status: failure ? "failed" : "preview_ready", valid: staged.rows.length, errors: rejected };
   } catch (error) {
     const code = (error as { code?: string }).code;
     const exhausted =

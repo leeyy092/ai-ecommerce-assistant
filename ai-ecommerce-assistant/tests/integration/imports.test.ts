@@ -1093,3 +1093,242 @@ describe("GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的�
     expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(0);
   });
 });
+
+describe("TASK-008｜字段映射、全量校验、预览与错误下载", () => {
+  const { readdirSync } = require("node:fs") as typeof import("node:fs");
+  const t8TmpCount = (): number => {
+    try {
+      return readdirSync(join(storageRoot(), "tmp")).length;
+    } catch {
+      return 0;
+    }
+  };
+
+  async function putMapping(taskId: string, cookie: string, body: Record<string, unknown>): Promise<Response> {
+    const { PUT } = await import("@/app/api/v1/imports/[id]/mapping/route");
+    return PUT(
+      req(`/api/v1/imports/${taskId}/mapping`, { method: "PUT", body: JSON.stringify(body), headers: { "content-type": "application/json" } }, cookie),
+      { params: Promise.resolve({ id: taskId }) },
+    );
+  }
+
+  async function getPreview(taskId: string, cookie: string): Promise<Response> {
+    const { GET } = await import("@/app/api/v1/imports/[id]/preview/route");
+    return GET(req(`/api/v1/imports/${taskId}/preview`, {}, cookie), { params: Promise.resolve({ id: taskId }) });
+  }
+
+  async function getErrorFile(taskId: string, cookie: string, suffix = ""): Promise<Response> {
+    const { GET } = await import("@/app/api/v1/imports/[id]/error-file/route");
+    return GET(req(`/api/v1/imports/${taskId}/error-file${suffix}`, {}, cookie), { params: Promise.resolve({ id: taskId }) });
+  }
+
+  async function runValidate(taskId: string): Promise<void> {
+    const { handleValidateTask } = await import("@/jobs/handlers/imports");
+    await handleValidateTask({ taskId });
+  }
+
+  const PRODUCTS_R4 = (sku: string, name: string, ts: string): string =>
+    `${FILE_HEADERS.products.join(",")}\nIMP-1,${ts},R8P,杯,杯具,active,${sku},${sku}-CODE,${name},,active`;
+
+  it("PUT mapping：CAS 版本 409、时区不一致 422、C 角色 403；正常 202 后校验产生 preview_version=1", async () => {
+    const task = await makeTask(operator.cookie, "products", PRODUCTS_R4("S8A", "杯A", "2026-09-11T01:00:00Z"));
+    const wrongV = await putMapping(task.id, operator.cookie, {
+      timezone: "Asia/Shanghai", coverage_declaration: [], expected_preview_version: 99,
+    });
+    expect(wrongV.status).toBe(409);
+    expect(((await wrongV.json()) as { error: { code: string } }).error.code).toBe("VERSION_CONFLICT");
+
+    const wrongTz = await putMapping(task.id, operator.cookie, {
+      timezone: "UTC", coverage_declaration: [], expected_preview_version: 0,
+    });
+    expect(wrongTz.status).toBe(422);
+
+    const forbidden = await putMapping(task.id, cs.cookie, {
+      timezone: "Asia/Shanghai", coverage_declaration: [], expected_preview_version: 0,
+    });
+    expect(forbidden.status).toBe(403);
+
+    const okRes = await putMapping(task.id, operator.cookie, {
+      timezone: "Asia/Shanghai",
+      coverage_declaration: [{ source_kind: "products", channel: "default", from: "2026-09-01", to: "2026-09-11", status: "complete", explicit_zero_dates: [] }],
+      expected_preview_version: 0,
+    });
+    expect(okRes.status).toBe(202);
+    expect(((await okRes.json()) as { data: { status: string } }).data.status).toBe("validating");
+
+    await runValidate(task.id);
+    const preview = await getPreview(task.id, operator.cookie);
+    expect(preview.status).toBe(200);
+    const body = (await preview.json()) as { data: { preview_version: number; counts: { insert: number }; coverage: { declaration: unknown[]; gaps: string[] } } };
+    expect(body.data.preview_version).toBe(1);
+    expect(body.data.counts.insert).toBe(1);
+    expect(body.data.coverage.declaration).toHaveLength(1);
+  });
+
+  it("缺列（映射无法覆盖必填字段）→ failed+MISSING_COLUMN；错误文件可签名下载且无错误文件时 404", async () => {
+    // 文件列名非标准：sku_name 列缺失（映射不到）
+    const content = `${FILE_HEADERS.products.join(",").replace(",sku_name", "")}\nIMP-1,2026-09-11T01:00:00Z,R8Q,杯,杯具,active,S8Q,S8Q-CODE,,active`;
+    const made = await makeTask(operator.cookie, "products", content);
+    const res = await putMapping(made.id, operator.cookie, {
+      timezone: "Asia/Shanghai",
+      field_mapping: { sku_name: "不存在的列" },
+      coverage_declaration: [],
+      expected_preview_version: 0,
+    });
+    expect(res.status).toBe(202);
+    await runValidate(made.id);
+    const task = await db.importTask.findUniqueOrThrow({ where: { id: made.id } });
+    expect(task.status).toBe("failed");
+    expect(task.errorCode).toBe("MISSING_COLUMN");
+
+    const missing = await getErrorFile(made.id, operator.cookie);
+    expect(missing.status).toBe(200);
+    const url = ((await missing.json()) as { data: { url: string } }).data.url;
+    const download = await getErrorFile(made.id, operator.cookie, url.replace(`/api/v1/imports/${made.id}/error-file`, ""));
+    expect(download.status).toBe(200);
+    const csv = await download.text();
+    expect(csv).toContain("MISSING_COLUMN");
+    expect(csv).toContain("sku_name");
+  });
+
+  it("仅表头文件：无声明 → empty_file；显式零事件 → coverage_only 预览且不推断完整", async () => {
+    const headerOnly = `${FILE_HEADERS.products.join(",")}\n`;
+    const made = await makeTask(operator.cookie, "products", headerOnly);
+    await runValidate(made.id);
+    let preview = await getPreview(made.id, operator.cookie);
+    let body = (await preview.json()) as { data: { preview_version: number; counts: { insert: number }; coverage: { empty_file: boolean; coverage_only: boolean } } };
+    expect(body.data.counts.insert).toBe(0);
+    expect(body.data.coverage.empty_file).toBe(true);
+    expect(body.data.coverage.coverage_only).toBe(false);
+
+    // 同文件重映射并声明显式零事件 → coverage-only 预览
+    const remap = await putMapping(made.id, operator.cookie, {
+      timezone: "Asia/Shanghai",
+      coverage_declaration: [{ source_kind: "products", channel: "default", from: "2026-09-01", to: "2026-09-03", status: "complete", explicit_zero_dates: ["2026-09-01", "2026-09-02"] }],
+      expected_preview_version: 1,
+    });
+    expect(remap.status).toBe(202);
+    await runValidate(made.id);
+    preview = await getPreview(made.id, operator.cookie);
+    body = (await preview.json()) as typeof body;
+    expect(body.data.preview_version).toBe(2);
+    expect(body.data.coverage.coverage_only).toBe(true);
+    expect(body.data.counts.insert).toBe(0);
+  });
+
+  it("同自然键同 source_updated_at 不同内容 → DUPLICATE_KEY_CONFLICT 整文件失败，不最后一行胜出", async () => {
+    const content = `${PRODUCTS_R4("S8B", "杯B", "2026-09-11T01:00:00Z")}\nIMP-1,2026-09-11T01:00:00Z,R8P,杯,杯具,active,S8B,S8B-CODE,杯B改名,,active`;
+    const made = await makeTask(operator.cookie, "products", content);
+    await runValidate(made.id);
+    const task = await db.importTask.findUniqueOrThrow({ where: { id: made.id } });
+    expect(task.status).toBe("failed");
+    expect(task.errorCode).toBe("DUPLICATE_KEY_CONFLICT");
+    const preview = await getPreview(made.id, operator.cookie);
+    expect(preview.status).toBe(409);
+    expect(((await preview.json()) as { error: { code: string } }).error.code).toBe("PREVIEW_NOT_READY");
+  });
+
+  it("未知 SKU 与缺失订单引用 → SKU_NOT_FOUND/MISSING_ORDER_REFERENCE 行级错误（整文件失败）", async () => {
+    const content = `${FILE_HEADERS.order_items.join(",")}\nIMP-1,2026-09-11T01:00:00Z,R8-O1,L1,不存在的SKU,1,10.000000,CNY`;
+    const made = await makeTask(operator.cookie, "order_items", content);
+    const order = await db.order.create({
+      data: {
+        orgId, storeId,
+        sourceNamespace: "ns-import", externalOrderId: "R8-O1",
+        sourceUpdatedAt: new Date("2026-09-01T02:00:00Z"), importTaskId: made.id, rowHash: "seed-r8-order-hash",
+        orderedAt: new Date("2026-09-01T01:55:00Z"), paidAt: new Date("2026-09-01T02:00:00Z"),
+        paymentStatus: "paid", currency: "CNY", expectedItemCount: 1,
+      },
+    });
+    await runValidate(made.id);
+    const task = await db.importTask.findUniqueOrThrow({ where: { id: made.id } });
+    expect(task.status).toBe("failed");
+    const preview = await getPreview(made.id, operator.cookie);
+    expect(preview.status).toBe(409);
+    const ef = await getErrorFile(made.id, operator.cookie);
+    const csv = await (await getErrorFile(made.id, operator.cookie, ((await ef.json()) as { data: { url: string } }).data.url.replace(`/api/v1/imports/${made.id}/error-file`, ""))).text();
+    expect(csv).toContain("SKU_NOT_FOUND");
+    expect(await db.orderItem.count({ where: { orgId, orderId: order.id } })).toBe(0);
+  });
+
+  it("insert/update/unchanged 分类：较新更新、相同内容无变化、旧版本不覆盖", async () => {
+    const storeRow = await db.store.findFirstOrThrow({ where: { orgId, id: storeId } });
+    // 先建三个任务（uploaded），种子 Product/SKU 挂到真实任务外键后依次校验
+    const same = await makeTask(operator.cookie, "products", PRODUCTS_R4("S8U", "原名", "2026-09-01T00:00:00Z"));
+    const newer = await makeTask(operator.cookie, "products", PRODUCTS_R4("S8U", "新名", "2026-09-02T00:00:00Z"));
+    const older = await makeTask(operator.cookie, "products", PRODUCTS_R4("S8U", "更旧名", "2026-08-30T00:00:00Z"));
+
+    // 种子 rowHash 与"同内容"行的规范化哈希一致 → 走 unchanged(identical) 分支
+    const { parseStandardFile } = await import("@/adapters/contracts");
+    const { recordRowHash } = await import("@/services/importPreview");
+    const sameParsed = parseStandardFile("products", PRODUCTS_R4("S8U", "原名", "2026-09-01T00:00:00Z"), { storeExternalId: "IMP-1" });
+    const seedHash = recordRowHash(sameParsed.records[0]!);
+    const productSeed = await db.product.create({
+      data: {
+        orgId, storeId: storeRow.id, sourceNamespace: "ns-import",
+        externalProductId: "R8P", sourceUpdatedAt: new Date("2026-09-01T00:00:00Z"),
+        importTaskId: same.id, rowHash: "seed-r8-product-hash",
+        name: "杯", status: "active",
+      },
+    });
+    // 既有 SKU（已提交态：rowHash 已写入，来源时间较旧）
+    const existing = await db.sKU.create({
+      data: {
+        orgId, storeId: storeRow.id, sourceNamespace: "ns-import",
+        externalSkuId: "S8U", skuCode: "S8U-CODE", name: "原名", specification: null,
+        status: "active", productId: productSeed.id,
+        importTaskId: same.id,
+        sourceUpdatedAt: new Date("2026-09-01T00:00:00Z"),
+        rowHash: seedHash,
+      },
+    });
+
+    await runValidate(same.id);
+    await runValidate(newer.id);
+    await runValidate(older.id);
+
+    const pSame = (await (await getPreview(same.id, operator.cookie)).json()) as { data: { counts: { unchanged: number } } };
+    expect(pSame.data.counts.unchanged).toBe(1);
+    const pNewer = (await (await getPreview(newer.id, operator.cookie)).json()) as { data: { counts: { update: number } } };
+    expect(pNewer.data.counts.update).toBe(1);
+    const pOlder = (await (await getPreview(older.id, operator.cookie)).json()) as { data: { counts: { unchanged: number; superseded_by_db: number } } };
+    expect(pOlder.data.counts.unchanged).toBe(1);
+    expect(pOlder.data.counts.superseded_by_db).toBe(1);
+    // DB 未被预览修改：提交（TASK-009）前不变
+    expect((await db.sKU.findUniqueOrThrow({ where: { id: existing.id } })).name).toBe("原名");
+  });
+
+  it("覆盖缺口：声明范围内缺失日期在预览列出（不从行数推断完整）", async () => {
+    const content = `${FILE_HEADERS.orders.join(",")}\nIMP-1,2026-09-11T01:00:00Z,R8-O2,paid,2026-09-01T01:55:00Z,2026-09-01T02:00:00Z,CNY,1`;
+    const made = await makeTask(operator.cookie, "orders", content);
+    const res = await putMapping(made.id, operator.cookie, {
+      timezone: "Asia/Shanghai",
+      coverage_declaration: [{ source_kind: "orders", channel: "default", from: "2026-09-01", to: "2026-09-04", status: "complete", explicit_zero_dates: [] }],
+      expected_preview_version: 0,
+    });
+    expect(res.status).toBe(202);
+    await runValidate(made.id);
+    const preview = await getPreview(made.id, operator.cookie);
+    const body = (await preview.json()) as { data: { coverage: { gaps: string[] } } };
+    expect(body.data.coverage.gaps).toEqual(["2026-09-02", "2026-09-03"]);
+  });
+
+  it("预览脱敏：customer_messages 预览样本不含原始手机号/邮箱", async () => {
+    const content = `${FILE_HEADERS.customer_messages.join(",")}\nIMP-1,2026-09-11T01:00:00Z,R8M1,R8C1,2026-09-01T03:00:00Z,,联系电话13812345678邮箱a@b.com,,platform_chat,zh-CN`;
+    const made = await makeTask(cs.cookie, "customer_messages", content);
+    await runValidate(made.id);
+    const preview = await getPreview(made.id, cs.cookie);
+    expect(preview.status).toBe(200);
+    const text = JSON.stringify(await preview.json());
+    expect(text).not.toContain("13812345678");
+    expect(text).not.toContain("a@b.com");
+  });
+
+  it("uploaded 未校验任务 → preview 409 PREVIEW_NOT_READY；t8 tmp 无残留", async () => {
+    const made = await makeTask(operator.cookie, "products", PRODUCTS_R4("S8Z", "杯Z", "2026-09-11T01:00:00Z"));
+    const preview = await getPreview(made.id, operator.cookie);
+    expect(preview.status).toBe(409);
+    await runValidate(made.id);
+    expect(t8TmpCount()).toBe(0);
+  });
+});

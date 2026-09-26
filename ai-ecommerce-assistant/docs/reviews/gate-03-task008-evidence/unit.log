@@ -1,0 +1,18 @@
+
+> ai-ecommerce-assistant@0.1.0 test /private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant
+> vitest run tests/unit
+
+
+ RUN  v3.2.7 /private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant
+
+ ✓ tests/unit/spool-interruption.test.ts (3 tests) 276ms
+ ✓ tests/unit/adapters.test.ts (47 tests) 16ms
+ ✓ tests/unit/storage-oss.test.ts (4 tests) 3ms
+ ✓ tests/unit/env.test.ts (11 tests) 2ms
+ ✓ tests/unit/permissions.test.ts (7 tests) 1ms
+
+ Test Files  5 passed (5)
+      Tests  72 passed (72)
+   Start at  01:04:23
+   Duration  784ms (transform 114ms, setup 312ms, collect 73ms, tests 297ms, environment 0ms, prepare 29ms)
+
