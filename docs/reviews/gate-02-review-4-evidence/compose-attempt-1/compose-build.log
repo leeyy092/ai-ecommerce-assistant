@@ -1,0 +1,286 @@
+time="2026-09-26T14:51:06+08:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image aiea-review4-t6xh-web Building 
+ Image aiea-review4-t6xh-worker Building 
+ Image aiea-review4-t6xh-web Building 
+ Image aiea-review4-t6xh-worker Building 
+Sending build context to Docker daemon  246.7kB
+Sending build context to Docker daemon  246.7kB
+Step 1/28 : FROM node:24.21.0-bookworm-slim AS deps
+Step 1/28 : FROM node:24.21.0-bookworm-slim AS deps
+ ---> 0e0ff40c39bc
+Step 2/28 : WORKDIR /app
+ ---> 0e0ff40c39bc
+Step 2/28 : WORKDIR /app
+ ---> Using cache
+ ---> d2aa452fb1bd
+Step 3/28 : RUN corepack enable
+ ---> Using cache
+ ---> d2aa452fb1bd
+Step 3/28 : RUN corepack enable
+ ---> Using cache
+ ---> 3769fd7d58b8
+Step 4/28 : COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+ ---> Using cache
+ ---> 3769fd7d58b8
+Step 4/28 : COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+ ---> Using cache
+ ---> 1f94980968e4
+Step 5/28 : COPY prisma/schema.prisma ./prisma/schema.prisma
+ ---> Using cache
+ ---> 1f94980968e4
+Step 5/28 : COPY prisma/schema.prisma ./prisma/schema.prisma
+ ---> Using cache
+ ---> 01d9099b5cd5
+Step 6/28 : COPY prisma.config.ts ./
+ ---> Using cache
+ ---> 01d9099b5cd5
+Step 6/28 : COPY prisma.config.ts ./
+ ---> Using cache
+ ---> fd8002f98b88
+Step 7/28 : COPY src/lib/dbUrl.ts ./src/lib/dbUrl.ts
+ ---> Using cache
+ ---> fd8002f98b88
+Step 7/28 : COPY src/lib/dbUrl.ts ./src/lib/dbUrl.ts
+ ---> Using cache
+ ---> d83e21166d23
+Step 8/28 : RUN pnpm install --frozen-lockfile
+ ---> Using cache
+ ---> d83e21166d23
+Step 8/28 : RUN pnpm install --frozen-lockfile
+ ---> Using cache
+ ---> 3ea83b40364e
+Step 9/28 : FROM node:24.21.0-bookworm-slim AS build
+ ---> Using cache
+ ---> 3ea83b40364e
+Step 9/28 : FROM node:24.21.0-bookworm-slim AS build
+ ---> 0e0ff40c39bc
+Step 10/28 : WORKDIR /app
+ ---> 0e0ff40c39bc
+Step 10/28 : WORKDIR /app
+ ---> Using cache
+ ---> d2aa452fb1bd
+Step 11/28 : RUN corepack enable
+ ---> Using cache
+ ---> d2aa452fb1bd
+Step 11/28 : RUN corepack enable
+ ---> Using cache
+ ---> 3769fd7d58b8
+Step 12/28 : COPY --from=deps /app/node_modules ./node_modules
+ ---> Using cache
+ ---> 3769fd7d58b8
+Step 12/28 : COPY --from=deps /app/node_modules ./node_modules
+ ---> f86067c8131f
+Step 13/28 : COPY --from=deps /app/src/generated ./src/generated ---> c19e10903cfc
+
+Step 13/28 : COPY --from=deps /app/src/generated ./src/generated
+ ---> e3201f7b8b37
+Step 14/28 : COPY . .
+ ---> 66cbc60b83dc
+Step 14/28 : COPY . .
+ ---> 54d471168b81
+Step 15/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> f3dd95fe6031
+Step 15/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Running in 9d037f2b42a2
+ ---> Running in 9dd8960bb72c
+ ---> Removed intermediate container 9d037f2b42a2
+ ---> 8300b1827ae2
+Step 16/28 : ENV DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:5432/placeholder
+ ---> Removed intermediate container 9dd8960bb72c
+ ---> 8fd81dbc1066
+Step 16/28 : ENV DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:5432/placeholder
+ ---> Running in 5a6ab58ca53f
+ ---> Running in b6b9a34633ce
+ ---> Removed intermediate container b6b9a34633ce
+ ---> f7981b336f31
+Step 17/28 : ENV BETTER_AUTH_SECRET=build-time-placeholder-not-a-secret
+ ---> Removed intermediate container 5a6ab58ca53f
+ ---> 13ab9a10c716
+Step 17/28 : ENV BETTER_AUTH_SECRET=build-time-placeholder-not-a-secret
+ ---> Running in f0265bb27f7b
+ ---> Running in 9346df384fa9
+ ---> Removed intermediate container 9346df384fa9
+ ---> 4f3f99c35b23
+Step 18/28 : ENV BETTER_AUTH_URL=http://localhost:3000
+ ---> Removed intermediate container f0265bb27f7b
+ ---> 91669bbffd78
+Step 18/28 : ENV BETTER_AUTH_URL=http://localhost:3000
+ ---> Running in 6dc18a6be709
+ ---> Running in 23d8bcc426dd
+ ---> Removed intermediate container 6dc18a6be709
+ ---> a1dd4fc15527
+Step 19/28 : RUN pnpm build
+ ---> Removed intermediate container 23d8bcc426dd
+ ---> ec49e7be9770
+Step 19/28 : RUN pnpm build
+ ---> Running in 20651fc4ce09
+ ---> Running in b829c083ee69
+[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0m[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0m
+> ai-ecommerce-assistant@0.1.0 build /app
+> next build && pnpm build:worker && pnpm build:scripts
+
+
+> ai-ecommerce-assistant@0.1.0 build /app
+> next build && pnpm build:worker && pnpm build:scripts
+
+▲ Next.js 16.3.5 (Turbopack)
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 81ms
+✓ Running next.config.ts took 61ms
+
+
+  Creating an optimized production build ...
+  Creating an optimized production build ...
+✓ Compiled successfully in 60s
+  Running TypeScript ...
+✓ Compiled successfully in 61s
+  Running TypeScript ...
+✓ Finished writing to filesystem cache in 11.7s
+✓ Finished writing to filesystem cache in 11.2s
+  Finished TypeScript in 33.1s ...
+  Collecting page data using 1 worker ...
+  Finished TypeScript in 33.9s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/12) ...
+  Generating static pages using 1 worker (0/12) ...
+  Generating static pages using 1 worker (3/12) 
+  Generating static pages using 1 worker (3/12) 
+  Generating static pages using 1 worker (6/12) 
+  Generating static pages using 1 worker (6/12) 
+  Generating static pages using 1 worker (9/12) 
+  Generating static pages using 1 worker (9/12) 
+✓ Generating static pages using 1 worker (12/12) in 370ms
+✓ Generating static pages using 1 worker (12/12) in 386ms
+  Finalizing page optimization ...
+
+  Finalizing page optimization ...
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/[...all]
+├ ƒ /api/health
+├ ƒ /api/v1/data-sources
+├ ƒ /api/v1/imports
+├ ƒ /api/v1/imports/[id]
+├ ƒ /api/v1/imports/[id]/file
+├ ƒ /api/v1/invitations
+├ ƒ /api/v1/invitations/[idOrToken]
+├ ƒ /api/v1/invitations/[idOrToken]/accept
+├ ƒ /api/v1/me
+├ ƒ /api/v1/me/active-organization
+├ ƒ /api/v1/members
+├ ƒ /api/v1/members/[id]
+├ ƒ /api/v1/organization
+├ ƒ /api/v1/stores
+├ ƒ /api/v1/stores/[id]
+├ ƒ /invite/[token]
+└ ○ /login
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/[...all]
+├ ƒ /api/health
+├ ƒ /api/v1/data-sources
+├ ƒ /api/v1/imports
+├ ƒ /api/v1/imports/[id]
+├ ƒ /api/v1/imports/[id]/file
+├ ƒ /api/v1/invitations
+├ ƒ /api/v1/invitations/[idOrToken]
+├ ƒ /api/v1/invitations/[idOrToken]/accept
+├ ƒ /api/v1/me
+├ ƒ /api/v1/me/active-organization
+├ ƒ /api/v1/members
+├ ƒ /api/v1/members/[id]
+├ ƒ /api/v1/organization
+├ ƒ /api/v1/stores
+├ ƒ /api/v1/stores/[id]
+├ ƒ /invite/[token]
+└ ○ /login
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> ai-ecommerce-assistant@0.1.0 build:worker /app
+> esbuild src/jobs/worker.ts src/jobs/status.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/jobs --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+
+> ai-ecommerce-assistant@0.1.0 build:worker /app
+> esbuild src/jobs/worker.ts src/jobs/status.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/jobs --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+[91m
+  dist/jobs/worker.js  7.5mb ⚠️
+  dist/jobs/status.js  2.6kb
+
+⚡ Done in 1539ms
+[0m[91m
+  dist/jobs/worker.js  7.5mb ⚠️
+  dist/jobs/status.js  2.6kb
+
+⚡ Done in 1547ms
+[0m
+> ai-ecommerce-assistant@0.1.0 build:scripts /app
+> esbuild scripts/init-owner.ts scripts/reset-owner-password.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/scripts --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+
+> ai-ecommerce-assistant@0.1.0 build:scripts /app
+> esbuild scripts/init-owner.ts scripts/reset-owner-password.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/scripts --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+[91m
+  dist/scripts/init-owner.js            7.7mb ⚠️
+  dist/scripts/reset-owner-password.js  6.1mb ⚠️
+
+⚡ Done in 1442ms
+[0m[91m
+  dist/scripts/init-owner.js            7.7mb ⚠️
+  dist/scripts/reset-owner-password.js  6.1mb ⚠️
+
+⚡ Done in 1487ms
+[0m ---> Removed intermediate container 20651fc4ce09
+ ---> ef401ee3710a
+Step 20/28 : FROM node:24.21.0-bookworm-slim AS runner
+ ---> Removed intermediate container b829c083ee69
+ ---> 585c65a1555a
+Step 20/28 : FROM node:24.21.0-bookworm-slim AS runner
+ ---> 0e0ff40c39bc
+Step 21/28 : WORKDIR /app
+ ---> 0e0ff40c39bc
+Step 21/28 : WORKDIR /app
+ ---> Using cache
+ ---> d2aa452fb1bd
+Step 22/28 : RUN corepack enable
+ ---> Using cache
+ ---> d2aa452fb1bd
+Step 22/28 : RUN corepack enable
+ ---> Using cache
+ ---> 3769fd7d58b8
+ ---> Using cache
+ ---> 3769fd7d58b8
+Step 23/28 : ENV NODE_ENV=productionStep 23/28 : ENV NODE_ENV=production
+
+ ---> Running in d5df55b52751
+ ---> Running in 0e146b60d5fa
+ ---> Removed intermediate container d5df55b52751
+ ---> 07abea72190d
+Step 24/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Removed intermediate container 0e146b60d5fa
+ ---> 6a3a90995eac
+Step 24/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Running in aa16a6ebb7ed
+ ---> Running in ace28346bed0
+ ---> Removed intermediate container ace28346bed0
+ ---> 2684c62264fe
+Step 25/28 : COPY --from=build /app ./
+ ---> Removed intermediate container aa16a6ebb7ed
+ ---> ed8da8df888a
+Step 25/28 : COPY --from=build /app ./
+

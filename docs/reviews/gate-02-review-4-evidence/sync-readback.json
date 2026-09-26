@@ -1,0 +1,31 @@
+{
+  "at": "2026-09-26T15:23:17.040531+08:00",
+  "Product_OS": {
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-26T15:20:39+08:00"
+  },
+  "readback": {
+    "00_START_HERE.md": {
+      "task": true,
+      "tool": true,
+      "status": true,
+      "full_P08_prompt": true,
+      "checkpoint": true
+    },
+    "00_START_HERE.html": {
+      "task": true,
+      "tool": true,
+      "status": true,
+      "full_P08_prompt": true,
+      "checkpoint": true
+    },
+    "control": {
+      "TASK-007": true,
+      "待修复": true,
+      "ZCode": true,
+      "P08": true
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "stream-faults",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-stream-faults.ts"
+  ],
+  "exit": 0,
+  "seconds": 3.18
+}

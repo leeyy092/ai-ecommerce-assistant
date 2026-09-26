@@ -1,0 +1,9 @@
+{
+  "name": "colima-start",
+  "args": [
+    "colima",
+    "start"
+  ],
+  "exit": 0,
+  "seconds": 60.85
+}

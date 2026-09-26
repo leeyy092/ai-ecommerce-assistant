@@ -1,0 +1,18 @@
+
+> ai-ecommerce-assistant@0.1.0 test /private/tmp/gate02-review4-20260926-t6xh05db/app
+> vitest run tests/unit
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90m/private/tmp/gate02-review4-20260926-t6xh05db/app[39m
+
+ [32m✓[39m tests/unit/adapters.test.ts [2m([22m[2m47 tests[22m[2m)[22m[32m 89[2mms[22m[39m
+ [32m✓[39m tests/unit/env.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/unit/storage-oss.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/unit/permissions.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/spool-interruption.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 279[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m72 passed[39m[22m[90m (72)[39m
+[2m   Start at [22m 14:46:08
+[2m   Duration [22m 3.61s[2m (transform 554ms, setup 1.62s, collect 305ms, tests 393ms, environment 0ms, prepare 849ms)[22m
+

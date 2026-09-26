@@ -1,0 +1,10 @@
+{
+  "name": "install",
+  "args": [
+    "pnpm",
+    "install",
+    "--frozen-lockfile"
+  ],
+  "exit": 0,
+  "seconds": 9.95
+}

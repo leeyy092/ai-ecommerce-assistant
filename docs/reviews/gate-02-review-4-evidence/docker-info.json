@@ -1,0 +1,9 @@
+{
+  "name": "docker-info",
+  "args": [
+    "docker",
+    "info"
+  ],
+  "exit": 0,
+  "seconds": 0.38
+}

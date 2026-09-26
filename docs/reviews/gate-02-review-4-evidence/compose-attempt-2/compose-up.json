@@ -1,0 +1,13 @@
+{
+  "name": "compose-up",
+  "args": [
+    "docker",
+    "compose",
+    "-p",
+    "aiea-review4-t6xh",
+    "up",
+    "-d"
+  ],
+  "exit": 0,
+  "seconds": 5.56
+}

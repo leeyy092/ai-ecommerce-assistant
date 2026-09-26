@@ -1,0 +1,12 @@
+{
+  "name": "docker-resources-before",
+  "args": [
+    "docker",
+    "ps",
+    "-a",
+    "--format",
+    "{{.Names}} {{.Status}}"
+  ],
+  "exit": 0,
+  "seconds": 0.14
+}

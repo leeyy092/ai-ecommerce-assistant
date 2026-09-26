@@ -1,0 +1,245 @@
+time="2026-09-26T15:02:20+08:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image aiea-review4-t6xh-web Building 
+ Image aiea-review4-t6xh-web Building 
+Sending build context to Docker daemon  246.8kB
+Step 1/28 : FROM node:24.21.0-bookworm-slim AS deps
+ ---> 0e0ff40c39bc
+Step 2/28 : WORKDIR /app
+ ---> Running in 55d9cdcde456
+ ---> Removed intermediate container 55d9cdcde456
+ ---> f8b3ac518ffc
+Step 3/28 : RUN corepack enable
+ ---> Running in 4d0bbfc077b6
+ ---> Removed intermediate container 4d0bbfc077b6
+ ---> 32e703160929
+Step 4/28 : COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+ ---> 437f858f450c
+Step 5/28 : COPY prisma/schema.prisma ./prisma/schema.prisma
+ ---> 447f8221a7f7
+Step 6/28 : COPY prisma.config.ts ./
+ ---> 4c3741353631
+Step 7/28 : COPY src/lib/dbUrl.ts ./src/lib/dbUrl.ts
+ ---> 1a9d64fe1f5f
+Step 8/28 : RUN pnpm install --frozen-lockfile
+ ---> Running in e9a771b15236
+[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0mLockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +375
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 375, reused 0, downloaded 8, added 8
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │     Update available! 10.34.5 → 12.6.0.      │
+   │     Changelog: https://pnpm.io/v/12.6.0      │
+   │   To update, run: corepack use pnpm@12.6.0   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 375, reused 0, downloaded 49, added 49
+Progress: resolved 375, reused 0, downloaded 71, added 71
+Progress: resolved 375, reused 0, downloaded 86, added 86
+Progress: resolved 375, reused 0, downloaded 101, added 101
+Progress: resolved 375, reused 0, downloaded 130, added 130
+Progress: resolved 375, reused 0, downloaded 150, added 150
+Progress: resolved 375, reused 0, downloaded 181, added 181
+Progress: resolved 375, reused 0, downloaded 211, added 210
+Progress: resolved 375, reused 0, downloaded 224, added 223
+Progress: resolved 375, reused 0, downloaded 242, added 242
+Progress: resolved 375, reused 0, downloaded 278, added 278
+Progress: resolved 375, reused 0, downloaded 326, added 326
+Progress: resolved 375, reused 0, downloaded 360, added 360
+Progress: resolved 375, reused 0, downloaded 370, added 370
+Progress: resolved 375, reused 0, downloaded 371, added 371
+Progress: resolved 375, reused 0, downloaded 372, added 371
+Progress: resolved 375, reused 0, downloaded 374, added 374
+Progress: resolved 375, reused 0, downloaded 375, added 374
+Progress: resolved 375, reused 0, downloaded 375, added 375, done
+.../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+.../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+
+dependencies:
++ @prisma/adapter-pg 7.10.0
++ @prisma/client 7.10.0
++ better-auth 1.7.4
++ busboy 1.6.0
++ csv-parse 5.6.0
++ next 16.3.5
++ pg 8.23.0
++ pg-boss 12.32.0
++ pino 10.3.1
++ react 19.2.8
++ react-dom 19.2.8
++ zod 4.6.2
+
+devDependencies:
++ @playwright/test 1.63.0
++ @tailwindcss/postcss 4.3.3
++ @types/ali-oss 6.23.3
++ @types/busboy 1.5.4
++ @types/node 24.13.4
++ @types/pg 8.23.1
++ @types/react 19.3.0
++ @types/react-dom 19.3.0
++ ali-oss 6.23.0
++ esbuild 0.25.12
++ prisma 7.10.0
++ tailwindcss 4.3.3
++ tsx 4.23.13
++ typescript 5.9.3
++ vitest 3.2.7
+
+. postinstall$ prisma generate
+. postinstall: Loaded Prisma config from prisma.config.ts.
+. postinstall: prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+. postinstall: Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+. postinstall: prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+. postinstall: Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+. postinstall: Prisma schema loaded from prisma/schema.prisma.
+. postinstall: ✔ Generated Prisma Client (7.10.0) to ./src/generated/prisma in 385ms
+. postinstall: Done
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: @prisma/engines@7.10.0, prisma@7.10.0.              │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 25.6s using pnpm v10.34.5
+ ---> Removed intermediate container e9a771b15236
+ ---> e4b7b8b8949b
+Step 9/28 : FROM node:24.21.0-bookworm-slim AS build
+ ---> 0e0ff40c39bc
+Step 10/28 : WORKDIR /app
+ ---> Using cache
+ ---> f8b3ac518ffc
+Step 11/28 : RUN corepack enable
+ ---> Using cache
+ ---> 32e703160929
+Step 12/28 : COPY --from=deps /app/node_modules ./node_modules
+ ---> ce9b47f1b633
+Step 13/28 : COPY --from=deps /app/src/generated ./src/generated
+ ---> bd8f55d9295c
+Step 14/28 : COPY . .
+ ---> 07990361b335
+Step 15/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Running in cfd547a7c1bd
+ ---> Removed intermediate container cfd547a7c1bd
+ ---> 174065fe7ec9
+Step 16/28 : ENV DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:5432/placeholder
+ ---> Running in ac1c3f4fdf48
+ ---> Removed intermediate container ac1c3f4fdf48
+ ---> ea99f157cfde
+Step 17/28 : ENV BETTER_AUTH_SECRET=build-time-placeholder-not-a-secret
+ ---> Running in 845b7a67ebca
+ ---> Removed intermediate container 845b7a67ebca
+ ---> 2219aa272a49
+Step 18/28 : ENV BETTER_AUTH_URL=http://localhost:3000
+ ---> Running in a20fc6e3ee14
+ ---> Removed intermediate container a20fc6e3ee14
+ ---> 27e7a52419fb
+Step 19/28 : RUN pnpm build
+ ---> Running in cd1000c2e184
+[91m! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.5.tgz
+[0m
+> ai-ecommerce-assistant@0.1.0 build /app
+> next build && pnpm build:worker && pnpm build:scripts
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 28ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 21.8s
+  Running TypeScript ...
+  Finished TypeScript in 14.4s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/12) ...
+  Generating static pages using 1 worker (3/12) 
+  Generating static pages using 1 worker (6/12) 
+  Generating static pages using 1 worker (9/12) 
+✓ Generating static pages using 1 worker (12/12) in 274ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/[...all]
+├ ƒ /api/health
+├ ƒ /api/v1/data-sources
+├ ƒ /api/v1/imports
+├ ƒ /api/v1/imports/[id]
+├ ƒ /api/v1/imports/[id]/file
+├ ƒ /api/v1/invitations
+├ ƒ /api/v1/invitations/[idOrToken]
+├ ƒ /api/v1/invitations/[idOrToken]/accept
+├ ƒ /api/v1/me
+├ ƒ /api/v1/me/active-organization
+├ ƒ /api/v1/members
+├ ƒ /api/v1/members/[id]
+├ ƒ /api/v1/organization
+├ ƒ /api/v1/stores
+├ ƒ /api/v1/stores/[id]
+├ ƒ /invite/[token]
+└ ○ /login
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> ai-ecommerce-assistant@0.1.0 build:worker /app
+> esbuild src/jobs/worker.ts src/jobs/status.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/jobs --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+[91m
+  dist/jobs/worker.js  7.5mb ⚠️
+  dist/jobs/status.js  2.6kb
+
+⚡ Done in 940ms
+[0m
+> ai-ecommerce-assistant@0.1.0 build:scripts /app
+> esbuild scripts/init-owner.ts scripts/reset-owner-password.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/scripts --external:ali-oss --external:proxy-agent --banner:js="var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;" --define:import.meta.url=__aieaImportMetaUrl
+
+[91m
+  dist/scripts/init-owner.js            7.7mb ⚠️
+  dist/scripts/reset-owner-password.js  6.1mb ⚠️
+
+⚡ Done in 768ms
+[0m ---> Removed intermediate container cd1000c2e184
+ ---> 07b66aed08c4
+Step 20/28 : FROM node:24.21.0-bookworm-slim AS runner
+ ---> 0e0ff40c39bc
+Step 21/28 : WORKDIR /app
+ ---> Using cache
+ ---> f8b3ac518ffc
+Step 22/28 : RUN corepack enable
+ ---> Using cache
+ ---> 32e703160929
+Step 23/28 : ENV NODE_ENV=production
+ ---> Running in b864380a5b9b
+ ---> Removed intermediate container b864380a5b9b
+ ---> a0d4105ff27c
+Step 24/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Running in 9edda86a96b3
+ ---> Removed intermediate container 9edda86a96b3
+ ---> b9c1756576ca
+Step 25/28 : COPY --from=build /app ./
+ ---> c57b4d93ebba
+Step 26/28 : EXPOSE 3000
+ ---> Running in df3b259a6a68
+ ---> Removed intermediate container df3b259a6a68
+ ---> 7ceccc20c00f
+Step 27/28 : CMD ["node", "node_modules/next/dist/bin/next", "start"]
+ ---> Running in 73c3edc0dd6b
+ ---> Removed intermediate container 73c3edc0dd6b
+ ---> 886f2d7ee158
+Step 28/28 : LABEL com.docker.compose.image.builder=classic
+ ---> Running in 9985baab4cd2
+ ---> Removed intermediate container 9985baab4cd2
+ ---> 5a42474e2dc2
+Successfully built 5a42474e2dc2
+Successfully tagged aiea-review4-t6xh-web:latest
+ Image aiea-review4-t6xh-web Built 
+ Image aiea-review4-t6xh-web Built 

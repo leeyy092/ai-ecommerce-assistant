@@ -1,0 +1,13 @@
+{
+  "name": "compose-build-worker",
+  "args": [
+    "docker",
+    "compose",
+    "-p",
+    "aiea-review4-t6xh",
+    "build",
+    "worker"
+  ],
+  "exit": 0,
+  "seconds": 0.49
+}

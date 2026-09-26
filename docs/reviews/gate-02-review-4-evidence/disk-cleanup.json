@@ -1,0 +1,53 @@
+[
+  {
+    "name": "disk-before",
+    "args": [
+      "df",
+      "-k",
+      "/tmp"
+    ],
+    "exit": 0,
+    "seconds": 0.01
+  },
+  {
+    "name": "cleanup-colima-start",
+    "args": [
+      "colima",
+      "start"
+    ],
+    "exit": 0,
+    "seconds": 16.49
+  },
+  {
+    "name": "cleanup-guest-trim",
+    "args": [
+      "colima",
+      "ssh",
+      "--",
+      "sudo",
+      "fstrim",
+      "/mnt/lima-colima"
+    ],
+    "exit": 0,
+    "seconds": 0.34
+  },
+  {
+    "name": "cleanup-colima-stop",
+    "args": [
+      "colima",
+      "stop"
+    ],
+    "exit": 0,
+    "seconds": 2.27
+  },
+  {
+    "name": "disk-after",
+    "args": [
+      "df",
+      "-k",
+      "/tmp"
+    ],
+    "exit": 0,
+    "seconds": 0.01
+  }
+]

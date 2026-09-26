@@ -1,0 +1,10 @@
+(node:44873) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+truncated-form PASS {
+  status: 400,
+  code: 'UPLOAD_INTERRUPTED',
+  newTemporaryFiles: 0,
+  newTasks: 0,
+  health: 200
+}
+socket-abort PASS { aborted: true, newTemporaryFiles: 0, newTasks: 0, health: 200 }

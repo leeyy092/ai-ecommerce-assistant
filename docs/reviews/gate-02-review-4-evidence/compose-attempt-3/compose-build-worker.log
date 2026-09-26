@@ -1,0 +1,89 @@
+time="2026-09-26T15:07:07+08:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image aiea-review4-t6xh-worker Building 
+ Image aiea-review4-t6xh-worker Building 
+Sending build context to Docker daemon  246.8kB
+Step 1/28 : FROM node:24.21.0-bookworm-slim AS deps
+ ---> 0e0ff40c39bc
+Step 2/28 : WORKDIR /app
+ ---> Using cache
+ ---> f8b3ac518ffc
+Step 3/28 : RUN corepack enable
+ ---> Using cache
+ ---> 32e703160929
+Step 4/28 : COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+ ---> Using cache
+ ---> 437f858f450c
+Step 5/28 : COPY prisma/schema.prisma ./prisma/schema.prisma
+ ---> Using cache
+ ---> 447f8221a7f7
+Step 6/28 : COPY prisma.config.ts ./
+ ---> Using cache
+ ---> 4c3741353631
+Step 7/28 : COPY src/lib/dbUrl.ts ./src/lib/dbUrl.ts
+ ---> Using cache
+ ---> 1a9d64fe1f5f
+Step 8/28 : RUN pnpm install --frozen-lockfile
+ ---> Using cache
+ ---> e4b7b8b8949b
+Step 9/28 : FROM node:24.21.0-bookworm-slim AS build
+ ---> 0e0ff40c39bc
+Step 10/28 : WORKDIR /app
+ ---> Using cache
+ ---> f8b3ac518ffc
+Step 11/28 : RUN corepack enable
+ ---> Using cache
+ ---> 32e703160929
+Step 12/28 : COPY --from=deps /app/node_modules ./node_modules
+ ---> Using cache
+ ---> ce9b47f1b633
+Step 13/28 : COPY --from=deps /app/src/generated ./src/generated
+ ---> Using cache
+ ---> bd8f55d9295c
+Step 14/28 : COPY . .
+ ---> Using cache
+ ---> 07990361b335
+Step 15/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Using cache
+ ---> 174065fe7ec9
+Step 16/28 : ENV DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:5432/placeholder
+ ---> Using cache
+ ---> ea99f157cfde
+Step 17/28 : ENV BETTER_AUTH_SECRET=build-time-placeholder-not-a-secret
+ ---> Using cache
+ ---> 2219aa272a49
+Step 18/28 : ENV BETTER_AUTH_URL=http://localhost:3000
+ ---> Using cache
+ ---> 27e7a52419fb
+Step 19/28 : RUN pnpm build
+ ---> Using cache
+ ---> 07b66aed08c4
+Step 20/28 : FROM node:24.21.0-bookworm-slim AS runner
+ ---> 0e0ff40c39bc
+Step 21/28 : WORKDIR /app
+ ---> Using cache
+ ---> f8b3ac518ffc
+Step 22/28 : RUN corepack enable
+ ---> Using cache
+ ---> 32e703160929
+Step 23/28 : ENV NODE_ENV=production
+ ---> Using cache
+ ---> a0d4105ff27c
+Step 24/28 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Using cache
+ ---> b9c1756576ca
+Step 25/28 : COPY --from=build /app ./
+ ---> Using cache
+ ---> c57b4d93ebba
+Step 26/28 : EXPOSE 3000
+ ---> Using cache
+ ---> 7ceccc20c00f
+Step 27/28 : CMD ["node", "node_modules/next/dist/bin/next", "start"]
+ ---> Using cache
+ ---> 886f2d7ee158
+Step 28/28 : LABEL com.docker.compose.image.builder=classic
+ ---> Using cache
+ ---> 5a42474e2dc2
+Successfully built 5a42474e2dc2
+Successfully tagged aiea-review4-t6xh-worker:latest
+ Image aiea-review4-t6xh-worker Built 
+ Image aiea-review4-t6xh-worker Built 

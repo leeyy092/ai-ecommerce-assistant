@@ -1,0 +1,1024 @@
+{
+  "schema_version": 1,
+  "gate": "CODEX_REVIEW_GATE_02",
+  "review_round": 4,
+  "date": "2026-09-26",
+  "reviewer": "Codex",
+  "result": "FAIL",
+  "freeze": "a80d62a51d24dc92f9fb55a3549abaaac1978803",
+  "business": "83e33e76571f0d9a8fcefe9701b6efc3d8dd1c1a",
+  "diff_base": "a4652611e29d3e316de7f41bf46550fe02a64c2d",
+  "archive_source": "5c1c4ed48fa7eba849c22322ef2905940d258abf",
+  "scope_identity": "executable/test/schema/dependency/compose content identical through a80d62a; later documents excluded from business acceptance",
+  "tasks": {
+    "TASK-005": "PASS",
+    "TASK-006": "PASS",
+    "TASK-007": "FAIL"
+  },
+  "open_high": [
+    {
+      "ids": [
+        "G2-H06",
+        "G2-H08"
+      ],
+      "count_as": 1,
+      "issue": "multipart fails after file spool succeeds; Route does not clean fulfilled temporary object",
+      "evidence": [
+        "upload-lifecycle-assertions.json",
+        "late-message-assertions.json"
+      ]
+    }
+  ],
+  "closed_this_round": [
+    "old early input-error/truncated-file/socket-abort cases",
+    "TOO_MANY_ROWS original error propagation",
+    "G2-M06",
+    "current triggered H09 container evidence gap"
+  ],
+  "deferred": [
+    {
+      "id": "G2-M04",
+      "scope": "real OSS account/bucket/network/deployment validation only",
+      "deadline": "TASK-029 or earlier first OSS enablement/deployment",
+      "local_chain": "PASS 5 assertions"
+    }
+  ],
+  "tests": {
+    "typecheck_exit": 0,
+    "unit": 72,
+    "integration": 111,
+    "build_exit": 0,
+    "e2e": 8,
+    "fresh_pg17_migrations": 12,
+    "independent_assertions": {
+      "total": 62,
+      "PASS": 57,
+      "FAIL": 5,
+      "by_file": {
+        "extra-assertions.json": {
+          "PASS": 2,
+          "FAIL": 0
+        },
+        "http-assertions.json": {
+          "PASS": 21,
+          "FAIL": 0
+        },
+        "http-interruption-assertions.json": {
+          "PASS": 2,
+          "FAIL": 0
+        },
+        "key-lengths-assertions.json": {
+          "PASS": 4,
+          "FAIL": 0
+        },
+        "late-message-assertions.json": {
+          "PASS": 1,
+          "FAIL": 3
+        },
+        "oss-assertions.json": {
+          "PASS": 5,
+          "FAIL": 0
+        },
+        "recovery-assertions.json": {
+          "PASS": 1,
+          "FAIL": 0
+        },
+        "samebody-assertions.json": {
+          "PASS": 1,
+          "FAIL": 0
+        },
+        "stream-faults-assertions.json": {
+          "PASS": 5,
+          "FAIL": 0
+        },
+        "upload-lifecycle-assertions.json": {
+          "PASS": 1,
+          "FAIL": 2
+        },
+        "wire-longwait-assertions.json": {
+          "PASS": 2,
+          "FAIL": 0
+        },
+        "worker-assertions.json": {
+          "PASS": 12,
+          "FAIL": 0
+        }
+      }
+    },
+    "container_assertions": {
+      "PASS": 20,
+      "FAIL": 0,
+      "prior_harness_attempts_preserved": true
+    }
+  },
+  "owner_phase_release": false,
+  "automatic_phase_continuation": "unconfirmed",
+  "merged_main": false,
+  "task008_started": false,
+  "deployed": false,
+  "report": "docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_4_2026-09-26.md",
+  "readme": "docs/reviews/gate-02-review-4-evidence/README.md",
+  "artifacts": [
+    {
+      "path": "docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_4_2026-09-26.md",
+      "bytes": 13667,
+      "sha256": "12c0941540fff1cbeeec9e85eb3124128bf9f5af195f78ccf25f589f6f2f517b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/README.md",
+      "bytes": 5925,
+      "sha256": "5d527802e526b8968d811ab86e35d5e6feb4c6cdd78eb99a58d86f481104bfbf"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/assertion-summary.json",
+      "bytes": 973,
+      "sha256": "54a7b7df81ac848b487cbd6fdcff18ecebee7ea69f3a3c663aea179af6b34a8b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/baseline.json",
+      "bytes": 26888,
+      "sha256": "d47a9acddbb5917a7dff7f434dda5b6fee0c815dab34d5ca211d1f9dd1c43758"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/build.json",
+      "bytes": 94,
+      "sha256": "c0d3aad628600e19e751d5089b89a122886d3370287477b1587305bccc8f8c55"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/build.log",
+      "bytes": 2463,
+      "sha256": "f704b1b136edf362d0c84db1d75d8c0647cb046e98f215a5b88107cde5210847"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/business.diff",
+      "bytes": 20238,
+      "sha256": "91765e00eead9264ab6d7b795525ec4ff61e08647a90c7981d586522d73ec425"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/cleanup-colima-start.log",
+      "bytes": 5379,
+      "sha256": "a9bdce3a7fb390708d1c8f61b2c9db0c35ad6ca96a61e9d7374c0856642c79f7"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/cleanup-colima-stop.log",
+      "bytes": 1712,
+      "sha256": "89ea5707ad1f70c21d7b8ae419b7a560b5518bf2e67e8ad5ba808cfbaeb1f52c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/cleanup-guest-trim.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/clone.log",
+      "bytes": 106,
+      "sha256": "19794388989489066c1bdb49479e6963d8b7522508bec9268e8f4a3f43165f36"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/colima-start.json",
+      "bytes": 104,
+      "sha256": "0fe24905e16cac548bfc9dac6a770746c599001ece5f8e7aacd3fa435ba9db1c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/colima-start.log",
+      "bytes": 5489,
+      "sha256": "bcc63f6e0d8c21bbd1bf68f3a29178011f75e9e7cdf611fbb44aa7b4ba38a272"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/colima-status-after.json",
+      "bytes": 110,
+      "sha256": "2bdb496abad3fb2810d7f180d59bf617d5e047bf1aaf23139c619220a91dfb06"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/colima-status-after.log",
+      "bytes": 73,
+      "sha256": "ab263a06590ad564bca177dcdd240d4a8809f4e6566fc34fd417a8f2c69e481b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/colima-status-before.json",
+      "bytes": 112,
+      "sha256": "842287be77f93636526eaa02043fa89ec627c422168644c661251f0108a54331"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/colima-status-before.log",
+      "bytes": 73,
+      "sha256": "23938ec045ff25eedda068455600bf5fb835bdf4ee44e44c9d69878c0be299ab"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/colima-stop.json",
+      "bytes": 101,
+      "sha256": "4a2582aa162dc0825e6065ba816934c9c1c098e07dfb9b9888f0fd3625d953a5"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/colima-stop.log",
+      "bytes": 1712,
+      "sha256": "c43c9abc4b6b2fbb0639b71a8edf0f6e2227ee19574a68cd5b967363b8df8e4c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-assertions.json",
+      "bytes": 2256,
+      "sha256": "9b6f6b693e8fb93254c87df32aa2230e6f6929bb0aa9b6cd532cc82d9c86a5d6"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-1/compose-assertions.json",
+      "bytes": 431,
+      "sha256": "44f26ba00f701d8c95aa31d68ab64a1c0aee8398d60060ccf363e94183fc1798"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-1/compose-build.json",
+      "bytes": 158,
+      "sha256": "473aa05dc9b037b6f95f2acbe9a21ae2680c6d0b27a84c4ee2517b82c5891284"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-1/compose-build.log",
+      "bytes": 9957,
+      "sha256": "f42619a49255a592b11c3d6567ccd792a15f5e1c054ffe0ba66e0bd1a87bae92"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-1/compose-down.json",
+      "bytes": 186,
+      "sha256": "b53aa9b0d6e80cbfd921bb1cb30f931346aa74a7fc7b3f924147a00ff276187a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-1/compose-down.log",
+      "bytes": 125,
+      "sha256": "0641fcf940b26304d2d68e2b74a0e1620d2b823c1f84f3910a290e4ca914db05"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-1/compose-rmi.json",
+      "bytes": 173,
+      "sha256": "6a0a4d355272f9ce16188f84fb4df12d1da9fa71ef6d94b84f1a21ce6b35cbce"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-1/compose-rmi.log",
+      "bytes": 147,
+      "sha256": "238ab2a16257ea35cf97ed99392fc1927f83d38f6459341fc960e1b84e607b8e"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-assertions.json",
+      "bytes": 1154,
+      "sha256": "d8ed402236111b7560debc1e4f8457e2a816d630d55bf163b9a38b0b79dcc732"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-build-web.json",
+      "bytes": 171,
+      "sha256": "d76837e6dab2c7ff369541ae8f6c6b5feee8ea030da223011ce51c851a9aa4a5"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-build-web.log",
+      "bytes": 5576,
+      "sha256": "d346429c02ad6192136911acddc9ceede32ea76a9d4f0dadb322abd928d3b2fe"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-build-worker.json",
+      "bytes": 175,
+      "sha256": "9a4e06282fd269d752a28004605b07ea1614fca7baa7b693488d27c7d9dca7ba"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-build-worker.log",
+      "bytes": 2830,
+      "sha256": "baecd39a1f611cf463b4613513d4085505c61d357dd7e08d3e668905f97d6a73"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-canary.json",
+      "bytes": 276,
+      "sha256": "8dfe6bf7d7cf9255fd142ecb3883d3bac262ee02d5a3c731844fd5f6398e5eaf"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-canary.log",
+      "bytes": 18,
+      "sha256": "f914285374dc41a54ee336dbf205c33b9e01b23ac174fbbfe1fa4c663de520d9"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-down.json",
+      "bytes": 186,
+      "sha256": "65efd4adee540a0864ae2fef46983bc9e9f87536a3853871bccc4f77762c859a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-down.log",
+      "bytes": 837,
+      "sha256": "6421ff3a86e393adaa2a74ff7c9b908e7f3acdf4588516c49388cf93bac3d015"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-migrate.json",
+      "bytes": 146,
+      "sha256": "4282ef00c34c7d09184a03efb0e29a159fc6988eba8700b9c0f5ed39b034ae06"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-migrate.log",
+      "bytes": 1888,
+      "sha256": "d368876185eb7086f263b14c7404a5611f72874f01bc2f2c140e7b3e825e191a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-owner.log",
+      "bytes": 388,
+      "sha256": "08d5e18f5539d803a11dcc020ff317571ba0437b4bba7853ff2812a49a395b05"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-rmi.json",
+      "bytes": 173,
+      "sha256": "af6c304ae5db86a202659d81fb3d0412619aa9fef210d36039485a8cdfccf5db"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-rmi.log",
+      "bytes": 729,
+      "sha256": "23abb596235f78aa0ac864809e108deca3e98cac160fca5137ebaba803a3ab76"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-up.json",
+      "bytes": 158,
+      "sha256": "4d4d6529e6613d4122ba0e66523dc299bdf5d8fc84c19b108fa0ab79550ca71b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-2/compose-up.log",
+      "bytes": 1304,
+      "sha256": "af307351741bae3549f91ecb1c9cc70e74d5ca18b01d17450bcd8d85b13013d8"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-assertions.json",
+      "bytes": 1262,
+      "sha256": "db40a420582c944d3466c31c42611c7a8dd6aadef389be9963ac822110705e92"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-build-web.json",
+      "bytes": 171,
+      "sha256": "4f34883606121443cd15ae163cb00f75aa1a3f3f99b6910f87724cc5454c873b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-build-web.log",
+      "bytes": 10662,
+      "sha256": "49cf9f34254005d3badcb59fbcb757bd81232624c2f696a3b0f3f0b5f1cc3af6"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-build-worker.json",
+      "bytes": 175,
+      "sha256": "1b09e655a633feef27ebbfa8910275f23756c16c3511cea586e48236ed213e96"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-build-worker.log",
+      "bytes": 2830,
+      "sha256": "7fe0ed1275d524539da9024a8fb865767a8f8742e4827c020e2225acd42ab1a9"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-canary.json",
+      "bytes": 276,
+      "sha256": "a038e56a394fbd3af98c622328d7ccdda8b5d129f3f01a4af93abc7b0173fa17"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-canary.log",
+      "bytes": 18,
+      "sha256": "f914285374dc41a54ee336dbf205c33b9e01b23ac174fbbfe1fa4c663de520d9"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-down.json",
+      "bytes": 186,
+      "sha256": "f2b666523d780b9fcf942abb83d80dedfb5dcaa9c137d97606f78a1dd8d01944"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-down.log",
+      "bytes": 837,
+      "sha256": "657d4d898357d5150f80428b830003653006ef8fd05a60ef29315f5c1ae5a3d2"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-migrate.json",
+      "bytes": 146,
+      "sha256": "536aac3e25f403fb5b679d5c17c8e7c96c60fc01c4b20039bcda4049bc084813"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-migrate.log",
+      "bytes": 1888,
+      "sha256": "d368876185eb7086f263b14c7404a5611f72874f01bc2f2c140e7b3e825e191a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-owner.log",
+      "bytes": 388,
+      "sha256": "95f49f8d3c1a92182b1e5b58c59d41dc8bad165c7432f02cd81b0813def69650"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-rmi.json",
+      "bytes": 173,
+      "sha256": "fbd30806299c78ffb7907ef39723a4675f2bf059bf20680da135d30b89808255"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-rmi.log",
+      "bytes": 729,
+      "sha256": "2889f3af300dfc8df2a884f1b30d46a769d451b9ca86e43a42d09cf08233b781"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-up.json",
+      "bytes": 157,
+      "sha256": "61aee5d8ace5b335d4a8ea962253d92e14109205f6c44b17b4b721ea4f80a5e3"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-attempt-3/compose-up.log",
+      "bytes": 1304,
+      "sha256": "dc92753961ea25f13368cf1265aec404e3f7d2e4f10773f3adf897f3524c91ab"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-build-web.json",
+      "bytes": 171,
+      "sha256": "586c28f45b5e71a4cbcdbfe9e7ef90ca7df8b904b5ecc1c83a188d0e14789eaa"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-build-web.log",
+      "bytes": 10782,
+      "sha256": "6225002b077dfa40f1207620a8eb70712f8dbb0166129cd196730e655791e019"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-build-worker.json",
+      "bytes": 174,
+      "sha256": "046f0d784325d6914ec10ce136eb6fce614dbddcb47d000c2d269da46819fe0a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-build-worker.log",
+      "bytes": 2830,
+      "sha256": "9aafb8794f4d1b49fa9800a8c2f6a15ef559c4f2fc6f15bd7b1cab9dc1458109"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-canary.json",
+      "bytes": 276,
+      "sha256": "1a0045ed870ac105e9e1157b2c3e523146ee46c76db80ff055260333c70a3eba"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-canary.log",
+      "bytes": 18,
+      "sha256": "f914285374dc41a54ee336dbf205c33b9e01b23ac174fbbfe1fa4c663de520d9"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-down.json",
+      "bytes": 186,
+      "sha256": "e3843abeba4c7b567a4a3dc674c8310ba5d40c80b706d53814b0e9acffcbee95"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-down.log",
+      "bytes": 837,
+      "sha256": "f1f9ce22e5fde09e5fa77356eded477730939507a32378032d2ef61d9f55ed48"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-migrate.json",
+      "bytes": 146,
+      "sha256": "c80b0be298386ffbee0d87220172615ffe05c3287e58b537e6f411fe14aaa90e"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-migrate.log",
+      "bytes": 1888,
+      "sha256": "d368876185eb7086f263b14c7404a5611f72874f01bc2f2c140e7b3e825e191a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-owner.log",
+      "bytes": 388,
+      "sha256": "a76f1126ce90ce95583dd12585528b408ce31985a3b3049cf7815e0ddd687781"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-ps.json",
+      "bytes": 148,
+      "sha256": "205c36f58b02f39b511b0b32a4bdd15a35adfc7165bda5f266a23e7f02bcab97"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-ps.log",
+      "bytes": 653,
+      "sha256": "3d9c45e481d0095284beca82a2d3079b26672af972e0c2fe4530a45d79c47495"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-restart.json",
+      "bytes": 183,
+      "sha256": "6d93225a7971880c9457b10fda7ce6d11ba6b0fdf86c2034dfa29c97607ef189"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-restart.log",
+      "bytes": 188,
+      "sha256": "00a75109675c6f15d41aa37dc2082f33bb6955c3bc5457c166d67c22eb71d618"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-rmi.json",
+      "bytes": 173,
+      "sha256": "53056bc1152711f4baf5a7bf26d3f6a6e267bc8e386476f59d1603e78295b4eb"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-rmi.log",
+      "bytes": 729,
+      "sha256": "73e6a04970c6bc77922b232e51c5f42ee8696bd3c012fb6b32cc5dddba7f2b7d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-up.json",
+      "bytes": 158,
+      "sha256": "ee451c736b513278b7919d6b5f6b9ccd42c5e36a66a9298176dab8477d6f56b0"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-up.log",
+      "bytes": 1304,
+      "sha256": "0218241d372eb23fb6de4434d18465127659b02786934efa68c82c1f0481b1d8"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-worker-logs.json",
+      "bytes": 191,
+      "sha256": "43a82e56d6ba8848f06b3bed008b8bd9ca0a3f6b5639dd4815d10bb7088546e0"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/compose-worker-logs.log",
+      "bytes": 1918,
+      "sha256": "f534f766b9a966685d666fcfe09b6d69998042414ece6bdbfb49cf93a7703653"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/coordination-receipt.json",
+      "bytes": 1628,
+      "sha256": "81b81d88acca44382d773f8c9755ca7d08d566ee67a4978ed874762f5d704a51"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/coverage-default-response.json",
+      "bytes": 67,
+      "sha256": "0e4af28405c9621fca6c5e7f90de8955ad0ac18e97f3fa90402c594ed436f21f"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/createdb.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/disk-after.log",
+      "bytes": 188,
+      "sha256": "3a2d60dc4986bb272ac129a860e8692769b8dbb3d082349469c0a21076827a43"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/disk-before.log",
+      "bytes": 186,
+      "sha256": "0e1db1ce69e4a97f3487ca307fd4e81bc0678414681db578beb3f4789b4584e0"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/disk-cleanup.json",
+      "bytes": 715,
+      "sha256": "6ad73f04a9fb48934e264fcc17b94a2825e108f00fa7f2de6f82b5ed0ee1bf4a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/docker-info.json",
+      "bytes": 101,
+      "sha256": "6c36ed500d488e8634b7713f58d8f355150a7b9601c57038532c65eea27b4833"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/docker-info.log",
+      "bytes": 1410,
+      "sha256": "76da78e71bcd24494ac301fa707531526c74a3e0610ae3d53914c1e44e6b8c9d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/docker-resources-after.json",
+      "bytes": 166,
+      "sha256": "6752ea304d9885988ffab5c68ec8be78dfff4a0b4e9c2a492abd310a00efb3c2"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/docker-resources-after.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/docker-resources-before.json",
+      "bytes": 167,
+      "sha256": "24d6b93cf4e8efa40263577ff9c0741fe9016f18eb164f122710158f05a62fab"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/docker-resources-before.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/e2e.json",
+      "bytes": 96,
+      "sha256": "81a081b6ea1835250453735a660509bb22df0ac8f344e39d819d1241b6467952"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/e2e.log",
+      "bytes": 1907,
+      "sha256": "536429ee792fa5da9a6902938109f365ca89d53fd5edef32c0faf6e9868b2ac3"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/environment.json",
+      "bytes": 443,
+      "sha256": "c687b79902a5d0b05a18406e47443d648863cb7bc725c4efe1dda2bcfa155262"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/evidence-secret-scan.json",
+      "bytes": 157,
+      "sha256": "099dfa0a5db52ece4d0f5a75ed6f3394410a4aead11d6b3dd1ca30573b18fa88"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/extra-assertions.json",
+      "bytes": 410,
+      "sha256": "538e6f90ed06bb48e9dc6d05956dc0a0f0ccfc479838f571936f4ae3d209139c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/extra.json",
+      "bytes": 127,
+      "sha256": "b4765a6724b1a6eed0bf4d12c506bb96bea2bc36237cd3055d3f36245e37f894"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/extra.log",
+      "bytes": 390,
+      "sha256": "fda564c3815958e279122dc24bcf674a6f2b6057bb75733202e79545a56d0af0"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/final-verification.json",
+      "bytes": 2222,
+      "sha256": "6359725b44d75228f7336744d8d193cbf125e8e59994b36ac8a80a71cbdb9f03"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/harness-notes.json",
+      "bytes": 1996,
+      "sha256": "7088057233f70dc7a97f76b523ac9f02a7d3bc2412afd343c10a1644228314ed"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/historical-integrity-before.json",
+      "bytes": 100764,
+      "sha256": "34c702d6bcac12ec9041587bdeb79bfaa4b6055528a0684bf30dbc021e0f12ce"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/http-assertions.json",
+      "bytes": 4450,
+      "sha256": "1b06347c2148ad60d0afd5919dafa32114c083222a010e5b8035f38dd7343972"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/http-interruption-assertions.json",
+      "bytes": 728,
+      "sha256": "5b27822d61037de96bca2a192766cacb1d4c03ae4745a62a62609fd58bb86a28"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/http-interruption.json",
+      "bytes": 151,
+      "sha256": "7918df9cdcae4ba1af3993f3028070f85b1a5f7e60d5c9835af08b41c4c1e8f6"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/http-interruption.log",
+      "bytes": 496,
+      "sha256": "a1bd1710476930012bc6e4b49ae1b8d035f7c7a580cfc7c63bbff6343db879c0"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/http.json",
+      "bytes": 125,
+      "sha256": "e489194b760e3bd1a95496423a205aeb85f91e15e795a05e1643abbdb41ba5f8"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/http.log",
+      "bytes": 1164,
+      "sha256": "03c242547dde3fd11a32ff6cc8695d767e4b939413da5822f9c6a9823fda22e1"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/initdb.log",
+      "bytes": 842,
+      "sha256": "ce130215bb6eb06d4ef369546b444069dba1919e0d74e3b733628352c89b5d5b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/install.json",
+      "bytes": 123,
+      "sha256": "52fccd6c5adfff3ababaefc685596aab6e32fce46a8df326100255bbf1bd659b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/install.log",
+      "bytes": 2360,
+      "sha256": "d86dda0fc33f4f08065065f4d3701102bc87d4543fb406ac0ecf46f3bd0a2a7b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/integration.json",
+      "bytes": 112,
+      "sha256": "fa326c45baea174fbf8090ffb844d3acf23d5ab753fdb1e9d65ebf56d6aaca54"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/integration.log",
+      "bytes": 10361,
+      "sha256": "aa0952da0d883e3187ce3de7da4dbb1677e8d669e9fb8d58f221b9d576fb3b53"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/key-lengths-assertions.json",
+      "bytes": 498,
+      "sha256": "2307581708612a726aa6d5b9228a76b8128a3abbe9c1053fa03e2594e5ba4c6f"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/key-lengths.json",
+      "bytes": 139,
+      "sha256": "44a460ae082148b79e94959fa67d713273f2a98f8f9a55166d68c4568c0ac125"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/key-lengths.log",
+      "bytes": 290,
+      "sha256": "0ae69575f42add8d1de364ccb1bf877a649d4fd16c51c63cad72d96ad91b4cb4"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/late-message-assertions.json",
+      "bytes": 1830,
+      "sha256": "573b248e5ec20d21d4189572e46e4f0a05984f89cd698ff2158bc98ccf8744e7"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/late-message.json",
+      "bytes": 141,
+      "sha256": "de97c3c4e57ff527be0c273755030f026a955dc4c2b95ff7d3ff417820e19c7f"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/late-message.log",
+      "bytes": 870,
+      "sha256": "db263f68e811858d2a23df8f9e9929b3ff0b8146c6429af4dda410349af874ec"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/migrate-deploy.json",
+      "bytes": 145,
+      "sha256": "bc141e623b134c21aa26160b5a6b11b468d86d559f298d4509ed546184d04076"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/migrate-deploy.log",
+      "bytes": 1887,
+      "sha256": "5c1cfdd97f56284a79350ade5a38f4afffff56841b8841f7108fd44447cd2e1a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/native-cleanup.json",
+      "bytes": 556,
+      "sha256": "8de0086fb1b7dd882cb927b5f22672f8aee7b335c6c842988db22b6276af6974"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/node-runtime.json",
+      "bytes": 272,
+      "sha256": "537c8f0e3fb835295d48c0987421da5cf21c413a4a44c51fa9721a298c9908df"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/oss-assertions.json",
+      "bytes": 2070,
+      "sha256": "bf18dfc813b77cbaa6e9a6d9c7d55162144f5269ce83e4db43b924bad8138312"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/oss.json",
+      "bytes": 123,
+      "sha256": "654527254e724b9286f3283982269063d25cfa0640062813868602b06ff7155b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/oss.log",
+      "bytes": 1330,
+      "sha256": "c27d67ecc50cf1d189f473ed6c2058340b4b17bfc0909edbaea6670492d7b4fd"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/pg-start.log",
+      "bytes": 52,
+      "sha256": "66afd0411ccc09366e99fdd99b85f21899c8d2d064f5835126859618802153ad"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/pg-stop.json",
+      "bytes": 177,
+      "sha256": "a9aae25e0bf3e2815563749208b5d06de031636b4d66b428a7b8281c5e566186"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/pg-stop.log",
+      "bytes": 56,
+      "sha256": "ca19178a35ab4153b75b494963b66ce8243e1b94c173107c87b44d09db23652d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/pre-writeback/12_PROGRESS.md",
+      "bytes": 141186,
+      "sha256": "63f72a2f35ae4c08108d37592bebe092a75719ecc35b1fbb0cf9fa15dc8b10d8"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/pre-writeback/CODEX_REVIEW_HANDOFF.md",
+      "bytes": 72300,
+      "sha256": "1f9abe11cd50e6649e977af0cadecadc23f0c5256195b6fb9285aa6a4bffdc82"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/pre-writeback/P07_CODE_REVIEW.md",
+      "bytes": 18756,
+      "sha256": "aa2df29178875e466dcc9f0db0ed10f755e54f12ba72e7a0c545f1750af99e45"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/pre-writeback/P08_FIX.md",
+      "bytes": 42042,
+      "sha256": "9c2038d234f9568f44d6a5fc465acf44dbaebf7c4514da6d862610c165fed1aa"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/pre-writeback-git.json",
+      "bytes": 148,
+      "sha256": "8cb29012b03e473087adbcf10d1f9911f53fd2dbe9215796ba7d19726f04c883"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/product-os-sync-handoff.json",
+      "bytes": 100,
+      "sha256": "54ffa9005e37ee9549a21b2512c6ab8c040888a6dfbcc215dcfe6760a120b634"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/rate-responses.json",
+      "bytes": 16393,
+      "sha256": "0d0630722682465f9be56ed13da5b6905ba05021afd871a25abe05eeac6b958d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/recovery-assertions.json",
+      "bytes": 672,
+      "sha256": "925b804852b4060e25e52f7d9adf46c4d4ff91d281bb700aa0add652ad029ecc"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/recovery.json",
+      "bytes": 133,
+      "sha256": "da91efcded3cc85288cb62af45f9063801de2929d419eb3fb5c9ad26633b0b82"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/recovery.log",
+      "bytes": 584,
+      "sha256": "857f10d5b57d3a0e3b84630bf58ce9a97edd691d5c077d608fc93d75d1df9101"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/review-start.json",
+      "bytes": 338,
+      "sha256": "338ba5ea288cf6f65f79ea8d3657539e2b346fd684aa304bdbf06b037bc7be10"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/samebody-assertions.json",
+      "bytes": 674,
+      "sha256": "bab7e674e75776c04024cfc6c6ebafa9e568ee35e39be55a29287dac1c8c5c60"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/samebody.json",
+      "bytes": 133,
+      "sha256": "930b9c2e403f69295107ed6cb63ba6584173b3d20ffc7ecf5f06fe9068bb7410"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/samebody.log",
+      "bytes": 584,
+      "sha256": "b7989d86671439ebe8a7bd4fe28d24d48c5d378890abca8d522d146fd87a472d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scope-final-check.json",
+      "bytes": 256,
+      "sha256": "11a5782b224e620512b2f38db45e09cda6ff6f22d9444494ff2836a2245ab951"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/compose-review.py",
+      "bytes": 6738,
+      "sha256": "2446f5c4d6bf967f0328adce988fd9d796be0bed3a959202993a2e8422ff419e"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-extra.ts",
+      "bytes": 3080,
+      "sha256": "dc26aa41baa5ea45536a4be3933aad41384d6ede88953ff6cca1672693c95092"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-http-interruption.ts",
+      "bytes": 2763,
+      "sha256": "83d18cd78e75bc80accdde27521d82b966db244e5cc336ea3759d4bdd0924d20"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-http.ts",
+      "bytes": 13785,
+      "sha256": "c1acb953d81d8971efb6f80189cc9c0865ba572cbe030b6d948923b23a9cb915"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-key-lengths.ts",
+      "bytes": 1375,
+      "sha256": "8ac12354c503212dbcc0632382c9a5c897d8b2fa05d862289400ea3bdcd04416"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-late-message.ts",
+      "bytes": 3539,
+      "sha256": "1eb9f59e56f2963b24da489c67b267314e0a9db013150e703fdc915d601970fa"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-oss.ts",
+      "bytes": 5092,
+      "sha256": "8333c1aa39df56a4722b0e2726f46887c56430df5a8c6dab742eeebdd4833caf"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-recovery.ts",
+      "bytes": 3199,
+      "sha256": "6e9b1a6b024e27c27243273cb9d6a7fd398686ea36dac28b5a79667d9ff0d5ff"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-samebody.ts",
+      "bytes": 3219,
+      "sha256": "71c8ec9b938bf95f96d01094057a3c7c9bcdde4281e86289d21b9fc3ebc75205"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-stream-faults.ts",
+      "bytes": 3946,
+      "sha256": "f51b955e94e9239c039ecb76f4f691939cadec05a1593978d3d98f713078ce1c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-upload-lifecycle.ts",
+      "bytes": 3437,
+      "sha256": "b64de691849191116b87c4371c95293cc5a24b95151288741b7ebfc916ce652d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-wire-longwait.ts",
+      "bytes": 2497,
+      "sha256": "44c3fb556e147e611b696074b5413f01d17aa29e5baf239992384698dca9fc0d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/review-worker.ts",
+      "bytes": 8277,
+      "sha256": "da2865551d41599a41078f8b5d93c58f0be3f224fc17239fede35b7aab9ad13d"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/scripts/run.py",
+      "bytes": 765,
+      "sha256": "f86497db8184b24392efa7535daca83d2e75fc4269c4444a10d2c03267ba5c4a"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/stream-faults-assertions.json",
+      "bytes": 1364,
+      "sha256": "ead07780181caaaef30e290e6fdb63f36fb9758ec2fab02e7bfbc3cdf214dea8"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/stream-faults.json",
+      "bytes": 143,
+      "sha256": "f510651e53a5f5bf64c707c84a24afbb66414cf1db63ffe6e570adcc7cda772e"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/stream-faults.log",
+      "bytes": 270,
+      "sha256": "b11b8b7fe97b2a8960e8fd0b77a34240dfb75bc7e16e291a68db75f656c9281c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/sync-readback-handoff.json",
+      "bytes": 476,
+      "sha256": "1fb990f1ae380d9b0f68c004f06b40970c05af152164a2a2604d3d2052c1963b"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/sync-readback.json",
+      "bytes": 610,
+      "sha256": "ebc4d5a38d586683d492290e7f336681583bc8d77e06dcd9ea7b0777cf92d43e"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/typecheck.json",
+      "bytes": 158,
+      "sha256": "55018eaea2921c8b3411771fbd4ac250ec0d0128ab1e72cf7b1f6baa73df42a5"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/unit.json",
+      "bytes": 92,
+      "sha256": "25b679d872ff26b5e949487d4fcad1a15fb52a093737b58aa9312e24918013f7"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/unit.log",
+      "bytes": 1039,
+      "sha256": "e87f46bf0b38f08e98ae3c70444f7476b81d3c3a6a5df7c615495cabab5461c1"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/upload-lifecycle-assertions.json",
+      "bytes": 1318,
+      "sha256": "ba32718befc2452f48989a6c75f927047496c65bab53ea63ff8703ed4efd55e8"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/upload-lifecycle.json",
+      "bytes": 149,
+      "sha256": "81156f07b517c182f480d8b1c85da0b6ca4aad79f4284a3774d87dfb59ad9009"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/upload-lifecycle.log",
+      "bytes": 714,
+      "sha256": "2c717d116848628462059893ffbc55324c58a422a70c98b332df950aad898009"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/vm-dns-current.json",
+      "bytes": 218,
+      "sha256": "b6099c69dd0e22efd32f4558f0aebd5e667355e6f83cece4a20ee35b6f65a3ac"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/vm-dns-current.log",
+      "bytes": 237,
+      "sha256": "4c66f0dabe980b34615cd2e01e2804cc8267c01a0b236332cc4e626453cd72d5"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/web.log",
+      "bytes": 932,
+      "sha256": "70c91c211a55bfe62ea81e11c6021f54b960952bd5f42af7cbd7318bfe81e779"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/wire-longwait-assertions.json",
+      "bytes": 810,
+      "sha256": "28fa8050dc8a84a6257f50bd8d73a6a35f04e754c287d933264bcf94e9dd8ddc"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/wire-longwait.json",
+      "bytes": 144,
+      "sha256": "0897e77fa281f731c719b4093cb17228edd9eaafbd20f2fb0e7cb2338d56a15c"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/wire-longwait.log",
+      "bytes": 701,
+      "sha256": "eefab4e56094fd32eaa2d05d9153f464aebf586db33aaaf8eb716eaabeebea76"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/worker-assertions.json",
+      "bytes": 4266,
+      "sha256": "53cd36950f73080c4d508eb19bb8dd287a6c7c83317afc2b1071a7d06edb2956"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/worker-built.log",
+      "bytes": 5171,
+      "sha256": "021dc961a034ccd77bcc0d5c6fc4b097fbe26612a2b13df73ec1ca2003f4b1f3"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/worker.json",
+      "bytes": 130,
+      "sha256": "60cf1b5fae8194066958c7a6dbefb73ff8f28110a70931436d50a9a794503bdf"
+    },
+    {
+      "path": "docs/reviews/gate-02-review-4-evidence/worker.log",
+      "bytes": 802,
+      "sha256": "b4706fd34f9394b5b2ed380090f3dbc9ef7c2c699bc735b71988b49fa2eb4ffe"
+    }
+  ],
+  "indexed_at": "2026-09-26T15:33:08+08:00"
+}

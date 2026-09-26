@@ -1,0 +1,11 @@
+{
+  "name": "late-message",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-late-message.ts"
+  ],
+  "exit": 1,
+  "seconds": 5.75
+}

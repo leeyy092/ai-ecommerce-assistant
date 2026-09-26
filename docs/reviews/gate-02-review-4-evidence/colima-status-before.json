@@ -1,0 +1,9 @@
+{
+  "name": "colima-status-before",
+  "args": [
+    "colima",
+    "status"
+  ],
+  "exit": 1,
+  "seconds": 1.11
+}

@@ -1,0 +1,11 @@
+{
+  "name": "http-interruption",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-http-interruption.ts"
+  ],
+  "exit": 0,
+  "seconds": 2.83
+}

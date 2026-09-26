@@ -1,3 +1,63 @@
+# CODEX_REVIEW_GATE_02 · REVIEW 4 复修完成交接（当前）
+
+> 2026-09-26：直接协作交接编号 `G2R4-20260926-02` 执行完成：ZCode 复修 REVIEW 4 剩余 H06/H08 请求级收尾并冻结候选 **b32f731**，写入权交回 Codex 独立复审（P07 首个 text 块）。自测全绿不等于 Gate PASS；PASS 后仍等 Owner 明确"放行 Phase 2"。
+
+更新时间：2026-09-26T15:50:00+08:00；执行者：ZCode。**Phase 2 / TASK-007 / REVIEW 4 剩余问题复修完成 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex（prompts/P07_CODE_REVIEW.md 首个 text 块）。**
+
+## 复审定位信息
+
+| 项 | 值 |
+|---|---|
+| Current Branch | `phase/02-data-ingestion`（本地/远端 = b32f731，推送范围 a80d62a..b32f731） |
+| Base | main `4c7e95b`（未变动、未合并） |
+| **复审范围** | **`a80d62a..实际 HEAD`**（业务修复 b32f731 一个提交；其后管理/证据差异单列，不计业务验收） |
+| 上轮审查 | REVIEW 4 = FAIL（冻结 a80d62a，唯一剩余 H06/H08 请求级收尾），报告 docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_4_2026-09-26.md 及 gate-02-review-4-evidence/ 保留 |
+| Checkpoint | YES；PASS 后仍等 Owner 明确"放行 Phase 2"；不合并 main、不部署、不开始 TASK-008 |
+
+## 逐项修复（先落修前红色回归，断言保留）
+
+- **根因**：文件部分完整终止后 spool 成功落定持有 tempKey；multipart 尾部截断/取消时 Route 内部 catch 直接 return——跳过外层 `deleteObjectSafe(spooled.tempKey)`，且 catch 中丢弃稍后成功的 spool 返回值（快速竞态下 `spooled` 变量尚未赋值），遗留无任务归属私有 tmp（products 与 CS 合成消息均复现）。
+- **修复**：内部 catch 统一接管——`nodeReq.destroy()` → 等待 spool promise 结算（无论先后）：失败保留原业务错误（`serviceFailure(spoolError)`）；成功接管 tempKey 并 `deleteObjectSafe` 清理未归属文件（`spooled` 置空防重复清理）→ 无 spool 错误按请求级中断返回 **400 UPLOAD_INTERRUPTED**。不依赖 `spooled` 赋值时点；不删有效任务已拥有的 raw 对象；无新 Schema/后台清理平台。
+
+## ZCode 记录的验证（b32f731，/tmp 远端 clone @a80d62a + 一次性 PG17 @5435，Node 24.21.0）
+
+| 套件 | 结果 |
+|---|---|
+| typecheck（--incremental false） | ✅ 0 错 |
+| unit | ✅ 72/72 |
+| integration | ✅ **118/118**（+7 新 R4 回归：尾部截断/socket 取消/CS 0ms/350ms 截断/350ms 取消 5 反例 + products/CS 合法尾部 2 对照） |
+| build（web+worker+scripts） | ✅ exit 0 |
+| e2e | ✅ 8/8（一次性库官方 12 迁移） |
+| 修前红→修后绿 | 4/5 反例修前 tmp 泄漏（计数逐例累积）；products-socket 对照修前即绿（R3 路径已覆盖）；修后 7/7 绿 |
+| 隔离 Compose 链重验 | ✅ S1/S3–S10 exit=0（构建真实退出码/canary/12 迁移/init-owner/上传/preview_ready/签名下载/重启读回/清理）；S2 脚本残留旧项目名失败如实保留，S2b 正名补验 canary 排除 exit=0 |
+
+证据：`ai-ecommerce-assistant/docs/reviews/gate-02-r4fix-evidence/`（README+全套件日志+compose-n2/）。
+
+## 边界与状态
+
+- 未合并 main、未部署、未开始 TASK-008；M06（201/201 真实并发屏障）与 H01–H05/H07(原HIGH)/H09、M01–M05、L01–L02 关闭身份未触碰；无新增迁移、无依赖变化。
+- 真实 OSS 云验证维持限定延期（TASK-029 或启用/部署前，以更早者为准），本轮未触碰。
+- 管理提交口径：复审以「a80d62a..b32f731」业务差异执行；其后管理/生成视图提交不计业务验收。
+
+---
+
+# CODEX_REVIEW_GATE_02 · REVIEW 4 FAIL（历史：REVIEW 4 审查结论）
+
+更新：2026-09-26T15:16:16+08:00；Reviewer：Codex；直接协调G2R4-20260926-01。**Phase2 / TASK-007 / 待修复 / ZCode / P08 / Checkpoint=YES。**
+
+- 冻结HEAD `a80d62a51d24dc92f9fb55a3549abaaac1978803`，业务 `83e33e76571f0d9a8fcefe9701b6efc3d8dd1c1a`，差异a465261..a80d62a；管理/证据单列。main=4c7e95b未合并；远端同HEAD核实，当前独立报告/管理写回未提交推送。
+- 报告：[docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_4_2026-09-26.md](docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_4_2026-09-26.md)，必须完整读15节，重点§4/§13。索引：[docs/reviews/GATE_02_REVIEW_4_EVIDENCE_2026-09-26.json](docs/reviews/GATE_02_REVIEW_4_EVIDENCE_2026-09-26.json)；[README](docs/reviews/gate-02-review-4-evidence/README.md)。
+- **唯一剩余HIGH：H06/H08请求级清理。** 文件部分已完整结束，尾部multipart截断或socket取消仍留tmp；商品及CustomerService合成消息、0ms/350ms共5失败断言。Route125–141内部catch直接return、132–133丢弃成功spool结果，绕过外层清理。完整关闭标准及最小修复方向见报告；不要求新平台/Schema。
+- 已过：原input-error/半途截断/socket、限额正确错误码、EACCES/ENOSPC、HTTP/权限/队列恢复、M06同key同body201/201真实PG屏障。M04本机链PASS，真实云仅延期到TASK-029或启用/部署前。TASK-005/006 PASS/DONE，不重开旧项。
+- 独立测试：typecheck0/unit72/integration111/build0/e2e8；12迁移；62断言57PASS/5FAIL。真实隔离Compose最终20/20PASS（构建/canary/共享卷/Worker/签名下载/重启）。首次超时与审查env/CookieJar偏差原样保留并解释，不伪造测试结果。
+- 协作状态：G2R4-20260926-02于15:23送达，15:30 ZCode只读ACK确认HEAD与唯一修复范围、无阻塞；Codex收尾sync后发START转交写入权，实际送达证据见coordination-receipt.json。
+- 下一步：ZCode按`prompts/P08_FIX.md`首个text块修复；交接编号G2R4-20260926-02，送达/ACK/START见本轮coordination-receipt.json，实际接手后再由ZCode独占业务/进度写入。新冻结交Codex，下轮复审范围a80d62a..实际新HEAD。Owner无需转述。
+- 本轮FAIL不合并、不部署、不开始TASK-008；未来PASS仍等Owner明确“放行 Phase 2”。自动阶段接续授权尚未确认。原完整P0与自助开户另补合同边界保持。
+
+---
+
+## 历史：以下为REVIEW3修复交接及更早记录，原文保留
+
 # CODEX_REVIEW_GATE_02 · REVIEW 3 复修完成交接（当前）
 
 > 2026-09-26：Owner已授权Codex直接与ZCode交接修复/复审。本轮经交接编号 `G2R3-20260926-01` 完成执行：ZCode 复修 REVIEW 3 剩余项并冻结候选 **83e33e7**，写入权交回 Codex 独立复审。自测全绿不等于 Gate PASS；PASS 后仍等 Owner 明确"放行 Phase 2"。

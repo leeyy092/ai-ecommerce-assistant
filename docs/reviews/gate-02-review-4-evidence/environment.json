@@ -1,0 +1,11 @@
+{
+  "root": "/tmp/gate02-review4-20260926-t6xh05db",
+  "database": "new disposable PG17.11 cluster",
+  "pg_port": 52979,
+  "web_port": 52980,
+  "archive_source": "remote clone 5c1c4ed, executable identity with83e33e7/a80d62a verified",
+  "node": "24.21.0 official archive hash verified",
+  "pnpm": "10.34.5",
+  "colima": "initially stopped; started by reviewer; no network config changes",
+  "cloud_oss": "not run; memory SDK injection only"
+}

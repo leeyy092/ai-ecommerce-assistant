@@ -1,0 +1,37 @@
+[
+  {
+    "event": "historical SHA read of iCloud files stalled",
+    "resolution": "stopped own read process; hash same tracked historical blobs via independent remote clone instead",
+    "product_failure": false
+  },
+  {
+    "event": "parallel compose build exceeded reviewer420second timeout at runner COPY /app; JS compilation completed",
+    "resolution": "retry web then worker serially with warmed cache, keep complete first-attempt logs",
+    "product_failure": false
+  },
+  {
+    "event": "serial retry setup found existing own canary directory before build",
+    "resolution": "make reviewer mkdir idempotent; no product code changed",
+    "product_failure": false
+  },
+  {
+    "event": "serial image builds succeeded; first runtime login403 because native test BETTER_AUTH_URL/SECRET in inherited environment overrode compose .env",
+    "resolution": "explicit independent Compose env(URL/secret/password), repeat runtime on new empty compose DB; expected HTTP status unchanged",
+    "product_failure": false
+  },
+  {
+    "event": "container login200 but following request401: Python CookieJar will not send production Secure cookie over loopback HTTP",
+    "resolution": "review-only HTTP client explicitly sends cookie returned by the same local login, as native probes; no application auth/security change; rerun against new disposable compose DB",
+    "product_failure": false
+  },
+  {
+    "event": "iCloud evicted tracked main src during container build (route.ts compressed,dataless); Git diff/status blocked",
+    "resolution": "requested standard brctl download only src/tests/prisma/.git; never reset/checkout/overwrite or run app toolchain on main",
+    "product_failure": false
+  },
+  {
+    "event": "main tracked files became readable after targeted brctl hydration",
+    "resolution": "earlier git diff/status completed exit0 before attempted termination; fresh status clean, HEADa80d62a, route dataless flag gone; no content rewritten",
+    "product_failure": false
+  }
+]

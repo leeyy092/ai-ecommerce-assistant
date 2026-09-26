@@ -1,0 +1,26 @@
+[
+  {
+    "name": "actual docker compose build exit",
+    "expected": 0,
+    "actual": 124,
+    "status": "FAIL"
+  },
+  {
+    "name": "own containers cleaned",
+    "expected": "",
+    "actual": "",
+    "status": "PASS"
+  },
+  {
+    "name": "own volumes cleaned",
+    "expected": "",
+    "actual": "",
+    "status": "PASS"
+  },
+  {
+    "name": "own networks cleaned",
+    "expected": "",
+    "actual": "",
+    "status": "PASS"
+  }
+]

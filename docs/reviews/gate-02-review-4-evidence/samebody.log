@@ -1,0 +1,16 @@
+(node:44796) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{
+  waits: 2,
+  statuses: [ 201, 201 ],
+  taskRows: 1,
+  objectlessTasks: 0,
+  rows: [
+    {
+      id: 'c2eafa79-da90-4437-8413-a58414690444',
+      rawObjectKey: 'raw/c2eafa79-da90-4437-8413-a58414690444/source.csv',
+      status: 'uploaded',
+      outboxStatus: 'dispatched'
+    }
+  ]
+} PASS

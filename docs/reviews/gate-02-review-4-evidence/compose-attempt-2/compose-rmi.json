@@ -1,0 +1,12 @@
+{
+  "name": "compose-rmi",
+  "args": [
+    "docker",
+    "image",
+    "rm",
+    "aiea-review4-t6xh-web",
+    "aiea-review4-t6xh-worker"
+  ],
+  "exit": 0,
+  "seconds": 0.55
+}

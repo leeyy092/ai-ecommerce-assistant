@@ -1,0 +1,13 @@
+{
+  "name": "pg-stop",
+  "args": [
+    "pg_ctl",
+    "-D",
+    "/tmp/gate02-review4-20260926-t6xh05db/pg",
+    "-m",
+    "fast",
+    "stop"
+  ],
+  "exit": 0,
+  "seconds": 0.18
+}

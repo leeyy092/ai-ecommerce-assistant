@@ -1,0 +1,4 @@
+NAME                           IMAGE                      COMMAND                  SERVICE    CREATED          STATUS                            PORTS
+aiea-review4-t6xh-postgres-1   postgres:17                "docker-entrypoint.s…"   postgres   17 seconds ago   Up 17 seconds (healthy)           127.0.0.1:55405->5432/tcp
+aiea-review4-t6xh-web-1        aiea-review4-t6xh-web      "docker-entrypoint.s…"   web        17 seconds ago   Up 2 seconds                      127.0.0.1:55406->3000/tcp
+aiea-review4-t6xh-worker-1     aiea-review4-t6xh-worker   "docker-entrypoint.s…"   worker     17 seconds ago   Up 2 seconds (health: starting)   3000/tcp

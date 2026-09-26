@@ -1,3 +1,33 @@
+# P08 · GATE_02 REVIEW 4 唯一剩余修复（当前）
+
+更新：2026-09-26T15:16:16+08:00。下一工具ZCode；直接协作G2R4-20260926-02。保留历史，不按旧清单重开已关闭项。
+
+```text
+你是AI电商运营助手主开发ZCode。Codex REVIEW4独立结论FAIL，当前仅TASK-007 H06/H08同一组请求级清理残余。Owner已授权Codex和ZCode直接交接，无需Owner搬运材料。只修既有Phase2合同，不开始TASK-008、不合并main、不部署、不扩大P0。
+项目根：/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用：/Users/yuyuyu/Documents/ChatGPT/产品-开发/ai-ecommerce-assistant；总控：/Users/yuyuyu/Documents/AI-Workspace。
+先按序读取：
+/Users/yuyuyu/Documents/ChatGPT/产品-开发/AGENTS.md
+/Users/yuyuyu/Documents/ChatGPT/产品-开发/.product-os.json
+/Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/STATE_PROTOCOL.md（含直接协作/写入权）
+/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.md
+/Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/ai-ecommerce-assistant/12_PROGRESS.md
+/Users/yuyuyu/Documents/ChatGPT/产品-开发/CODEX_REVIEW_HANDOFF.md
+/Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/CODEX_REVIEW_GATE_02_REVIEW_4_2026-09-26.md（完整15节，重点4/13）
+/Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/GATE_02_REVIEW_4_EVIDENCE_2026-09-26.json
+/Users/yuyuyu/Documents/ChatGPT/产品-开发/docs/reviews/gate-02-review-4-evidence/README.md
+随后核对09_TASKS的TASK-007、08_API_SPEC、04_DATA_MODEL、02_USER_ROLES、11_DEVELOPMENT_RULES及FINAL_DECISIONS/PHASE_PLAN/DEVELOPMENT_HANDOFF中的既有合同。
+先核对实际branch/HEAD/工作树/写入者，保护本轮Codex报告及管理差异。审查冻结a80d62a（业务83e33e7），新修复范围a80d62a..实际新HEAD。收到Codex START前只读ACK；START后由你独占业务/进度，冻结后交回Codex。
+只修H06/H08剩余：完整文件部分结束后，multipart还在接收后续文本字段时截断/取消，Route内部catch直接return，没有清理成功spool；快速竞态下132–133也丢弃了成功返回值。原反例脚本在gate-02-review-4-evidence/scripts/review-upload-lifecycle.ts与review-late-message.ts；期望新tmp=0/新任务=0/Web200，实际5条各tmp=1。先落有期望值的红色回归，覆盖0ms快速截断、350ms文件成功后截断与socket取消，包含CustomerService合成消息及正常完整尾部对照。
+在现有Route中统一接管spool结果和请求级清理：错误无论先于还是后于spooled赋值，等待spool落定；成功时取得tempKey并清理未被任务拥有的文件，失败时保留原业务错误。不能只给spooled非空的分支加unlink，不删除有效任务的raw文件，不新建后台清理平台/Schema。
+保留已过正常路径及原input-error/文件未完成截断/socket、INVALID_CSV、FILE_TOO_LARGE/TOO_MANY_ROWS、quoted50001/空行100001、EACCES/注入ENOSPC、文件所有权/权限/HTTP幂等/真实队列恢复。M06已关闭（201/201真实并发屏障）；H01–H05/H07原HIGH/M01–M03/M05/L01–L02保持关闭，仅新改动触发时回归。M04本机链PASS，真实云限定延期到TASK-029或首次启用/部署前；Phase1/D01不重开。
+验证仅新/tmp副本+一次性PG17，不在iCloud主副本跑工具链，不用旧日志exit0代替实际断言。原常规套件基线0/72/111/build0/E2E8；本轮容器真实链已独立PASS，按你的实际改动覆盖触发边界，不机械重做无变化环境修复，不改全局DNS/账户/模型/权限。Docker/其他命令记录真实exit，不取tail的exit。清理自己产生的临时凭据和资源。
+修完冻结单一业务提交、记录before/after与原始证据，更新最新唯一进度/任务表/状态块/交接/P07，保留全部历史；执行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 并读回首页md/html和总控PROJECTS。提交只含本次相关业务/测试和已核对的管理证据，保留其他在途文件；不force push。向Codex直接报告交接编号、HEAD/业务提交/范围、命令exit、已关未关、残余项和写入权交回。自测绿不等于独立PASS，PASS后仍等Owner放行Phase2。
+```
+
+---
+
+## 历史：以下为REVIEW3修复指令，保留追溯
+
 # P08 · GATE_02 REVIEW 3 剩余修复（当前）
 
 更新：2026-09-25T18:44:54+08:00。下一工具ZCode。完整复制首个text块；文件中历史清单不代表当前待修范围。
