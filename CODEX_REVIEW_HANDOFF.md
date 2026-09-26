@@ -27,7 +27,51 @@ Owner在新对话明确要求开始后续开发（原话见进度PH3-20260927-01
 
 ## 历史：REVIEW4复修交接及以前记录原文保留
 
-# CODEX_REVIEW_GATE_02 · REVIEW 4 复修完成交接（当前）
+# CODEX_REVIEW_GATE_03 · Phase 3 六类导入链路复修完成交接（当前）
+
+> 直接协作交接编号 `PH3-20260927-01`：Owner 放行 Phase 2 并授权 Phase 3 TASK-008–012；ZCode 已完成全部五个 TASK 并冻结候选 **277109d**，写入权交回 Codex 执行 GATE_03 独立复审（prompts/P07_CODE_REVIEW.md 首个 text 块）。自测全绿不等于 Gate PASS；PASS 后按 STATE_PROTOCOL 向 Owner 反馈约 35% 功能节点。
+
+更新时间：2026-09-27T01:52:00+08:00；执行者：ZCode。**Phase 3 / TASK-008–012 全部完成 / GATE_03 待独立复审 / Checkpoint=YES / 下一工具 Codex。**
+
+## 复审定位信息
+
+| 项 | 候选 |
+|---|---|
+| Current Branch | `phase/03-import`（本地/远端 = 277109d） |
+| Base | main `85a93ec`（Phase 2 已按 Owner 放行合并） |
+| **复审范围** | **`a80d62a..实际 HEAD`**（业务提交 a5e9b7b/10adb88/277109d 三个；管理差异单列） |
+| 上轮审查 | GATE_02 REVIEW 5 = PASS（4b9e139，业务 b32f731）；Phase 2 已合并 main |
+| Checkpoint | YES；GATE_03 结论后按 STATE_PROTOCOL 向 Owner 反馈；不合并 main、不部署、不开始 TASK-013 |
+
+## 各 TASK 交付与验证
+
+| TASK | 交付 | 提交 |
+|---|---|---|
+| 008 mapping/校验/预览 | PUT mapping（CAS/时区/覆盖声明）、全量校验（折叠/同刻冲突/未知SKU/缺失引用/越界）、staging manifest、脱敏预览、错误文件签名下载、幂等键 | a5e9b7b |
+| 009 原子提交内核 | POST commit（preview_version CAS+confirmation、店铺事务锁、Product/SKU 自然键 upsert、重验旧版本不覆盖、DataCoverage、dataset_version 递增、审计）、重放复用、注入回滚恢复 preview_ready、sku-aliases 显式别名 | 10adb88 |
+| 010 订单头/行 | orders/order_items 自然键精确对照 upsert、缺行 partial、付款状态回退拒绝、跨店 409 | 277109d |
+| 011 广告日 | AdMetric campaign/date/归因组/币种幂等 upsert、晚到归因替换 | 277109d |
+| 012 客服/售后/退款 | 消息脱敏落库+SKU 关联；case→AfterSaleRecord；refund→RefundEvent（case 关联/越界预览拒绝） | 277109d |
+
+## ZCode 记录的验证（277109d，/tmp 远端 clone + 一次性 PG17 @5435，Node 24.21.0）
+
+typecheck 0（--incremental false）；unit **72/72**；integration **139/139**（TASK-008 +9、009 +5、010 +4、011/012 +3）；build 0；e2e 8/8。日志：ai-ecommerce-assistant/docs/reviews/gate-03-task008-evidence/、gate-03-task009-evidence/、gate-03-final-evidence/。
+
+## 边界
+
+- 无新迁移、无依赖变化；F05/F07/F10/F13/F15 沿用；F17 恢复 UI/通用别名工作台未提前（仅显式映射端点）。
+- 真实 OSS 云验证维持限定延期（TASK-029 或启用/部署前）。
+- 提交口径：GATE_03 以「a80d62a..277109d」业务差异执行，其后管理差异单列。
+
+---
+
+# CODEX_REVIEW_GATE_02 · REVIEW 4 复修完成交接（历史：Gate02 收尾）
+
+> 2026-09-26：直接协作交接编号 `G2R4-20260926-02` 执行完成：ZCode 复修 REVIEW 4 剩余 H06/H08 请求级收尾并冻结候选 **b32f731**，写入权交回 Codex 独立复审（P07 首个 text 块）。自测全绿不等于 Gate PASS；PASS 后仍等 Owner 明确"放行 Phase 2"。
+
+---
+
+# CODEX_REVIEW_GATE_02 · REVIEW 4 复修完成交接（历史：Gate02 收尾）
 
 > 2026-09-26：直接协作交接编号 `G2R4-20260926-02` 执行完成：ZCode 复修 REVIEW 4 剩余 H06/H08 请求级收尾并冻结候选 **b32f731**，写入权交回 Codex 独立复审（P07 首个 text 块）。自测全绿不等于 Gate PASS；PASS 后仍等 Owner 明确"放行 Phase 2"。
 

@@ -4,7 +4,9 @@
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase 3 / TASK-010 / Phase内连续开发（Checkpoint=NO） / 进行中 / 下一责任人ZCode（P06）。**
+**Phase 3 / TASK-008–012 全部完成 / GATE_03 待 Codex 独立复审 / Checkpoint=YES / 下一工具Codex（P07）。**
+
+TASK-010/011/012 已完成（277109d，2026-09-27）：订单头/行（自然键 upsert、缺行 partial、付款状态回退拒绝、跨店 409 回滚）、广告日（归因组幂等、晚到替换不累加）、客服消息（脱敏落库+SKU 关联）、售后 case+refund（越界预览拒绝、原子提交、case 关联）。Phase3 候选冻结 **277109d**（复审范围 a80d62a..实际 HEAD，业务提交 a5e9b7b+10adb88+277109d）。终验：typecheck0/unit72/integration139/build0/e2e8；证据 gate-03-final-evidence/。GATE_03 独立审查后向 Owner 反馈六类导入闭环功能节点（约35%）。
 
 TASK-008 DONE（a5e9b7b）：映射/全量校验/staging 预览/错误下载/幂等键。TASK-009 DONE（10adb88，2026-09-27）：POST commit（preview_version CAS+confirmation）店铺事务锁内 Product/SKU 自然键 upsert + 提交前来源新旧重验 + DataCoverage 按声明落库 + dataset_version 递增 + outbox pending + 审计；重放 200 复用不增版本；注入失败整文件回滚回 preview_ready；并发 CAS 恰一生效；POST sku-aliases 显式别名（跨店 404/重复 409）。验证：typecheck0/unit72/integration132/build0/e2e8；证据 gate-03-task008/009-evidence/。
 
@@ -26,19 +28,19 @@ Owner在新对话明确要求开始后续开发（原话见进度PH3-20260927-01
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
-  "stage": "06 分任务开发 · Phase 3 六类文件导入链路 · TASK-010 进行中",
-  "current_task": "TASK-010",
-  "status": "进行中",
-  "last_completed": "TASK-009 DONE（10adb88）：commit CAS/店铺锁事务/重放复用/注入回滚/sku-aliases 别名；TASK-008 已完成（a5e9b7b）",
-  "next_action": "TASK-010 订单头与订单行导入（Phase 内一次一 TASK 连续推进至 TASK-012，GATE_03 停审）",
-  "next_owner": "ZCode",
-  "next_prompt": "prompts/P06_BUILD.md",
+  "stage": "07 阶段审查 · Phase 3 六类文件导入链路 · GATE_03 待独立复审",
+  "current_task": "TASK-012",
+  "status": "待审查",
+  "last_completed": "TASK-010/011/012 全部 DONE（277109d）：六类 CSV 上传→映射→校验→预览→原子提交闭环",
+  "next_action": "Codex 对 a80d62a..实际 HEAD 执行 GATE_03 独立复审（prompts/P07_CODE_REVIEW.md）；PASS 后向 Owner 反馈六类导入闭环功能节点",
+  "next_owner": "Codex",
+  "next_prompt": "prompts/P07_CODE_REVIEW.md",
   "acceptance": "TASK-008–012各按原合同验收；六类文件全量校验/预览确认/原子提交、隔离与幂等更正通过；GATE_03独立审查后停下向Owner反馈",
   "blockers": "无已知技术阻塞；TASK-009 进行中。开户合同（TASK-031 草案）与真实 OSS 云验证保持原边界",
-  "checkpoint": "NO",
+  "checkpoint": "YES",
   "review": "GATE_02 REVIEW5 PASS（4b9e139/业务b32f731）；Owner已授权Phase3；GATE_03尚未开始",
-  "updated_at": "2026-09-27T01:16:00+08:00",
-  "updated_by": "ZCode · TASK-009 DONE（10adb88），接续 TASK-010",
+  "updated_at": "2026-09-27T01:52:00+08:00",
+  "updated_by": "ZCode · Phase3 TASK-008–012 全部完成，GATE_03 冻结交 Codex",
   "evidence": [
     "PH3-20260927-01于2026-09-27首次发送，ZCode00:05只读ACK：phase/02-data-ingestion@4b9e139、无业务差异、管理文件保留、008–012合同/GATE03停点、无阻塞；START实际送达和开工由ZCode追加回执",
     "2026-09-27T00:02:18+08:00 Owner明确要求开始后续开发并在功能节点停下反馈；授权落实至Phase3 TASK-008–012，GATE_03停审；尚未派发START",
@@ -85,7 +87,7 @@ Owner在新对话明确要求开始后续开发（原话见进度PH3-20260927-01
     "历史记录（本轮接手前）：prompts/ZCODE_FULL_P0_HANDOFF.md：完整P0准备交付、真实Gate分支判断和放行后接续；指令已写入，未自动发送，ZCode执行待核实"
   ],
   "github": {
-    "status": "2026-09-27 本地/远端 phase/03-import=a5e9b7b（TASK-008）；main=85a93ec（Phase2 已按放行合并）；phase/02-data-ingestion=4b9e139 冻结保留",
+    "status": "2026-09-27 本地/远端 phase/03-import=277109d（业务候选）；main=85a93ec（Phase2 已合并）；phase/02-data-ingestion=4b9e139 冻结保留",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
     "verified_at": "2026-09-26T16:06:50.912385+08:00",
     "evidence": "本轮独立git ls-remote与实际HEAD一致；审查管理写回另计，未推送"
@@ -347,9 +349,9 @@ Owner在新对话明确要求开始后续开发（原话见进度PH3-20260927-01
 | TASK-007 | 文件上传、私有存储与ImportTask | DONE | TASK-006 | REVIEW 5独立PASS（4b9e139/业务b32f731）：H06/H08关闭；118集成、58独立断言及真实HTTP/Worker/重启文件链通过，待Owner放行Phase 2 |
 | TASK-008 | 字段映射、全量校验与预览 | DONE | TASK-007 | 2026-09-27：mapping CAS/coverage 声明、全量校验整文件拒绝、staging manifest、脱敏预览与错误下载、幂等键；127集成（+9）；提交 a5e9b7b |
 | TASK-009 | 原子提交内核与商品主数据 | DONE | TASK-008 | 2026-09-27：commit CAS/店铺锁事务/重放复用/注入回滚/别名跨店404；132集成（+5）；提交 10adb88 |
-| TASK-010 | 订单头与订单行导入 | IN_PROGRESS | TASK-009 | 未执行 |
-| TASK-011 | 广告日数据导入 | TODO | TASK-009 | 未执行 |
-| TASK-012 | 客服、售后与退款事件导入 | TODO | TASK-009、TASK-010 | 未执行 |
+| TASK-010 | 订单头与订单行导入 | DONE | TASK-009 | 2026-09-27：orders/order_items 自然键 upsert、缺行 partial、付款回退拒绝；提交 277109d |
+| TASK-011 | 广告日数据导入 | DONE | TASK-009 | 2026-09-27：AdMetric 幂等 upsert、晚到归因替换不累加；提交 277109d |
+| TASK-012 | 客服、售后与退款事件导入 | DONE | TASK-009、TASK-010 | 2026-09-27：消息脱敏落库+SKU 关联、case/RefundEvent 原子提交、越界预览拒绝；提交 277109d |
 | TASK-013 | 持久任务与快照发布骨架 | TODO | TASK-010、TASK-011、TASK-012 | 未执行 |
 | TASK-014 | 基础经营与广告指标 | TODO | TASK-013 | 未执行 |
 | TASK-015 | 退款与售后队列指标 | TODO | TASK-014 | 未执行 |
@@ -935,6 +937,13 @@ GATE_02 收尾实际核验（2026-09-15T13:22:00+08:00）：Product OS sync 返�
 - 用户功能→合同→差异→关闭：用户确认预览后整文件原子落库→09_TASKS TASK-009+04 §10.5/PART11.1/12.1→commitTask 服务+commit/sku-aliases 路由→重放复用/回滚恢复/并发一次生效/别名跨店404（+5 回归全绿）。
 - 提交 10adb88；验证 typecheck0/unit72/integration132/build0/e2e8（/tmp 副本+PG17@5435）；日志 docs/reviews/gate-03-task009-evidence/。无新迁移、无依赖变化。
 - 下一步：TASK-010 订单头与订单行导入。
+
+## 2026-09-27 · ZCode 完成 TASK-010/011/012（Phase3 全部 TASK 完成，GATE_03 冻结）
+
+- 用户功能→合同→差异→关闭：六类 CSV 全链路（上传→映射→校验→预览确认→原子提交）→TASK-010/011/012+PART12→commitTask 各类分支+fixtures/回归→GATE_03 独立审查。
+- TASK-010：orders/order_items 自然键（订单外部ID+行ID）精确对照；缺行（present<expected）付款日强制 partial；paid→非paid 有成功退款拒绝；跨店引用 409 回滚。TASK-011：AdMetric 按 campaign/date/归因组/币种幂等 upsert，晚到归因替换。TASK-012：customer_messages 脱敏落库+SKU 关联；after_sales case/RefundEvent 原子提交、越界预览拒绝。
+- 提交 277109d；验证 typecheck0/unit72/integration139/build0/e2e8（/tmp 副本+PG17@5435）；日志 docs/reviews/gate-03-final-evidence/。无新迁移、无依赖变化；已关闭项未触碰。
+- 冻结：Phase3 候选 277109d（范围 a80d62a..实际 HEAD）；CODEX_REVIEW_HANDOFF/P07 已更新；Checkpoint=YES、下一工具 Codex GATE_03；PASS 后等 Owner 功能节点反馈与后续阶段决定。不合并 main、不部署、不开始 TASK-013。
 
 ### PH3-20260927-01 START接收与开工（2026-09-27 00:08）
 

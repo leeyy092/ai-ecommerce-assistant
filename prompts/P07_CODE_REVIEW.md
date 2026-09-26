@@ -1,3 +1,23 @@
+# P07 · GATE_03 独立复审入口（当前）
+
+更新：2026-09-27T01:52:00+08:00。ZCode 已完成 Phase 3 全部 TASK（008–012），候选冻结 277109d；本首个 text 块为 GATE_03 独立复审完整提示词。
+
+```text
+请接手 AI 电商运营助手 GATE_03 独立复审（直接协作编号续 PH3-20260927-01）。根目录 /Users/yuyuyu/Documents/ChatGPT/产品-开发，应用 ai-ecommerce-assistant，总控 /Users/yuyuyu/Documents/AI-Workspace。只审 Phase 3 TASK-008–012 新增差异及被触发回归，不改业务代码、不开始 TASK-013、不合并 main、不部署。
+按序读 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、唯一进度 docs/ai-ecommerce-assistant/12_PROGRESS.md、CODEX_REVIEW_HANDOFF.md、FINAL_DECISIONS 第6/7/8节、PHASE_PLAN.md，再读 09_TASKS TASK-008–012 原合同与 04_DATA_MODEL PART10.5/11/12、08_API_SPEC §17.1/§17.3、02_USER_ROLES、10_ACCEPTANCE、11_DEVELOPMENT_RULES。
+核对实际 HEAD/分支/工作树。基线：GATE_02 REVIEW5 PASS（4b9e139，业务 b32f731），main=85a93ec（Phase2 已按放行合并）；候选 phase/03-import=277109d（业务提交 a5e9b7b→10adb88→277109d），复审差异 **a80d62a..实际 HEAD**（管理差异单列）。
+ZCode 交付（须独立验证）：①TASK-008 mapping/全量校验/staging/脱敏预览/错误下载/幂等键（a5e9b7b）；②TASK-009 commit 内核（preview_version CAS+confirmation、店铺事务锁、Product/SKU 自然键 upsert、旧版本不覆盖、DataCoverage、dataset_version 递增、审计、重放复用、注入回滚恢复 preview_ready、sku-aliases 显式别名）（10adb88）；③TASK-010 orders/order_items 自然键精确对照、缺行付款日强制 partial、付款回退拒绝、跨店 409；TASK-011 AdMetric 幂等替换；TASK-012 消息脱敏+SKU 关联、case/RefundEvent 原子提交（277109d）。
+重点按各 TASK 验收：任一错误行整文件 failed 不能提交；预览过期 409；覆盖不由行数推断（explicit_zero/coverage-only 语义）；未知 SKU 显式处理不模糊合并；同刻不同内容 DUPLICATE_KEY_CONFLICT/VERSION_CONFLICT；跨店/缺失引用拒绝；缺行强制 partial；退款越界 REFUND_AMOUNT_EXCEEDS_PAID/REFUND_QUANTITY_CONFLICT 预览拒绝；重放复用不增版本；并发 commit 恰一生效；事务回滚恢复 preview_ready 且零半份写入。
+验证仅新 /tmp 归档+新 PG17，不采信 ZCode 日志。ZCode 自测：typecheck0/unit72/integration139/build0/e2e8；日志 ai-ecommerce-assistant/docs/reviews/gate-03-{task008,task009,final}-evidence/。真实 OSS 云验证维持限定延期。Phase1/2 已关闭项与 M06 仅新改动触发时回归；D01 不重开；开户合同不扩本 Gate。
+按 15 节输出 PASS/FAIL/BLOCKED 报告及机器证据，保留历史。重读最新 12_PROGRESS 更新任务表/摘要/状态块/交接/下一提示词，运行 Product OS sync 并读回首页 md/html 与总控 PROJECTS。FAIL 交 ZCode/P08；GATE_03 通过后按 STATE_PROTOCOL 向 Owner 反馈约 35% 功能节点（六类导入闭环）并由 Owner 决定后续阶段。测试、审查、Owner、GitHub、部署分开记录。
+```
+
+---
+
+## 历史：GATE_02 REVIEW 4 修复后的下一轮复审提示词
+
+---
+
 # GATE_02 REVIEW5 PASS · 当前无需继续复审
 
 ```text
