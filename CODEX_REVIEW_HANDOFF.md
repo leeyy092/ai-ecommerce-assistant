@@ -1,3 +1,51 @@
+# 当前交接 · GATE_03 REVIEW2 返修候选已冻结 · 待Codex04独立复审（R3）
+
+G3R2-20260927-02返修由最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）完成并冻结单一候选，本地feat+chore提交于phase/03-import（基线dd975cd/业务6b408cb），未推送未合并未部署。写入权已交回Codex04；复审范围dd975cd..新HEAD。
+
+修复：H03 manifest身份（task_id/preview_version/checksum）认领前核验，错配409零副作用；H04来源日全部最终订单行齐（含历史/unchanged/零行订单）+相邻本地午夜IANA日窗（DST 23h/25h），record_count维持来源级口径；H08完整定位段遮盖（无省地址/楼栋房间）+系统掩码不算有效正文；H02退款事件级择新总账（旧版合法no-op）；M02 test:g3三套独立进程聚合退出码任一失败非0。
+
+验证（新/tmp=git archive dd975cd+在途、新PG17 aiea-pg-g3r2z02仅127.0.0.1:55501，旧R1容器已清）：修前g3r2红基线9FAIL/12PASS精确复现→修后21/21；tsc0/unit72/integration139/g3-h04 4/4/build0/E2E8；g3-contract冻结件17/18——唯H04d探针隔离前提缺陷（全跑6n对写死2n；Reviewer选择性单跑=同店H04a零行订单按合同压partial对complete断言），两种模式均如实单列待Reviewer受控纠正前提，不改2→6不改合同。test:g3真实exit 1/0/0→聚合1（M02实测）。legacy“行遗漏”用例迁独立业务日（共享店铺他人零行订单头在来源日语义下压partial，断言语义不变）。未运行：100000行/SIGKILL/Docker生产Worker全链/真实OSS云。
+
+原R1/R2关闭标准与已关项（H01/H05/H06/H07、M01正常no-op、011技术通过）不重开；Gate03 PASS后约35功能节点停向Owner反馈，Phase4/TASK031/main合并/部署未放行。新PG容器与/tmp副本保留供只读核对。
+
+## 历史：G3R2返修开工交接（15:25快照）
+
+# 当前交接 · GATE_03 REVIEW2 FAIL · G3R2-20260927-02返修进行中（Z02）
+
+G3R2-20260927-02 START已于2026-09-27T15:25:05+08:00实际送达最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4），Z02记回执并独占业务/唯一进度/sync/Git写入权；Codex04（01a0e16d-be56-7741-bced-49133cdcafeb）只读。返修范围：H03 staging身份完整性、H04来源日行齐+IANA日窗、H08完整脱敏/有效正文、H02旧退款择新、M02脚本退出码；按008→009→010→012收口，011不另改。修前红基线（R2探针入app树隔离进程）→修后新/tmp+新PG17验证→冻结单一新候选交回Codex04复审dd975cd..新HEAD。
+
+## 历史：R2交付时点交接（15:21快照）
+
+# 当前交接 · GATE_03 REVIEW2 FAIL · G3R2-20260927-02
+
+Owner最新换窗要求（CTX-RULE-20260927-01，适用于Codex与ZCode）：默认保留当前窗口；没有实际上下文压缩或明确污染依据不新开窗口。不按75%/85%占用、对话长度、心跳次数或预计长任务提前换窗。压缩本身也不自动迁移，仍能可靠继续就留原窗口；仅实际压缩后影响可靠接续或有可举证的污染、确需换窗时才按STATE_PROTOCOL原流程交接，情况未知不臆测。此要求替代较早的提前换窗触发条件。 当前04/Z02保留，未创建新会话。已更新原自动化与项目规则，并已通过桌面首次送达Z02；Z02 15:16已只读ACK确认最新规则，未发送START。
+
+通信恢复（2026-09-27T15:18:57+08:00）：G3R2-20260927-02/P08及CTX-RULE-20260927-01已首次送达最新Z02，Z02已15:16只读ACK、无阻塞；Codex04管理sync读回后待首次START，送达前仍持管理写入。14:30锁屏仅为历史阻塞。
+
+Codex04已完成独立复审，冻结phase/03-import@dd975cd（业务6b408cb），差异8f3f28d..dd975cd。结论3HIGH(H03/H04/H08)/2MEDIUM(H02残余/M02)；H01/H05/H06/H07关闭，M01正常通过、H04连带不重复计。TASK011广告技术通过但依赖/Gate未解除，008–012暂仍BLOCKED。
+
+正式15节报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_2_2026-09-27.md、GATE_03_REVIEW_2_EVIDENCE_2026-09-27.json、gate-03-review-2-evidence/README.md。新/tmp+新PG17独立12迁移/tsc/unit72/integration139/build/E2E8通过；原18受控隔离去重18PASS、H04四对照4PASS；补充21有效12PASS/9FAIL。原R1证据保持，本轮环境已清理，未改业务/未提交推送/未部署。
+
+新返修完整提示词prompts/P08_FIX.md首个text块：仅剩余五组根因，先只读ACK，Codex04管理sync读回后发送G3R2-20260927-02 START；真实送达/写入权只以12_PROGRESS最新回执为准。目前Z02保持13:54冻结。唯一最新Z02 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，旧Z01退出；Codex迁移MIGRATE-20260927-03 COMPLETE且04实际激活，旧03退出。
+
+后续新候选按dd975cd..新冻结HEAD复审。原完整P0和Phase3授权不变，Gate02 R5 PASS保持；独立Gate03 PASS后约35节点停Owner，Phase4/TASK031/main合并/正式部署未放行。
+
+---
+
+## 历史交接（不作当前状态）
+
+# 当前交接 · GATE_03 R2待独立复审 · MIGRATE-20260927-03 COMPLETE
+
+Z02已交回G3R1-20260927-02冻结候选：phase/03-import，HEAD dd975cdedf55e9b4ac86691b150301e5b5e074f2（管理）、业务6b408cbe2182b605c1bcaabc485af4b8d1e476f9；复审范围8f3f28d..dd975cd。Codex03桌面核实13:44终答与空闲，主业务工作树无未提交。未推送/合并/部署。GATE03 REVIEW1仍FAIL至新独立结论；Gate02 REVIEW5 PASS保持。
+
+本次上下文迁移COMPLETE：新04（01a0e16d-be56-7741-bced-49133cdcafeb）已只读ACK，原自动化已转接；03完成最终sync读回并发完成通知后04接管。P13首块为完整接手；Z02继续冻结，本次不RESUME开发。候选与原H01–H08/M01范围不变。
+
+Z02自测（尚非独立结果）：tsc0/unit72/integration139（排除两个g3）/g3-contract17/18（H04d固定2n共享店铺假设有缺陷）/g3-h04-contract4/4/build0/E2E8。H04C01按04_DATA_MODEL:406与R1:73保持来源级最终事实计数；新Reviewer须保留历史并受控修正探针隔离，不为通过测试改合同。package test:g3分号串两个进程只返回末次状态，必须分别捕获真实退出码；预览API record剥离/完整脱敏等按差异验证。
+
+新独立/tmp代码归档与另起PG17仅127.0.0.1；Z02资产/tmp/aiea-fix-g3r1-20260927-z02/repo、aiea-pg-g3r1z02@127.0.0.1:55500仅供核对，不冒充独立环境。P07指定具体新候选；报告/索引保留原合同关闭标准。独立PASS后约35功能节点反馈Owner，Phase4/TASK031/main合并/部署未放行。
+
+## 历史：Z02 13:42冻结交接原文（排版17/18见上方澄清）
+
 # 当前交接 · GATE_03 REVIEW1 返修候选已冻结 · 待Codex独立复审（R2）
 
 G3R1-20260927-02返修由最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）完成并冻结单一候选：H01–H08/相邻M01预览+提交双侧落地（金额Prisma.Decimal），本地feat+chore提交于phase/03-import（基线fe57663/已审8f3f28d），未推送未合并未部署。写入权已交回Codex03；复审范围8f3f28d..新HEAD。
@@ -7,6 +55,7 @@ G3R1-20260927-02返修由最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4�
 环境与测试要点：g3-contract为冻结证据文件（隔离单跑设计，与singleFork共享进程套件不兼容，会同进程毒化后续文件503），package.json已将test:integration排除两个g3文件、test:g3独立进程单跑；预览API已剥离record防PII外泄；imports.test旧“错误行preview_ready”用例按H01新合同更新为failed。
 
 原报告H01–H08/M01关闭标准及TASK008→012依赖不变；已关闭Gate02 R5不重开。Gate03 PASS后约35功能节点停向Owner反馈，Phase4/TASK031/main合并/部署未放行。新PG容器aiea-pg-g3r1z02保留运行供ENV01只读核对。
+
 
 ## 历史：Z02返修开工交接（12:07快照）
 
