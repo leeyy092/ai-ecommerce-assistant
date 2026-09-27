@@ -9,6 +9,7 @@
  * 解析经 TASK-006 统一 Adapter 并组装 typed CanonicalBatch（G2-H04 合同消费点）。
  * 不做：业务入库、dataset_version 递增、快照评估（TASK-008/013 边界）。
  */
+import { createHash } from "node:crypto";
 import { getPrismaClient } from "@/database/prisma";
 import {
   ADAPTER_VERSION,
@@ -178,11 +179,15 @@ export async function handleValidateTask(
     }
 
     // staging manifest（私有对象；预览/提交边界都从这里读取）
+    // H03：身份与完整性绑定——task_id/原文件sha/当前preview_version + 内容校验和，
+    // 提交侧逐项核验，错任务/损坏/换版staging一律拒绝
     const mappingArchived = (task.mapping as { mapping_version?: string } | null) ?? {};
     const mappingVersion = mappingArchived.mapping_version ?? mappingVersionOf({});
     const stagingObjectKey = `staging/${task.id}/manifest.json`;
-    const manifest = {
+    const manifestBase = {
       kind: task.sourceKind,
+      task_id: task.id,
+      preview_version: task.previewVersion + 1,
       mapping_version: mappingVersion,
       adapter_version: ADAPTER_VERSION,
       file_sha256: task.fileSha256,
@@ -204,6 +209,8 @@ export async function handleValidateTask(
       rows: staged.rows,
       generated_at: new Date().toISOString(),
     };
+    const manifestChecksum = createHash("sha256").update(JSON.stringify(manifestBase)).digest("hex");
+    const manifest = { ...manifestBase, checksum: manifestChecksum };
     await putObject(stagingObjectKey, Readable.from([JSON.stringify(manifest)]));
 
     const idempotencyKey = success

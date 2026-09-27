@@ -1571,27 +1571,30 @@ describe("TASK-010｜订单头与订单行导入", () => {
   });
 
   it("行遗漏：expected=2 只到 1 行 → 允许提交但该日期覆盖强制 partial；补齐后恢复声明状态", async () => {
+    // G3R2-H04：来源日行齐按该日全部最终订单判断（含历史/unchanged）。
+    // 本用例使用独立业务日，避免共享店铺中其他用例（如仅预览未导行的订单头）永久压低该日状态。
+    const day = "2026-09-06";
     await commitChain(
       PRODUCTS_R9("S10P", "杯S10P", "2026-09-01T00:00:00Z"),
-      ORDERS_T10("T10-O2", paid0, 2),
-      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O2,L1,S10P,1,40.000000,CNY`,
+      ORDERS_T10("T10-O2", day, 2),
+      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${day}T02:05:00Z,T10-O2,L1,S10P,1,40.000000,CNY`,
     );
     const order = await db.order.findFirstOrThrow({ where: { orgId, externalOrderId: "T10-O2" } });
     expect(await db.orderItem.count({ where: { orgId, orderId: order.id } })).toBe(1);
     // 订单行覆盖（声明 complete）当日被强制 partial
     const cover = await db.dataCoverage.findFirstOrThrow({
-      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${paid0}T00:00:00Z`) },
+      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${day}T00:00:00Z`) },
       orderBy: { datasetVersion: "desc" },
     });
     expect(cover.status).toBe("partial");
 
     // 补齐第二行 → 新版本覆盖恢复声明 complete
     const fill = await makeTask(operator.cookie, "order_items",
-      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O2,L2,S10P,1,30.000000,CNY`);
+      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${day}T02:05:00Z,T10-O2,L2,S10P,1,30.000000,CNY`);
     // 用户补齐后重新声明覆盖（覆盖始终来自用户声明，不由行数推断）
     const fillDecl = await putMapping(fill.id, operator.cookie, {
       timezone: "Asia/Shanghai",
-      coverage_declaration: [{ source_kind: "order_items", channel: "default", from: paid0, to: "2026-09-11", status: "complete", explicit_zero_dates: [] }],
+      coverage_declaration: [{ source_kind: "order_items", channel: "default", from: day, to: "2026-09-07", status: "complete", explicit_zero_dates: [] }],
       expected_preview_version: 0,
     });
     expect(fillDecl.status).toBe(202);
@@ -1601,7 +1604,7 @@ describe("TASK-010｜订单头与订单行导入", () => {
     console.log("FILL_RES", res.status, JSON.stringify((await res.json()).data ?? {}));
     expect([202, 200]).toContain(res.status);
     const cover2 = await db.dataCoverage.findFirstOrThrow({
-      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${paid0}T00:00:00Z`) },
+      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${day}T00:00:00Z`) },
       orderBy: { datasetVersion: "desc" },
     });
     expect(cover2.status).toBe("complete");

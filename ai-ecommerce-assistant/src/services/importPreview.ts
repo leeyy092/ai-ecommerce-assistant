@@ -216,13 +216,26 @@ function affectedDateOf(tz: string, kind: FileKind, r: AnyRecord): string | null
   return iso ? localDateIn(tz, new Date(iso)) : null;
 }
 
-/** 自由文本脱敏：邮箱/电话/地址掩码；不截断业务正文（列限长由输入校验保证） */
+/** 自由文本脱敏：邮箱/电话/地址掩码；不截断业务正文（列限长由输入校验保证）。
+ *  地址遮盖完整定位段：省/市/区各级可选，含无省地址与“号/栋/室”等楼栋房间后缀（H08） */
 export function redactFreeText(v: string): string {
   return v
     .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "***@***")
     .replace(/(?:\+?86[- ]?)?1\d{10}/g, "***PHONE***")
     .replace(/\d{15,19}/g, "***NO***")
-    .replace(/[\u4e00-\u9fa5]{2,8}(?:省|自治区)[\u4e00-\u9fa5]{2,8}(?:市|州|盟)[\u4e00-\u9fa5]{2,8}(?:区|县|旗)[^，。；\s]*?(?:号|栋|室|院|座)/g, "***ADDRESS***");
+    .replace(
+      /[\u4e00-\u9fa5]{0,10}(?:省|自治区)?[\u4e00-\u9fa5]{1,10}(?:市|州|盟)[\u4e00-\u9fa5]{0,10}(?:区|县|旗)?[\u4e00-\u9fa5]{0,12}(?:路|街|道|巷)?\d{1,6}(?:号|幢|栋|座|单元|楼层|层|室|院)(?:\d{0,6}(?:号|幢|栋|座|单元|楼层|层|室|院))*/g,
+      "***ADDRESS***",
+    );
+}
+
+/** 系统掩码占位不算有效业务正文（H08：纯手机号/纯邮箱脱敏后须判空） */
+export function hasBusinessContent(redacted: string): boolean {
+  const residual = redacted
+    .replace(/\*/g, "")
+    .replace(/@/g, "")
+    .replace(/\b(PHONE|NO|ADDRESS)\b/g, "");
+  return /[\u4e00-\u9fa5A-Za-z0-9]/.test(residual);
 }
 
 /** 预览摘录有界展示；完整脱敏正文由提交侧从 record 取（H08：摘录与正文分离） */
@@ -427,25 +440,43 @@ export async function classifyAndStage(args: {
   const historyRefunds = affectedItemIds.length
     ? await db.refundEvent.findMany({
         where: { orgId, storeId, orderItemId: { in: affectedItemIds }, status: "succeeded" },
-        select: { externalRecordId: true, orderItemId: true, refundAmount: true, refundedQuantityCumulative: true, completedAt: true, occurredAt: true },
+        select: { externalRecordId: true, sourceUpdatedAt: true, orderItemId: true, refundAmount: true, refundedQuantityCumulative: true, completedAt: true, occurredAt: true },
       })
     : [];
   const decOf = (v: unknown): Prisma.Decimal => new Prisma.Decimal(v == null ? 0 : String(v));
-  const historyByItem = new Map<string, Array<{ amount: Prisma.Decimal; qty: number; completedAt: string; externalRecordId: string }>>();
-  for (const r of historyRefunds) {
-    if (refundExtIds.includes(r.externalRecordId)) continue; // 本文件将替换的同自然键行不重复计入
-    const arr = historyByItem.get(r.orderItemId) ?? [];
-    arr.push({ amount: decOf(r.refundAmount), qty: r.refundedQuantityCumulative ?? 0, completedAt: (r.completedAt ?? r.occurredAt ?? new Date(0)).toISOString(), externalRecordId: r.externalRecordId });
-    historyByItem.set(r.orderItemId, arr);
+  // H02（R2）：事件级“最终生效事实”择新——库中同自然键较新时，文件旧版本为合法 no-op，
+  // 总账以库中事实为准；文件较新或为新事件时以文件行参与（R2-H02-stale）
+  const dbTsByEvent = new Map(historyRefunds.map((r) => [r.externalRecordId, r.sourceUpdatedAt.getTime()]));
+  interface LedgerFact {
+    externalRecordId: string; itemId: string; amount: Prisma.Decimal;
+    qty: number; completedAt: string; itemRow: number;
   }
-  const pendingRowOf = (event: string): number =>
-    inFileRefunds.find((a) => a.externalRecordId === event)?.__row ?? 1;
+  const ledgerFacts = new Map<string, LedgerFact>(); // key: externalRecordId
+  for (const r of historyRefunds) {
+    ledgerFacts.set(r.externalRecordId, {
+      externalRecordId: r.externalRecordId, itemId: r.orderItemId, amount: decOf(r.refundAmount),
+      qty: r.refundedQuantityCumulative ?? 0,
+      completedAt: (r.completedAt ?? r.occurredAt ?? new Date(0)).toISOString(), itemRow: 1,
+    });
+  }
+  for (const f of inFileRefunds) {
+    if (f.status !== "succeeded") continue;
+    const parentOrder = orderMap.get(f.externalOrderId);
+    const parentItem = parentOrder ? itemMap.get(`${parentOrder.id}\u0000${f.externalOrderItemId}`) : undefined;
+    if (!parentItem) continue; // 引用缺失已在上方报错
+    const dbTs = dbTsByEvent.get(f.externalRecordId);
+    if (dbTs !== undefined && dbTs >= Date.parse(f.sourceUpdatedAt)) continue; // 库中较新/相同：文件行为旧版本，合法 no-op
+    ledgerFacts.set(f.externalRecordId, {
+      externalRecordId: f.externalRecordId, itemId: parentItem.id, amount: decOf(f.refundAmount),
+      qty: f.refundedQuantityCumulative ?? 0,
+      completedAt: new Date(f.completedAt ?? f.occurredAt).toISOString(), itemRow: f.__row,
+    });
+  }
 
-  // H02c：订单行金额/件数更正不得突破既有成功退款上界（预览侧全历史校验）
+  // H02c：订单行金额/件数更正不得突破既有成功退款上界（预览侧按库中最终事实校验）
   const priorRefundsByItem = new Map<string, { total: Prisma.Decimal; maxQty: number }>();
   if (kind === "order_items") {
     for (const r of historyRefunds) {
-      if (refundExtIds.includes(r.externalRecordId)) continue;
       const acc = priorRefundsByItem.get(r.orderItemId) ?? { total: new Prisma.Decimal(0), maxQty: 0 };
       acc.total = acc.total.add(decOf(r.refundAmount));
       acc.maxQty = Math.max(acc.maxQty, r.refundedQuantityCumulative ?? 0);
@@ -592,9 +623,8 @@ export async function classifyAndStage(args: {
     }
     if (kind === "customer_messages") {
       const m = r as StandardRecords["customer_messages"];
-      // H08：脱敏后无有效业务内容则明确报错，不静默丢行（04 §12.6）
-      const redacted = redactFreeText(m.messageText);
-      if (!/[\u4e00-\u9fa5A-Za-z0-9]/.test(redacted.replace(/\*+/g, ""))) {
+      // H08：脱敏后无有效业务内容则明确报错，不静默丢行（04 §12.6；系统掩码不算正文）
+      if (!hasBusinessContent(redactFreeText(m.messageText))) {
         flagError(p, {
           row: p.row,
           column: "message_text",
@@ -671,66 +701,58 @@ export async function classifyAndStage(args: {
       record: r,
     });
   }
-  // H02：按订单行合并“全部既有成功退款 + 本文件最终集合”的退款总账（Decimal 精确整数运算）
+  // H02（R2）：按订单行对“最终生效事实集合”做全历史总账校验（Decimal 精确整数运算）
   if (kind === "after_sales" && inFileRefunds.length > 0) {
-    const finalByItem = new Map<string, Array<{ event: string; amount: Prisma.Decimal; qty: number; completedAt: string }>>();
-    for (const a of inFileRefunds) {
-      if (a.status !== "succeeded") continue;
-      const parentOrder = orderMap.get(a.externalOrderId);
-      const parentItem = parentOrder ? itemMap.get(`${parentOrder.id}\u0000${a.externalOrderItemId}`) : undefined;
-      if (!parentItem) continue; // 引用缺失已在上方报错
-      const arr = finalByItem.get(parentItem.id) ?? [];
-      arr.push({ event: a.externalRecordId, amount: decOf(a.refundAmount), qty: a.refundedQuantityCumulative ?? 0, completedAt: new Date(a.completedAt ?? a.occurredAt).toISOString() });
-      finalByItem.set(parentItem.id, arr);
+    const factsByItem = new Map<string, LedgerFact[]>();
+    for (const f of ledgerFacts.values()) {
+      const arr = factsByItem.get(f.itemId) ?? [];
+      arr.push(f);
+      factsByItem.set(f.itemId, arr);
     }
-    for (const [itemId, finals] of finalByItem) {
+    for (const [itemId, facts] of factsByItem) {
       const orderItem = itemById.get(itemId);
       if (!orderItem) continue;
       const paid = orderItem.itemPaidAmount instanceof Prisma.Decimal ? orderItem.itemPaidAmount : decOf(orderItem.itemPaidAmount);
       const qtyCap = orderItem.quantity;
-      // 最终集合 = 历史成功退款（排除本文件同自然键替换行）+ 本文件行
-      const merged = [
-        ...(historyByItem.get(itemId) ?? []),
-        ...finals.map((f) => ({ amount: f.amount, qty: f.qty, completedAt: f.completedAt, externalRecordId: f.event })),
-      ];
-      const total = merged.reduce((sum, r) => sum.add(r.amount), new Prisma.Decimal(0));
+      const repRow = facts.reduce((m, f) => Math.min(m, f.itemRow), Number.MAX_SAFE_INTEGER);
+      const total = facts.reduce((s, f) => s.add(f.amount), new Prisma.Decimal(0));
       if (total.gt(paid)) {
         outcome.rowErrors.push({
-          row: finals[0] ? pendingRowOf(finals[0].event) : 1,
+          row: repRow,
           column: "refund_amount",
           code: "REFUND_AMOUNT_EXCEEDS_PAID",
           message: `订单行合计成功退款 ${total.toString()} 超过实付金额 ${paid.toString()}`,
         });
       }
-      const sorted = [...merged].sort((x, y) => x.completedAt.localeCompare(y.completedAt));
+      const sorted = [...facts].sort((x, y) => x.completedAt.localeCompare(y.completedAt));
       let prevQty = 0;
       const byStamp = new Map<string, number>();
-      for (const r of sorted) {
-        if (r.qty < prevQty) {
+      for (const f of sorted) {
+        if (f.qty < prevQty) {
           outcome.rowErrors.push({
-            row: pendingRowOf(r.externalRecordId),
+            row: f.itemRow,
             column: "refunded_quantity_cumulative",
             code: "REFUND_QUANTITY_CONFLICT",
             message: "累计退件数按完成时间必须非递减",
           });
           break;
         }
-        prevQty = r.qty;
-        const stamp = r.completedAt;
-        if (byStamp.has(stamp) && byStamp.get(stamp) !== r.qty) {
+        prevQty = f.qty;
+        const stamp = f.completedAt;
+        if (byStamp.has(stamp) && byStamp.get(stamp) !== f.qty) {
           outcome.rowErrors.push({
-            row: pendingRowOf(r.externalRecordId),
+            row: f.itemRow,
             column: "refunded_quantity_cumulative",
             code: "REFUND_QUANTITY_CONFLICT",
             message: "同一完成时刻存在不同累计退件数，顺序不确定",
           });
           break;
         }
-        byStamp.set(stamp, r.qty);
+        byStamp.set(stamp, f.qty);
       }
       if (prevQty > qtyCap) {
         outcome.rowErrors.push({
-          row: finals[0] ? pendingRowOf(finals[0].event) : 1,
+          row: repRow,
           column: "refunded_quantity_cumulative",
           code: "REFUND_QUANTITY_CONFLICT",
           message: `累计退件 ${prevQty} 超过订单行数量 ${qtyCap}`,

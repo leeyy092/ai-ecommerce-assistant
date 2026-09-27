@@ -14,6 +14,7 @@
  * 原子绑定；H06 显式别名提交消费；H02 退款全历史提交重验与行更正上界；
  * H08 完整脱敏正文（与预览摘录分离）；M01 同语义重复不增版本。
  */
+import { createHash } from "node:crypto";
 import { getPrismaClient } from "@/database/prisma";
 import { AccessError, canImport, type Role } from "@/services/access";
 import { writeAudit } from "@/services/audit";
@@ -71,6 +72,10 @@ interface Manifest {
   counts: { insert: number; update: number; unchanged: number; rejected: number };
   rows: ManifestRow[];
   generated_at?: string;
+  /** H03：身份与完整性绑定字段（新流水线写入） */
+  task_id?: string;
+  preview_version?: number;
+  checksum?: string;
 }
 
 /** adapters 通道值（default/case/refund）→ Prisma 枚举成员（default_channel/...） */
@@ -128,12 +133,18 @@ function tzOffsetMs(tz: string, at: Date): number {
   return asUtc - at.getTime();
 }
 
-/** 店铺本地自然日 → UTC 窗口 [start, end)（两遍逼近消除 DST 偏差） */
-function localDayUtcRange(tz: string, date: string): { start: Date; end: Date } {
+/** 店铺本地自然日的本地午夜对应 UTC 时刻（两遍逼近消除 DST 偏差） */
+function localMidnightUtc(tz: string, date: string): Date {
   const naive = Date.parse(`${date}T00:00:00Z`);
-  let start = new Date(naive - tzOffsetMs(tz, new Date(naive)));
-  start = new Date(naive - tzOffsetMs(tz, start));
-  return { start, end: new Date(start.getTime() + 86400000) };
+  let at = new Date(naive - tzOffsetMs(tz, new Date(naive)));
+  at = new Date(naive - tzOffsetMs(tz, at));
+  return at;
+}
+
+/** 店铺本地自然日 → UTC 窗口 [start, end)：起止各为相邻本地午夜，IANA 时区 DST 正确（H04） */
+function localDayUtcRange(tz: string, date: string): { start: Date; end: Date } {
+  const nextDate = new Date(Date.parse(`${date}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
+  return { start: localMidnightUtc(tz, date), end: localMidnightUtc(tz, nextDate) };
 }
 
 /** 该来源日已接收事实计数（G3R1-H04C01 合同口径：租户/店铺/来源namespace/类型/channel/业务日，
@@ -229,6 +240,20 @@ export async function commitImportTask(
     select: { sourceNamespace: true },
   });
   const manifest = JSON.parse(await getObjectText(task.stagingObjectKey)) as Manifest;
+
+  // H03：staging 身份与完整性绑定——与任务/原文件/当前预览逐项一致，校验和防错配与损坏；
+  // 不一致一律 409 且零业务副作用（正常确认/幂等重放/时效与权限保护保持）
+  const { checksum: manifestChecksum, ...manifestBody } = manifest as unknown as Record<string, unknown>;
+  const identityOk =
+    manifest.task_id === task.id &&
+    manifest.file_sha256 === task.fileSha256 &&
+    manifest.kind === task.sourceKind &&
+    manifest.preview_version === task.previewVersion &&
+    typeof manifestChecksum === "string" &&
+    manifestChecksum === createHash("sha256").update(JSON.stringify(manifestBody)).digest("hex");
+  if (!identityOk) {
+    throw new AccessError(409, "PREVIEW_IDENTITY_MISMATCH", "staging 数据与任务/原文件/当前预览不一致，请重新校验后确认");
+  }
 
   // H03b：staging 时效——预览 24 小时有效，过期必须重新校验（不接受确认）
   const generatedAt = Date.parse(manifest.generated_at ?? "");
@@ -326,7 +351,6 @@ export async function commitImportTask(
       const staged = effectiveRows.filter((r) => r.action !== "unchanged");
 
       let changed = 0;
-      const parentOrderIds = new Set<string>(); // order_items 提交后行齐复核（H04）
       const affectedRefundItemIds = new Set<string>(); // after_sales 提交后退款总账重验（H02）
       if (kind === "products") {
         for (const row of staged) {
@@ -453,7 +477,6 @@ export async function commitImportTask(
           if (!parentOrder) {
             throw new AccessError(409, "MISSING_ORDER_REFERENCE", `订单 ${it.externalOrderId} 不存在，订单行不能提交`);
           }
-          parentOrderIds.add(parentOrder.id);
           // H06：直接 SKU 或显式别名解析（与预览共享口径）
           const skuId = await resolveSkuId(tx, ctx.orgId, task.storeId, dataSource.sourceNamespace, it.externalSkuId);
           if (!skuId) {
@@ -711,17 +734,28 @@ export async function commitImportTask(
         }
       }
 
-      // H04：行齐判断按提交后最终事实（不留逐行暂时缺行的 partial 标记）
+      // H04（R2）：行齐按所声明来源日的全部相关最终订单判断——含历史与 unchanged，
+      // 不只本任务发生变更的订单；任一订单缺行即该来源日保持 partial
       const partialDates = new Set<string>();
       if (kind === "order_items") {
-        for (const pid of parentOrderIds) {
-          const orderRow = await tx.order.findUniqueOrThrow({
-            where: { id: pid },
-            select: { expectedItemCount: true, paidAt: true, orderedAt: true },
-          });
-          const presentCount = await tx.orderItem.count({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: pid } });
-          if (presentCount < orderRow.expectedItemCount) {
-            partialDates.add(localDateInTz(store.timezone, orderRow.paidAt ?? orderRow.orderedAt));
+        for (const item of manifest.coverage_declaration) {
+          if (item.source_kind !== kind) continue;
+          for (const date of expandRange(item.from, item.to)) {
+            const { start, end } = localDayUtcRange(store.timezone, date);
+            const ordersOnDay = await tx.order.findMany({
+              where: {
+                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
+                OR: [{ paidAt: { gte: start, lt: end } }, { paidAt: null, orderedAt: { gte: start, lt: end } }],
+              },
+              select: { id: true, expectedItemCount: true },
+            });
+            for (const o of ordersOnDay) {
+              const present = await tx.orderItem.count({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: o.id } });
+              if (present < o.expectedItemCount) {
+                partialDates.add(date);
+                break;
+              }
+            }
           }
         }
       }
