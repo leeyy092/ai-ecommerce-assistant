@@ -108,6 +108,7 @@ export async function buildCohortMetrics(input: {
   }
 
   // ---- 事件日退款金额（succeeded 按 completedAt 本地日） + 退款事件金额比 ----
+  // H02：退款声明日历驱动——显式零/覆盖声明日也生成行（含真零退款金额）
   const refundByDay = new Map<string, Prisma.Decimal>();
   for (const r of refunds) {
     const at = r.completedAt ?? r.occurredAt;
@@ -115,6 +116,18 @@ export async function buildCohortMetrics(input: {
     const d = localDateOf(store.timezone, at);
     const acc = refundByDay.get(d) ?? new Prisma.Decimal(0);
     refundByDay.set(d, acc.add(new Prisma.Decimal(r.refundAmount?.toString() ?? "0")));
+  }
+  for (const src of sources) {
+    const covs = await tx.dataCoverage.findMany({
+      where: { orgId, storeId, dataSourceId: src.id, sourceKind: "after_sales", channel: "refund_channel" },
+      select: { coverageDate: true },
+      orderBy: { datasetVersion: "desc" },
+    });
+    const seen = new Set<string>();
+    for (const c of covs) {
+      const d = c.coverageDate.toISOString().slice(0, 10);
+      if (!seen.has(d)) { seen.add(d); if (!refundByDay.has(d)) refundByDay.set(d, new Prisma.Decimal(0)); }
+    }
   }
   for (const [day, amount] of refundByDay) {
     let coverage: "complete" | "partial" | "missing" = "missing";
@@ -157,16 +170,13 @@ export async function buildCohortMetrics(input: {
     // 成熟：队列最晚一笔的观察窗在评估时点前已结束（不依赖覆盖；覆盖只影响 complete/partial）
     const latestPaid = cohort.reduce((m, o) => (o.paidAt! > m ? o.paidAt! : m), cohort[0].paidAt!);
     const windowEnd = addDays(latestPaid, WINDOW_DAYS);
-    const maturity = evaluationAt >= windowEnd ? "mature" : "provisional";
-
-    let refundCov: "complete" | "partial" | "missing" = "complete";
-    if (maturity === "mature") {
-      refundCov = await channelCoveredEveryDay(tx, { orgId, storeId, kind: "after_sales", channelKey: "refund_channel", from: day, to: new Date(Date.parse(`${day}T00:00:00Z`) + (WINDOW_DAYS + 1) * 86400000).toISOString().slice(0, 10) });
-    }
-    let caseCov: "complete" | "partial" | "missing" = "complete";
-    if (maturity === "mature") {
-      caseCov = await channelCoveredEveryDay(tx, { orgId, storeId, kind: "after_sales", channelKey: "case_channel", from: day, to: new Date(Date.parse(`${day}T00:00:00Z`) + (WINDOW_DAYS + 1) * 86400000).toISOString().slice(0, 10) });
-    }
+    // H03：覆盖完整才mature——订单+行覆盖 AND 窗内refund覆盖完整（不只是窗结束）
+    const windowTo = new Date(Date.parse(`${day}T00:00:00Z`) + (WINDOW_DAYS + 1) * 86400000).toISOString().slice(0, 10);
+    const refundCov = await channelCoveredEveryDay(tx, { orgId, storeId, kind: "after_sales", channelKey: "refund_channel", from: day, to: windowTo });
+    const caseCov = await channelCoveredEveryDay(tx, { orgId, storeId, kind: "after_sales", channelKey: "case_channel", from: day, to: windowTo });
+    const ordersCovEarly = await ordersCoverage(tx, { orgId, storeId, dataSourceIds, date: day });
+    const timeMature = evaluationAt >= windowEnd;
+    const maturity = (timeMature && refundCov === "complete" && caseCov === "complete" && ordersCovEarly === "complete") ? "mature" : "provisional";
     const rateCoverage = (c: "complete" | "partial" | "missing") =>
       ordersCov === "complete" && c === "complete" ? "complete" : (ordersCov === "missing" && c !== "complete" ? "missing" : "partial");
 

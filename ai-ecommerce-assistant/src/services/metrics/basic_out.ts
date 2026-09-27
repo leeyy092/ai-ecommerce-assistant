@@ -53,6 +53,7 @@ export async function upsertDailyMetric(tx: Tx, r: DailyMetricWrite): Promise<vo
       rulesetVersion: r.rulesetVersion, metricVersion: r.metricVersion,
     },
     update: {
+      // H01-C13：同版本重评估只在评估身份更晚时覆盖；旧评估的已发布行保持可读
       valueNumeric: r.valueNumeric?.toString() ?? null,
       numerator: r.numerator?.toString() ?? null,
       denominator: r.denominator?.toString() ?? null,

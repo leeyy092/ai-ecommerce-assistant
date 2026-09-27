@@ -193,9 +193,9 @@ describe("TASK-015 退款与售后队列指标", () => {
     expect(asr.valueNumeric?.toString()).toBe("0.5");
     expect(asr.maturity).toBe("mature");
 
-    // 09-10 队列未成熟（评估时点 2026-09-27 已过窗——改为核对 provisional 语义：单独店验证）
+    // 09-10 队列：H03修正后窗内覆盖不完整（声明只到09-11但窗到09-17）→ provisional
     const orr10 = await row(s.storeId, "order_refund_rate_d7", "2026-09-10");
-    expect(orr10.maturity).toBe("mature"); // 09-10+7d=09-17 < 评估(今日) → mature；fixture评估点为09-11时应provisional，此处为运行时评估
+    expect(orr10.maturity).toBe("provisional"); // H03：覆盖完整才mature，09-10窗[09-10,09-17)缺09-11以后声明
   });
 
   it("未成熟队列 provisional：窗未结束不成熟；零分母 unavailable", async () => {

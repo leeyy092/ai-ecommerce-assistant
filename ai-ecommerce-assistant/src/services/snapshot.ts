@@ -259,7 +259,7 @@ export async function runRebuildJob(jobRunId: string, db: PrismaClient): Promise
             });
           }
         }
-      });
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
       const published = await publishSnapshot(db, {
         runId: run.id,
         orgId: run.orgId, storeId: run.storeId,
@@ -373,11 +373,14 @@ export interface EvaluationTickResult {
   scheduled: number;
 }
 
-export async function evaluationTick(db: PrismaClient, now: Date, limit = 50): Promise<EvaluationTickResult> {
+export async function evaluationTick(db: PrismaClient, now: Date, limit = 50, cursor?: { orgId: string; id: string } | null): Promise<EvaluationTickResult & { nextCursor: { orgId: string; id: string } | null }> {
+  // M01-C15：游标分批（按orgId+id排序、排除本轮已推进店），不全量固定前50
   const stores = await db.store.findMany({
     where: { status: "active" },
     select: { orgId: true, id: true, timezone: true, datasetVersion: true, rulesetVersion: true, lastEvaluationDate: true },
     take: limit,
+    orderBy: [{ orgId: "asc" }, { id: "asc" }],
+    ...(cursor ? { cursor: { orgId_id: { orgId: cursor.orgId, id: cursor.id } }, skip: 1 } : {}),
   });
   let advanced = 0;
   let scheduled = 0;
@@ -420,5 +423,7 @@ export async function evaluationTick(db: PrismaClient, now: Date, limit = 50): P
       // 单店失败不阻断其余店铺；下一轮 tick 重试
     }
   }
-  return { advanced, scheduled };
+  const lastStore = stores[stores.length - 1];
+  const nextCursor = stores.length === limit && lastStore ? { orgId: lastStore.orgId, id: lastStore.id } : null;
+  return { advanced, scheduled, nextCursor };
 }

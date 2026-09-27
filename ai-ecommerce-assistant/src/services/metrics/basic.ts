@@ -105,6 +105,28 @@ async function buildBasicMetrics(input: {
     if (o.orderItems.length < o.expectedItemCount) agg.incomplete = true; // 缺行：金额按已知行展示、覆盖partial
     orderDays.set(day, agg);
   }
+  // H02：覆盖声明日历驱动——显式零/完整覆盖日也生成指标行（含真零GMV/数量/客单价）
+  const declaredOrderDays = new Set<string>();
+  for (const src of sources) {
+    const covs = await tx.dataCoverage.findMany({
+      where: {
+        orgId, storeId, dataSourceId: src.id, sourceKind: "orders", channel: "default_channel",
+      },
+      select: { coverageDate: true, status: true },
+      orderBy: { datasetVersion: "desc" },
+    });
+    const seen = new Set<string>();
+    for (const c of covs) {
+      const d = c.coverageDate.toISOString().slice(0, 10);
+      if (!seen.has(d)) { seen.add(d); declaredOrderDays.add(d); }
+    }
+  }
+  for (const day of declaredOrderDays) {
+    if (!orderDays.has(day)) {
+      orderDays.set(day, { orderCount: 0n, gmv: new Prisma.Decimal(0), units: 0n, incomplete: false });
+    }
+  }
+
   for (const [day, agg] of orderDays) {
     let coverage: "complete" | "partial" | "missing" = "missing";
     for (const src of sources) {
@@ -163,6 +185,30 @@ async function buildBasicMetrics(input: {
     agg.sales = agg.sales.add(new Prisma.Decimal(a.attributedSales.toString()));
     adGroups.set(key, agg);
   }
+  // H02：广告声明日历驱动（显式零/完整覆盖日也生成行）
+  const declaredAdDays = new Map<string, Set<string>>(); // day -> entityKeys
+  for (const src of sources) {
+    const covs = await tx.dataCoverage.findMany({
+      where: { orgId, storeId, dataSourceId: src.id, sourceKind: "ads", channel: "default_channel" },
+      select: { coverageDate: true, status: true },
+      orderBy: { datasetVersion: "desc" },
+    });
+    const seen = new Set<string>();
+    for (const c of covs) {
+      const d = c.coverageDate.toISOString().slice(0, 10);
+      if (!seen.has(d)) { seen.add(d); declaredAdDays.set(d, new Set()); }
+    }
+  }
+  // 为声明日但无事实的日：沿用最近归因组的entityKey（或"ads:default"占位）——只对已有组生成零行
+  for (const g of adGroups.values()) {
+    for (const [day] of declaredAdDays) {
+      const key = `${day}\u0000${g.model}\u0000${g.window}`;
+      if (!adGroups.has(key)) {
+        adGroups.set(key, { day, model: g.model, window: g.window, spend: new Prisma.Decimal(0), sales: new Prisma.Decimal(0) });
+      }
+    }
+  }
+
   for (const g of adGroups.values()) {
     let coverage: "complete" | "partial" | "missing" = "missing";
     for (const src of sources) {
