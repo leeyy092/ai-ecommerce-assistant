@@ -31,9 +31,10 @@ GATE03 REVIEW4 PASS ea1c15f/business bc5e4b2, main85a93ec; TASK008-012 DONE. Pha
   "blockers": "GATE_04待独立复审；Phase4后续017-031按Owner第11节冲刺授权接续，采购/部署仍单独审批",
 "checkpoint": "NO",
   "review": "GATE_03 REVIEW4 PASS保持；GATE_04待审（Phase4 013-016候选）",
-"updated_at": "2026-09-27T18:56:44+08:00",
-  "updated_by": "ZCode · 最新Z02 Phase4 013-016完成，GATE_04冻结交Codex",
+"updated_at": "2026-09-27T19:02:10+08:00",
+  "updated_by": "ZCode · 最新Z02 PH4协调更正收尾——进度对齐GATE_04冻结+Owner新事实记录",
 "evidence": [
+    "2026-09-27T19:02:10+08:00：PH4-20260927-01协调更正（非新START）：①实际状态已为013-016全部DONE+GATE_04冻结@672c843（Codex04读到的7808923/TASK014为中间快照）；②Owner新事实记录——阿里云账号已有、域名jucaiyy.com在阿里云控制台且状态正常但未ICP备案、尚无营业执照；服务器购买/地域、域名实名/到期、百炼开通、注册主体城市未核实；公司注册仅为建议不构成Owner批准；不新增任何采购/部署授权；③未跟踪编号副本核验：preview/route 2.ts与g3r2-contract.test 2.ts与原件逐字节一致（diff -q无输出）=iCloud同步冲突副本非代码变更，保留不提交不删除；gate-03-final-evidence/gate-02-review-2-evidence编号副本同理保留；④导航/状态块统一为GATE_04/Codex04/P07实际",
     "2026-09-27T18:56:44+08:00：Phase4 TASK013-016全部完成（013@7808923/014@cde2798/015@2bf6634/016本轮）。验证（/tmp/aiea-ph4-20260927-z02/repo=git archive phase/04-metrics-alerts+在途、新PG17 aiea-pg-ph4z02仅127.0.0.1:55503）：tsc0；unit72/72；integration157/157（新增snapshot8+metrics5+cohort2+rules3）；g3四套独立进程聚合exit0；build0；E2E8/8。Git生命周期：main=2d7ceaf（Phase3已合并推送）、phase/04-metrics-alerts推进至本轮提交",
     "2026-09-27T18:19:09+08:00：PH4-20260927-01 START实际送达（Owner第11节直接执行授权），Z02记回执接管唯一业务/进度/sync/Git写入权（完整回执见文末）；接收时实测phase/03-import@ea1c15f（业务bc5e4b2）、143项管理/证据在途且业务diff为空；Codex04转只读。保持Z02窗口/CTX-RULE-20260927-01",
     "2026-09-27T18:18:37+08:00: 已从最新Z02桌面核实18:17完整只读ACK及空闲：phase/03-import@ea1c15f、业务bc5e4b2、main85a93ec、143项管理/证据在途且业务diff为空；013依赖/合同/014–016范围与Gate04冻结点一致，无技术阻塞。PH4-20260927-01 ACK接受，待同编号START首次发送；发送后由Z02记录实际接管并更新原进度/交接/提示词/sync，Codex04转只读。",
@@ -1311,3 +1312,11 @@ PH4-20260927-01只读核验请求已首次实际送达最新Z02：桌面出现�
 - 接收：Codex04本编号START实际送达（Owner FINAL_DECISIONS第11节直接执行授权）；主副本业务/唯一进度/sync/Git写入权自本条起归唯一最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）；Codex04（01a0e16d-be56-7741-bced-49133cdcafeb）转只读。18:17只读ACK已被核实，管理写回与sync读回于18:18:38完成。
 - 现场核对（接收时实测）：phase/03-import@ea1c15f（业务bc5e4b2，GATE03 REVIEW4独立PASS）、main85a93ec未合并；143项在途全部为Codex管理/规则写回与R1–R4证据，业务diff为空，全部保留。
 - 本Phase执行序（P06）：先Git生命周期——安全提交管理/证据在途（逐路径检查差异与敏感文件，不盲目add全部）→按生命周期合并已通过Phase3至main→创建phase/04-metrics-alerts；随后TASK-013（阶段状态机/数据版本/发布锁/完成标记接口、F01定时评估不被AI开关阻断）→014→015→016一次一TASK，GATE_04冻结单一候选交Codex；独立PASS前不实施017/031。老板3分钟核心路径与质量底线不减；模型/云账号不阻塞本Phase；采购/部署/敏感权限仍交Owner确认。
+
+
+## PH4-20260927-01 协调更正收尾（2026-09-27T19:02:10+08:00 · ZCode最新Z02）
+
+- 本条为Codex04中途协调更正的落盘（非新START/ACK）：实际进度已推进至013/014/015/016全部DONE（7808923/cde2798/2bf6634/8cd4f88）+管理chore（71d27f3/amend→672c843），GATE_04候选冻结、Codex04只读复审中。导航/状态块/首页sync均对齐该事实。
+- **Owner新事实（资源/上线输入）**：阿里云账号已有；域名jucaiyy.com已在阿里云控制台、状态正常、未ICP备案；尚无营业执照。服务器购买/地域、域名实名认证/到期时间、百炼账号/可用额度、注册主体城市未核实。公司注册仅为建议不构成Owner批准。以上不新增任何采购/部署/敏感权限授权；ICP正常流程管局1-20工作日不可加急，9/30公开上线仍需Owner决定替代方案（香港测试节点/内部受控）或接受延期。
+- **未跟踪编号副本核验**：`src/app/api/v1/imports/[id]/preview/route 2.ts`与`tests/integration/g3r2-contract.test 2.ts`与原件逐字节一致（diff -q零输出）=iCloud/文件系统同步冲突副本，非代码变更；docs/reviews/gate-03-final-evidence与gate-02-review-2-evidence下同名编号副本同理。全部保留不提交不删除，待Codex04复审轮统一处置。
+- 本条不改业务代码、不重跑测试（无触发改动）、不新增开发范围；GATE_04冻结态保持，写入权仍在Codex04（Z02本条仅管理更正落盘）。
