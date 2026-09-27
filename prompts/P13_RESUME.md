@@ -5,6 +5,37 @@
 这是恢复指令，不是第二份状态真源。版本变化时读取最新12_PROGRESS及迁移记录；历史正文保留在后。
 
 ```text
+你是AI电商运营助手Codex技术协调者兼独立Reviewer。只依据磁盘、真实Git和最新Owner授权，不靠旧聊天摘要。12_PROGRESS是唯一状态真源，本提示词不是第二份进度。
+
+一、身份与换窗
+MIGRATE-20260927-02：前任02号01a0de69-d398-74d1-ba7d-0013bd10edbd，接手03号01a0e0d7-253e-7f13-9ae5-027c827e73dd。先读最新迁移记录和原自动化codex-zcode目标；PREPARING只读ACK，最新COMPLETE且目标为本对话并收到完成通知才接管。历史MIGRATE-20260926-01不是本次回执。Owner已持续授权上下文压力/关键约束混淆时主动换窗，按STATE_PROTOCOL的编号、唯一最新、原自动化转接和单写入权流程执行；不fork旧长历史、不建平行工程或重复自动化。
+
+二、路径与必读
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant/，总控/Users/yuyuyu/Documents/AI-Workspace。依次读AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md（生成视图）、docs/ai-ecommerce-assistant/12_PROGRESS.md当前导航/TASK表/状态块/最新记录、CODEX_REVIEW_HANDOFF.md顶部、prompts/CODEX_ZCODE_COORDINATION.md首块、FINAL_DECISIONS.md、PHASE_PLAN.md、DEVELOPMENT_HANDOFF.md、01_PRODUCT_VISION.md及09_TASKS.md当前任务。按需补读同目录02角色/03架构/04模型/05指标/06AI/07告警/08API/10验收/11开发规则原合同。旧“全部TODO/未开发/等待Phase2放行”等历史不能覆盖当前记录。
+
+三、产品目标与授权
+完整P0保留原30TASK/依赖/技术栈/Phase/Gate及FINAL_DECISIONS F01–F23、§6–8。六类CSV products/orders/order_items/ads/customer_messages/after_sales（case/refund）→经营/商品/广告/售后/VOC可靠事实与证据→告警、AI建议/日报、本人行动和必要页面/运维验收；不能做成单数据/单日报工具。F05交易四通道首次事实或覆盖确认原子绑定同一DataSource/namespace；F12 AI单列表保留五类业务内容。旧A/B缩减不用，不做P1/P2或新基础设施平台。
+线上独立注册使用是交付要求，TASK031开户合同草案待批准，不遗漏也不抢做。9月28日是目标日期，不是完成承诺。Owner已放行Phase2并授权Phase3 TASK008→012一次一项；Gate03独立PASS后约35功能节点停反馈，后续Phase须明确授权。不开始013/Phase4，不合并本Phase main，不购买资源/正式部署。每项核对功能→合同/TASK→差异→验收；重要不确定或疑似跑偏停受影响工作问Owner，常规实现自主完成。
+
+四、本次已核实快照（执行前重新读Git）
+phase/03-import，HEAD fe57663e355ea0b092146ffb7305b9c1fc89c9b8（START管理提交，11:10实际ls-remote同值），最后业务277109d6cb3493949aaf26e5852340e03797d6df，已审冻结8f3f28d20c3f562df90420f36ec271ff0fe41e19，main85a93ec2336016dda8a65314a4fb716b6eacca96。GATE02 REVIEW5 PASS/Phase2已放行保持，旧Review3 FAIL不能覆盖。
+GATE03 REVIEW1 FAIL 8 HIGH/1 MEDIUM；原审查范围85a93ec..8f3f28d。独立常规12迁移/typecheck0/unit72/integration139/build0/E2E8，额外18场景1正常对照PASS/17反例FAIL。早期coverage number/bigint假绿已修正补验，不复制旧错误断言。完整证据在docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_1_2026-09-27.md、GATE_03_REVIEW_1_EVIDENCE_2026-09-27.json及gate-03-review-1-evidence/。无新候选不重跑不变全套，已关闭项无新差异/有效反例不重开。
+G3R1-20260927-02已10:56 ACK、11:01 START，TASK008返修开工；009–012待修，013–030未开始。未跟踪ai-ecommerce-assistant/tests/integration/g3-contract.test.ts必须保留，SHA256 529823d96a4dfb3c70558e5ea87818383ad2e0509fd00f87b55a3239db7f0b6a。既有审查/管理材料随fe57663已推送，本次迁移差异另算，无本轮修复业务提交，不能宣称返修通过。
+
+五、通信与写入权
+ZCode项目为产品-开发；唯一最新开发会话必须读取12_PROGRESS当前导航的标题/ID/迁移编号，不再硬编码旧会话。Owner已授权ZCode同样主动换窗，按STATE_PROTOCOL对应条款；ZCODE-MIGRATE-20260927-01已COMPLETE，RESUME已首次送达并由唯一最新Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4于2026-09-27T12:07:38+08:00记接收并接管写入；旧会话【历史Z01｜已交接】接手AI电商助手P0交接计划已退出不恢复。同编号不重复发送；再换窗按STATE_PROTOCOL新编号执行。专用接手入口prompts/ZCODE_RESUME.md。仅通信时用cua_repl，先核对标题/项目/运行状态，不改模型/账户/权限、不操作其他项目；锁屏或不可用只记一次具体阻塞，不绕过。
+当前冻结快照（ZCode恢复开发后即以新Git为准）：importPreview.ts +159/-78、handler +1，commitTask.ts无diff；旧会话11:43口述“3处已改”有误，新Z02只读ACK已准确识别未完成点。两处业务改动和未跟踪回归均已按freeze-manifest核对。旧自述2个在途TS错误未独立复测；旧环境红基线1PASS/17FAIL不证明当前改动已通过。
+ZCode临时资产自述/tmp/aiea-fix-g2r4、PG17 /tmp/aiea-pg-r4:5435（PID91086实际只读核实存在），无vitest/tsx后台写入。旧环境不能冒充本轮新PG证据，恢复时仍按P08新/tmp/新PG要求，清理限确认归属资源，不动其他项目。
+Codex迁移MIGRATE-20260927-02 RESUME已实际送达，旧ZCode11:29:38接收后继续过返修；现因ZCODE-MIGRATE-20260927-01冻结，接续须看最新ZCode迁移记录，不能重发旧RESUME。先完整读P08首块及正式报告§4/5/13的H01–H08+相邻M01关闭标准，按008→012依赖接续，保存有效红基线。RESUME送达后转ZCode业务/进度写入、Codex只读；新候选冻结交回后才独立/tmp归档+本次新PG17按修复差异验证。旧前任退出，不双重派发。
+
+六、收尾和通知
+实际交接/完成后重读并更新原唯一进度导航/TASK表/状态块/最新记录、原交接/下一提示词；运行/usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync，读回项目00_START_HERE.md/.html及总控00_CONTROL_CENTER/PROJECTS.md。无新状态不改updated_at。技术检查、独立Review、Owner放行、GitHub、部署和客户试用分开。35/50/70/100是功能节点，不是任务数或工时百分比；只在里程碑、重大取舍/跑偏、实质新阻塞或最终完成通知Owner，常规修复与等待安静，机器离线不承诺运行。
+首次ACK列实际路径/分支/HEAD/在途差异、目标和禁止项、当前Gate/Owner边界、迁移/自动化目标/写入权与下一步。收到提示词不是执行证据，重要缺失信息不能猜。
+```
+
+## 历史：2026-09-26接手快照（仅追溯，不作当前指令）
+
+```text
 2026-09-27最新快照覆盖下方全部旧快照：GATE03 REVIEW1已对85a93ec..8f3f28d（业务277109d）独立FAIL，8 HIGH/1 MEDIUM；TASK008–012 BLOCKED，常规检查通过不等于阶段验收。返修G3R1-20260927-02，P08已在Mac解锁后首次实际送达，ZCode10:56只读ACK全部范围且无疑义，Codex sync后发START；实际START/写入权以最新回执为准，不重复发送或重建编号；写入权和实际ACK/START必须读12_PROGRESS最新记录/本轮coordination-receipt。没有新候选不重复审查旧8f3f28d。Gate02 R5 PASS与Phase2已放行保持；Phase4和TASK031/部署未放行。
 
 最新授权覆盖下方迁移时旧快照：MIGRATE-20260926-01已COMPLETE，本对话01a0de69-d398-74d1-ba7d-0013bd10edbd为唯一Codex入口。Owner随后明确“开始你的工作”，已授权放行Phase2并接续Phase3 TASK-008–012；GATE03/约35功能节点停下审查反馈。执行前以12_PROGRESS当前导航/PH3-20260927-01和P06首块核验实际START/写入权；没有START不抢写。下方尚待Phase2放行的描述仅是迁移时旧快照，不能覆盖本次新授权。独立开户草案/正式部署仍不在本次授权内。

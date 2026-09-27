@@ -1,0 +1,320 @@
+diff --git a/ai-ecommerce-assistant/src/jobs/handlers/imports.ts b/ai-ecommerce-assistant/src/jobs/handlers/imports.ts
+index 769e524..21522b7 100644
+--- a/ai-ecommerce-assistant/src/jobs/handlers/imports.ts
++++ b/ai-ecommerce-assistant/src/jobs/handlers/imports.ts
+@@ -176,6 +176,7 @@ export async function handleValidateTask(
+       storeId: task.storeId,
+       namespace: dataSource.sourceNamespace,
+       timezone,
++      storeCurrency: store.currency,
+       records: batch.records,
+       coverage: batch.coverage_declaration,
+     });
+diff --git a/ai-ecommerce-assistant/src/services/importPreview.ts b/ai-ecommerce-assistant/src/services/importPreview.ts
+index 44df23e..ac49a10 100644
+--- a/ai-ecommerce-assistant/src/services/importPreview.ts
++++ b/ai-ecommerce-assistant/src/services/importPreview.ts
+@@ -214,13 +214,13 @@ function affectedDateOf(tz: string, kind: FileKind, r: AnyRecord): string | null
+   return iso ? localDateIn(tz, new Date(iso)) : null;
+ }
+ 
+-/** 预览样本受控字段子集（自由文本脱敏；不含客户原文/经营金额以外的敏感串） */
++/** 自由文本脱敏：邮箱/电话/地址掩码；不截断业务正文（列限长由输入校验保证） */
+ export function redactFreeText(v: string): string {
+-  const masked = v
++  return v
+     .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "***@***")
+     .replace(/(?:\+?86[- ]?)?1\d{10}/g, "***PHONE***")
+-    .replace(/\d{15,19}/g, "***NO***");
+-  return masked.length > 200 ? `${masked.slice(0, 200)}…` : masked;
++    .replace(/\d{15,19}/g, "***NO***")
++    .replace(/[\u4e00-\u9fa5]{2,8}(?:省|自治区)[\u4e00-\u9fa5]{2,8}(?:市|州|盟)[\u4e00-\u9fa5]{2,8}(?:区|县|旗)[^，。；\s]*?(?:号|栋|室|院|座)/g, "***ADDRESS***");
+ }
+ 
+ function sampleOf(kind: FileKind, r: AnyRecord): Record<string, unknown> {
+@@ -277,10 +277,11 @@ export async function classifyAndStage(args: {
+   storeId: string;
+   namespace: string;
+   timezone: string;
++  storeCurrency: string;
+   records: StandardRecords[FileKind][];
+   coverage: CoverageDeclarationItem[];
+ }): Promise<StageOutcome> {
+-  const { db, kind, orgId, storeId, namespace, timezone } = args;
++  const { db, kind, orgId, storeId, namespace, timezone, storeCurrency } = args;
+   const outcome: StageOutcome = {
+     rows: [],
+     counts: { insert: 0, update: 0, unchanged: 0, rejected: 0 },
+@@ -416,6 +417,29 @@ export async function classifyAndStage(args: {
+       })
+     : [];
+   const dbRefundByKey = new Map(dbRefunds.map((r) => [r.externalRecordId, r]));
++  // H02：本文件最终退款集合（带行号）与既有成功退款全历史（排除将被本文件替换的行）
++  const inFileRefunds =
++    kind === "after_sales"
++      ? keys
++          .filter((k) => (k.record as StandardRecords["after_sales"]).recordType === "refund")
++          .map((k) => ({ ...(k.record as StandardRecords["after_sales"]), __row: k.row }))
++      : [];
++  const affectedItemIds = [...new Set(items.map((it) => it.id))];
++  const historyRefunds = affectedItemIds.length
++    ? await db.refundEvent.findMany({
++        where: { orgId, storeId, orderItemId: { in: affectedItemIds }, status: "succeeded" },
++        select: { externalRecordId: true, orderItemId: true, refundAmount: true, refundedQuantityCumulative: true, completedAt: true },
++      })
++    : [];
++  const historyByItem = new Map<string, Array<{ amount: number; qty: number; completedAt: string; externalRecordId: string }>>();
++  for (const r of historyRefunds) {
++    if (refundExtIds.includes(r.externalRecordId)) continue;
++    const arr = historyByItem.get(r.orderItemId) ?? [];
++    arr.push({ amount: Number(r.refundAmount), qty: r.refundedQuantityCumulative ?? 0, completedAt: (r.completedAt ?? r.occurredAt ?? new Date(0)).toISOString(), externalRecordId: r.externalRecordId });
++    historyByItem.set(r.orderItemId, arr);
++  }
++  const pendingRowOf = (event: string): number =>
++    inFileRefunds.find((a) => a.externalRecordId === event)?.__row ?? 1;
+   const succeededByItem = new Map<string, { amount: number; quantity: number }>();
+   for (const r of dbRefunds) {
+     if (r.status !== "succeeded") continue;
+@@ -425,8 +449,40 @@ export async function classifyAndStage(args: {
+     succeededByItem.set(r.orderItemId, acc);
+   }
+ 
++  const knownAliases = new Map<string, string>(); // external_sku_id(别名) → canonical external_sku_id
++  if (skuExtIds.length) {
++    const aliases = await db.skuAlias.findMany({
++      where: { orgId, storeId, sourceNamespace: namespace, externalSkuId: { in: skuExtIds } },
++      select: { externalSkuId: true, skuId: true },
++    });
++    const canonicalIds = aliases.map((a) => a.skuId);
++    if (canonicalIds.length) {
++      const canonicalRows = await db.sKU.findMany({
++        where: { orgId, storeId, id: { in: canonicalIds } },
++        select: { id: true, externalSkuId: true },
++      });
++      const idToExt = new Map(canonicalRows.map((r) => [r.id, r.externalSkuId]));
++      for (const a of aliases) {
++        const ext = idToExt.get(a.skuId);
++        if (ext) knownAliases.set(a.externalSkuId, ext);
++      }
++    }
++  }
++  const resolvable = (extId: string): boolean => knownSkus.has(extId) || knownAliases.has(extId);
++
+   for (const p of pending.values()) {
+     const r = p.record;
++    // H01b：行币种必须与店铺币种一致（products 无币种列）
++    const rowCurrency = (r as { currency?: string | null }).currency ?? null;
++    if (rowCurrency !== null && rowCurrency !== undefined && rowCurrency !== storeCurrency) {
++      flagError(p, {
++        row: p.row,
++        column: "currency",
++        code: "CURRENCY_MISMATCH",
++        message: `行币种 ${rowCurrency} 与店铺币种 ${storeCurrency} 不一致`,
++      });
++      continue;
++    }
+     const existing = existingRows.get(p.key);
+     const existingTs = existing ? existing.sourceUpdatedAt.getTime() : null;
+     let action: StagedRow["action"] = "insert";
+@@ -522,44 +578,8 @@ export async function classifyAndStage(args: {
+         });
+       } else if (a.recordType === "refund") {
+         if (a.status === "succeeded") {
+-          const prior = succeededByItem.get(orderItem.id);
+-          const priorAmount = prior?.amount ?? 0;
+-          const self = dbRefundByKey.get(a.externalRecordId);
+-          const selfAmount = self && self.status === "succeeded" ? Number(self.refundAmount) : 0;
+-          if (a.refundAmount === null) {
+-            outcome.rowErrors.push({ row: p.row, column: "refund_amount", code: "VALIDATION_ERROR", message: "成功退款必填 refund_amount" });
+-          } else if (priorAmount - selfAmount + Number(a.refundAmount) > Number(orderItem.itemPaidAmount)) {
+-            flagError(p, {
+-              row: p.row,
+-              column: "refund_amount",
+-              code: "REFUND_AMOUNT_EXCEEDS_PAID",
+-              message: `订单行 ${a.externalOrderId}/${a.externalOrderItemId} 累计成功退款将超过实付金额`,
+-            });
+-          }
+-          if (a.refundedQuantityCumulative === null) {
+-            outcome.rowErrors.push({ row: p.row, column: "refunded_quantity_cumulative", code: "VALIDATION_ERROR", message: "成功退款必填累计退件数" });
+-          } else if (a.refundedQuantityCumulative !== null && a.refundedQuantityCumulative > orderItem.quantity) {
+-            flagError(p, {
+-              row: p.row,
+-              column: "refunded_quantity_cumulative",
+-              code: "REFUND_QUANTITY_CONFLICT",
+-              message: `累计退件 ${a.refundedQuantityCumulative} 超过订单行数量 ${orderItem.quantity}`,
+-            });
+-          }
+-          const acc = refundBoundsByItem.get(orderItem.id) ?? { total: 0, byCompletedAt: new Map<string, number>() };
+-          acc.total += Number(a.refundAmount ?? 0);
+-          const stamp = new Date(a.completedAt ?? a.occurredAt).toISOString();
+-          const prevQty = acc.byCompletedAt.get(stamp);
+-          if (prevQty !== undefined && prevQty !== a.refundedQuantityCumulative) {
+-            flagError(p, {
+-              row: p.row,
+-              column: "refunded_quantity_cumulative",
+-              code: "REFUND_QUANTITY_CONFLICT",
+-              message: `同一完成时刻存在不同累计退件数，顺序不确定`,
+-            });
+-          }
+-          acc.byCompletedAt.set(stamp, a.refundedQuantityCumulative ?? 0);
+-          refundBoundsByItem.set(orderItem.id, acc);
++          // 金额/累计件数/同刻一致性：由行循环后的“历史+整批”总账统一校验（H02）
++          void orderItem;
+           if (a.relatedCaseId && !caseIds.has(a.relatedCaseId)) {
+             const dbCase = await db.afterSaleRecord.findFirst({
+               where: { orgId, storeId, sourceNamespace: namespace, externalRecordId: a.relatedCaseId },
+@@ -595,7 +615,13 @@ export async function classifyAndStage(args: {
+       continue;
+     }
+     outcome.counts[action] += 1;
+-    const affected = affectedDateOf(timezone, kind, r);
++    let affected = affectedDateOf(timezone, kind, r);
++    if (kind === "order_items" && !affected) {
++      // 订单行归订单付款日（未付款按下单日）（PART12.1）
++      const it = r as StandardRecords["order_items"];
++      const o = orderMap.get(it.externalOrderId);
++      if (o) affected = localDateIn(timezone, o.paidAt ?? o.orderedAt);
++    }
+     outcome.rows.push({
+       row: p.row,
+       action,
+@@ -606,6 +632,74 @@ export async function classifyAndStage(args: {
+       sample: sampleOf(kind, r),
+     });
+   }
++  // H02：按订单行合并“全部既有成功退款 + 本文件最终集合”的退款总账
++  if (kind === "after_sales" && inFileRefunds.length > 0) {
++    const finalByItem = new Map<string, Array<{ event: string; amount: number; qty: number; completedAt: string }>>();
++    for (const a of inFileRefunds) {
++      if (a.status !== "succeeded") continue;
++      const parentOrder = orderMap.get(a.externalOrderId);
++      const parentItem = parentOrder ? itemMap.get(`${parentOrder.id}\u0000${a.externalOrderItemId}`) : undefined;
++      if (!parentItem) continue; // 引用缺失已在上方报错
++      const arr = finalByItem.get(parentItem.id) ?? [];
++      arr.push({ event: a.externalRecordId, amount: Number(a.refundAmount ?? 0), qty: a.refundedQuantityCumulative ?? 0, completedAt: new Date(a.completedAt ?? a.occurredAt).toISOString() });
++      finalByItem.set(parentItem.id, arr);
++    }
++    for (const [itemId, finals] of finalByItem) {
++      const orderItem = itemMap.get(itemId);
++      if (!orderItem) continue;
++      const paid = Number(orderItem.itemPaidAmount);
++      const qtyCap = orderItem.quantity;
++      // 最终集合 = 历史成功退款（排除本文件同自然键替换行）+ 本文件行
++      const merged = [
++        ...(historyByItem.get(itemId) ?? []),
++        ...finals.map((f) => ({ amount: f.amount, qty: f.qty, completedAt: f.completedAt, externalRecordId: f.event })),
++      ];
++      const total = merged.reduce((sum, r) => sum + r.amount, 0);
++      if (total > paid) {
++        outcome.rowErrors.push({
++          row: finals[0] ? pendingRowOf(finals[0].event) : 1,
++          column: "refund_amount",
++          code: "REFUND_AMOUNT_EXCEEDS_PAID",
++          message: `订单行合计成功退款 ${total} 超过实付金额 ${paid}`,
++        });
++      }
++      const sorted = [...merged].sort((x, y) => x.completedAt.localeCompare(y.completedAt));
++      let prevQty = 0;
++      const byStamp = new Map<string, number>();
++      for (const r of sorted) {
++        if (r.qty < prevQty) {
++          outcome.rowErrors.push({
++            row: finals[0] ? pendingRowOf(finals.find((f) => f.event === r.externalRecordId)?.event ?? "") : 1,
++            column: "refunded_quantity_cumulative",
++            code: "REFUND_QUANTITY_CONFLICT",
++            message: "累计退件数按完成时间必须非递减",
++          });
++          break;
++        }
++        prevQty = r.qty;
++        const stamp = r.completedAt;
++        if (byStamp.has(stamp) && byStamp.get(stamp) !== r.qty) {
++          outcome.rowErrors.push({
++            row: finals[0] ? pendingRowOf(finals.find((f) => f.event === r.externalRecordId)?.event ?? "") : 1,
++            column: "refunded_quantity_cumulative",
++            code: "REFUND_QUANTITY_CONFLICT",
++            message: "同一完成时刻存在不同累计退件数，顺序不确定",
++          });
++          break;
++        }
++        byStamp.set(stamp, r.qty);
++      }
++      if (prevQty > qtyCap) {
++        outcome.rowErrors.push({
++          row: finals[0] ? pendingRowOf(finals[0].event) : 1,
++          column: "refunded_quantity_cumulative",
++          code: "REFUND_QUANTITY_CONFLICT",
++          message: `累计退件 ${prevQty} 超过订单行数量 ${qtyCap}`,
++        });
++      }
++    }
++  }
++
+   outcome.counts.rejected = outcome.rowErrors.length;
+   outcome.coverageGaps = computeCoverageGaps(outcome.rows, args.coverage);
+   return outcome;
+@@ -711,43 +805,30 @@ async function loadExistingByNaturalKey(args: {
+       return out;
+     }
+     case "ads": {
++      // 完整自然键（campaign/date/model/window/currency）精确对照（H07）
++      const out = new Map<string, { id: string; sourceUpdatedAt: Date; rowHash: string }>();
+       const recs = [...pending.values()];
+-      const byCampaign = new Map(recs.map((k) => [(k.record as StandardRecords["ads"]).campaignId, k]));
++      const campaignIds = [...new Set(recs.map((k) => (k.record as StandardRecords["ads"]).campaignId))];
++      if (campaignIds.length === 0) return out;
+       const rows = await db.adMetric.findMany({
+-        where: { ...base, campaignId: { in: [...byCampaign.keys()] } },
+-        select: {
+-          ...pick,
+-          campaignId: true,
+-          reportDate: true,
+-          attributionModel: true,
+-          attributionWindowDays: true,
+-          currency: true,
+-          spend: true,
+-          attributedSales: true,
+-        },
++        where: { ...base, campaignId: { in: campaignIds } },
++        select: { ...pick, campaignId: true, reportDate: true, attributionModel: true, attributionWindowDays: true, currency: true },
+       });
+-      return indexBy(
+-        rows,
+-        (r) =>
+-          byCampaign.get(r.campaignId)?.key ??
+-          "",
+-        (r) => {
+-          const iso = r.reportDate.toISOString().slice(0, 10);
+-          for (const k of pending.values()) {
+-            const a = k.record as StandardRecords["ads"];
+-            if (
+-              a.campaignId === r.campaignId &&
+-              a.reportDate === iso &&
+-              a.attributionModel === r.attributionModel &&
+-              String(a.attributionWindowDays) === String(r.attributionWindowDays) &&
+-              a.currency === r.currency
+-            ) {
+-              return k.key;
+-            }
+-          }
+-          return "";
+-        },
+-      );
++      for (const r of rows) {
++        const iso = r.reportDate.toISOString().slice(0, 10);
++        const match = recs.find((k) => {
++          const a = k.record as StandardRecords["ads"];
++          return (
++            a.campaignId === r.campaignId &&
++            a.reportDate === iso &&
++            a.attributionModel === r.attributionModel &&
++            String(a.attributionWindowDays) === String(r.attributionWindowDays) &&
++            a.currency === r.currency
++          );
++        });
++        if (match) out.set(match.key, r);
++      }
++      return out;
+     }
+     case "customer_messages": {
+       const byMsg = ext([...pending.values()], (r) => (r as StandardRecords["customer_messages"]).externalMessageId);

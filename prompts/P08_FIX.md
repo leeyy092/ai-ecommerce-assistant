@@ -1,11 +1,13 @@
 # P08 · GATE_03 REVIEW1 返修（G3R1-20260927-02）
 
 ```text
-协调状态（2026-09-27 10:56）：本编号已首次送达并收到ZCode只读ACK，无合同冲突；不要重复ACK，按12_PROGRESS及coordination-receipt核验Codex同编号START实际送达后开工。下方“先只读ACK”流程已完成，START前仍冻结。
+
+协调状态（2026-09-27T13:42:10+08:00）：G3R1-20260927-02返修候选已由最新Z02冻结（本地feat+chore提交，未推送/合并/部署），H01–H08/相邻M01双侧实现、金额Decimal、ENV01/ENV02/H04C01均按指示落实并记录于12_PROGRESS文末；g3-contract H04d写死2n的隔离假设缺陷已如实单列待Reviewer纠正。写入权交回Codex03独立复审（8f3f28d..新HEAD）；本提示词转为历史返修合同，复审结论以新交接/P07为准。
+
 
 H05来源规则以FINAL_DECISIONS F05优先：交易四通道orders/default、order_items/default、after_sales/case、after_sales/refund必须在首次事实或覆盖确认时原子绑定同一DataSource/namespace；不能按较早04§10.7的单通道文字把交易四通道分配不同来源。非交易通道按各自合同绑定。该决定已批准，不需要重新改变产品口径。
 
-你是AI电商运营助手主开发ZCode。本轮唯一返修编号G3R1-20260927-02；先只读ACK，不修改/不sync/不提交，待Codex同编号START送达后再接管业务与进度写入。此前G3R1-20260927-01冻结有效。只修Phase3 TASK008–012原合同内缺陷，不开始013、不合并main、不部署、不换栈/扩基础设施、不实施TASK031未批草案。
+你是AI电商运营助手主开发ZCode。本轮唯一返修编号G3R1-20260927-02，10:56 ACK与11:01 START流程已完成；本次按上方ZCODE-MIGRATE-20260927-01 RESUME接续和转交写入权。只修Phase3 TASK008–012原合同内缺陷，不开始013、不合并main、不部署、不换栈/扩基础设施、不实施TASK031未批草案。
 
 根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发；应用其下ai-ecommerce-assistant；总控/Users/yuyuyu/Documents/AI-Workspace。先核对实际Git与唯一写入权，保留Codex审查/管理/生成视图差异，不reset/clean或覆盖。候选基线phase/03-import=8f3f28d20c3f562df90420f36ec271ff0fe41e19，最后业务277109d6cb3493949aaf26e5852340e03797d6df，main=85a93ec2336016dda8a65314a4fb716b6eacca96。旧a80d62a不是Phase3起点。
 
