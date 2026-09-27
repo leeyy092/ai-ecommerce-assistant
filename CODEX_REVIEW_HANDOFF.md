@@ -1,3 +1,27 @@
+# 当前交接 · GATE_03 REVIEW3 返修候选已冻结 · 待Codex04独立复审（R4）
+
+G3R3-20260927-02返修由最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）完成并冻结单一候选，本地feat+chore提交于phase/03-import（基线6539fcb/业务ca5ad76），未推送未合并未部署。写入权已交回Codex04；复审范围6539fcb..新HEAD。
+
+修复：H04——orders头更正（expected/业务日变化）在已有提交事务内维护受影响来源/日期的order_items最新有效覆盖（行齐破坏→partial、事实迁移→刷新来源级计数；保留历史、不造未声明日期、不代用户升级，补齐恢复走用户声明路径）；H03——staging解析/结构损坏（截断/JSON null）转稳定409 PREVIEW_STAGING_CORRUPT零副作用，真实存储网络故障保留可重试；错任务/过期/权限/正常/重放保持。
+
+验证（新/tmp=git archive 6539fcb+在途、新PG17 aiea-pg-g3r3z02仅127.0.0.1:55502，旧容器已清）：修前g3r3红基线1PASS/3FAIL复现、隔离后g3-contract修前即18/18（隔离正交）；修后tsc0/unit72/integration139/g3r3 4/4/**test:g3四套18+4+21+4全绿聚合exit0**/build0/E2E8。探针维护（授权内）：app副本H04d独立业务日（断言complete/2n不变，docs冻结原件SHA不动）、g3r3探针入树、test:g3四进程聚合。未运行：100000行/SIGKILL/Docker生产Worker全链/真实OSS云。
+
+原R1/R2/R3关闭标准与已关项不重开；Gate03 PASS后约35功能节点停向Owner反馈，Phase4/TASK013/TASK031/main合并/部署未放行。新PG容器与/tmp副本保留供只读核对。
+
+## 历史：G3R3交付时点交接（16:10快照）
+
+# 当前交接 · GATE_03 REVIEW3 FAIL · G3R3-20260927-02
+
+最新独立GATE03 REVIEW3 FAIL，1HIGH H04父订单更正覆盖、1MEDIUM H03损坏staging错误语义。H02/H08/M02已关闭；H03错任务提交风险关闭、H04历史缺行/unchanged/DST通过；H01/H05/H06/H07和Gate02 REVIEW5保持。冻结phase/03-import@6539fcb（业务ca5ad76），本轮dd975cd..6539fcb，main85a93ec；后续复审6539fcb..新冻结HEAD。正式报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_3_2026-09-27.md（15节）、同轮EVIDENCE索引与gate-03-review-3-evidence/README/observations/g3r3-independent。
+
+当前写入者Codex04；Z02 15:47最终冻结。新P08首块为完整返修合同，首次只读ACK→管理sync读回→同编号START后转交写入；真实回执见R3 coordination-receipt与唯一进度，已首次实际发送、Z02 16:08完整只读ACK无阻塞；管理sync读回后待首次START，当前未发。TASK009→010一次一项；app探针H04d可受控修隔离，历史原件不动。
+
+完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警/AI日报本人行动/必要页面运维、技术栈与依赖不变。Owner仅授权Phase3 TASK008–012；Gate03独立PASS约35节点停Owner，Phase4/TASK013、TASK031开户合同、main合并、购买、正式部署未放行。重大范围疑义立即停问Owner，普通原合同返修直接协作；已关闭问题无新改动/有效反例不重开。
+
+Owner最新CTX-RULE-20260927-01：Codex和ZCode默认保留当前窗口，无实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口；不按75%/85%、长度、心跳次数或预计长任务换窗。实际压缩仍可靠就继续，未知不臆测。确需时才按STATE_PROTOCOL原冻结/只读ACK/COMPLETE/激活流程，不fork、不建worktree或自动化。
+
+## 历史交接（2026-09-27T15:59:26+08:00前，非当前状态）
+
 # 当前交接 · GATE_03 REVIEW2 返修候选已冻结 · 待Codex04独立复审（R3）
 
 G3R2-20260927-02返修由最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）完成并冻结单一候选，本地feat+chore提交于phase/03-import（基线dd975cd/业务6b408cb），未推送未合并未部署。写入权已交回Codex04；复审范围dd975cd..新HEAD。

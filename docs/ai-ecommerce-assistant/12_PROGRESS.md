@@ -4,21 +4,21 @@
 
 ## 当前导航（唯一进度的一部分）
 
-**Phase3 / TASK-008 / GATE_03 REVIEW2 FAIL：3 HIGH、2 MEDIUM（返修完成待复审） / Checkpoint=YES。当前写入者Codex04（Z02已冻结交回）。G3R2-20260927-02返修候选已冻结：本地feat+chore提交，待Codex04独立复审dd975cd..新HEAD。**
+**Phase3 / TASK-009 / GATE_03 REVIEW3 FAIL：1 HIGH、1 MEDIUM（返修完成待复审） / Checkpoint=YES。当前写入者Codex04（Z02已冻结交回）。G3R3-20260927-02返修候选已冻结：本地feat+chore提交，待Codex04独立复审6539fcb..新HEAD。**
 
-Owner最新工作规则：Owner最新换窗要求（CTX-RULE-20260927-01，适用于Codex与ZCode）：默认保留当前窗口；没有实际上下文压缩或明确污染依据不新开窗口。不按75%/85%占用、对话长度、心跳次数或预计长任务提前换窗。压缩本身也不自动迁移，仍能可靠继续就留原窗口；仅实际压缩后影响可靠接续或有可举证的污染、确需换窗时才按STATE_PROTOCOL原流程交接，情况未知不臆测。此要求替代较早的提前换窗触发条件。 当前Codex04/Z02均保留原窗口，不创建新会话；项目规则和原自动化已更新，ZCode已于15:16明确只读ACK新要求并确认留在Z02；尚未发送START。
+唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已实际激活，原codex-zcode ACTIVE每10分钟目标04，旧03/02/01退出。唯一最新Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE，旧Z01退出。身份/迁移/写入权以后续12_PROGRESS最新记录为准，不拿旧COMPLETE或心跳接管。
 
-唯一协调会话【最新04】电商中台｜P0开发与独立审查（01a0e16d-be56-7741-bced-49133cdcafeb）。MIGRATE-20260927-03=COMPLETE，04已于14:05:51实际激活；原codex-zcode ACTIVE每10分钟、目标04且仅一条，当前已从磁盘重核。前任03历史已交接退出，不再承担派发。
+最新独立GATE03 REVIEW3 FAIL，1HIGH H04父订单更正覆盖、1MEDIUM H03损坏staging错误语义。H02/H08/M02已关闭；H03错任务提交风险关闭、H04历史缺行/unchanged/DST通过；H01/H05/H06/H07和Gate02 REVIEW5保持。冻结phase/03-import@6539fcb（业务ca5ad76），本轮dd975cd..6539fcb，main85a93ec；后续复审6539fcb..新冻结HEAD。正式报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_3_2026-09-27.md（15节）、同轮EVIDENCE索引与gate-03-review-3-evidence/README/observations/g3r3-independent。
 
-唯一开发会话【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01=COMPLETE，旧迁移RESUME已12:07:38送达、旧返修已完成，Z02 13:54保持冻结。当前新返修必须取得G3R2-20260927-02的真实ACK及START，不复用旧迁移RESUME/旧START。旧Z01退出。
+独立验证：新/tmp+新PG17，12迁移/typecheck0/unit72/integration139/build0/E2E8；原18正确隔离去重18PASS/H04四对照4PASS/R2 21PASS，R3定向4=1PASS/3FAIL。第一轮相对TMPDIR审查环境无效日志保留，纠正后有效重测；R1 42件/R2 57件原产物哈希保持。PG57024/Web57025关闭，本轮tmp清理；Z02 55501资产未动。
 
-实际phase/03-import，冻结HEAD dd975cdedf55e9b4ac86691b150301e5b5e074f2（管理）、业务6b408cbe2182b605c1bcaabc485af4b8d1e476f9；本轮独立范围8f3f28d..dd975cd，main85a93ec。Codex未改业务，既有管理差异与新R2报告/证据保留，未提交推送/合并/部署；远端本轮未重新联网核验。
+TASK008–012仍BLOCKED待Gate，其中008/011/012原技术反例通过；009/010剩上述两项，013–030不启动。无业务未提交修改；Codex本轮无业务改动、提交、推送、合并或部署，原管理差异与R2/R3证据保留。远端仅历史11:10核实，本轮未联网重验。
 
-独立R2：新/tmp归档、新PG17，仅本轮资产；12迁移/typecheck0/unit72/integration139/build0/E2E8通过。原18场景17PASS/1FAIL（H04d共享店铺前提），保留原件并隔离单跑H04a/H04d=2PASS/16skipped，原18去重有效18PASS；H04四对照4PASS；补充21有效场景12PASS/9FAIL。H01/H05/H06/H07关闭；H03 staging身份、H04来源日完整性/DST、H08脱敏剩余HIGH；H02旧退款重传残余降MEDIUM；新增M02脚本退出码MEDIUM。M01正常no-op通过、覆盖连带问题归H04不重复计。报告/索引/复现见docs/reviews的GATE_03 REVIEW2产物。
+下一步完成本次ACK管理sync读回后首次发送同编号START，实际送达才交写入权；Z02先记录真实接收与当前导航，再返修。不得复用旧START，送达后Codex只读。Owner询问工期/备案的答复是准备估算，不构成阶段/开户/采购/部署批准。
 
-TASK008–012仍BLOCKED待整体Gate/依赖解除，其中011原技术缺陷已通过不重开；013–030 TODO。Gate02 REVIEW5 PASS保持。补充跨namespace别名假设不作本轮返修；H04来源级全部最终事实合同不改成本文件计数。
+完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警/AI日报本人行动/必要页面运维、技术栈与依赖不变。Owner仅授权Phase3 TASK008–012；Gate03独立PASS约35节点停Owner，Phase4/TASK013、TASK031开户合同、main合并、购买、正式部署未放行。重大范围疑义立即停问Owner，普通原合同返修直接协作；已关闭问题无新改动/有效反例不重开。
 
-完整P0/F01–F23/原30TASK/六CSV/依赖/栈不变。Owner只授权Phase3 TASK008→012，Gate03独立PASS后约35功能节点停反馈；Phase4/TASK031草案/main合并/正式部署未放行。换窗不是业务验收。桌面已恢复且P08/最新换窗规则已首次送达；15:16只读ACK已核验；下一步Codex管理sync读回后发送同编号START才交写入权。旧锁屏记录保留为历史。
+Owner最新CTX-RULE-20260927-01：Codex和ZCode默认保留当前窗口，无实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口；不按75%/85%、长度、心跳次数或预计长任务换窗。实际压缩仍可靠就继续，未知不臆测。确需时才按STATE_PROTOCOL原冻结/只读ACK/COMPLETE/激活流程，不fork、不建worktree或自动化。
 
 <!-- PRODUCT_OS_STATE_BEGIN -->
 ```json
@@ -26,20 +26,27 @@ TASK008–012仍BLOCKED待整体Gate/依赖解除，其中011原技术缺陷已�
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
-  "stage": "07 阶段审查 · Phase 3 六类文件导入链路 · GATE_03 REVIEW2 FAIL",
-  "current_task": "TASK-008",
+  "stage": "07 阶段审查 · Phase 3 六类文件导入链路 · GATE_03 REVIEW3 FAIL",
+  "current_task": "TASK-009",
   "status": "待审查",
-  "last_completed": "G3R2-20260927-02 返修实现完成：H03/H04/H08、H02择新、M02全部落地并冻结单一候选（修前9FAIL→修后g3r2 21/21+139/139+72/72+tsc0+build0+E2E8/8）",
-  "next_action": "Codex04按P07对新冻结HEAD独立复审dd975cd..新HEAD：逐项关R2剩余3HIGH/2MEDIUM；冻结探针g3-contract H04d隔离前提（全跑6n/选择跑同店H04a零行订单压partial）由Reviewer受控纠正后复核；PASS后约35功能节点向Owner反馈",
+  "last_completed": "Codex04独立REVIEW3完成：R2 21全过，H02/H08/M02关闭；剩H04父订单更正HIGH及H03损坏staging MEDIUM",
+  "next_action": "Codex04按P07对新冻结HEAD独立复审6539fcb..新HEAD：逐项关H04父订单更正覆盖与H03损坏staging；g3r3 4/4、test:g3四套全绿聚合0已留证；PASS后约35功能节点向Owner反馈",
   "next_owner": "Codex",
   "next_prompt": "prompts/P07_CODE_REVIEW.md",
-  "acceptance": "H03/H04/H08、H02合法旧退款与M02退出码反例转绿，保留已过合法/隔离/事务对照，冻结单一新候选交Codex独立复审；Gate03 PASS才到约35功能节点",
-  "blockers": "R2剩余3HIGH/2MEDIUM待独立复审确认；g3-contract H04d探针隔离前提待Reviewer纠正（合同口径已实现且g3r2/g3-h04全绿）；Phase4/TASK031/部署未放行",
+  "acceptance": "H04父订单更正覆盖与H03损坏staging反例转绿；正常恢复/来源隔离/事务/已过21保持，单一候选独立复审PASS才到约35功能节点",
+  "blockers": "R3剩余1HIGH/1MEDIUM待独立复审确认；Phase4/TASK031/部署未放行",
   "checkpoint": "YES",
-  "review": "GATE_03 REVIEW2 FAIL（dd975cd/业务6b408cb，3HIGH/2MEDIUM）待R3复审新候选；GATE_02 REVIEW5 PASS保持",
-  "updated_at": "2026-09-27T15:43:18+08:00",
-  "updated_by": "ZCode · 最新Z02 G3R2返修候选冻结，写入权交回Codex04",
+  "review": "GATE_03 REVIEW3 FAIL（6539fcb/业务ca5ad76，1HIGH/1MEDIUM）待R4复审新候选；GATE_02 REVIEW5 PASS保持",
+  "updated_at": "2026-09-27T16:24:05+08:00",
+  "updated_by": "ZCode · 最新Z02 G3R3返修候选冻结，写入权交回Codex04",
   "evidence": [
+    "2026-09-27T16:24:05+08:00：Z02冻结G3R3-20260927-02单一候选（feat+chore本地提交，未推送/合并/部署）。验证（新/tmp副本/tmp/aiea-fix-g3r3-20260927-z02/repo=git archive 6539fcb+在途、新PG17 aiea-pg-g3r3z02仅127.0.0.1:55502，旧55501容器已清理）：修前红基线g3r3 1PASS/3FAIL精确复现、隔离后g3-contract修前即18/18（隔离正交）；修后tsc --incremental false exit0、unit 72/72、integration 139/139、g3r3 4/4、test:g3四套独立进程18/18+4/4+21/21+4/4→聚合exit0（首次全绿）；build exit0；E2E 8/8（生产Web+aiea_dev官方migrate deploy）。未运行：100000行/SIGKILL/Docker生产Worker全链/真实OSS云",
+    "2026-09-27T16:12:19+08:00：G3R3-20260927-02 START实际送达，Z02记回执接管业务/唯一进度/sync/Git写入权（完整回执见文末）；接收时实测phase/03-import@6539fcb（业务ca5ad76）、无业务在途diff、Codex管理差异与R3证据完整保留；Codex04（01a0e16d-be56-7741-bced-49133cdcafeb）转只读。继续遵守CTX-RULE-20260927-01保留原窗口",
+    "2026-09-27T16:10:01+08:00：已从桌面读到最新Z02 16:08完整只读ACK，核对6539fcb/ca5ad76、无业务diff、H04父订单覆盖/H03损坏恢复语义、app维护副本H04d隔离、已关项不重开及Phase3停止点；无合同疑义/阻塞，未写文件/测试/sync/Git，保留Z02。首条核验中断后仅续接同编号ACK一次，未重复启动返修。Codex04仍持写入，管理sync读回后待首次START。",
+    "2026-09-27T16:06:57+08:00：G3R3-20260927-02已首次实际送达产品-开发/最新Z02；桌面出现第9条用户消息、输入框清空，Z02回复正在读取P08/R3报告与核验Git。仅只读ACK，未发START，Codex04仍持管理写入权。16:04:42重新sync成功，首页md/html与总控及P08全文读回一致，R3 61件哈希一致、业务diff为空。",
+    "2026-09-27T15:59:26+08:00：G3R3-20260927-01独立完成FAIL 1HIGH/1MEDIUM。冻结6539fcb/业务ca5ad76，dd975cd..6539fcb；Z02 15:47终答与空闲已核实。新PG17 12迁移/typecheck0/unit72/integration139/build0/E2E8、原18去重18PASS/H04四对照4PASS/R2 21PASS，R3补充1PASS/3FAIL。H02/H08/M02关闭；H04父头expected更正仍留complete、H03损坏JSON/null错误503，原关闭标准内。环境无效首轮留档并修正、R1/R2哈希不变，临时环境清理。新G3R3-20260927-02仅准备未发送，写入者Codex04。",
+    "docs/reviews/GATE_03_REVIEW_3_EVIDENCE_2026-09-27.json",
+    "docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_3_2026-09-27.md",
     "2026-09-27T15:43:18+08:00：Z02冻结G3R2-20260927-02单一候选（feat+chore本地提交，未推送/合并/部署）。验证（新/tmp副本/tmp/aiea-fix-g3r2-20260927-z02/repo=git archive dd975cd+在途文件、新PG17 aiea-pg-g3r2z02仅127.0.0.1:55501；旧R1容器aiea-pg-g3r1z02已清理）：修前红基线g3r2 9FAIL/12PASS精确复现；修后tsc --incremental false exit0、unit 72/72、integration 139/139、g3r2-contract 21/21、g3-h04-contract 4/4；g3-contract冻结件全跑17/18（唯H04d=探针隔离前提缺陷：全跑6n/选择跑同店H04a零行订单按合同压partial，两种模式均如实单列，不改2→6不改合同）；test:g3三套独立进程真实exit 1/0/0→聚合exit1（M02实测）+受控组合前败/中败=1、全成=0；build exit0；E2E 8/8（生产Web+aiea_dev官方migrate deploy）。未运行：100000行/SIGKILL/Docker生产Worker全链/真实OSS云",
     "2026-09-27T15:25:05+08:00：G3R2-20260927-02 START实际送达，Z02记回执接管业务/唯一进度/sync/Git写入权（完整回执见文末）；接收时实测phase/03-import@dd975cd（业务6b408cb）、无业务在途diff、Codex管理差异与R2证据完整保留；Codex04（01a0e16d-be56-7741-bced-49133cdcafeb）转只读。本会话继续遵守CTX-RULE-20260927-01保留原窗口",
     "2026-09-27T15:21:58+08:00：桌面读到Z02 15:16完整只读ACK：dd975cd/业务6b408cb、无业务diff、全部管理/证据保留；五组根因及关闭标准、已关项与Phase3停止点核对正确。明确遵守CTX-RULE-20260927-01保留Z02，不按占用阈值或预计长任务换窗；未写文件/测试/sync/Git，无阻塞。START尚未发。协调ID口述笔误以磁盘正确ID 01a0e16d-be56-7741-bced-49133cdcafeb为准。",
@@ -113,10 +120,10 @@ TASK008–012仍BLOCKED待整体Gate/依赖解除，其中011原技术缺陷已�
     "历史记录（本轮接手前）：prompts/ZCODE_FULL_P0_HANDOFF.md：完整P0准备交付、真实Gate分支判断和放行后接续；指令已写入，未自动发送，ZCode执行待核实"
   ],
   "github": {
-    "status": "新候选本地HEAD dd975cd（业务6b408cb）未推送；远端最后核验2026-09-27 11:10 phase/03-import=fe57663、main85a93ec，本次未重验；迁移管理未提交推送",
+    "status": "新候选本地HEAD6539fcb（业务ca5ad76）未推送；远端最后核验2026-09-27 11:10 phase/03-import=fe57663、main85a93ec，本次未重验；R3管理未提交推送",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
     "verified_at": "2026-09-27T11:10:10+08:00",
-    "evidence": "2026-09-27 11:10历史ls-remote核验；本轮仅git status/log/rev-parse核对本地dd975cd与管理差异，未重新联网验证远端"
+    "evidence": "2026-09-27 11:10历史ls-remote核验；本轮仅git status/log/rev-parse核对本地6539fcb与管理差异，未重新联网验证远端"
   },
   "deployment": {
     "status": "未部署；本轮本机生产模式Web E2E通过，不等于线上或新生产Worker全链验收",
@@ -378,11 +385,11 @@ TASK008–012仍BLOCKED待整体Gate/依赖解除，其中011原技术缺陷已�
 | TASK-005 | 店铺与数据源配置 | DONE | TASK-004 | REVIEW 3独立PASS：M05无/单/双边90日及91日拒绝通过，既有权限/版本/CAS/审计回归保留；Phase2随后已获Owner放行 |
 | TASK-006 | 统一Adapter与最小黄金样本 | DONE | TASK-005 | REVIEW 3独立PASS：H03非法偏移/Worker行错误、H04规范channel及两店CSV/Mock独立oracle通过；008执行状态见当前行 |
 | TASK-007 | 文件上传、私有存储与ImportTask | DONE | TASK-006 | REVIEW 5独立PASS（4b9e139/业务b32f731）：H06/H08关闭；118集成、58独立断言及真实HTTP/Worker/重启文件链通过，Phase2随后已获Owner放行 |
-| TASK-008 | 字段映射、全量校验与预览 | IN_PROGRESS | TASK-007 | G3R2返修完成待复审：H02旧退款择新总账、H08完整地址遮盖/掩码非正文（REDACTED_TEXT_EMPTY）；H01/H06保持通过 |
-| TASK-009 | 原子提交内核与商品主数据 | IN_PROGRESS | TASK-008 | G3R2返修完成待复审：H03 manifest身份/校验和/预览版本绑定（错配409零副作用）；H05/H06及正常M01保持通过 |
-| TASK-010 | 订单头与订单行导入 | IN_PROGRESS | TASK-009 | G3R2返修完成待复审：H04来源日全订单行齐（含历史/unchanged/零行订单）+相邻本地午夜日窗（DST 23h/25h）；行更正约束保持通过 |
-| TASK-011 | 广告日数据导入 | BLOCKED | TASK-009 | R2原H01/H07广告技术验收通过，无独立广告返修项；仅因TASK009依赖/Gate未解除保留BLOCKED，不重开已关项 |
-| TASK-012 | 客服、售后与退款事件导入 | IN_PROGRESS | TASK-009、TASK-010 | G3R2返修完成待复审：H02退款自然键择新总账（旧版合法no-op）、H08消息与reason一致完整脱敏/空内容拒绝；长正文/旧消息保护保持通过 |
+| TASK-008 | 字段映射、全量校验与预览 | BLOCKED | TASK-007 | R3原预览/退款/脱敏反例通过，待整体Gate/依赖 |
+| TASK-009 | 原子提交内核与商品主数据 | IN_PROGRESS | TASK-008 | G3R3返修完成待复审：H03损坏staging稳定409零副作用（网络故障保留可重试）；错任务/过期/权限/重放保持 |
+| TASK-010 | 订单头与订单行导入 | IN_PROGRESS | TASK-009 | G3R3返修完成待复审：父订单头更正同事务维护受影响order_items有效覆盖（行齐破坏→partial、事实迁移→刷新来源级计数，保留历史不代用户升级） |
+| TASK-011 | 广告日数据导入 | BLOCKED | TASK-009 | 技术验收保持通过，待整体Gate/依赖，不另改广告 |
+| TASK-012 | 客服、售后与退款事件导入 | BLOCKED | TASK-009、TASK-010 | R3原退款/脱敏反例通过，待整体Gate/依赖 |
 | TASK-013 | 持久任务与快照发布骨架 | TODO | TASK-010、TASK-011、TASK-012 | 未执行 |
 | TASK-014 | 基础经营与广告指标 | TODO | TASK-013 | 未执行 |
 | TASK-015 | 退款与售后队列指标 | TODO | TASK-014 | 未执行 |
@@ -1193,3 +1200,38 @@ Owner授权仍限Phase3 TASK008–012一次一项，到Gate03通过后停下反�
 - 探针与测试调整：g3r2-contract.test.ts（R2证据原件字节复制，SHA 5f5bd877…）入app树为红基线，修前9FAIL/12PASS精确复现，修后21/21；test:integration排除三个g3文件、test:g3独立进程聚合。g3-contract冻结件全跑17/18（H04d两种模式均失败：全跑=来源级6n对写死2n；Reviewer选择性单跑=同店H04a零行订单按合同把当日压partial对complete断言）——均为探针隔离前提缺陷，不改2→6、不改合同，待Reviewer受控纠正前提后复核，不据此宣称H04d关闭。legacy用例“行遗漏…补齐后恢复声明”因共享店铺存在他人零行订单头（R8-O1）在来源日语义下永远partial，已按最小改动迁移到独立业务日2026-09-06（断言语义不变：缺行partial/补齐complete）。
 - 环境与验证（/tmp/aiea-fix-g3r2-20260927-z02/repo=git archive dd975cd+在途文件覆盖，diff逐文件核对一致；新PG17 aiea-pg-g3r2z02仅127.0.0.1:55501；旧R1容器aiea-pg-g3r1z02已删除；Node24.21.0复用/tmp/aiea-node24，pnpm store离线安装）：tsc --noEmit --incremental false exit0；unit 72/72；integration 139/139；g3r2-contract 21/21；g3-h04-contract 4/4；g3-contract 17/18（上述单列）；test:g3真实exit 1/0/0→聚合1（M02实测传播）+受控组合（前败/中败=1、全成=0）；build exit0（next+worker+scripts）；E2E 8/8（playwright生产Web+aiea_dev官方migrate deploy）。未运行且未宣称：100000行性能、SIGKILL恢复、Docker生产Worker容器全链、真实OSS云（无对应触发改动，边界TASK029或更早）。
 - 冻结与交接：业务+测试与进度管理分别本地提交（feat+chore，哈希见git log；未推送、未合并main、未部署）；新PG容器aiea-pg-g3r2z02（127.0.0.1:55501）与/tmp副本保留供Codex04只读核对，复审后按指示清理。写入权自本条交回Codex04独立复审（范围dd975cd..新HEAD）；PASS后约35功能节点向Owner反馈，Phase4/TASK031/main合并/部署未放行。本会话全程遵守CTX-RULE-20260927-01保留原窗口未换窗。
+
+
+## 2026-09-27T15:59:26+08:00 · Codex04 GATE03 REVIEW3独立复审（G3R3-20260927-01）
+
+- 2026-09-27T15:59:26+08:00：G3R3-20260927-01独立完成FAIL 1HIGH/1MEDIUM。冻结6539fcb/业务ca5ad76，dd975cd..6539fcb；Z02 15:47终答与空闲已核实。新PG17 12迁移/typecheck0/unit72/integration139/build0/E2E8、原18去重18PASS/H04四对照4PASS/R2 21PASS，R3补充1PASS/3FAIL。H02/H08/M02关闭；H04父头expected更正仍留complete、H03损坏JSON/null错误503，原关闭标准内。环境无效首轮留档并修正、R1/R2哈希不变，临时环境清理。新G3R3-20260927-02仅准备未发送，写入者Codex04。
+- 正式15节报告、索引、复现和原始日志见R3产物；H03原错任务写入风险关闭而损坏恢复语义降MEDIUM，H04仅父订单更正残余HIGH。新编号G3R3-20260927-02已准备，待桌面只读ACK；当前Codex04写入，不提前声称送达。
+- 原最新导航中残留“尚未START/13:54冻结/旧HEAD”等已统一为本次实际状态，历史记录保留不作当前指令。Owner工期备案问答为估算/准备清单，未改范围或放行。
+
+- 管理收尾纠正：15:59:45首次sync因状态JSON闭合代码围栏换行缺失退出1，进度和R3证据已保存、生成视图当时未刷新；现已修正围栏、恢复TASK008–012依赖列并更正本地Git状态，待重新sync读回。该格式故障不改变业务与Review结论。
+
+
+## 2026-09-27T16:06:57+08:00 · G3R3-20260927-02实际只读交接
+
+- 2026-09-27T16:06:57+08:00：G3R3-20260927-02已首次实际送达产品-开发/最新Z02；桌面出现第9条用户消息、输入框清空，Z02回复正在读取P08/R3报告与核验Git。仅只读ACK，未发START，Codex04仍持管理写入权。16:04:42重新sync成功，首页md/html与总控及P08全文读回一致，R3 61件哈希一致、业务diff为空。
+
+
+## 2026-09-27T16:10:01+08:00 · G3R3-20260927-02完整只读ACK核对
+
+- 2026-09-27T16:10:01+08:00：已从桌面读到最新Z02 16:08完整只读ACK，核对6539fcb/ca5ad76、无业务diff、H04父订单覆盖/H03损坏恢复语义、app维护副本H04d隔离、已关项不重开及Phase3停止点；无合同疑义/阻塞，未写文件/测试/sync/Git，保留Z02。首条核验中断后仅续接同编号ACK一次，未重复启动返修。Codex04仍持写入，管理sync读回后待首次START。
+
+
+## G3R3-20260927-02 START 实际接收（2026-09-27T16:12:19+08:00 · ZCode最新Z02）
+
+- 接收：Codex04本编号START实际送达；主副本业务/唯一进度/sync/Git写入权自本条起归唯一最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）；Codex04（01a0e16d-be56-7741-bced-49133cdcafeb）转只读。R3 coordination-receipt已记start_sent_at/writer真实值。
+- 现场核对（接收时实测）：phase/03-import@6539fcb（业务ca5ad76）、main85a93ec、无业务在途diff；在途为Codex管理/规则写回与R3报告/索引/gate-03-review-3-evidence证据，全部保留不动。
+- 返修范围（TASK009→010一次一项）：H04（HIGH）——订单头更正（expected_item_count/业务日变化）在已有提交事务中维护受影响来源/日期的order_items有效覆盖（失效/partial保留历史，record_count坚持来源级口径；验证反例/补齐恢复/日期变化边界，历史/unchanged/DST/来源隔离回归）；H03（MEDIUM）——staging JSON解析/结构损坏转稳定409+重新校验提示零副作用，真实存储网络故障保留可重试语义，错任务/过期/权限/正常/重放保持。授权的探针维护：仅app维护副本为g3-contract H04d隔离店铺/来源或独立业务日（docs冻结原件与修前失败日志不动，断言complete/2n不改），恢复test:g3全绿且聚合失败语义保留。
+- 方法与环境：修前红基线（g3r3探针入app树，预期1PASS/3FAIL）；新/tmp归档副本+本次新PG17（不复用55501旧库，回环发布）；金额Decimal；R1/R2/R3不可变产物不改写。继续CTX-RULE-20260927-01保留原窗口。
+
+
+## G3R3-20260927-02 · Z02返修执行与候选冻结（2026-09-27T16:24:05+08:00 · ZCode最新Z02）
+
+- 实现范围（R3剩余1HIGH/1MEDIUM）：H04——orders提交分支在upsert后记录父订单头更正影响的行覆盖业务日（旧/新归日），versionBump事务内对每个受影响日期维护既有order_items最新有效覆盖：行齐破坏→写partial、订单业务日迁移→按来源级口径刷新record_count，保留历史版本（新datasetVersion新行）、不为从未声明日期制造覆盖、不替用户升级状态（补齐恢复仍由用户声明路径驱动）；expected更正反例、日期变化边界由g3r3探针与回归覆盖。H03——staging读取与解析分离：getObjectText真实存储/网络故障自然抛出（保留503可重试），已确认的JSON解析/结构损坏（截断"{"/JSON null/非对象）转稳定409 PREVIEW_STAGING_CORRUPT+重新校验提示，零业务副作用；错任务409、结构完整过期manifest 409 IMPORT_PREVIEW_STALE、权限/正常确认/重放全部保持。
+- 探针维护（授权范围内）：app维护副本g3-contract.test.ts仅H04d改为独立业务日2026-09-20（断言complete/2n不变；docs/reviews冻结原件SHA 529823d9…与修前失败日志不动）；R3探针g3r3-contract.test.ts（SHA 356b10c7…字节复制）入app树；test:g3扩为四套独立进程+聚合退出码，test:integration排除四个g3文件。
+- 环境与验证（/tmp/aiea-fix-g3r3-20260927-z02/repo=git archive 6539fcb+在途覆盖，diff核对一致；新PG17 aiea-pg-g3r3z02仅127.0.0.1:55502；旧aiea-pg-g3r2z02已删除；Node24.21.0复用）：修前红基线g3r3 1PASS/3FAIL精确复现、隔离后g3-contract修前即18/18（隔离与业务修复正交）；修后tsc --noEmit --incremental false exit0；unit 72/72；integration 139/139；g3r3 4/4；test:g3四套18/18+4/4+21/21+4/4→聚合exit0（首次全绿且聚合失败语义保留）；build exit0；E2E 8/8（生产Web+aiea_dev官方migrate deploy）。未运行且未宣称：100000行性能、SIGKILL恢复、Docker生产Worker容器全链、真实OSS云。
+- 冻结与交接：业务+测试与进度管理分别本地提交（feat+chore，哈希见git log；未推送、未合并main、未部署）；R3 coordination-receipt已记frozen_at/writer真实值；新PG容器aiea-pg-g3r3z02（127.0.0.1:55502）与/tmp副本保留供Codex04只读核对。写入权自本条交回Codex04独立复审（范围6539fcb..新HEAD）；PASS后约35功能节点向Owner反馈，Phase4/TASK013/TASK031/main合并/购买/部署未放行。本会话遵守CTX-RULE-20260927-01保留原窗口。
