@@ -232,7 +232,10 @@ describe("G3 independent contract",()=>{
 });
 
  it("H04d final complete order-item batch must not retain transient partial state",async()=>{
-   await good("products",[pRow("all-items")]);await good("orders",[oRow("all-items",2)]);const t=await prepare("order_items",[iRow("all-items","L1"),iRow("all-items","L2")],coverage("order_items"));const c=await commit(t);const rows=await db.dataCoverage.findMany({where:{importTaskId:t.id}});log("H04d",{commit:c,rows});expect(rows[0].status).toBe("complete");expect(rows[0].recordCount).toBe(2n);
+   // G3R3授权的app维护副本隔离：独立业务日避免共享店铺同日历史事实计入来源日计数；
+   // docs/reviews冻结原件（SHA 529823d9…）与断言语义（complete/2n）保持不变
+   await good("products",[pRow("all-items")]);await good("orders",[
+     `IMP-1,${ts},O-all-items,paid,2026-09-20T01:55:00Z,2026-09-20T02:00:00Z,CNY,2`]);const t=await prepare("order_items",[iRow("all-items","L1"),iRow("all-items","L2")],coverage("order_items","2026-09-20","2026-09-21"));const c=await commit(t);const rows=await db.dataCoverage.findMany({where:{importTaskId:t.id}});log("H04d",{commit:c,rows});expect(rows[0].status).toBe("complete");expect(rows[0].recordCount).toBe(2n);
  });
  it("H01b business currency must equal the selected store currency",async()=>{
    const t=await prepare("ads",[`IMP-1,${ts},WRONG-CURRENCY,广告,2026-09-01,last_click,7,10.000000,30.000000,USD`]);const c=await commit(t);const row=await db.adMetric.findFirst({where:{storeId,campaignId:"WRONG-CURRENCY"}});log("H01b",{status:t.status,commit:c,storedCurrency:row?.currency,storeCurrency:"CNY"});expect(t.status).toBe("failed");expect(row).toBeNull();

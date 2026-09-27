@@ -239,7 +239,19 @@ export async function commitImportTask(
     where: { id: task.dataSourceId },
     select: { sourceNamespace: true },
   });
-  const manifest = JSON.parse(await getObjectText(task.stagingObjectKey)) as Manifest;
+  // H03（R3）：staging 读取与解析分离——真实存储/网络故障自然抛出保留可重试语义；
+  // 已确认的 JSON 解析/结构损坏（截断、null、非对象）转稳定 409 + 重新校验提示，零业务副作用
+  const stagingText = await getObjectText(task.stagingObjectKey);
+  let manifest: Manifest;
+  try {
+    const parsed: unknown = JSON.parse(stagingText);
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("PREVIEW_STAGING_CORRUPT");
+    }
+    manifest = parsed as Manifest;
+  } catch {
+    throw new AccessError(409, "PREVIEW_STAGING_CORRUPT", "staging 数据损坏或结构不合法，请重新校验后确认");
+  }
 
   // H03：staging 身份与完整性绑定——与任务/原文件/当前预览逐项一致，校验和防错配与损坏；
   // 不一致一律 409 且零业务副作用（正常确认/幂等重放/时效与权限保护保持）
@@ -352,6 +364,7 @@ export async function commitImportTask(
 
       let changed = 0;
       const affectedRefundItemIds = new Set<string>(); // after_sales 提交后退款总账重验（H02）
+      const affectedItemCoverageDates = new Set<string>(); // H04（R3）：父订单头更正影响的行覆盖业务日
       if (kind === "products") {
         for (const row of staged) {
           const s = (row.record ?? row.sample) as {
@@ -413,7 +426,7 @@ export async function commitImportTask(
           };
           const existingOrder = await tx.order.findFirst({
             where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalOrderId: o.externalOrderId },
-            select: { id: true, sourceUpdatedAt: true, paymentStatus: true },
+            select: { id: true, sourceUpdatedAt: true, paymentStatus: true, paidAt: true, orderedAt: true },
           });
           if (existingOrder && existingOrder.sourceUpdatedAt.getTime() > new Date(o.sourceUpdatedAt).getTime()) {
             continue; // 旧版本不覆盖
@@ -462,6 +475,11 @@ export async function commitImportTask(
               sourceUpdatedAt: new Date(o.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
             },
           });
+          // H04（R3）：记录父订单头更正影响的行覆盖业务日（旧/新归日；expected 变化影响当日行齐）
+          if (existingOrder) {
+            affectedItemCoverageDates.add(localDateInTz(store.timezone, existingOrder.paidAt ?? existingOrder.orderedAt));
+          }
+          affectedItemCoverageDates.add(localDateInTz(store.timezone, o.paidAt ? new Date(o.paidAt) : new Date(o.orderedAt)));
           changed += 1;
         }
       } else if (kind === "order_items") {
@@ -834,6 +852,51 @@ export async function commitImportTask(
               importTaskId: task.id,
             },
           });
+        }
+        // H04（R3）：父订单头更正（expected_item_count/业务日变化）使既有 order_items 有效覆盖
+        // 失真时，同一事务维护受影响来源/日期的最新有效覆盖：行齐破坏→partial、事实迁移→刷新
+        // 来源级计数；保留历史版本，不为从未声明的日期制造覆盖，不替用户升级状态
+        if (kind === "orders") {
+          for (const date of affectedItemCoverageDates) {
+            const latest = await tx.dataCoverage.findFirst({
+              where: {
+                orgId: ctx.orgId, storeId: task.storeId, dataSourceId: task.dataSourceId,
+                sourceKind: "order_items", channel: "default_channel",
+                coverageDate: new Date(`${date}T00:00:00Z`),
+              },
+              orderBy: { datasetVersion: "desc" },
+            });
+            if (!latest) continue;
+            const { start: mStart, end: mEnd } = localDayUtcRange(store.timezone, date);
+            const ordersOnDay = await tx.order.findMany({
+              where: {
+                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
+                OR: [{ paidAt: { gte: mStart, lt: mEnd } }, { paidAt: null, orderedAt: { gte: mStart, lt: mEnd } }],
+              },
+              select: { id: true, expectedItemCount: true },
+            });
+            let incomplete = false;
+            for (const od of ordersOnDay) {
+              const present = await tx.orderItem.count({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: od.id } });
+              if (present < od.expectedItemCount) { incomplete = true; break; }
+            }
+            const recordCount = await countFactsForDate(tx, {
+              orgId: ctx.orgId, storeId: task.storeId, namespace: dataSource.sourceNamespace,
+              tz: store.timezone, kind: "order_items", channel: "default", date,
+            });
+            const status = incomplete ? "partial" : latest.status;
+            if (status !== latest.status || recordCount !== latest.recordCount) {
+              await tx.dataCoverage.create({
+                data: {
+                  orgId: ctx.orgId, storeId: task.storeId, dataSourceId: task.dataSourceId,
+                  sourceKind: "order_items", channel: "default_channel",
+                  coverageDate: new Date(`${date}T00:00:00Z`),
+                  status, explicitZero: false, recordCount,
+                  datasetVersion: newVersion, importTaskId: task.id,
+                },
+              });
+            }
+          }
         }
         // H05/F05：首次事实或覆盖确认时，与事实/coverage/版本同事务绑定权威来源组
         if (channelsToBind.length > 0) {
