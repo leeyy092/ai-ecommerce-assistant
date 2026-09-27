@@ -11,10 +11,12 @@
  * （原子提交属 TASK-009），也不实现 F17 恢复 UI/通用别名工作台。
  */
 import { createHash } from "node:crypto";
-import type { PrismaClient } from "@/generated/prisma/client";
+import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import {
   FILE_HEADERS,
   parseCsv,
+  createCanonicalBatch,
+  getAdapter,
   type CoverageDeclarationItem,
   type FileKind,
   type RowError,
@@ -214,25 +216,30 @@ function affectedDateOf(tz: string, kind: FileKind, r: AnyRecord): string | null
   return iso ? localDateIn(tz, new Date(iso)) : null;
 }
 
-/** 预览样本受控字段子集（自由文本脱敏；不含客户原文/经营金额以外的敏感串） */
+/** 自由文本脱敏：邮箱/电话/地址掩码；不截断业务正文（列限长由输入校验保证） */
 export function redactFreeText(v: string): string {
-  const masked = v
+  return v
     .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "***@***")
     .replace(/(?:\+?86[- ]?)?1\d{10}/g, "***PHONE***")
-    .replace(/\d{15,19}/g, "***NO***");
-  return masked.length > 200 ? `${masked.slice(0, 200)}…` : masked;
+    .replace(/\d{15,19}/g, "***NO***")
+    .replace(/[\u4e00-\u9fa5]{2,8}(?:省|自治区)[\u4e00-\u9fa5]{2,8}(?:市|州|盟)[\u4e00-\u9fa5]{2,8}(?:区|县|旗)[^，。；\s]*?(?:号|栋|室|院|座)/g, "***ADDRESS***");
+}
+
+/** 预览摘录有界展示；完整脱敏正文由提交侧从 record 取（H08：摘录与正文分离） */
+function excerptOf(v: string): string {
+  return v.length > 200 ? `${v.slice(0, 200)}…` : v;
 }
 
 function sampleOf(kind: FileKind, r: AnyRecord): Record<string, unknown> {
   const base: Record<string, unknown> = { ...r };
   if (kind === "customer_messages") {
     const m = r as StandardRecords["customer_messages"];
-    base.message_text = redactFreeText(m.messageText);
+    base.message_text = excerptOf(redactFreeText(m.messageText));
     delete base.messageText; // 预览不回显客户原文
   }
   if (kind === "after_sales") {
     const a = r as StandardRecords["after_sales"];
-    if (typeof a.reasonText === "string") base.reason_text = redactFreeText(a.reasonText);
+    if (typeof a.reasonText === "string") base.reason_text = excerptOf(redactFreeText(a.reasonText));
     delete base.reasonText;
   }
   delete base.storeExternalId;
@@ -249,6 +256,8 @@ export interface StagedRow {
   row_hash: string;
   affected_dates: string[];
   sample: Record<string, unknown>;
+  /** 完整规范化记录（提交侧业务字段与完整正文的唯一来源；sample 仅预览摘录） */
+  record: AnyRecord;
 }
 
 export interface StageOutcome {
@@ -271,16 +280,17 @@ interface PendingRow {
 }
 
 export async function classifyAndStage(args: {
-  db: PrismaClient;
+  db: Prisma.TransactionClient | PrismaClient;
   kind: FileKind;
   orgId: string;
   storeId: string;
   namespace: string;
   timezone: string;
+  storeCurrency: string;
   records: StandardRecords[FileKind][];
   coverage: CoverageDeclarationItem[];
 }): Promise<StageOutcome> {
-  const { db, kind, orgId, storeId, namespace, timezone } = args;
+  const { db, kind, orgId, storeId, namespace, timezone, storeCurrency } = args;
   const outcome: StageOutcome = {
     rows: [],
     counts: { insert: 0, update: 0, unchanged: 0, rejected: 0 },
@@ -299,13 +309,12 @@ export async function classifyAndStage(args: {
     return outcome;
   }
 
-  // 文件内折叠：同自然键按 source_updated_at 取最新；同刻同内容折叠；
-  // 同刻不同内容 → DUPLICATE_KEY_CONFLICT（整文件失败，不"最后一行胜出"）。
+  // 文件内折叠：同自然键且规范化内容完全相同 → 折叠重复并记录行号；
+  // 同键内容不同（无论时间先后）→ DUPLICATE_KEY_CONFLICT 整文件失败
+  // （PART12.1：不采用最后一行胜出；更正以更晚 source_updated_at 重新上传）。
   const pending = new Map<string, PendingRow>();
   const productsById = new Map<string, { name: string; category: string | null; status: string; row: number }>();
   const caseIds = new Set<string>();
-  const stagedItemKeys = new Set<string>();
-  const refundBoundsByItem = new Map<string, { total: number; byCompletedAt: Map<string, number> }>();
   const errorRows = new Set<string>();
   const flagError = (p: { row: number; key: string }, e: RowError) => {
     errorRows.add(p.key);
@@ -320,7 +329,6 @@ export async function classifyAndStage(args: {
     if (kind === "after_sales") {
       const a = record as StandardRecords["after_sales"];
       if (a.recordType === "case") caseIds.add(a.externalRecordId);
-      stagedItemKeys.add(`${a.externalOrderId}\u0000${a.externalOrderItemId}`);
     }
     if (kind === "products") {
       const p = record as StandardRecords["products"];
@@ -340,24 +348,15 @@ export async function classifyAndStage(args: {
       pending.set(key, { row: rowNo, record, key, hash });
       continue;
     }
-    const a = Date.parse(existing.record.sourceUpdatedAt);
-    const b = Date.parse(record.sourceUpdatedAt);
-    if (b === a) {
-      if (existing.hash === hash) {
-        outcome.duplicatesFolded += 1; // 同刻同内容：预览折叠重复并保留行号
-      } else {
-        flagError({ row: rowNo, key }, {
-          row: rowNo,
-          column: "source_updated_at",
-          code: "DUPLICATE_KEY_CONFLICT",
-          message: `自然键 ${key} 在 ${record.sourceUpdatedAt} 出现不同内容（第 ${existing.row} 行与本行），整文件拒绝`,
-        });
-      }
-    } else if (b > a) {
-      pending.set(key, { row: rowNo, record, key, hash });
-      outcome.supersededInFile += 1; // 文件内旧版本被新版本取代
+    if (existing.hash === hash) {
+      outcome.duplicatesFolded += 1; // 同键同内容：预览折叠重复并保留行号
     } else {
-      outcome.supersededInFile += 1;
+      flagError({ row: rowNo, key }, {
+        row: rowNo,
+        column: "source_updated_at",
+        code: "DUPLICATE_KEY_CONFLICT",
+        message: `自然键 ${key} 在文件内出现不同内容（第 ${existing.row} 行与本行），整文件拒绝；更正请以更晚 source_updated_at 重新上传`,
+      });
     }
   }
 
@@ -397,6 +396,7 @@ export async function classifyAndStage(args: {
       })
     : [];
   const itemMap = new Map(items.map((it) => [`${it.orderId}\u0000${it.externalOrderItemId}`, it]));
+  const itemById = new Map(items.map((it) => [it.id, it]));
   const refundExtIds =
     kind === "after_sales"
       ? keys.map((k) => (k.record as StandardRecords["after_sales"])).filter((a) => a.recordType === "refund").map((a) => a.externalRecordId)
@@ -416,17 +416,77 @@ export async function classifyAndStage(args: {
       })
     : [];
   const dbRefundByKey = new Map(dbRefunds.map((r) => [r.externalRecordId, r]));
-  const succeededByItem = new Map<string, { amount: number; quantity: number }>();
-  for (const r of dbRefunds) {
-    if (r.status !== "succeeded") continue;
-    const acc = succeededByItem.get(r.orderItemId) ?? { amount: 0, quantity: 0 };
-    acc.amount += Number(r.refundAmount);
-    acc.quantity = Math.max(acc.quantity, r.refundedQuantityCumulative ?? 0);
-    succeededByItem.set(r.orderItemId, acc);
+  // H02：本文件最终退款集合（带行号）与既有成功退款全历史（排除将被本文件替换的行）
+  const inFileRefunds =
+    kind === "after_sales"
+      ? keys
+          .filter((k) => (k.record as StandardRecords["after_sales"]).recordType === "refund")
+          .map((k) => ({ ...(k.record as StandardRecords["after_sales"]), __row: k.row }))
+      : [];
+  const affectedItemIds = [...new Set(items.map((it) => it.id))];
+  const historyRefunds = affectedItemIds.length
+    ? await db.refundEvent.findMany({
+        where: { orgId, storeId, orderItemId: { in: affectedItemIds }, status: "succeeded" },
+        select: { externalRecordId: true, orderItemId: true, refundAmount: true, refundedQuantityCumulative: true, completedAt: true, occurredAt: true },
+      })
+    : [];
+  const decOf = (v: unknown): Prisma.Decimal => new Prisma.Decimal(v == null ? 0 : String(v));
+  const historyByItem = new Map<string, Array<{ amount: Prisma.Decimal; qty: number; completedAt: string; externalRecordId: string }>>();
+  for (const r of historyRefunds) {
+    if (refundExtIds.includes(r.externalRecordId)) continue; // 本文件将替换的同自然键行不重复计入
+    const arr = historyByItem.get(r.orderItemId) ?? [];
+    arr.push({ amount: decOf(r.refundAmount), qty: r.refundedQuantityCumulative ?? 0, completedAt: (r.completedAt ?? r.occurredAt ?? new Date(0)).toISOString(), externalRecordId: r.externalRecordId });
+    historyByItem.set(r.orderItemId, arr);
   }
+  const pendingRowOf = (event: string): number =>
+    inFileRefunds.find((a) => a.externalRecordId === event)?.__row ?? 1;
+
+  // H02c：订单行金额/件数更正不得突破既有成功退款上界（预览侧全历史校验）
+  const priorRefundsByItem = new Map<string, { total: Prisma.Decimal; maxQty: number }>();
+  if (kind === "order_items") {
+    for (const r of historyRefunds) {
+      if (refundExtIds.includes(r.externalRecordId)) continue;
+      const acc = priorRefundsByItem.get(r.orderItemId) ?? { total: new Prisma.Decimal(0), maxQty: 0 };
+      acc.total = acc.total.add(decOf(r.refundAmount));
+      acc.maxQty = Math.max(acc.maxQty, r.refundedQuantityCumulative ?? 0);
+      priorRefundsByItem.set(r.orderItemId, acc);
+    }
+  }
+
+  const knownAliases = new Map<string, string>(); // external_sku_id(别名) → canonical external_sku_id
+  if (skuExtIds.length) {
+    const aliases = await db.skuAlias.findMany({
+      where: { orgId, storeId, sourceNamespace: namespace, externalSkuId: { in: skuExtIds } },
+      select: { externalSkuId: true, skuId: true },
+    });
+    const canonicalIds = aliases.map((a) => a.skuId);
+    if (canonicalIds.length) {
+      const canonicalRows = await db.sKU.findMany({
+        where: { orgId, storeId, id: { in: canonicalIds } },
+        select: { id: true, externalSkuId: true },
+      });
+      const idToExt = new Map(canonicalRows.map((r) => [r.id, r.externalSkuId]));
+      for (const a of aliases) {
+        const ext = idToExt.get(a.skuId);
+        if (ext) knownAliases.set(a.externalSkuId, ext);
+      }
+    }
+  }
+  const resolvable = (extId: string): boolean => knownSkus.has(extId) || knownAliases.has(extId);
 
   for (const p of pending.values()) {
     const r = p.record;
+    // H01b：行币种必须与店铺币种一致（products 无币种列）
+    const rowCurrency = (r as { currency?: string | null }).currency ?? null;
+    if (rowCurrency !== null && rowCurrency !== undefined && rowCurrency !== storeCurrency) {
+      flagError(p, {
+        row: p.row,
+        column: "currency",
+        code: "CURRENCY_MISMATCH",
+        message: `行币种 ${rowCurrency} 与店铺币种 ${storeCurrency} 不一致`,
+      });
+      continue;
+    }
     const existing = existingRows.get(p.key);
     const existingTs = existing ? existing.sourceUpdatedAt.getTime() : null;
     let action: StagedRow["action"] = "insert";
@@ -488,7 +548,7 @@ export async function classifyAndStage(args: {
         kind === "order_items"
           ? (r as StandardRecords["order_items"]).externalSkuId
           : (r as StandardRecords["customer_messages"]).externalSkuId;
-      if (skuId && !knownSkus.has(skuId)) {
+      if (skuId && !resolvable(skuId)) {
         flagError(p, {
           row: p.row,
           column: "external_sku_id",
@@ -507,6 +567,40 @@ export async function classifyAndStage(args: {
           code: "MISSING_ORDER_REFERENCE",
           message: `订单 ${it.externalOrderId} 尚未导入（订单行须引用已存同店同来源订单）`,
         });
+      } else {
+        const dbItem = itemMap.get(`${dbOrder.id}\u0000${it.externalOrderItemId}`);
+        if (dbItem) {
+          const prior = priorRefundsByItem.get(dbItem.id);
+          if (prior && prior.total.gt(new Prisma.Decimal(it.itemPaidAmount))) {
+            flagError(p, {
+              row: p.row,
+              column: "item_paid_amount",
+              code: "REFUND_AMOUNT_EXCEEDS_PAID",
+              message: `订单行 ${it.externalOrderId}/${it.externalOrderItemId} 已有成功退款合计 ${prior.total.toString()}，更正后实付 ${it.itemPaidAmount} 将低于退款上界`,
+            });
+          }
+          if (prior && prior.maxQty > it.quantity) {
+            flagError(p, {
+              row: p.row,
+              column: "quantity",
+              code: "REFUND_QUANTITY_CONFLICT",
+              message: `订单行 ${it.externalOrderId}/${it.externalOrderItemId} 已有累计退件 ${prior.maxQty}，更正后数量 ${it.quantity} 低于累计退件上界`,
+            });
+          }
+        }
+      }
+    }
+    if (kind === "customer_messages") {
+      const m = r as StandardRecords["customer_messages"];
+      // H08：脱敏后无有效业务内容则明确报错，不静默丢行（04 §12.6）
+      const redacted = redactFreeText(m.messageText);
+      if (!/[\u4e00-\u9fa5A-Za-z0-9]/.test(redacted.replace(/\*+/g, ""))) {
+        flagError(p, {
+          row: p.row,
+          column: "message_text",
+          code: "REDACTED_TEXT_EMPTY",
+          message: "message_text 脱敏后无有效业务内容，请补充业务描述",
+        });
       }
     }
     if (kind === "after_sales") {
@@ -522,44 +616,8 @@ export async function classifyAndStage(args: {
         });
       } else if (a.recordType === "refund") {
         if (a.status === "succeeded") {
-          const prior = succeededByItem.get(orderItem.id);
-          const priorAmount = prior?.amount ?? 0;
-          const self = dbRefundByKey.get(a.externalRecordId);
-          const selfAmount = self && self.status === "succeeded" ? Number(self.refundAmount) : 0;
-          if (a.refundAmount === null) {
-            outcome.rowErrors.push({ row: p.row, column: "refund_amount", code: "VALIDATION_ERROR", message: "成功退款必填 refund_amount" });
-          } else if (priorAmount - selfAmount + Number(a.refundAmount) > Number(orderItem.itemPaidAmount)) {
-            flagError(p, {
-              row: p.row,
-              column: "refund_amount",
-              code: "REFUND_AMOUNT_EXCEEDS_PAID",
-              message: `订单行 ${a.externalOrderId}/${a.externalOrderItemId} 累计成功退款将超过实付金额`,
-            });
-          }
-          if (a.refundedQuantityCumulative === null) {
-            outcome.rowErrors.push({ row: p.row, column: "refunded_quantity_cumulative", code: "VALIDATION_ERROR", message: "成功退款必填累计退件数" });
-          } else if (a.refundedQuantityCumulative !== null && a.refundedQuantityCumulative > orderItem.quantity) {
-            flagError(p, {
-              row: p.row,
-              column: "refunded_quantity_cumulative",
-              code: "REFUND_QUANTITY_CONFLICT",
-              message: `累计退件 ${a.refundedQuantityCumulative} 超过订单行数量 ${orderItem.quantity}`,
-            });
-          }
-          const acc = refundBoundsByItem.get(orderItem.id) ?? { total: 0, byCompletedAt: new Map<string, number>() };
-          acc.total += Number(a.refundAmount ?? 0);
-          const stamp = new Date(a.completedAt ?? a.occurredAt).toISOString();
-          const prevQty = acc.byCompletedAt.get(stamp);
-          if (prevQty !== undefined && prevQty !== a.refundedQuantityCumulative) {
-            flagError(p, {
-              row: p.row,
-              column: "refunded_quantity_cumulative",
-              code: "REFUND_QUANTITY_CONFLICT",
-              message: `同一完成时刻存在不同累计退件数，顺序不确定`,
-            });
-          }
-          acc.byCompletedAt.set(stamp, a.refundedQuantityCumulative ?? 0);
-          refundBoundsByItem.set(orderItem.id, acc);
+          // 金额/累计件数/同刻一致性：由行循环后的“历史+整批”总账统一校验（H02）
+          void orderItem;
           if (a.relatedCaseId && !caseIds.has(a.relatedCaseId)) {
             const dbCase = await db.afterSaleRecord.findFirst({
               where: { orgId, storeId, sourceNamespace: namespace, externalRecordId: a.relatedCaseId },
@@ -595,7 +653,13 @@ export async function classifyAndStage(args: {
       continue;
     }
     outcome.counts[action] += 1;
-    const affected = affectedDateOf(timezone, kind, r);
+    let affected = affectedDateOf(timezone, kind, r);
+    if (kind === "order_items" && !affected) {
+      // 订单行归订单付款日（未付款按下单日）（PART12.1）
+      const it = r as StandardRecords["order_items"];
+      const o = orderMap.get(it.externalOrderId);
+      if (o) affected = localDateIn(timezone, o.paidAt ?? o.orderedAt);
+    }
     outcome.rows.push({
       row: p.row,
       action,
@@ -604,8 +668,77 @@ export async function classifyAndStage(args: {
       row_hash: p.hash,
       affected_dates: affected ? [affected] : [],
       sample: sampleOf(kind, r),
+      record: r,
     });
   }
+  // H02：按订单行合并“全部既有成功退款 + 本文件最终集合”的退款总账（Decimal 精确整数运算）
+  if (kind === "after_sales" && inFileRefunds.length > 0) {
+    const finalByItem = new Map<string, Array<{ event: string; amount: Prisma.Decimal; qty: number; completedAt: string }>>();
+    for (const a of inFileRefunds) {
+      if (a.status !== "succeeded") continue;
+      const parentOrder = orderMap.get(a.externalOrderId);
+      const parentItem = parentOrder ? itemMap.get(`${parentOrder.id}\u0000${a.externalOrderItemId}`) : undefined;
+      if (!parentItem) continue; // 引用缺失已在上方报错
+      const arr = finalByItem.get(parentItem.id) ?? [];
+      arr.push({ event: a.externalRecordId, amount: decOf(a.refundAmount), qty: a.refundedQuantityCumulative ?? 0, completedAt: new Date(a.completedAt ?? a.occurredAt).toISOString() });
+      finalByItem.set(parentItem.id, arr);
+    }
+    for (const [itemId, finals] of finalByItem) {
+      const orderItem = itemById.get(itemId);
+      if (!orderItem) continue;
+      const paid = orderItem.itemPaidAmount instanceof Prisma.Decimal ? orderItem.itemPaidAmount : decOf(orderItem.itemPaidAmount);
+      const qtyCap = orderItem.quantity;
+      // 最终集合 = 历史成功退款（排除本文件同自然键替换行）+ 本文件行
+      const merged = [
+        ...(historyByItem.get(itemId) ?? []),
+        ...finals.map((f) => ({ amount: f.amount, qty: f.qty, completedAt: f.completedAt, externalRecordId: f.event })),
+      ];
+      const total = merged.reduce((sum, r) => sum.add(r.amount), new Prisma.Decimal(0));
+      if (total.gt(paid)) {
+        outcome.rowErrors.push({
+          row: finals[0] ? pendingRowOf(finals[0].event) : 1,
+          column: "refund_amount",
+          code: "REFUND_AMOUNT_EXCEEDS_PAID",
+          message: `订单行合计成功退款 ${total.toString()} 超过实付金额 ${paid.toString()}`,
+        });
+      }
+      const sorted = [...merged].sort((x, y) => x.completedAt.localeCompare(y.completedAt));
+      let prevQty = 0;
+      const byStamp = new Map<string, number>();
+      for (const r of sorted) {
+        if (r.qty < prevQty) {
+          outcome.rowErrors.push({
+            row: pendingRowOf(r.externalRecordId),
+            column: "refunded_quantity_cumulative",
+            code: "REFUND_QUANTITY_CONFLICT",
+            message: "累计退件数按完成时间必须非递减",
+          });
+          break;
+        }
+        prevQty = r.qty;
+        const stamp = r.completedAt;
+        if (byStamp.has(stamp) && byStamp.get(stamp) !== r.qty) {
+          outcome.rowErrors.push({
+            row: pendingRowOf(r.externalRecordId),
+            column: "refunded_quantity_cumulative",
+            code: "REFUND_QUANTITY_CONFLICT",
+            message: "同一完成时刻存在不同累计退件数，顺序不确定",
+          });
+          break;
+        }
+        byStamp.set(stamp, r.qty);
+      }
+      if (prevQty > qtyCap) {
+        outcome.rowErrors.push({
+          row: finals[0] ? pendingRowOf(finals[0].event) : 1,
+          column: "refunded_quantity_cumulative",
+          code: "REFUND_QUANTITY_CONFLICT",
+          message: `累计退件 ${prevQty} 超过订单行数量 ${qtyCap}`,
+        });
+      }
+    }
+  }
+
   outcome.counts.rejected = outcome.rowErrors.length;
   outcome.coverageGaps = computeCoverageGaps(outcome.rows, args.coverage);
   return outcome;
@@ -654,7 +787,7 @@ function collectOrderRefs(kind: FileKind, records: AnyRecord[]): string[] {
 
 /** 按自然键载入既有事实（仅取分类所需列；空 rowHash 视为从未提交） */
 async function loadExistingByNaturalKey(args: {
-  db: PrismaClient;
+  db: Prisma.TransactionClient | PrismaClient;
   kind: FileKind;
   orgId: string;
   storeId: string;
@@ -711,43 +844,30 @@ async function loadExistingByNaturalKey(args: {
       return out;
     }
     case "ads": {
+      // 完整自然键（campaign/date/model/window/currency）精确对照（H07）
+      const out = new Map<string, { id: string; sourceUpdatedAt: Date; rowHash: string }>();
       const recs = [...pending.values()];
-      const byCampaign = new Map(recs.map((k) => [(k.record as StandardRecords["ads"]).campaignId, k]));
+      const campaignIds = [...new Set(recs.map((k) => (k.record as StandardRecords["ads"]).campaignId))];
+      if (campaignIds.length === 0) return out;
       const rows = await db.adMetric.findMany({
-        where: { ...base, campaignId: { in: [...byCampaign.keys()] } },
-        select: {
-          ...pick,
-          campaignId: true,
-          reportDate: true,
-          attributionModel: true,
-          attributionWindowDays: true,
-          currency: true,
-          spend: true,
-          attributedSales: true,
-        },
+        where: { ...base, campaignId: { in: campaignIds } },
+        select: { ...pick, campaignId: true, reportDate: true, attributionModel: true, attributionWindowDays: true, currency: true },
       });
-      return indexBy(
-        rows,
-        (r) =>
-          byCampaign.get(r.campaignId)?.key ??
-          "",
-        (r) => {
-          const iso = r.reportDate.toISOString().slice(0, 10);
-          for (const k of pending.values()) {
-            const a = k.record as StandardRecords["ads"];
-            if (
-              a.campaignId === r.campaignId &&
-              a.reportDate === iso &&
-              a.attributionModel === r.attributionModel &&
-              String(a.attributionWindowDays) === String(r.attributionWindowDays) &&
-              a.currency === r.currency
-            ) {
-              return k.key;
-            }
-          }
-          return "";
-        },
-      );
+      for (const r of rows) {
+        const iso = r.reportDate.toISOString().slice(0, 10);
+        const match = recs.find((k) => {
+          const a = k.record as StandardRecords["ads"];
+          return (
+            a.campaignId === r.campaignId &&
+            a.reportDate === iso &&
+            a.attributionModel === r.attributionModel &&
+            String(a.attributionWindowDays) === String(r.attributionWindowDays) &&
+            a.currency === r.currency
+          );
+        });
+        if (match) out.set(match.key, r);
+      }
+      return out;
     }
     case "customer_messages": {
       const byMsg = ext([...pending.values()], (r) => (r as StandardRecords["customer_messages"]).externalMessageId);
@@ -800,6 +920,77 @@ function indexBy<T extends { id: string; sourceUpdatedAt: Date; rowHash: string 
     if (key) out.set(key, { id: r.id, sourceUpdatedAt: r.sourceUpdatedAt, rowHash: r.rowHash });
   }
   return out;
+}
+
+// ---------- 原始文件 → 分类的共享流水线（校验 handler 与提交前重验同源；H03） ----------
+
+export interface RawStagingResult {
+  ignoredColumns: string[];
+  fatalMappingError: RowError | null;
+  records: StandardRecords[FileKind][];
+  batchRowErrors: RowError[];
+  coverage: CoverageDeclarationItem[];
+  rawChecksum: string;
+  staged: StageOutcome;
+}
+
+export async function stageRawFile(args: {
+  db: Prisma.TransactionClient | PrismaClient;
+  rawText: string;
+  kind: FileKind;
+  mappingFields: Record<string, string>;
+  orgId: string;
+  storeId: string;
+  namespace: string;
+  storeExternalId: string;
+  currency: string;
+  timezone: string;
+  coverageDeclaration: CoverageDeclarationItem[];
+}): Promise<RawStagingResult> {
+  const emptyOutcome: StageOutcome = {
+    rows: [], counts: { insert: 0, update: 0, unchanged: 0, rejected: 0 },
+    duplicatesFolded: 0, supersededInFile: 0, supersededByDb: 0, rowErrors: [],
+    coverageGaps: [], coverageOnly: false, emptyFile: false,
+  };
+  const mapped = transformCsvWithMapping(args.kind, args.rawText, args.mappingFields);
+  if ("error" in mapped) {
+    return {
+      ignoredColumns: [], fatalMappingError: mapped.error, records: [], batchRowErrors: [],
+      coverage: args.coverageDeclaration,
+      rawChecksum: createHash("sha256").update(args.rawText).digest("hex"),
+      staged: { ...emptyOutcome, counts: { ...emptyOutcome.counts, rejected: 1 } },
+    };
+  }
+  const parsed = getAdapter("csv").parse(args.kind, { storeExternalId: args.storeExternalId }, mapped.text);
+  const batch = createCanonicalBatch({
+    sourceKind: args.kind,
+    sourceNamespace: args.namespace,
+    storeId: args.storeId,
+    adapterKind: "csv",
+    rawChecksum: createHash("sha256").update(mapped.text).digest("hex"),
+    parse: parsed,
+    coverageDeclaration: args.coverageDeclaration,
+  });
+  const staged = await classifyAndStage({
+    db: args.db,
+    kind: args.kind,
+    orgId: args.orgId,
+    storeId: args.storeId,
+    namespace: args.namespace,
+    timezone: args.timezone,
+    storeCurrency: args.currency,
+    records: batch.records,
+    coverage: batch.coverage_declaration,
+  });
+  return {
+    ignoredColumns: mapped.ignoredColumns,
+    fatalMappingError: null,
+    records: batch.records,
+    batchRowErrors: batch.row_errors,
+    coverage: batch.coverage_declaration,
+    rawChecksum: batch.raw_checksum,
+    staged,
+  };
 }
 
 /** 幂等键（04 §10.5）：文件hash+来源/店铺+映射+范围声明+adapter版本 */

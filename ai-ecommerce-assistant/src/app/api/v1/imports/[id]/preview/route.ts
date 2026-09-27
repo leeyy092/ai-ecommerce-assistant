@@ -74,6 +74,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const rows = manifest.rows;
     const page = rows.slice(cursor, cursor + limit);
     const nextCursor = cursor + page.length < rows.length ? cursor + page.length : null;
+    // record 含完整规范化业务字段（提交侧专用，含未脱敏原文列），不得进入预览响应；
+    // 预览只回有界脱敏 sample（H08：完整正文与预览摘录分离）
+    const items = page.map((r) => ({
+      row: r.row,
+      action: r.action,
+      reason: r.reason,
+      natural_key: r.natural_key,
+      affected_dates: r.affected_dates,
+      sample: r.sample,
+    }));
+
 
     return ok({
       id: task.id,
@@ -100,7 +111,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         empty_file: manifest.empty_file,
       },
       ignored_columns: manifest.ignored_columns,
-      items: page,
+      items,
       next_cursor: nextCursor,
     });
   } catch (error) {

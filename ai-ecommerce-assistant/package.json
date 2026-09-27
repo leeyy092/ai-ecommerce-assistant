@@ -22,7 +22,8 @@
     "worker:status": "tsx src/jobs/status.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run tests/unit",
-    "test:integration": "env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1",
+    "test:integration": "env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1 --exclude '**/g3-contract.test.ts' --exclude '**/g3-h04-contract.test.ts'",
+    "test:g3": "env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 sh -c 'vitest run tests/integration/g3-contract.test.ts --maxWorkers=1 --minWorkers=1; vitest run tests/integration/g3-h04-contract.test.ts --maxWorkers=1 --minWorkers=1'",
     "test:e2e": "playwright test",
     "build:scripts": "esbuild scripts/init-owner.ts scripts/reset-owner-password.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/scripts --external:ali-oss --external:proxy-agent --banner:js=\"var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;\" --define:import.meta.url=__aieaImportMetaUrl"
   },

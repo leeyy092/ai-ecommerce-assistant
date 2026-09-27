@@ -9,22 +9,17 @@
  * 解析经 TASK-006 统一 Adapter 并组装 typed CanonicalBatch（G2-H04 合同消费点）。
  * 不做：业务入库、dataset_version 递增、快照评估（TASK-008/013 边界）。
  */
-import { createHash } from "node:crypto";
 import { getPrismaClient } from "@/database/prisma";
 import {
   ADAPTER_VERSION,
-  createCanonicalBatch,
-  getAdapter,
   isFileKind,
-  type CanonicalBatch,
   type CoverageDeclarationItem,
   type RowError,
 } from "@/adapters/contracts";
 import {
   buildIdempotencyKey,
-  classifyAndStage,
   mappingVersion as mappingVersionOf,
-  transformCsvWithMapping,
+  stageRawFile,
 } from "@/services/importPreview";
 import { canImport } from "@/services/access";
 import { getObjectText, putObject } from "@/storage";
@@ -105,7 +100,7 @@ export async function handleValidateTask(
 
   const store = await db.store.findUniqueOrThrow({
     where: { id: task.storeId },
-    select: { externalStoreId: true },
+    select: { externalStoreId: true, currency: true, timezone: true, datasetVersion: true },
   });
   const dataSource = await db.dataSource.findUniqueOrThrow({
     where: { id: task.dataSourceId },
@@ -120,16 +115,31 @@ export async function handleValidateTask(
 
   try {
     const rawText = await getObjectText(task.rawObjectKey);
-    // TASK-008：字段映射——把用户映射的 CSV 列重排为标准列表后再解析；
-    // 未映射列列入 ignored_columns（预览列出），缺失必填列由解析层报 MISSING_COLUMN。
+    // TASK-008：字段映射 + 统一解析 + 全量校验与预览分类（与提交前重验共用同一条流水线）
     const mappingFields =
       ((task.mapping as { fields?: Record<string, string> } | null)?.fields) ?? {};
-    let text = rawText;
-    let ignoredColumns: string[] = [];
-    // 总是经过映射转换（空映射=同名列直通），使未映射列在预览中被列出
-    const mapped = transformCsvWithMapping(task.sourceKind, rawText, mappingFields);
-    if ("error" in mapped) {
-      const rowErrors = [mapped.error];
+    const coverageDeclaration = Array.isArray(task.coverageDeclaration)
+      ? (task.coverageDeclaration as unknown as CoverageDeclarationItem[])
+      : [];
+    const stagedRun = await stageRawFile({
+      db,
+      rawText,
+      kind: task.sourceKind,
+      mappingFields,
+      orgId: task.orgId,
+      storeId: task.storeId,
+      namespace: dataSource.sourceNamespace,
+      storeExternalId: store.externalStoreId,
+      currency: store.currency,
+      timezone: store.timezone,
+      coverageDeclaration,
+    });
+    const staged = stagedRun.staged;
+    const ignoredColumns = stagedRun.ignoredColumns;
+    const rowCount = stagedRun.records.length + stagedRun.batchRowErrors.length;
+
+    if (stagedRun.fatalMappingError) {
+      const rowErrors = [stagedRun.fatalMappingError];
       const errorObjectKey = `errors/${task.id}/errors.csv`;
       await putObject(errorObjectKey, Readable.from([errorCsv(rowErrors)]));
       await db.importTask.updateMany({
@@ -138,65 +148,33 @@ export async function handleValidateTask(
           status: "failed",
           errorCount: rowErrors.length,
           errorObjectKey,
-          errorCode: mapped.error.code,
+          errorCode: stagedRun.fatalMappingError.code,
           previewVersion: { increment: 1 },
         },
       });
       return { status: "failed", valid: 0, errors: rowErrors.length };
     }
-    text = mapped.text;
-    ignoredColumns = mapped.ignoredColumns;
-    // G2-H03：来源更新时间必须来自文件本身，缺失即行级错误（不补造）
-    const parsed = getAdapter("csv").parse(task.sourceKind, { storeExternalId: store.externalStoreId }, text);
-    // G2-H04：统一 CanonicalBatch 合同——服务端赋值店铺/namespace/checksum，
-    // 覆盖声明来自任务存档（用户映射确认），不来自文件内容
-    const batch: CanonicalBatch = createCanonicalBatch({
-      sourceKind: task.sourceKind,
-      sourceNamespace: dataSource.sourceNamespace,
-      storeId: task.storeId,
-      adapterKind: "csv",
-      rawChecksum: createHash("sha256").update(text).digest("hex"),
-      parse: parsed,
-      coverageDeclaration: Array.isArray(task.coverageDeclaration)
-        ? (task.coverageDeclaration as unknown as CoverageDeclarationItem[])
-        : [],
-    });
 
-    // TASK-008：全量校验与预览分类——文件内折叠/同刻冲突、自然键与既有事实对照
-    // （insert/update/unchanged/旧版本不覆盖）、未知 SKU/缺失引用/退款越界等
-    // 跨行与跨引用检查；staging manifest 写私有对象。
-    const timezone = (await db.store.findUniqueOrThrow({
-      where: { id: task.storeId },
-      select: { timezone: true },
-    })).timezone;
-    const staged = await classifyAndStage({
-      db,
-      kind: task.sourceKind,
-      orgId: task.orgId,
-      storeId: task.storeId,
-      namespace: dataSource.sourceNamespace,
-      timezone,
-      records: batch.records,
-      coverage: batch.coverage_declaration,
-    });
-
+    // H01：任何真实错误（非法时间/数值/枚举/覆盖/币种/引用/冲突等）阻断整文件；
+    // IGNORED_COLUMN 是可展示的映射提示，不是错误，单独列示不计数。
     const allErrors: RowError[] = [
-      ...batch.row_errors,
+      ...stagedRun.batchRowErrors,
       ...staged.rowErrors,
-      ...ignoredColumns.map((c) => ({
-        row: 1,
-        column: c,
-        code: "IGNORED_COLUMN",
-        message: `未映射列 ${c} 已忽略（不导入）`,
-      })),
     ];
+    const ignoredNotices: RowError[] = ignoredColumns.map((c) => ({
+      row: 1,
+      column: c,
+      code: "IGNORED_COLUMN",
+      message: `未映射列 ${c} 已忽略（不导入）`,
+    }));
+    const failure = allErrors.length > 0 ? allErrors[0] : null;
     const rejected = allErrors.length;
-    const rowCount = batch.records.length + batch.row_errors.length;
+    const success = !failure;
 
     let errorObjectKey: string | null = null;
-    if (allErrors.length > 0) {
+    if (allErrors.length + ignoredNotices.length > 0) {
       errorObjectKey = `errors/${task.id}/errors.csv`;
-      await putObject(errorObjectKey, Readable.from([errorCsv(allErrors)]));
+      await putObject(errorObjectKey, Readable.from([errorCsv([...allErrors, ...ignoredNotices])]));
     }
 
     // staging manifest（私有对象；预览/提交边界都从这里读取）
@@ -208,7 +186,7 @@ export async function handleValidateTask(
       mapping_version: mappingVersion,
       adapter_version: ADAPTER_VERSION,
       file_sha256: task.fileSha256,
-      coverage_declaration: batch.coverage_declaration,
+      coverage_declaration: stagedRun.coverage,
       ignored_columns: ignoredColumns,
       row_count: rowCount,
       counts: {
@@ -228,27 +206,6 @@ export async function handleValidateTask(
     };
     await putObject(stagingObjectKey, Readable.from([JSON.stringify(manifest)]));
 
-    const failure = allErrors.find((e) =>
-      [
-        "STORE_MISMATCH",
-        "MISSING_COLUMN",
-        "EMPTY_FILE",
-        "INVALID_CSV",
-        "DUPLICATE_COLUMN",
-        "MAPPING_COLLISION",
-        "DUPLICATE_KEY_CONFLICT",
-        "VERSION_CONFLICT",
-        "PRODUCT_METADATA_CONFLICT",
-        "SKU_CODE_CONFLICT",
-        "SKU_NOT_FOUND",
-        "MISSING_ORDER_REFERENCE",
-        "ITEM_COUNT_EXCEEDED",
-        "REFUND_AMOUNT_EXCEEDS_PAID",
-        "REFUND_QUANTITY_CONFLICT",
-        "RELATED_CASE_NOT_FOUND",
-      ].includes(e.code),
-    );
-    const success = !failure;
     const idempotencyKey = success
       ? buildIdempotencyKey({
           fileSha256: task.fileSha256,
@@ -257,7 +214,7 @@ export async function handleValidateTask(
           namespace: dataSource.sourceNamespace,
           kind: task.sourceKind,
           mappingVersion,
-          coverage: batch.coverage_declaration,
+          coverage: stagedRun.coverage,
           adapterVersion: ADAPTER_VERSION,
         })
       : null;
@@ -276,6 +233,7 @@ export async function handleValidateTask(
         errorCode: failure ? failure.code : null,
         idempotencyKey,
         previewVersion: { increment: 1 },
+        baseDatasetVersion: store.datasetVersion,
       },
     });
     return { status: failure ? "failed" : "preview_ready", valid: staged.rows.length, errors: rejected };

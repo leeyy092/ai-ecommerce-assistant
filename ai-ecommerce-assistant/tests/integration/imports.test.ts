@@ -475,10 +475,11 @@ describe("TASK-007｜签名下载与 validate/恢复边界", () => {
     expect(task.status).toBe("preview_ready");
     expect(task.validCount).toBe(2);
 
-    // 错误路径：独立上传含错行文件 → validate → 错误计数 + 私有错误对象
+    // 错误路径：独立上传含错行文件（quantity=0）→ validate → 整文件拒绝 + 错误计数 + 私有错误对象
+    //（G3R1-H01 后按 04 §11.1 步骤4：错误行存在时任务 failed，不提供“跳过错误继续”）
     const badTask = await makeTask(owner.cookie, "order_items", `${FILE_HEADERS.order_items.join(",")}\nIMP-1,2026-09-11T01:00:00Z,O9,L9,S1,0,10.000000,CNY`);
     const badResult = await handleValidateTask({ taskId: badTask.id });
-    expect(badResult.status).toBe("preview_ready");
+    expect(badResult.status).toBe("failed");
     expect(badResult.errors).toBe(1);
     const badTaskRow = await db.importTask.findUniqueOrThrow({ where: { id: badTask.id } });
     expect(badTaskRow.errorCount).toBe(1);
