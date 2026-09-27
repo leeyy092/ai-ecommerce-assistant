@@ -147,6 +147,13 @@ export async function dropTestDatabase(adminUrl: string, testUrl: string): Promi
  */
 export function resetDbSingletons(): void {
   (globalThis as { __aieaPrisma?: unknown }).__aieaPrisma = undefined;
+  // singleFork 共享进程：pg-boss 单例绑定旧库连接串，切换测试库时一并关闭重置，
+  // 否则后续文件的 dispatcher 入队静默失败（TASK-013 发现）
+  const bossHolder = globalThis as { __aieaBoss?: { stop?: () => Promise<unknown> } };
+  if (bossHolder.__aieaBoss) {
+    void bossHolder.__aieaBoss.stop?.().catch(() => undefined);
+    bossHolder.__aieaBoss = undefined;
+  }
   // 同步重置 better-auth 懒实例（其 adapter 持有旧库连接池）
   const g = globalThis as { __require_auth_reset__?: () => void };
   try {

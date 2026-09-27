@@ -8,7 +8,7 @@
  * TASK-013 将在此骨架上扩展完整阶段状态机与发布锁，不提前实现。
  */
 import { getPrismaClient } from "@/database/prisma";
-import { getBoss, QUEUE_VALIDATE } from "./queue";
+import { getBoss, QUEUE_REBUILD, QUEUE_VALIDATE } from "./queue";
 
 /** 常规投递失败（网络/队列表瞬时拒绝）后的兜底重投窗口 */
 const PENDING_DISPATCH_STALE_MS = 60_000;
@@ -52,4 +52,78 @@ export async function sweepDispatches(now = Date.now()): Promise<DispatchSweepRe
   });
 
   return { dispatched, failedStale: stuck.count };
+}
+
+/* ---------------- TASK-013：JobRun 派发兜底 / 悬挂恢复 / F01 评估推进 ---------------- */
+
+const JOBRUN_DISPATCH_STALE_MS = 30_000;
+const JOBRUN_RUNNING_STALE_MS = 10 * 60_000;
+const JOBRUN_ATTEMPT_LIMIT = 3;
+
+export interface JobRunSweepResult {
+  dispatched: number;
+  retried: number;
+  exhausted: number;
+  evaluationAdvanced: number;
+}
+
+/**
+ * sweepJobRuns：修复“JobRun 落账成功但入队前崩溃”窗口（F08/§11.1 步骤7）。
+ * 幂等安全：runRebuildJob 对 succeeded/superseded 直接跳过，重复作业无副作用。
+ * 派发成功后把来源 ImportTask 的 outbox 从 pending 推进为 dispatched（G2 合同口径）。
+ */
+export async function sweepJobRuns(now = Date.now()): Promise<JobRunSweepResult> {
+  const prisma = getPrismaClient();
+  const boss = await getBoss();
+
+  const staleBefore = new Date(now - JOBRUN_DISPATCH_STALE_MS);
+  const pending = await prisma.jobRun.findMany({
+    where: { status: "pending", outboxStatus: "pending", updatedAt: { lt: staleBefore } },
+    select: { id: true, context: true },
+    take: 50,
+    orderBy: { createdAt: "asc" },
+  });
+  let dispatched = 0;
+  for (const run of pending) {
+    try {
+      await boss.send(QUEUE_REBUILD, { jobRunId: run.id }, { retryLimit: 1, retryDelay: 5 });
+      await prisma.jobRun.updateMany({
+        where: { id: run.id, outboxStatus: "pending" },
+        data: { outboxStatus: "dispatched" },
+      });
+      const sourceTaskId = (run.context as { source_task_id?: string | null }).source_task_id;
+      if (sourceTaskId) {
+        await prisma.importTask.updateMany({
+          where: { id: sourceTaskId, outboxStatus: "pending" },
+          data: { outboxStatus: "dispatched" },
+        });
+      }
+      dispatched += 1;
+    } catch {
+      // 本轮放弃，下一轮 sweep 重试（JobRun 仍 pending+pending 可诊断）
+    }
+  }
+
+  // 悬挂 running（进程被杀/重投丢失）：限额内回 pending 重新派发，超限落终态
+  const stuckBefore = new Date(now - JOBRUN_RUNNING_STALE_MS);
+  const exhausted = await prisma.jobRun.updateMany({
+    where: { status: "running", updatedAt: { lt: stuckBefore }, attemptCount: { gte: JOBRUN_ATTEMPT_LIMIT } },
+    data: { status: "failed", errorCode: "JOB_RETRY_EXHAUSTED", finishedAt: new Date() },
+  });
+  const retried = await prisma.jobRun.updateMany({
+    where: { status: "running", updatedAt: { lt: stuckBefore } },
+    data: { status: "pending", outboxStatus: "pending" },
+  });
+
+  // F01：每日店铺本地 08:00 输入评估推进（确定性逻辑，不受 AI 开关影响）
+  let evaluationAdvanced = 0;
+  try {
+    const { evaluationTick } = await import("@/services/snapshot");
+    const tick = await evaluationTick(prisma, new Date(now));
+    evaluationAdvanced = tick.advanced;
+  } catch {
+    // 评估推进失败不阻断派发；下一轮重试
+  }
+
+  return { dispatched, retried: retried.count, exhausted: exhausted.count, evaluationAdvanced };
 }

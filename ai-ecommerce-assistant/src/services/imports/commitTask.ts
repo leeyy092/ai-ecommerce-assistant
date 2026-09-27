@@ -20,6 +20,7 @@ import { AccessError, canImport, type Role } from "@/services/access";
 import { writeAudit } from "@/services/audit";
 import { getObjectText } from "@/storage";
 import { redactFreeText, stageRawFile } from "@/services/importPreview";
+import { canonicalEvaluationAt, requestRebuild } from "@/services/snapshot";
 import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import type {
   CoverageChannel as AdapterCoverageChannel,
@@ -308,7 +309,7 @@ export async function commitImportTask(
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`commit:${ctx.orgId}:${task.storeId}`}))`;
       const storeRow = await tx.store.findUniqueOrThrow({
         where: { id: task.storeId },
-        select: { datasetVersion: true, settings: true },
+        select: { datasetVersion: true, rulesetVersion: true, timezone: true, settings: true },
       });
       const baseVersion = storeRow.datasetVersion;
 
@@ -915,6 +916,14 @@ export async function commitImportTask(
             });
           }
         }
+        // TASK-013/F08：与事实/coverage/版本同事务写 recompute 待派发标记——
+        // 提交成功但入队前崩溃由 dispatcher 兜底重投（§11.1 步骤7）
+        await requestRebuild({
+          db: tx, orgId: ctx.orgId, storeId: task.storeId,
+          datasetVersion: newVersion, rulesetVersion: storeRow.rulesetVersion,
+          evaluationAt: canonicalEvaluationAt(store.timezone, new Date()), // F01 规范评估瞬间（最近到期本地08:00）
+          sourceTaskId: task.id, requestedBy: ctx.userId,
+        });
       }
 
       const committedVersion = newVersion;

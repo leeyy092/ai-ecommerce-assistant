@@ -9,6 +9,7 @@ import { loadEnv } from "@/lib/env";
 
 export const QUEUE_VALIDATE = "import-validate";
 export const QUEUE_COMMIT = "import-commit";
+export const QUEUE_REBUILD = "snapshot-rebuild";
 
 const g = globalThis as typeof globalThis & { __aieaBoss?: PgBoss };
 
@@ -28,6 +29,7 @@ export async function getBoss(): Promise<PgBoss> {
 export async function ensureQueues(boss: PgBoss): Promise<void> {
   await boss.createQueue(QUEUE_VALIDATE);
   await boss.createQueue(QUEUE_COMMIT);
+  await boss.createQueue(QUEUE_REBUILD);
 }
 
 export async function enqueueValidate(taskId: string): Promise<string | null> {

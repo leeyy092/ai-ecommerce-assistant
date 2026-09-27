@@ -64,10 +64,11 @@ async function main(): Promise<number> {
   beat("running", true);
 
   // TASK-007：pg-boss 持久队列与 dispatcher——注册 validate/commit 边界
-  const { getBoss, ensureQueues, QUEUE_VALIDATE, QUEUE_COMMIT } = await import("./queue");
+  const { getBoss, ensureQueues, QUEUE_VALIDATE, QUEUE_COMMIT, QUEUE_REBUILD } = await import("./queue");
   const { handleValidateTask, handleCommitTask } = await import("./handlers/imports");
+  const { handleRebuildJob } = await import("./handlers/rebuild");
   type ValidateOutcome = Awaited<ReturnType<typeof handleValidateTask>>;
-  const { sweepDispatches } = await import("./dispatcher");
+  const { sweepDispatches, sweepJobRuns } = await import("./dispatcher");
   try {
     const boss = await getBoss();
     await ensureQueues(boss);
@@ -96,7 +97,14 @@ async function main(): Promise<number> {
         await handleCommitTask(job.data);
       }
     });
-    logger.info("pg-boss 队列就绪：%s / %s", QUEUE_VALIDATE, QUEUE_COMMIT);
+    await boss.work<{ jobRunId: string }>(QUEUE_REBUILD, async (jobs) => {
+      for (const job of jobs) {
+        logger.info({ job_id: job.id, run: job.data }, "snapshot-rebuild 开始");
+        const outcome = await handleRebuildJob(job.data);
+        logger.info({ job_id: job.id, ...outcome }, "snapshot-rebuild 完成");
+      }
+    });
+    logger.info("pg-boss 队列就绪：%s / %s / %s", QUEUE_VALIDATE, QUEUE_COMMIT, QUEUE_REBUILD);
   } catch (error) {
     logger.error({ err: error instanceof Error ? error.message : error }, "pg-boss 队列初始化失败");
     beat("failed", true);
@@ -109,8 +117,12 @@ async function main(): Promise<number> {
     void sweepDispatches().catch((error: unknown) => {
       logger.warn({ err: error instanceof Error ? error.message : error }, "dispatcher sweep 失败（下轮重试）");
     });
+    void sweepJobRuns().catch((error: unknown) => {
+      logger.warn({ err: error instanceof Error ? error.message : error }, "jobRun sweep 失败（下轮重试）");
+    });
   }, 30_000);
   void sweepDispatches().catch(() => undefined);
+  void sweepJobRuns().catch(() => undefined);
 
   const heartbeat = setInterval(() => beat("running", true), HEARTBEAT_INTERVAL_MS);
 
