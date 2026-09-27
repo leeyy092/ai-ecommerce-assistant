@@ -1,0 +1,18 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "tests/integration/g3-r2-independent.test.ts",
+    "-t",
+    "R2-H06|R2-H08 address|R2-H04 DST",
+    "--maxWorkers=1",
+    "--minWorkers=1",
+    "--reporter=verbose"
+  ],
+  "cwd": "/tmp/aiea-g3r2-20260927-nes78fkd/repo",
+  "exit_code": 1,
+  "seconds": 3.157,
+  "started_at": "2026-09-27T14:14:39+0800"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "oss-final-probes",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-oss.ts"
+  ],
+  "exit": 0,
+  "seconds": 1.58
+}

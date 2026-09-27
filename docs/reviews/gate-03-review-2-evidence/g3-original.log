@@ -1,0 +1,101 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r2-20260927-nes78fkd/repo
+
+(node:39150) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement
+G3_EVIDENCE {"id":"C01","result":{"replayVersion":"6","refundCount":1,"refundAmount":"20"}}
+
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement 552ms
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset
+G3_EVIDENCE {"id":"H01","result":{"status":"failed","errorCount":1,"commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"4e973b9b-f6d2-4553-9ace-2f3df8577e13"}}},"inserted":0}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H02a refund total includes successful events from earlier files
+G3_EVIDENCE {"id":"H02a","result":{"status":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"dd50fa03-3eb4-42fd-a0f2-9153c78ebe49"}}},"total":60,"paid":100}}
+
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset 28ms
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H02a refund total includes successful events from earlier files 119ms
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H02b refund bounds include all rows of the current file
+G3_EVIDENCE {"id":"H02b","result":{"status":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"7daefebe-5eaf-436b-8a04-4131cf80d455"}}}}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H02c order-item correction must respect existing successful refund bounds
+G3_EVIDENCE {"id":"H02c","result":{"status":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"688f90a1-49f3-433c-8eb1-74426efd9543"}}},"amount":"100","quantity":2}}
+
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H02b refund bounds include all rows of the current file 79ms
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H02c order-item correction must respect existing successful refund bounds 114ms
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H03a preview race cannot overwrite a newer customer message
+G3_EVIDENCE {"id":"H03a","result":{"commit":{"status":202,"body":{"data":{"id":"e057b40e-63c6-4f16-9871-d1f9c714d864","status":"committed","committed_dataset_version":"19","insert":1,"update":0,"unchanged":0,"no_op":true,"reused":false},"meta":{"request_id":"46442a19-9514-4da6-a800-9eb3041e2a6e"}}},"text":"新问题","sourceUpdatedAt":"2026-09-12T01:00:00.000Z"}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H03b preview older than 24h must reject confirmation
+G3_EVIDENCE {"id":"H03b","result":{"generatedAt":"2026-09-26T05:08:33.836Z","commit":{"status":409,"body":{"error":{"code":"IMPORT_PREVIEW_STALE","message":"预览已超过 24 小时有效期，请重新校验后确认","retryable":false,"request_id":"9b43368e-c25c-4274-a23f-7ff49f82263c"}}}}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H03c committing another user's preview must recheck the uploader permission
+G3_EVIDENCE {"id":"H03c","result":{"status":403,"body":{"error":{"code":"UPLOAD_PERMISSION_REVOKED","message":"导入者身份已失效或无该类型导入权限，不能提交","retryable":false,"request_id":"880b0e62-e2ea-4899-a3a7-bf5d9661ed0e"}}}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete
+G3_EVIDENCE {"id":"H04a","result":{"status":"preview_ready","commit":{"status":202,"body":{"data":{"id":"7a7a4495-9c23-4a71-83bb-93a033c3b3a8","status":"committed","committed_dataset_version":"20","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"36ad6a0a-686d-4e9b-b41b-5faaabd19b33"}}},"rows":[{"id":"643cb02d-1dd6-41ef-a2b4-7fc4046ccdbb","orgId":"39ef6a6f-2140-4baf-8cd9-0b4e27b3f661","storeId":"c82f0cba-a1d4-4150-a16e-61ed8702482a","dataSourceId":"41b70aac-d795-449b-aa15-aaae5bfb7ba3","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"5","datasetVersion":"20","importTaskId":"7a7a4495-9c23-4a71-83bb-93a033c3b3a8","createdAt":"2026-09-27T06:08:33.895Z","updatedAt":"2026-09-27T06:08:33.895Z","rowVersion":1},{"id":"7beffa1a-33d3-4d0e-a548-a28caa6099af","orgId":"39ef6a6f-2140-4baf-8cd9-0b4e27b3f661","storeId":"c82f0cba-a1d4-4150-a16e-61ed8702482a","dataSourceId":"41b70aac-d795-449b-aa15-aaae5bfb7ba3","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-09-02T00:00:00.000Z","status":"partial","explicitZero":false,"recordCount":"0","datasetVersion":"20","importTaskId":"7a7a4495-9c23-4a71-83bb-93a033c3b3a8","createdAt":"2026-09-27T06:08:33.898Z","updatedAt":"2026-09-27T06:08:33.898Z","rowVersion":1}]}}
+
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H03a preview race cannot overwrite a newer customer message 40ms
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H03b preview older than 24h must reject confirmation 17ms
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H03c committing another user's preview must recheck the uploader permission 17ms
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete 45ms
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op
+G3_EVIDENCE {"id":"H04b","result":{"before":"21","after":"21","commit":{"status":202,"body":{"data":{"id":"25ec2fa5-02d9-4a43-93f1-3918770e1f35","status":"committed","committed_dataset_version":"21","insert":0,"update":0,"unchanged":1,"no_op":true,"reused":false},"meta":{"request_id":"ce57c84b-e194-48f1-9a43-84b63e22997a"}}}}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation
+G3_EVIDENCE {"id":"H05","result":{"aliasStatus":201,"status":"preview_ready","errorCode":null}}
+
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op 54ms
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation 66ms
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H06 same campaign on a different report date has a distinct natural key
+G3_EVIDENCE {"id":"H06","result":{"status":"preview_ready","errorCode":null}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt
+G3_EVIDENCE {"id":"M01","result":{"inputLength":252,"storedLength":252,"hasIssue":true}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps
+G3_EVIDENCE {"id":"H07","result":{"status":"failed","errorCode":"DUPLICATE_KEY_CONFLICT"}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H04c first confirmed source is authoritative for the channel
+G3_EVIDENCE {"id":"H04c","result":{"commit":{"status":409,"body":{"error":{"code":"SOURCE_MIGRATION_REQUIRED","message":"channel orders/default 已绑定权威来源 41b70aac-d795-449b-aa15-aaae5bfb7ba3；本任务来源为 3263c0ca-0b78-4377-87c3-87d34db973fd，不能写入（来源迁移属后续单独任务）","retryable":false,"request_id":"a30f3e20-31b6-46b0-936a-35d8c2da7c01"}}},"duplicateOrders":1,"settings":{"authoritative_source_ids":{"ads/default":"41b70aac-d795-449b-aa15-aaae5bfb7ba3","orders/default":"41b70aac-d795-449b-aa15-aaae5bfb7ba3","after_sales/case":"41b70aac-d795-449b-aa15-aaae5bfb7ba3","after_sales/refund":"41b70aac-d795-449b-aa15-aaae5bfb7ba3","order_items/default":"41b70aac-d795-449b-aa15-aaae5bfb7ba3","customer_messages/default":"41b70aac-d795-449b-aa15-aaae5bfb7ba3"}}}}
+
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H06 same campaign on a different report date has a distinct natural key 36ms
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt 20ms
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps 12ms
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H04c first confirmed source is authoritative for the channel 40ms
+stdout | tests/integration/g3-contract.test.ts > H04d final complete order-item batch must not retain transient partial state
+G3_EVIDENCE {"id":"H04d","result":{"commit":{"status":202,"body":{"data":{"id":"b7218e5d-8d00-4918-bd5e-a8b7684a9001","status":"committed","committed_dataset_version":"29","insert":2,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"98227dd1-f828-4f75-80e5-b9d755161843"}}},"rows":[{"id":"7f75c80c-47c0-4cfd-90b7-76c7949f24bf","orgId":"39ef6a6f-2140-4baf-8cd9-0b4e27b3f661","storeId":"c82f0cba-a1d4-4150-a16e-61ed8702482a","dataSourceId":"41b70aac-d795-449b-aa15-aaae5bfb7ba3","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"6","datasetVersion":"29","importTaskId":"b7218e5d-8d00-4918-bd5e-a8b7684a9001","createdAt":"2026-09-27T06:08:34.198Z","updatedAt":"2026-09-27T06:08:34.198Z","rowVersion":1}]}}
+
+stdout | tests/integration/g3-contract.test.ts > H01b business currency must equal the selected store currency
+G3_EVIDENCE {"id":"H01b","result":{"status":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"918f7087-5edb-434a-9a40-a01af4d0f266"}}},"storeCurrency":"CNY"}}
+
+ × tests/integration/g3-contract.test.ts > H04d final complete order-item batch must not retain transient partial state 77ms
+   → expected 6n to be 2n // Object.is equality
+ ✓ tests/integration/g3-contract.test.ts > H01b business currency must equal the selected store currency 18ms
+stdout | tests/integration/g3-contract.test.ts > M01b synthetic street address is redacted before the customer-message fact is stored
+G3_EVIDENCE {"id":"M01b","result":{"redactedText":"收货地址：***ADDRESS***2栋301室；杯盖漏水","syntheticAddressPreserved":false}}
+
+ ✓ tests/integration/g3-contract.test.ts > M01b synthetic street address is redacted before the customer-message fact is stored 20ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > H04d final complete order-item batch must not retain transient partial state
+AssertionError: expected 6n to be 2n // Object.is equality
+
+- Expected
++ Received
+
+- 2n
++ 6n
+
+ ❯ tests/integration/g3-contract.test.ts:235:390
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 passed (18)
+   Start at  14:08:30
+   Duration  4.22s (transform 289ms, setup 538ms, collect 179ms, tests 2.72s, environment 0ms, prepare 631ms)
+

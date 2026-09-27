@@ -1,3 +1,7 @@
+> 2026-09-27 current override / PH4-20260927-01: Owner于2026-09-27在收到两批范围与风险说明后明确要求：“你把问题都给我解决，或者给我解决方案。围绕这个上线目标来做所有动作，你自己想办法。”按本次直接执行指令，恢复原完整P0范围的后续开发，立即放行Phase4 TASK013–016；同一冲刺内已定范围经Codex独立PASS后由Codex协调接续，不再为普通阶段接续重复等Owner。9/30先MVP、10/5功能冻结、10/8完整P0为目标；按PLAN-MVP-20260927-01分批组织，完整范围和验收不减。TASK031必须先补齐开户合同，尚未逐条批准的重要开户规则不能假称已批准；资源采购、部署发布、敏感权限及重大范围变化仍给Owner具体方案确认。技术PASS与Owner产品验收仍分开。
+
+Original phase/task and Gate definitions below remain in force; execution and writer are only in 12_PROGRESS.
+
 # P0 开发阶段与 Codex Review Checkpoint 规划
 
 版本：1.0 · 2026-09-12（依据 DEVELOPMENT_HANDOFF.md v1.1 §6 任务顺序与用户 Codex Review 规则制定；任务编号、名称、依赖与顺序完全沿用 09_TASKS.md，不合并、不跳过）

@@ -12,15 +12,28 @@
 import { createHash } from "node:crypto";
 import { getPrismaClient } from "@/database/prisma";
 import {
-  createCanonicalBatch,
-  getAdapter,
+  ADAPTER_VERSION,
   isFileKind,
-  type CanonicalBatch,
   type CoverageDeclarationItem,
+  type RowError,
 } from "@/adapters/contracts";
+import {
+  buildIdempotencyKey,
+  mappingVersion as mappingVersionOf,
+  stageRawFile,
+} from "@/services/importPreview";
 import { canImport } from "@/services/access";
 import { getObjectText, putObject } from "@/storage";
 import { Readable } from "node:stream";
+
+/** 逐行错误 CSV（行号/列/错误码/安全说明；不回显未脱敏原文） */
+function errorCsv(errors: RowError[]): string {
+  const header = "row,column,code,message";
+  const body = errors
+    .map((e) => [e.row, e.column ?? "", e.code, `"${String(e.message).replace(/"/g, '""')}"`].join(","))
+    .join("\r\n");
+  return `${header}\r\n${body}\r\n`;
+}
 
 export interface ValidateJobData {
   taskId: string;
@@ -88,7 +101,7 @@ export async function handleValidateTask(
 
   const store = await db.store.findUniqueOrThrow({
     where: { id: task.storeId },
-    select: { externalStoreId: true },
+    select: { externalStoreId: true, currency: true, timezone: true, datasetVersion: true },
   });
   const dataSource = await db.dataSource.findUniqueOrThrow({
     where: { id: task.dataSourceId },
@@ -102,50 +115,135 @@ export async function handleValidateTask(
   });
 
   try {
-    const text = await getObjectText(task.rawObjectKey);
-    // G2-H03：来源更新时间必须来自文件本身，缺失即行级错误（不补造）
-    const parsed = getAdapter("csv").parse(task.sourceKind, { storeExternalId: store.externalStoreId }, text);
-    // G2-H04：统一 CanonicalBatch 合同——服务端赋值店铺/namespace/checksum，
-    // 覆盖声明来自任务存档（用户映射确认），不来自文件内容
-    const batch: CanonicalBatch = createCanonicalBatch({
-      sourceKind: task.sourceKind,
-      sourceNamespace: dataSource.sourceNamespace,
+    const rawText = await getObjectText(task.rawObjectKey);
+    // TASK-008：字段映射 + 统一解析 + 全量校验与预览分类（与提交前重验共用同一条流水线）
+    const mappingFields =
+      ((task.mapping as { fields?: Record<string, string> } | null)?.fields) ?? {};
+    const coverageDeclaration = Array.isArray(task.coverageDeclaration)
+      ? (task.coverageDeclaration as unknown as CoverageDeclarationItem[])
+      : [];
+    const stagedRun = await stageRawFile({
+      db,
+      rawText,
+      kind: task.sourceKind,
+      mappingFields,
+      orgId: task.orgId,
       storeId: task.storeId,
-      adapterKind: "csv",
-      rawChecksum: createHash("sha256").update(text).digest("hex"),
-      parse: parsed,
-      coverageDeclaration: Array.isArray(task.coverageDeclaration)
-        ? (task.coverageDeclaration as unknown as CoverageDeclarationItem[])
-        : [],
+      namespace: dataSource.sourceNamespace,
+      storeExternalId: store.externalStoreId,
+      currency: store.currency,
+      timezone: store.timezone,
+      coverageDeclaration,
     });
+    const staged = stagedRun.staged;
+    const ignoredColumns = stagedRun.ignoredColumns;
+    const rowCount = stagedRun.records.length + stagedRun.batchRowErrors.length;
 
-    const valid = batch.records.length;
-    const errors = batch.row_errors.length;
-    let errorObjectKey: string | null = null;
-    if (errors > 0) {
-      errorObjectKey = `errors/${task.id}/errors.csv`;
-      const header = "row,column,code,message";
-      const body = batch.row_errors
-        .map((e) => [e.row, e.column ?? "", e.code, `"${String(e.message).replace(/"/g, '""')}"`].join(","))
-        .join("\r\n");
-      await putObject(errorObjectKey, Readable.from([`${header}\r\n${body}\r\n`]));
+    if (stagedRun.fatalMappingError) {
+      const rowErrors = [stagedRun.fatalMappingError];
+      const errorObjectKey = `errors/${task.id}/errors.csv`;
+      await putObject(errorObjectKey, Readable.from([errorCsv(rowErrors)]));
+      await db.importTask.updateMany({
+        where: { id: task.id, status: "validating" },
+        data: {
+          status: "failed",
+          errorCount: rowErrors.length,
+          errorObjectKey,
+          errorCode: stagedRun.fatalMappingError.code,
+          previewVersion: { increment: 1 },
+        },
+      });
+      return { status: "failed", valid: 0, errors: rowErrors.length };
     }
 
-    const failure = batch.row_errors.find((e) =>
-      ["STORE_MISMATCH", "MISSING_COLUMN", "EMPTY_FILE", "INVALID_CSV", "DUPLICATE_COLUMN"].includes(e.code),
-    );
+    // H01：任何真实错误（非法时间/数值/枚举/覆盖/币种/引用/冲突等）阻断整文件；
+    // IGNORED_COLUMN 是可展示的映射提示，不是错误，单独列示不计数。
+    const allErrors: RowError[] = [
+      ...stagedRun.batchRowErrors,
+      ...staged.rowErrors,
+    ];
+    const ignoredNotices: RowError[] = ignoredColumns.map((c) => ({
+      row: 1,
+      column: c,
+      code: "IGNORED_COLUMN",
+      message: `未映射列 ${c} 已忽略（不导入）`,
+    }));
+    const failure = allErrors.length > 0 ? allErrors[0] : null;
+    const rejected = allErrors.length;
+    const success = !failure;
+
+    let errorObjectKey: string | null = null;
+    if (allErrors.length + ignoredNotices.length > 0) {
+      errorObjectKey = `errors/${task.id}/errors.csv`;
+      await putObject(errorObjectKey, Readable.from([errorCsv([...allErrors, ...ignoredNotices])]));
+    }
+
+    // staging manifest（私有对象；预览/提交边界都从这里读取）
+    // H03：身份与完整性绑定——task_id/原文件sha/当前preview_version + 内容校验和，
+    // 提交侧逐项核验，错任务/损坏/换版staging一律拒绝
+    const mappingArchived = (task.mapping as { mapping_version?: string } | null) ?? {};
+    const mappingVersion = mappingArchived.mapping_version ?? mappingVersionOf({});
+    const stagingObjectKey = `staging/${task.id}/manifest.json`;
+    const manifestBase = {
+      kind: task.sourceKind,
+      task_id: task.id,
+      preview_version: task.previewVersion + 1,
+      mapping_version: mappingVersion,
+      adapter_version: ADAPTER_VERSION,
+      file_sha256: task.fileSha256,
+      coverage_declaration: stagedRun.coverage,
+      ignored_columns: ignoredColumns,
+      row_count: rowCount,
+      counts: {
+        insert: staged.counts.insert,
+        update: staged.counts.update,
+        unchanged: staged.counts.unchanged,
+        rejected,
+        duplicates_folded: staged.duplicatesFolded,
+        superseded_in_file: staged.supersededInFile,
+        superseded_by_db: staged.supersededByDb,
+      },
+      coverage_gaps: staged.coverageGaps,
+      coverage_only: staged.coverageOnly,
+      empty_file: staged.emptyFile,
+      rows: staged.rows,
+      generated_at: new Date().toISOString(),
+    };
+    const manifestChecksum = createHash("sha256").update(JSON.stringify(manifestBase)).digest("hex");
+    const manifest = { ...manifestBase, checksum: manifestChecksum };
+    await putObject(stagingObjectKey, Readable.from([JSON.stringify(manifest)]));
+
+    const idempotencyKey = success
+      ? buildIdempotencyKey({
+          fileSha256: task.fileSha256,
+          orgId: task.orgId,
+          storeId: task.storeId,
+          namespace: dataSource.sourceNamespace,
+          kind: task.sourceKind,
+          mappingVersion,
+          coverage: stagedRun.coverage,
+          adapterVersion: ADAPTER_VERSION,
+        })
+      : null;
     await db.importTask.updateMany({
       where: { id: task.id, status: "validating" },
       data: {
         status: failure ? "failed" : "preview_ready",
-        validCount: valid,
-        errorCount: errors,
+        validCount: staged.rows.length,
+        errorCount: rejected,
+        rowCount,
+        insertCount: success ? staged.counts.insert : 0,
+        updateCount: success ? staged.counts.update : 0,
+        unchangedCount: success ? staged.counts.unchanged : 0,
         errorObjectKey,
+        stagingObjectKey,
         errorCode: failure ? failure.code : null,
+        idempotencyKey,
         previewVersion: { increment: 1 },
+        baseDatasetVersion: store.datasetVersion,
       },
     });
-    return { status: failure ? "failed" : "preview_ready", valid, errors };
+    return { status: failure ? "failed" : "preview_ready", valid: staged.rows.length, errors: rejected };
   } catch (error) {
     const code = (error as { code?: string }).code;
     const exhausted =

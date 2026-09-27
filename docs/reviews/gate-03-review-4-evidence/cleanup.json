@@ -1,0 +1,11 @@
+{
+  "at": "2026-09-27T16:36:26.743828+08:00",
+  "root": "/tmp/aiea-g3r4-20260927-2qkdz_5d",
+  "root_removed": true,
+  "pg_stop_exit": 0,
+  "ports_closed": {
+    "57034": true,
+    "57035": true
+  },
+  "z02_environment": "untouched; latest Z02 PG55502 retained by Z02"
+}

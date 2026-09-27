@@ -1,0 +1,173 @@
+
+> ai-ecommerce-assistant@0.1.0 test:integration /private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant
+> env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1
+
+
+ RUN  v3.2.7 /private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant
+
+(node:96710) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Loaded Prisma config from prisma.config.ts.
+
+ ✓ tests/integration/gate01.db.test.ts (13 tests) 1972ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 A——父行改归属未提交时插入旧组织审计引用，后者必须失败  334ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 B——审计引用未提交时改父行归属，后者必须失败且引用方正常提交  331ms
+   ✓ Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏） > M07：官方 migrate diff 不再净删除审计同域复合外键（重建必须同引用且配平）  490ms
+stderr | tests/integration/gate01.auth.test.ts > Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封） > M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[internal] request_id=6b7e1c78-33b2-42e6-8712-ed24b8db2bb5 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+stderr | tests/integration/gate01.auth.test.ts > Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封） > M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[internal] request_id=f2fcce57-dae1-4f3c-952f-8ab12998464f 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+ ✓ tests/integration/gate01.auth.test.ts (17 tests) 1445ms
+stdout | tests/integration/imports.test.ts > TASK-007｜签名下载与 validate/恢复边界 > validate handler：解析统计入库；错误行写私有对象；组装 CanonicalBatch（G2-H04 消费点）
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-007｜签名下载与 validate/恢复边界 > validate handler：解析统计入库；错误行写私有对象；组装 CanonicalBatch（G2-H04 消费点）
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-007｜签名下载与 validate/恢复边界 > G2-H08 窗口2/3：投递丢失由 dispatcher 补投；悬挂 validating 落失败终态
+HANDLER_COVERAGE [] mapping: {}
+
+stderr | tests/integration/imports.test.ts > GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H07：存档写入失败 → 上传不无保护成功（503），无任务残留
+[internal] request_id=81410f32-092d-4327-b622-d453010b4185 
+Invalid `ctx.db.httpIdempotency.findUnique()` invocation in
+/private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant/src/services/imports.ts:271:44
+
+  268 }
+  269 
+  270 async function readHttpArchive(ctx: ImportsContext, input: UploadInput, requestKey: string): Promise<HttpArchive | null> {
+→ 271   const row = await ctx.db.httpIdempotency.findUnique(
+The column `http_idempotency.request_hash` does not exist in the current database.
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > PUT mapping：CAS 版本 409、时区不一致 422、C 角色 403；正常 202 后校验产生 preview_version=1
+HANDLER_COVERAGE [{"to":"2026-09-11","from":"2026-09-01","status":"complete","channel":"default","source_kind":"products","explicit_zero_dates":[]}] mapping: {"fields":{},"ignored_columns":[],"mapping_version":"e3b0c44298fc1c149afbf4c8996fb924"}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 缺列（映射无法覆盖必填字段）→ failed+MISSING_COLUMN；错误文件可签名下载且无错误文件时 404
+HANDLER_COVERAGE [] mapping: {"fields":{"sku_name":"不存在的列"},"ignored_columns":[],"mapping_version":"03ea8f3d4543b1506bad7196df4f1c12"}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 仅表头文件：无声明 → empty_file；显式零事件 → coverage_only 预览且不推断完整
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 仅表头文件：无声明 → empty_file；显式零事件 → coverage_only 预览且不推断完整
+HANDLER_COVERAGE [{"to":"2026-09-03","from":"2026-09-01","status":"complete","channel":"default","source_kind":"products","explicit_zero_dates":["2026-09-01","2026-09-02"]}] mapping: {"fields":{},"ignored_columns":[],"mapping_version":"e3b0c44298fc1c149afbf4c8996fb924"}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 同自然键同 source_updated_at 不同内容 → DUPLICATE_KEY_CONFLICT 整文件失败，不最后一行胜出
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 未知 SKU 与缺失订单引用 → SKU_NOT_FOUND/MISSING_ORDER_REFERENCE 行级错误（整文件失败）
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > insert/update/unchanged 分类：较新更新、相同内容无变化、旧版本不覆盖
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > insert/update/unchanged 分类：较新更新、相同内容无变化、旧版本不覆盖
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > insert/update/unchanged 分类：较新更新、相同内容无变化、旧版本不覆盖
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 覆盖缺口：声明范围内缺失日期在预览列出（不从行数推断完整）
+HANDLER_COVERAGE [{"to":"2026-09-04","from":"2026-09-01","status":"complete","channel":"default","source_kind":"orders","explicit_zero_dates":[]}] mapping: {"fields":{},"ignored_columns":[],"mapping_version":"e3b0c44298fc1c149afbf4c8996fb924"}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 预览脱敏：customer_messages 预览样本不含原始手机号/邮箱
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > uploaded 未校验任务 → preview 409 PREVIEW_NOT_READY；t8 tmp 无残留
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 预览过期/缺确认/C 角色 → 409/422/403；正常提交 → 202、落库、版本+1、覆盖与审计在
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 预览过期/缺确认/C 角色 → 409/422/403；正常提交 → 202、落库、版本+1、覆盖与审计在
+HANDLER_COVERAGE [{"to":"2026-09-11","from":"2026-09-01","status":"complete","channel":"default","source_kind":"products","explicit_zero_dates":[]}] mapping: {"fields":{},"ignored_columns":[],"mapping_version":"e3b0c44298fc1c149afbf4c8996fb924"}
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 预览过期/缺确认/C 角色 → 409/422/403；正常提交 → 202、落库、版本+1、覆盖与审计在
+COMMIT_DEBUG {"declared":1,"changed":1,"baseVersion":"0"}
+COVERAGE_UPSERT 2026-09-27 default
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 重复提交同任务 → 200 复用，dataset_version 不变、行数不变
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 重复提交同任务 → 200 复用，dataset_version 不变、行数不变
+COMMIT_DEBUG {"declared":0,"changed":1,"baseVersion":"1"}
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 提交失败（注入约束）→ 整文件回滚：任务回 preview_ready、版本与行数不变
+HANDLER_COVERAGE [] mapping: {}
+
+stderr | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 提交失败（注入约束）→ 整文件回滚：任务回 preview_ready、版本与行数不变
+[internal] request_id=ca790537-eb11-4529-ae54-e59c185fc0bf 
+Invalid `tx.sKU.upsert()` invocation in
+/private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant/src/services/imports/commitTask.ts:184:24
+
+  181     sourceUpdatedAt: new Date(s.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
+  182   },
+  183 });
+→ 184 await tx.sKU.upsert(
+Database error. Code: `23514`. Message: `new row for relation "sku" violates check constraint "ck_t9_inject"`
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 并发同任务提交 → 恰一次生效，版本只 +1、行数不翻倍；确认后更名重传 → update 且身份不变
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 并发同任务提交 → 恰一次生效，版本只 +1、行数不翻倍；确认后更名重传 → update 且身份不变
+COMMIT_DEBUG {"declared":0,"changed":1,"baseVersion":"2"}
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 并发同任务提交 → 恰一次生效，版本只 +1、行数不翻倍；确认后更名重传 → update 且身份不变
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 并发同任务提交 → 恰一次生效，版本只 +1、行数不翻倍；确认后更名重传 → update 且身份不变
+COMMIT_DEBUG {"declared":0,"changed":1,"baseVersion":"3"}
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > sku-aliases：正常 201；重复 409；跨店 canonical 404
+HANDLER_COVERAGE [] mapping: {}
+
+stdout | tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > sku-aliases：正常 201；重复 409；跨店 canonical 404
+COMMIT_DEBUG {"declared":0,"changed":1,"baseVersion":"4"}
+
+ ✓ tests/integration/imports.test.ts (53 tests) 9083ms
+   ✓ TASK-007｜限制与拒绝 > 超过 20MB 真实分块流在接收链路立即中止（422 FILE_TOO_LARGE，不等 multipart 结束）  4186ms
+   ✓ GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放 > G2-R3-H06：请求未结束但行数超限 → 稳定 422 TOO_MANY_ROWS（不降级为通用 multipart 错误）  411ms
+   ✓ GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 H06/H08：CS 消息 350ms 延迟截断（spool 已成功落定）→ 不留 tmp、无新任务  559ms
+   ✓ GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 H06/H08：CS 消息 350ms 后取消（spool 已成功落定）→ 不留 tmp、无新任务  561ms
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 成员 PATCH：审计故障 → 角色与版本零提交
+[internal] request_id=837baa60-4a84-4a9f-b44b-4d910e046423 
+Invalid `db.auditLog.create()` invocation in
+/private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_member_audit"`
+
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 组织 PATCH：审计故障 → 名称与版本零提交
+[internal] request_id=5ce4c865-5893-45f7-8382-9bc455281b08 
+Invalid `db.auditLog.create()` invocation in
+/private/tmp/aiea-fix-g2r4/ai-ecommerce-assistant/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_org_audit"`
+
+ ✓ tests/integration/gate01.access.test.ts (7 tests) 698ms
+ ✓ tests/integration/auth.test.ts (8 tests) 677ms
+ ✓ tests/integration/permissions.test.ts (7 tests) 630ms
+ ✓ tests/integration/stores.test.ts (14 tests) 526ms
+ ✓ tests/integration/database.test.ts (9 tests) 247ms
+ ✓ tests/integration/db.test.ts (4 tests) 3ms
+
+ Test Files  9 passed (9)
+      Tests  132 passed (132)
+   Start at  01:33:27
+   Duration  16.01s (transform 212ms, setup 240ms, collect 388ms, tests 15.28s, environment 0ms, prepare 23ms)
+

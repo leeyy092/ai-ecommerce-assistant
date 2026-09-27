@@ -1,0 +1,176 @@
+--- dist/manager.js:835 ---
+ 832             worker.abort();
+ 833         }
+ 834     }
+ 835     async work(name, ...args) {
+ 836         const { options, callback } = Attorney.checkWorkArgs(name, args);
+ 837         if (this.stopped) {
+ 838             throw new Error('Workers are disabled. pg-boss is stopped');
+ 839         }
+ 840         const { pollingInterval: interval, notifyPollingInterval: notifyInterval, burstWhenReadyExceeds, burstWhenBatchFull = false, batchSize = 1, includeMetadata = false, priority = true, localConcurrency = 1, localGroupConcurrency, groupConcurrency, orderByCreatedOn = true, heartbeatRefreshSeconds, minPriority, maxPriority, perJobResults = false, transactional = false, transactionTimeoutSeconds, } = options;
+ 841         // Capability check rather than a check for the built-in pool, so a db adapter that implements
+--- dist/manager.js:840 ---
+ 837         if (this.stopped) {
+ 838             throw new Error('Workers are disabled. pg-boss is stopped');
+ 839         }
+ 840         const { pollingInterval: interval, notifyPollingInterval: notifyInterval, burstWhenReadyExceeds, burstWhenBatchFull = false, batchSize = 1, includeMetadata = false, priority = true, localConcurrency = 1, localGroupConcurrency, groupConcurrency, orderByCreatedOn = true, heartbeatRefreshSeconds, minPriority, maxPriority, perJobResults = false, transactional = false, transactionTimeoutSeconds, } = options;
+ 841         // Capability check rather than a check for the built-in pool, so a db adapter that implements
+ 842         // beginTransaction can serve transactional workers too. Asserted at work() time so the mistake
+ 843         // surfaces on the call rather than on the first fetch.
+ 844         if (transactional) {
+ 845             assert(typeof this.db.beginTransaction === 'function', 'transactional workers require a database connection pg-boss can open a transaction on: the built-in pool, or a db adapter implementing beginTransaction');
+ 846             await this.#assertTransactionalHeartbeatSupported(name);
+--- dist/manager.js:880 ---
+ 877                 const ignoreGroups = localGroupConcurrency != null
+ 878                     ? this.#getGroupsAtLocalCapacity(name)
+ 879                     : undefined;
+ 880                 return this.fetch(name, { batchSize, includeMetadata, priority, orderByCreatedOn, groupConcurrency, ignoreGroups, minPriority, maxPriority });
+ 881             };
+ 882             const onFetch = async (jobs) => {
+ 883                 if (!jobs.length)
+ 884                     return;
+ 885                 if (this.config.__test__throw_worker)
+ 886                     throw new Error('__test__throw_worker');
+--- dist/manager.js:1501 ---
+1498         const rows = result?.rows || [];
+1499         // CockroachDB returns integer columns as strings; normalize them. Even a minimal fetch
+1500         // (JOB_COLUMNS_MIN) returns numeric fields like expireInSeconds/heartbeatSeconds, so normalize
+1501         // regardless of includeMetadata. The columns are aliased to camelCase, so use those keys.
+1502         if (this.config.backend === 'cockroachdb') {
+1503             for (const row of rows) {
+1504                 for (const field of NUMERIC_METADATA_FIELDS) {
+1505                     if (row[field] !== undefined && row[field] !== null)
+1506                         row[field] = Number(row[field]);
+1507                 }
+--- dist/plans.js:434 ---
+ 431     ) ${partitionClause}
+ 432   `;
+ 433 }
+ 434 const JOB_COLUMNS_MIN = 'id, name, data, expire_seconds as "expireInSeconds", heartbeat_seconds as "heartbeatSeconds", group_id as "groupId", group_tier as "groupTier"';
+ 435 const JOB_COLUMNS_ALL = `${JOB_COLUMNS_MIN},
+ 436   policy,
+ 437   state,
+ 438   priority,
+ 439   retry_limit as "retryLimit",
+ 440   retry_count as "retryCount",
+--- dist/plans.js:435 ---
+ 432   `;
+ 433 }
+ 434 const JOB_COLUMNS_MIN = 'id, name, data, expire_seconds as "expireInSeconds", heartbeat_seconds as "heartbeatSeconds", group_id as "groupId", group_tier as "groupTier"';
+ 435 const JOB_COLUMNS_ALL = `${JOB_COLUMNS_MIN},
+ 436   policy,
+ 437   state,
+ 438   priority,
+ 439   retry_limit as "retryLimit",
+ 440   retry_count as "retryCount",
+ 441   retry_delay as "retryDelay",
+--- dist/plans.js:439 ---
+ 436   policy,
+ 437   state,
+ 438   priority,
+ 439   retry_limit as "retryLimit",
+ 440   retry_count as "retryCount",
+ 441   retry_delay as "retryDelay",
+ 442   retry_backoff as "retryBackoff",
+ 443   retry_delay_max as "retryDelayMax",
+ 444   start_after as "startAfter",
+ 445   started_on as "startedOn",
+--- dist/plans.js:440 ---
+ 437   state,
+ 438   priority,
+ 439   retry_limit as "retryLimit",
+ 440   retry_count as "retryCount",
+ 441   retry_delay as "retryDelay",
+ 442   retry_backoff as "retryBackoff",
+ 443   retry_delay_max as "retryDelayMax",
+ 444   start_after as "startAfter",
+ 445   started_on as "startedOn",
+ 446   singleton_key as "singletonKey",
+--- dist/plans.js:530 ---
+ 527         VALUES (
+ 528           queue_name,
+ 529           options->>'policy',
+ 530           COALESCE((options->>'retryLimit')::int, ${QUEUE_DEFAULTS.retry_limit}),
+ 531           COALESCE((options->>'retryDelay')::int, ${QUEUE_DEFAULTS.retry_delay}),
+ 532           COALESCE((options->>'retryBackoff')::bool, ${QUEUE_DEFAULTS.retry_backoff}),
+ 533           (options->>'retryDelayMax')::int,
+ 534           COALESCE((options->>'expireInSeconds')::int, ${QUEUE_DEFAULTS.expire_seconds}),
+ 535           COALESCE((options->>'retentionSeconds')::int, ${QUEUE_DEFAULTS.retention_seconds}),
+ 536           COALESCE((options->>'deleteAfterSeconds')::int, ${QUEUE_DEFAULTS.deletion_seconds}),
+--- dist/plans.js:582 ---
+ 579         VALUES (
+ 580           queue_name,
+ 581           options->>'policy',
+ 582           COALESCE((options->>'retryLimit')::int, ${QUEUE_DEFAULTS.retry_limit}),
+ 583           COALESCE((options->>'retryDelay')::int, ${QUEUE_DEFAULTS.retry_delay}),
+ 584           COALESCE((options->>'retryBackoff')::bool, ${QUEUE_DEFAULTS.retry_backoff}),
+ 585           (options->>'retryDelayMax')::int,
+ 586           COALESCE((options->>'expireInSeconds')::int, ${QUEUE_DEFAULTS.expire_seconds}),
+ 587           COALESCE((options->>'retentionSeconds')::int, ${QUEUE_DEFAULTS.retention_seconds}),
+ 588           COALESCE((options->>'deleteAfterSeconds')::int, ${QUEUE_DEFAULTS.deletion_seconds}),
+--- dist/plans.js:959 ---
+ 956     return `
+ 957     WITH options as (SELECT $2::jsonb as data)
+ 958     UPDATE ${schema}.queue SET
+ 959       retry_limit = COALESCE((o.data->>'retryLimit')::int, retry_limit),
+ 960       retry_delay = COALESCE((o.data->>'retryDelay')::int, retry_delay),
+ 961       retry_backoff = COALESCE((o.data->>'retryBackoff')::bool, retry_backoff),
+ 962       retry_delay_max = CASE WHEN jsonb_exists(o.data, 'retryDelayMax')
+ 963         THEN (o.data->>'retryDelayMax')::int
+ 964         ELSE retry_delay_max END,
+ 965       expire_seconds = COALESCE((o.data->>'expireInSeconds')::int, expire_seconds),
+--- dist/plans.js:988 ---
+ 985     SELECT
+ 986       q.name,
+ 987       q.policy,
+ 988       q.retry_limit as "retryLimit",
+ 989       q.retry_delay as "retryDelay",
+ 990       q.retry_backoff as "retryBackoff",
+ 991       q.retry_delay_max as "retryDelayMax",
+ 992       q.expire_seconds as "expireInSeconds",
+ 993       q.retention_seconds as "retentionSeconds",
+ 994       q.deletion_seconds as "deleteAfterSeconds",
+--- dist/plans.js:1687 ---
+1684       WHERE name = '${name}' AND ${updateMatch}
+1685       ${singletonFetch && !hasGroupConcurrency ? 'AND singleton_rn = 1' : ''}
+1686       ${distributedStateCheck}
+1687       RETURNING j.${includeMetadata ? JOB_COLUMNS_ALL : JOB_COLUMNS_MIN}
+1688     `,
+1689         values: params.values
+1690     };
+1691 }
+1692 // Shared SET/WHERE body for marking jobs completed (no RETURNING). Used by the
+1693 // single-statement completeJobs() and the distributed completeJobsDistributed().
+--- dist/plans.js:1895 ---
+1892       COALESCE("expireInSeconds", q.expire_seconds) as expire_seconds,
+1893       COALESCE("deleteAfterSeconds", q.deletion_seconds) as deletion_seconds,
+1894       j.start_after + (COALESCE("retentionSeconds", q.retention_seconds) * interval '1s') as keep_until,
+1895       COALESCE("retryLimit", q.retry_limit) as retry_limit,
+1896       COALESCE("retryDelay", q.retry_delay) as retry_delay,
+1897       COALESCE("retryBackoff", q.retry_backoff, false) as retry_backoff,
+1898       COALESCE("retryDelayMax", q.retry_delay_max) as retry_delay_max,
+1899       q.policy,
+1900       COALESCE("deadLetter", q.dead_letter) as dead_letter,
+1901       COALESCE("heartbeatSeconds", q.heartbeat_seconds) as heartbeat_seconds,
+--- dist/plans.js:1916 ---
+1913         priority integer,
+1914         data jsonb,
+1915         "startAfter" text,
+1916         "retryLimit" integer,
+1917         "retryDelay" integer,
+1918         "retryDelayMax" integer,
+1919         "retryBackoff" boolean,
+1920         "singletonKey" text,
+1921         "singletonSeconds" integer,
+1922         "singletonOffset" integer,
+--- dist/plans.js:2555 ---
+2552             ELSE job.keep_until END,
+2553           expire_seconds = COALESCE((o.data->>'expireInSeconds')::int, job.expire_seconds),
+2554           deletion_seconds = COALESCE((o.data->>'deleteAfterSeconds')::int, job.deletion_seconds),
+2555           retry_limit = COALESCE((o.data->>'retryLimit')::int, job.retry_limit),
+2556           retry_delay = COALESCE((o.data->>'retryDelay')::int, job.retry_delay),
+2557           retry_backoff = COALESCE((o.data->>'retryBackoff')::bool, job.retry_backoff),
+2558           retry_delay_max = CASE WHEN jsonb_exists(o.data, 'retryDelayMax') THEN (o.data->>'retryDelayMax')::int ELSE job.retry_delay_max END,
+2559           dead_letter = CASE WHEN jsonb_exists(o.data, 'deadLetter') THEN o.data->>'deadLetter' ELSE job.dead_letter END,
+2560           heartbeat_seconds = CASE WHEN jsonb_exists(o.data, 'heartbeatSeconds') THEN (o.data->>'heartbeatSeconds')::int ELSE job.heartbeat_seconds END,
+2561           group_id = CASE WHEN jsonb_exists(o.data, 'groupId') THEN o.data->>'groupId' ELSE job.group_id END,

@@ -1,0 +1,11 @@
+{
+  "issue": "importing runner via relative path made TMPDIR relative; spool security correctly refused it",
+  "fix": "Path(__file__).resolve().parent",
+  "invalid_runs": [
+    "unit",
+    "integration",
+    "g3-aggregate",
+    "g3-h04d-isolated"
+  ],
+  "business_code_modified": false
+}

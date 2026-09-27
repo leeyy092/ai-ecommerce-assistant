@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/opt/homebrew/opt/postgresql@17/bin/initdb",
+    "-D",
+    "/tmp/aiea-g3r1-20260927-sxfw4c8z/pgdata",
+    "-U",
+    "postgres",
+    "--auth=trust",
+    "--encoding=UTF8",
+    "--no-locale"
+  ],
+  "exit_code": 0,
+  "seconds": 0.413
+}

@@ -1,0 +1,724 @@
+
+> ai-ecommerce-assistant@0.1.0 test:g3 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+> env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 sh -c 'vitest run tests/integration/g3-contract.test.ts --maxWorkers=1 --minWorkers=1; a=$?; vitest run tests/integration/g3-h04-contract.test.ts --maxWorkers=1 --minWorkers=1; b=$?; vitest run tests/integration/g3r2-contract.test.ts --maxWorkers=1 --minWorkers=1; c=$?; echo "g3 per-suite exits: $a $b $c"; s=0; [ $a -ne 0 ] && s=1; [ $b -ne 0 ] && s=1; [ $c -ne 0 ] && s=1; exit $s'
+
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+(node:47787) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ❯ tests/integration/g3-contract.test.ts (18 tests | 18 failed) 1326ms
+   × G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement 119ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset 6ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H02a refund total includes successful events from earlier files 4ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H02b refund bounds include all rows of the current file 4ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H02c order-item correction must respect existing successful refund bounds 4ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H03a preview race cannot overwrite a newer customer message 3ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H03b preview older than 24h must reject confirmation 4ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H03c committing another user's preview must recheck the uploader permission 3ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H04a absent undeclared-zero date cannot become complete 4ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op 4ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation 3ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H06 same campaign on a different report date has a distinct natural key 3ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt 4ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps 4ms
+     → expected [ 200, 201 ] to include 400
+   × G3 independent contract > H04c first confirmed source is authoritative for the channel 3ms
+     → expected [ 200, 201 ] to include 400
+   × H04d final complete order-item batch must not retain transient partial state 3ms
+     → expected [ 200, 201 ] to include 400
+   × H01b business currency must equal the selected store currency 3ms
+     → expected [ 200, 201 ] to include 400
+   × M01b synthetic street address is redacted before the customer-message fact is stored 4ms
+     → expected [ 200, 201 ] to include 400
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ chain tests/integration/g3-contract.test.ts:169:42
+ ❯ tests/integration/g3-contract.test.ts:174:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3-contract.test.ts:182:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H02a refund total includes successful events from earlier files
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ chain tests/integration/g3-contract.test.ts:169:42
+ ❯ tests/integration/g3-contract.test.ts:187:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H02b refund bounds include all rows of the current file
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ chain tests/integration/g3-contract.test.ts:169:42
+ ❯ tests/integration/g3-contract.test.ts:191:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H02c order-item correction must respect existing successful refund bounds
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ chain tests/integration/g3-contract.test.ts:169:42
+ ❯ tests/integration/g3-contract.test.ts:194:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H03a preview race cannot overwrite a newer customer message
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3-contract.test.ts:198:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H03b preview older than 24h must reject confirmation
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3-contract.test.ts:202:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H03c committing another user's preview must recheck the uploader permission
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3-contract.test.ts:206:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3-contract.test.ts:210:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3-contract.test.ts:213:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ tests/integration/g3-contract.test.ts:217:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H06 same campaign on a different report date has a distinct natural key
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ tests/integration/g3-contract.test.ts:221:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ tests/integration/g3-contract.test.ts:224:48
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3-contract.test.ts:227:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > G3 independent contract > H04c first confirmed source is authoritative for the channel
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ tests/integration/g3-contract.test.ts:230:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > H04d final complete order-item batch must not retain transient partial state
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ tests/integration/g3-contract.test.ts:235:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > H01b business currency must equal the selected store currency
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3-contract.test.ts:238:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/18]⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > M01b synthetic street address is redacted before the customer-message fact is stored
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ tests/integration/g3-contract.test.ts:241:42
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/18]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  18 failed (18)
+   Start at  15:49:54
+   Duration  2.19s (transform 215ms, setup 506ms, collect 168ms, tests 1.33s, environment 0ms, prepare 53ms)
+
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+(node:47806) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ❯ tests/integration/g3-h04-contract.test.ts (4 tests | 4 failed) 869ms
+   × G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照1｜隔离环境一次导齐 L1/L2：该来源日 record_count=2 且 complete 104ms
+     → expected [ 200, 201 ] to include 400
+   × G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照2｜同源同日已有 O1-L1 事实，再接收 O2 的 L1/L2：计数含历史最终事实=3 7ms
+     → expected [ 200, 201 ] to include 400
+   × G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照3｜显式零声明与该来源既有事实冲突：整文件拒绝、不写覆盖 6ms
+     → expected [ 200, 201 ] to include 400
+   × G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照4｜无接收事实且未显式声明零的空缺日保持 partial、record_count=0 5ms
+     → expected [ 200, 201 ] to include 400
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3-h04-contract.test.ts > G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照1｜隔离环境一次导齐 L1/L2：该来源日 record_count=2 且 complete
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ good tests/integration/g3-h04-contract.test.ts:91:22
+     89|   const headers = FILE_HEADERS[kind].join(",");
+     90|   const res = await upload(owner.cookie, scope, kind, `${headers}\n${r…
+     91|   expect([200, 201]).toContain(res.status);
+       |                      ^
+     92|   const id = (await res.json()).data.id as string;
+     93|   if (coverage) {
+ ❯ tests/integration/g3-h04-contract.test.ts:151:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/integration/g3-h04-contract.test.ts > G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照2｜同源同日已有 O1-L1 事实，再接收 O2 的 L1/L2：计数含历史最终事实=3
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ good tests/integration/g3-h04-contract.test.ts:91:22
+     89|   const headers = FILE_HEADERS[kind].join(",");
+     90|   const res = await upload(owner.cookie, scope, kind, `${headers}\n${r…
+     91|   expect([200, 201]).toContain(res.status);
+       |                      ^
+     92|   const id = (await res.json()).data.id as string;
+     93|   if (coverage) {
+ ❯ tests/integration/g3-h04-contract.test.ts:165:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/integration/g3-h04-contract.test.ts > G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照3｜显式零声明与该来源既有事实冲突：整文件拒绝、不写覆盖
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ good tests/integration/g3-h04-contract.test.ts:91:22
+     89|   const headers = FILE_HEADERS[kind].join(",");
+     90|   const res = await upload(owner.cookie, scope, kind, `${headers}\n${r…
+     91|   expect([200, 201]).toContain(res.status);
+       |                      ^
+     92|   const id = (await res.json()).data.id as string;
+     93|   if (coverage) {
+ ❯ tests/integration/g3-h04-contract.test.ts:182:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/integration/g3-h04-contract.test.ts > G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照4｜无接收事实且未显式声明零的空缺日保持 partial、record_count=0
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ good tests/integration/g3-h04-contract.test.ts:91:22
+     89|   const headers = FILE_HEADERS[kind].join(",");
+     90|   const res = await upload(owner.cookie, scope, kind, `${headers}\n${r…
+     91|   expect([200, 201]).toContain(res.status);
+       |                      ^
+     92|   const id = (await res.json()).data.id as string;
+     93|   if (coverage) {
+ ❯ tests/integration/g3-h04-contract.test.ts:209:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  15:49:57
+   Duration  1.64s (transform 210ms, setup 433ms, collect 149ms, tests 869ms, environment 0ms, prepare 48ms)
+
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+(node:47823) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ❯ tests/integration/g3r2-contract.test.ts (21 tests | 21 failed) 2444ms
+   × R2 original closure boundaries > R2-H01 invalid mixed file is atomic across facts coverage version and outbox 165ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H02 Decimal legal partial refunds and replacement retain exact totals 11ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H02 cumulative quantity chronology and same-time consistency reject atomically 11ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H02 stale refund must use retained newer fact in final ledger 8ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H02 concurrent reference change rejects old refund preview without writes 8ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H03 wrong task staging identity cannot commit another preview 7ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H03 same-time different content after preview must reject 8ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H04 another existing incomplete order keeps source day partial 9ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H04 unchanged partial order cannot become complete on duplicate-row upload 8ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H05 zero confirmation binds the entire trading source group 9ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H05 concurrent first source confirmations bind one group atomically 10ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H06 original same-source alias contract resolves canonical SKU 8ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H07 attribution model and window remain independent natural keys 8ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H08 preview has no raw record and full masked business body is preserved 8ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H08 phone-only text must fail after redaction leaves no business content 11ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H08 email-only empty content rejection remains valid 7ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H08 address without province and building-room suffix must be fully masked 12ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H08 after-sales reason retains long business text and masks full address 7ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-M01 identical facts and declaration create no coverage version or outbox 7ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H04 DST spring day cannot count the next local day's first hour 13ms
+     → expected [ 200, 201 ] to include 400
+   × R2 original closure boundaries > R2-H04 DST fall day includes the last local hour 10ms
+     → expected [ 200, 201 ] to include 400
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 21 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H01 invalid mixed file is atomic across facts coverage version and outbox
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:201:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H02 Decimal legal partial refunds and replacement retain exact totals
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3r2-contract.test.ts:168:76
+ ❯ tests/integration/g3r2-contract.test.ts:205:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H02 cumulative quantity chronology and same-time consistency reject atomically
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3r2-contract.test.ts:168:76
+ ❯ chain tests/integration/g3r2-contract.test.ts:169:42
+ ❯ tests/integration/g3r2-contract.test.ts:212:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H02 stale refund must use retained newer fact in final ledger
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3r2-contract.test.ts:168:76
+ ❯ chain tests/integration/g3r2-contract.test.ts:169:42
+ ❯ tests/integration/g3r2-contract.test.ts:216:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H02 concurrent reference change rejects old refund preview without writes
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3r2-contract.test.ts:168:76
+ ❯ chain tests/integration/g3r2-contract.test.ts:169:42
+ ❯ tests/integration/g3r2-contract.test.ts:221:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H03 wrong task staging identity cannot commit another preview
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:224:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H03 same-time different content after preview must reject
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:230:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H04 another existing incomplete order keeps source day partial
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3r2-contract.test.ts:168:76
+ ❯ chain tests/integration/g3r2-contract.test.ts:169:42
+ ❯ tests/integration/g3r2-contract.test.ts:233:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H04 unchanged partial order cannot become complete on duplicate-row upload
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3r2-contract.test.ts:168:76
+ ❯ tests/integration/g3r2-contract.test.ts:238:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H05 zero confirmation binds the entire trading source group
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:243:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H05 concurrent first source confirmations bind one group atomically
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:249:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H06 original same-source alias contract resolves canonical SKU
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3r2-contract.test.ts:168:76
+ ❯ tests/integration/g3r2-contract.test.ts:253:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H07 attribution model and window remain independent natural keys
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3r2-contract.test.ts:168:76
+ ❯ tests/integration/g3r2-contract.test.ts:259:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H08 preview has no raw record and full masked business body is preserved
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:264:102
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H08 phone-only text must fail after redaction leaves no business content
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:268:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H08 email-only empty content rejection remains valid
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:270:82
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H08 address without province and building-room suffix must be fully masked
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:272:45
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H08 after-sales reason retains long business text and masks full address
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3r2-contract.test.ts:168:76
+ ❯ chain tests/integration/g3r2-contract.test.ts:169:42
+ ❯ tests/integration/g3r2-contract.test.ts:275:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-M01 identical facts and declaration create no coverage version or outbox
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:278:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H04 DST spring day cannot count the next local day's first hour
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:283:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/21]⎯
+
+ FAIL  tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H04 DST fall day includes the last local hour
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3r2-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ tests/integration/g3r2-contract.test.ts:289:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/21]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  21 failed (21)
+   Start at  15:49:59
+   Duration  3.32s (transform 258ms, setup 470ms, collect 205ms, tests 2.44s, environment 0ms, prepare 49ms)
+
+g3 per-suite exits: 1 1 1
+ ELIFECYCLE  Command failed with exit code 1.

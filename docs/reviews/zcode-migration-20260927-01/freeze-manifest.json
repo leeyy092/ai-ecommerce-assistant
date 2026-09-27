@@ -1,0 +1,17 @@
+{
+  "captured_at": "2026-09-27T11:48:52+08:00",
+  "head": "fe57663e355ea0b092146ffb7305b9c1fc89c9b8",
+  "file_sha256": {
+    "ai-ecommerce-assistant/src/services/importPreview.ts": "cd870e4757557003eb423b6135570d082b40f93970ba654379624519d0c7f000",
+    "ai-ecommerce-assistant/src/jobs/handlers/imports.ts": "479a27e1c36a8ac1aeabae37a09853a5ade4f395e6d3d37f277e8dd4c8ee7c96",
+    "ai-ecommerce-assistant/src/services/imports/commitTask.ts": "4a0be9217a3e1326642dd451ecb7f9981a77f6b15239b37be6b4917f673c7252",
+    "ai-ecommerce-assistant/tests/integration/g3-contract.test.ts": "529823d96a4dfb3c70558e5ea87818383ad2e0509fd00f87b55a3239db7f0b6a"
+  },
+  "git_status": " M 00_START_HERE.html\n M 00_START_HERE.md\n M AGENTS.md\n M CODEX_REVIEW_HANDOFF.md\n M ai-ecommerce-assistant/src/jobs/handlers/imports.ts\n M ai-ecommerce-assistant/src/services/importPreview.ts\n M docs/STATE_PROTOCOL.md\n M docs/ai-ecommerce-assistant/12_PROGRESS.md\n M prompts/CODEX_ZCODE_COORDINATION.md\n M prompts/P08_FIX.md\n M prompts/P13_RESUME.md\n?? .tmp_zcode_migration.py\n?? ai-ecommerce-assistant/tests/integration/g3-contract.test.ts\n?? docs/reviews/zcode-migration-20260927-01/\n",
+  "ui_receipt": "ZCode 11:43 ACK ZCODE-MIGRATE-20260927-01: all business/progress/sync/Git writes frozen; Codex manages migration.",
+  "receipt_corrections": [
+    "Disk has two modified tracked business files; commitTask.ts has no diff.",
+    "ZCode reports two in-progress type errors, not independently rerun; source and old tmp may differ.",
+    "No repaired candidate has passed a new independent review."
+  ]
+}

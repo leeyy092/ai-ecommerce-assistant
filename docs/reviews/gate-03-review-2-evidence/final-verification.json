@@ -1,0 +1,66 @@
+{
+  "verified_at": "2026-09-27T14:31:11.426119+08:00",
+  "head": "dd975cdedf55e9b4ac86691b150301e5b5e074f2",
+  "state_time": "2026-09-27T14:30:13+08:00",
+  "single_state_block": true,
+  "task_rows": 30,
+  "immutable_artifacts_verified": 57,
+  "original_probe_sha256": "529823d96a4dfb3c70558e5ea87818383ad2e0509fd00f87b55a3239db7f0b6a",
+  "business_diff_empty": true,
+  "staged_diff_empty": true,
+  "diff_check": 0,
+  "views": {
+    "/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.md": {
+      "task": true,
+      "owner": true,
+      "prompt_matches": true,
+      "checkpoint": true,
+      "state_time": true,
+      "acceptance": true,
+      "next_action": true,
+      "review": true
+    },
+    "/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.html": {
+      "task": true,
+      "owner": true,
+      "prompt_matches": true,
+      "checkpoint": true,
+      "state_time": true,
+      "acceptance": true,
+      "next_action": true,
+      "review": true
+    },
+    "/Users/yuyuyu/Documents/AI-Workspace/00_CONTROL_CENTER/PROJECTS.md": {
+      "stage": true,
+      "current_task": true,
+      "status": true,
+      "next_owner": true,
+      "next_action": true,
+      "updated_at": true
+    }
+  },
+  "git_status": " M 00_START_HERE.html\n M 00_START_HERE.md\n M AGENTS.md\n M CODEX_REVIEW_HANDOFF.md\n M docs/STATE_PROTOCOL.md\n M docs/ai-ecommerce-assistant/12_PROGRESS.md\n M prompts/CODEX_ZCODE_COORDINATION.md\n M prompts/P07_CODE_REVIEW.md\n M prompts/P08_FIX.md\n M prompts/P13_RESUME.md\n M prompts/ZCODE_RESUME.md\n?? docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_2_2026-09-27.md\n?? docs/reviews/GATE_03_REVIEW_2_EVIDENCE_2026-09-27.json\n?? docs/reviews/gate-03-review-2-evidence/\n",
+  "temp_root_removed": "/tmp/aiea-g3r2-20260927-nes78fkd",
+  "coordination": "Mac locked; not sent; no ACK or START; Codex04 writer / Z02 frozen",
+  "verification_note": "First management verifier assumed literal prompt filename and English Checkpoint in generated view. Actual generator embeds full prompt and Chinese check label. Corrected checks compare full prompt, actual state fields and documented view schema; no business retests.",
+  "latest_rule_and_ack_management": {
+    "verified_at": "2026-09-27T15:22:25.167000+08:00",
+    "views": [
+      "00_START_HERE.md",
+      "00_START_HERE.html",
+      "PROJECTS.md"
+    ],
+    "rule_id": "CTX-RULE-20260927-01",
+    "zcode_ack_ui": "15:16",
+    "rule_in_all_current_prompts": true,
+    "automation_readback": "same id/target/ACTIVE, prompt updated",
+    "business_diff_empty": true,
+    "diff_check": 0,
+    "immutable_57_hashes": "PASS",
+    "start": "prepared, not sent",
+    "state_time": "2026-09-27T15:21:58+08:00",
+    "ack_written_to_current_state": true,
+    "views_readback": "PASS",
+    "encoding_repair": "stdin failure before execution; file script succeeded; reran sync and verified current ACK state"
+  }
+}

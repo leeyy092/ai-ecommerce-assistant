@@ -1,0 +1,3 @@
+ Image postgres:17 Pulling 
+ Image postgres:17 Error failed to resolve reference "docker.io/library/postgres:17": failed to authorize: failed to fetch anonymous token: Get "https://auth.docker.io/token?scope=repository%3Alibrary%2Fpostgres%3Apull&service=registry.docker.io": EOF
+Error response from daemon: failed to resolve reference "docker.io/library/postgres:17": failed to authorize: failed to fetch anonymous token: Get "https://auth.docker.io/token?scope=repository%3Alibrary%2Fpostgres%3Apull&service=registry.docker.io": EOF

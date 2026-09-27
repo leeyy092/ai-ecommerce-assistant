@@ -1,0 +1,11 @@
+{
+  "name": "review-http",
+  "args": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "review-http.ts"
+  ],
+  "exit": 1,
+  "seconds": 4.41
+}

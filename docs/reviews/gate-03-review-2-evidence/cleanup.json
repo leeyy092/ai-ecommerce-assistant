@@ -1,0 +1,14 @@
+{
+  "at": "2026-09-27T14:20:57.297482+08:00",
+  "ports_closed": {
+    "57014": true,
+    "57015": true
+  },
+  "removed": [
+    "/tmp/aiea-g3r2-20260927-nes78fkd/repo",
+    "/tmp/aiea-g3r2-20260927-nes78fkd/pgdata",
+    "/tmp/aiea-g3r2-20260927-nes78fkd/pgsock",
+    "/tmp/aiea-g3r2-20260927-nes78fkd/tmp"
+  ],
+  "scope": "only this review temporary assets; Z02 and older environments untouched"
+}

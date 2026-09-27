@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "tsc",
+    "--noEmit",
+    "--incremental",
+    "false"
+  ],
+  "exit_code": 0,
+  "started": "2026-09-26T18:18:33.887524+00:00",
+  "finished": "2026-09-26T18:18:36.388761+00:00"
+}

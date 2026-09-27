@@ -1,0 +1,20 @@
+{
+  "review_id": "G3R4-20260927-01",
+  "notification_id": "G3R4-20260927-02",
+  "prepared_at": "2026-09-27T16:40:55+08:00",
+  "target_title": "【最新Z02】电商中台｜Phase3返修与交接",
+  "target_id": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
+  "sent_at": "2026-09-27T16:55:23+08:00",
+  "ack_at": "2026-09-27T16:57:17+08:00",
+  "writer": "Codex04; Z02 acknowledged PASS and remains frozen; Owner phase release pending",
+  "mode": "PASS notification, read-only ACK, no START",
+  "blocked_by": null,
+  "attempted_at": "2026-09-27T16:42:40+08:00",
+  "blocked_recorded_once": true,
+  "ack_ui_time": "16:55",
+  "timestamp_basis": "sent_at and ack_at are Codex observation/verification times; ZCode UI final response shows 16:55",
+  "blocker_resolved_at": "2026-09-27T16:57:17+08:00",
+  "delivery_evidence": "ZCode 产品-开发 / 【最新Z02】电商中台｜Phase3返修与交接; user question 13 appeared, input cleared; completed 47-second read-only ACK at UI 16:55; disabled Send and empty follow-up input verified",
+  "ack_summary": "phase/03-import ea1c15f / bc5e4b2; R4 PASS; full P0 and CTX-RULE retained; no writes/tests/sync/Git; no START/Phase4/main merge/deployment; Codex04 keeps writer",
+  "previous_blocker": "2026-09-27T16:42:40+08:00 Mac locked; no input/send/ACK; recorded once"
+}

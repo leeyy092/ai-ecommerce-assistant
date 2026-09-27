@@ -1,0 +1,17 @@
+{
+  "verified_at": "2026-09-27T16:58:05+08:00",
+  "readback": {
+    "00_START_HERE.md": true,
+    "00_START_HERE.md_prompt": true,
+    "00_START_HERE.html": true,
+    "00_START_HERE.html_prompt": true,
+    "/Users/yuyuyu/Documents/AI-Workspace/00_CONTROL_CENTER/PROJECTS.md": true
+  },
+  "state_updated_at": "2026-09-27T16:57:17+08:00",
+  "immutable_count": 44,
+  "business_diff_empty": true,
+  "diff_check": 0,
+  "owner_phase_release": "pending",
+  "zcode_notification": "G3R4-20260927-02 first delivery and read-only ACK verified; Z02 frozen; no START",
+  "sync_generated_at": "2026-09-27T16:57:44+08:00"
+}

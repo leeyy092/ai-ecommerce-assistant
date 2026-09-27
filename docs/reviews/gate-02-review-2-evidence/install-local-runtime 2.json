@@ -1,0 +1,11 @@
+{
+  "name": "install-local-runtime",
+  "args": [
+    "pnpm",
+    "install",
+    "--offline",
+    "--frozen-lockfile"
+  ],
+  "exit": 0,
+  "seconds": 8.19
+}

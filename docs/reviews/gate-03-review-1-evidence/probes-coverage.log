@@ -1,0 +1,64 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r1-20260927-sxfw4c8z/repo/ai-ecommerce-assistant
+
+(node:2749) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H02a refund total includes successful events from earlier files
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H02b refund bounds include all rows of the current file
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H02c order-item correction must respect existing successful refund bounds
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H03a preview race cannot overwrite a newer customer message
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H03b preview older than 24h must reject confirmation
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H03c committing another user's preview must recheck the uploader permission
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete
+G3_EVIDENCE {"id":"H04a","result":{"status":"preview_ready","commit":{"status":202,"body":{"data":{"id":"67c54080-a4ea-4729-8f72-1f472d094493","status":"committed","committed_dataset_version":"1","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"a1ab01fd-9e2f-4763-9d39-f50a394c5b47"}}},"rows":[{"id":"40c26dee-e4f7-4bbc-b4a1-78a1a7cdc9e8","orgId":"94bb547e-df3b-4e5f-9453-0d994b493d33","storeId":"9d8eed6b-49be-4689-86d9-47fefb064686","dataSourceId":"a5c9be1f-a299-4174-bc47-92500425811f","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"1","datasetVersion":"1","importTaskId":"67c54080-a4ea-4729-8f72-1f472d094493","createdAt":"2026-09-26T18:25:01.405Z","updatedAt":"2026-09-26T18:25:01.405Z","rowVersion":1},{"id":"8fb745f6-2fb6-4c07-a78d-e2c7dd4a988e","orgId":"94bb547e-df3b-4e5f-9453-0d994b493d33","storeId":"9d8eed6b-49be-4689-86d9-47fefb064686","dataSourceId":"a5c9be1f-a299-4174-bc47-92500425811f","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-09-02T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"0","datasetVersion":"1","importTaskId":"67c54080-a4ea-4729-8f72-1f472d094493","createdAt":"2026-09-26T18:25:01.406Z","updatedAt":"2026-09-26T18:25:01.406Z","rowVersion":1}]}}
+
+stdout | tests/integration/g3-independent.test.ts > H04d final complete order-item batch must not retain transient partial state
+G3_EVIDENCE {"id":"H04d","result":{"commit":{"status":202,"body":{"data":{"id":"a2b9bdef-dea5-4600-b7ae-3289b7666418","status":"committed","committed_dataset_version":"4","insert":2,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"d42e814e-7336-4833-83a6-1a7417d0b9f2"}}},"rows":[{"id":"5b227759-3a4b-4aba-b9ea-6fc583f6724c","orgId":"94bb547e-df3b-4e5f-9453-0d994b493d33","storeId":"9d8eed6b-49be-4689-86d9-47fefb064686","dataSourceId":"a5c9be1f-a299-4174-bc47-92500425811f","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"partial","explicitZero":false,"recordCount":"0","datasetVersion":"4","importTaskId":"a2b9bdef-dea5-4600-b7ae-3289b7666418","createdAt":"2026-09-26T18:25:01.479Z","updatedAt":"2026-09-26T18:25:01.479Z","rowVersion":1}]}}
+
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete 165ms
+   → expected true to be false // Object.is equality
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H06 same campaign on a different report date has a distinct natural key
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H04c first confirmed source is authoritative for the channel
+ × tests/integration/g3-independent.test.ts > H04d final complete order-item batch must not retain transient partial state 65ms
+   → expected 'partial' to be 'complete' // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/integration/g3-independent.test.ts:210:404
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > H04d final complete order-item batch must not retain transient partial state
+AssertionError: expected 'partial' to be 'complete' // Object.is equality
+
+Expected: "complete"
+Received: "partial"
+
+ ❯ tests/integration/g3-independent.test.ts:235:345
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 skipped (16)
+   Start at  02:25:00
+   Duration  1.18s (transform 130ms, setup 215ms, collect 77ms, tests 795ms, environment 0ms, prepare 24ms)
+
+JSON report written to /tmp/aiea-g3r1-20260927-sxfw4c8z/evidence/probes-coverage-results.json

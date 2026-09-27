@@ -1,0 +1,16 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+(node:48206) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | tests/integration/g3-contract.test.ts > H04d final complete order-item batch must not retain transient partial state
+G3_EVIDENCE {"id":"H04d","result":{"commit":{"status":202,"body":{"data":{"id":"55d01794-a60c-4e16-b24e-9e05a4de66e8","status":"committed","committed_dataset_version":"3","insert":2,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"b9168577-5aaa-456d-8909-9d74e9f53559"}}},"rows":[{"id":"dabd6c22-a681-41aa-bc7d-cf52709bdb7d","orgId":"c001eb14-f325-47ff-81fc-95d1e9b54f29","storeId":"c5d251dc-c6ad-4891-825c-49f0e542c8e7","dataSourceId":"157bc210-3dd1-47a8-b49f-344f34c3a180","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"2","datasetVersion":"3","importTaskId":"55d01794-a60c-4e16-b24e-9e05a4de66e8","createdAt":"2026-09-27T07:51:33.934Z","updatedAt":"2026-09-27T07:51:33.934Z","rowVersion":1}]}}
+
+ ✓ tests/integration/g3-contract.test.ts (18 tests | 17 skipped) 1902ms
+   ✓ H04d final complete order-item batch must not retain transient partial state  525ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 17 skipped (18)
+   Start at  15:51:31
+   Duration  3.03s (transform 330ms, setup 517ms, collect 237ms, tests 1.90s, environment 0ms, prepare 87ms)
+

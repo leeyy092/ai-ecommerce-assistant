@@ -1,0 +1,91 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r2-20260927-nes78fkd/repo
+
+(node:39809) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H01 invalid mixed file is atomic across facts coverage version and outbox
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 Decimal legal partial refunds and replacement retain exact totals
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 cumulative quantity chronology and same-time consistency reject atomically
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 stale refund must use retained newer fact in final ledger
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 concurrent reference change rejects old refund preview without writes
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H03 wrong task staging identity cannot commit another preview
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H03 same-time different content after preview must reject
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 another existing incomplete order keeps source day partial
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 unchanged partial order cannot become complete on duplicate-row upload
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H05 zero confirmation binds the entire trading source group
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H05 concurrent first source confirmations bind one group atomically
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H06 original same-source alias contract resolves canonical SKU 361ms
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 address without province and building-room suffix must be fully masked
+G3_EVIDENCE {"id":"R2-H08-address","result":{"stored":"收货地址：厦门市思明区测试路88号2栋301室；杯盖漏水","preview":{"data":{"id":"6b8e8c06-aa49-478d-a257-d802c835b4f4","status":"preview_ready","preview_version":1,"base_dataset_version":"0","file_sha256":"2e41d09c75e1d0e9b4d50f4d4d577d27c3e8781ed72583d342e8be96b129ce80","mapping_version":"e3b0c44298fc1c149afbf4c8996fb924","adapter_version":"adapter-v1","row_count":1,"counts":{"insert":1,"update":0,"unchanged":0,"rejected":0,"duplicates_folded":0,"superseded_in_file":0,"superseded_by_db":0},"coverage":{"declaration":[],"gaps":[],"coverage_only":false,"empty_file":false},"ignored_columns":[],"items":[{"row":2,"action":"insert","reason":null,"natural_key":{"external_message_id":"M-address"},"affected_dates":["2026-09-01"],"sample":{"kind":"customer_messages","sourceUpdatedAt":"2026-09-11T01:00:00.000Z","externalMessageId":"M-address","externalConversationId":"C-address","messageAt":"2026-09-01T03:00:00.000Z","externalSkuId":null,"isComplaint":null,"channel":"platform_chat","language":"zh-CN","message_text":"收货地址：厦门市思明区测试路88号2栋301室；杯盖漏水"}}],"next_cursor":null},"meta":{"request_id":"839e2a62-9593-4eb4-992c-5c1d408c5248"}}}}
+
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 DST spring day cannot count the next local day's first hour
+G3_EVIDENCE {"id":"R2-H04-DST-spring","result":{"taskStatus":"preview_ready","commit":{"status":409,"body":{"error":{"code":"EXPLICIT_ZERO_CONFLICT","message":"显式零事件声明与既有事实冲突：orders/default/2026-03-08","retryable":false,"request_id":"f9ba2d19-887a-47d7-b50b-5c755267a0f0"}}}}}
+
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 DST fall day includes the last local hour
+G3_EVIDENCE {"id":"R2-H04-DST-fall","result":{"id":"ed615798-ff50-4e2e-a862-31b04be3b332","orgId":"1e2cfdfa-8af6-431c-9b51-396a4f2ba6ff","storeId":"f5af423a-8875-49cf-a550-a47f4cd8f1b7","dataSourceId":"601d0399-0380-44b8-a677-17c2a2f61200","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-11-01T00:00:00.000Z","status":"partial","explicitZero":false,"recordCount":"0","datasetVersion":"1","importTaskId":"d2950365-73ae-4e2a-976c-15e02c4dcd47","createdAt":"2026-09-27T06:14:42.803Z","updatedAt":"2026-09-27T06:14:42.803Z","rowVersion":1}}
+
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H07 attribution model and window remain independent natural keys
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 preview has no raw record and full masked business body is preserved
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 phone-only text must fail after redaction leaves no business content
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 email-only empty content rejection remains valid
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 address without province and building-room suffix must be fully masked 45ms
+   → expected '收货地址：厦门市思明区测试路88号2栋301室；杯盖漏水' not to contain '测试路88号'
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 after-sales reason retains long business text and masks full address
+ ↓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-M01 identical facts and declaration create no coverage version or outbox
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 DST spring day cannot count the next local day's first hour 42ms
+   → expected 409 to be 202 // Object.is equality
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 DST fall day includes the last local hour 34ms
+   → expected 0n to be 1n // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 address without province and building-room suffix must be fully masked
+AssertionError: expected '收货地址：厦门市思明区测试路88号2栋301室；杯盖漏水' not to contain '测试路88号'
+
+Expected: "测试路88号"
+Received: "收货地址：厦门市思明区测试路88号2栋301室；杯盖漏水"
+
+ ❯ tests/integration/g3-r2-independent.test.ts:272:370
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 DST spring day cannot count the next local day's first hour
+AssertionError: expected 409 to be 202 // Object.is equality
+
+- Expected
++ Received
+
+- 202
++ 409
+
+ ❯ tests/integration/g3-r2-independent.test.ts:283:249
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 DST fall day includes the last local hour
+AssertionError: expected 0n to be 1n // Object.is equality
+
+- Expected
++ Received
+
+- 1n
++ 0n
+
+ ❯ tests/integration/g3-r2-independent.test.ts:290:134
+    288|     const row=`IMP-1,2026-11-03T00:00:00Z,O-fall,paid,2026-11-02T04:20…
+    289|     const t=await prepare("orders",[row],coverage("orders","2026-11-01…
+    290|     const cov=await db.dataCoverage.findFirstOrThrow({where:{importTas…
+       |                                                                                                                                      ^
+    291|   });
+    292| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed | 17 skipped (21)
+   Start at  14:14:40
+   Duration  2.44s (transform 268ms, setup 443ms, collect 144ms, tests 1.66s, environment 0ms, prepare 56ms)
+

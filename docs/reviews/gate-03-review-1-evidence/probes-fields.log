@@ -1,0 +1,63 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r1-20260927-sxfw4c8z/repo/ai-ecommerce-assistant
+
+(node:2797) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | tests/integration/g3-independent.test.ts > H01b business currency must equal the selected store currency
+G3_EVIDENCE {"id":"H01b","result":{"status":"preview_ready","commit":{"status":202,"body":{"data":{"id":"c07196a8-35fd-4f11-81d9-53a6175b3446","status":"committed","committed_dataset_version":"1","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"58c441dc-d2d5-4512-9313-e71b3a23d158"}}},"storedCurrency":"USD","storeCurrency":"CNY"}}
+
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H02a refund total includes successful events from earlier files
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H02b refund bounds include all rows of the current file
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H02c order-item correction must respect existing successful refund bounds
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H03a preview race cannot overwrite a newer customer message
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H03b preview older than 24h must reject confirmation
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H03c committing another user's preview must recheck the uploader permission
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H06 same campaign on a different report date has a distinct natural key
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps
+ ↓ tests/integration/g3-independent.test.ts > G3 independent contract > H04c first confirmed source is authoritative for the channel
+ ↓ tests/integration/g3-independent.test.ts > H04d final complete order-item batch must not retain transient partial state
+stdout | tests/integration/g3-independent.test.ts > M01b synthetic street address is redacted before the customer-message fact is stored
+G3_EVIDENCE {"id":"M01b","result":{"redactedText":"收货地址：测试省测试市测试区测试路88号2栋301室；杯盖漏水","syntheticAddressPreserved":true}}
+
+ × tests/integration/g3-independent.test.ts > H01b business currency must equal the selected store currency 147ms
+   → expected 'preview_ready' to be 'failed' // Object.is equality
+ × tests/integration/g3-independent.test.ts > M01b synthetic street address is redacted before the customer-message fact is stored 22ms
+   → expected '收货地址：测试省测试市测试区测试路88号2栋301室；杯盖漏水' not to contain '测试省测试市测试区测试路88号2栋301室'
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > H01b business currency must equal the selected store currency
+AssertionError: expected 'preview_ready' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "preview_ready"
+
+ ❯ tests/integration/g3-independent.test.ts:238:329
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > M01b synthetic street address is redacted before the customer-message fact is stored
+AssertionError: expected '收货地址：测试省测试市测试区测试路88号2栋301室；杯盖漏水' not to contain '测试省测试市测试区测试路88号2栋301室'
+
+Expected: "测试省测试市测试区测试路88号2栋301室"
+Received: "收货地址：测试省测试市测试区测试路88号2栋301室；杯盖漏水"
+
+ ❯ tests/integration/g3-independent.test.ts:241:342
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 16 skipped (18)
+   Start at  02:26:04
+   Duration  1.15s (transform 126ms, setup 217ms, collect 76ms, tests 735ms, environment 0ms, prepare 24ms)
+
+JSON report written to /tmp/aiea-g3r1-20260927-sxfw4c8z/evidence/probes-fields-results.json

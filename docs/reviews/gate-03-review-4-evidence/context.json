@@ -1,0 +1,7 @@
+{
+  "node": "/tmp/aiea-node24/bin",
+  "pg_bin": "/opt/homebrew/opt/postgresql@17/bin",
+  "pg_port": 57034,
+  "web_port": 57035,
+  "head": "ea1c15ff8477c041873922109221f09a36e2aebf"
+}

@@ -1,3 +1,176 @@
+# PH4-20260927-01 ACK verified / START pending
+
+已从最新Z02桌面核实18:17完整只读ACK及空闲：phase/03-import@ea1c15f、业务bc5e4b2、main85a93ec、143项管理/证据在途且业务diff为空；013依赖/合同/014–016范围与Gate04冻结点一致，无技术阻塞。PH4-20260927-01 ACK接受，待同编号START首次发送；发送后由Z02记录实际接管并更新原进度/交接/提示词/sync，Codex04转只读。
+
+# Current handoff / PH4-20260927-01 prepared
+
+Owner于2026-09-27在收到两批范围与风险说明后明确要求：“你把问题都给我解决，或者给我解决方案。围绕这个上线目标来做所有动作，你自己想办法。”按本次直接执行指令，恢复原完整P0范围的后续开发，立即放行Phase4 TASK013–016；同一冲刺内已定范围经Codex独立PASS后由Codex协调接续，不再为普通阶段接续重复等Owner。9/30先MVP、10/5功能冻结、10/8完整P0为目标；按PLAN-MVP-20260927-01分批组织，完整范围和验收不减。TASK031必须先补齐开户合同，尚未逐条批准的重要开户规则不能假称已批准；资源采购、部署发布、敏感权限及重大范围变化仍给Owner具体方案确认。技术PASS与Owner产品验收仍分开。
+
+原定用户功能是“老板一页看经营变化、最大问题、待验证机会、今天首要动作，并展开同版证据”，对应03_INFORMATION_ARCHITECTURE PART4、09_TASKS TASK021/022及FINAL_DECISIONS。MVP保留指标/问题/商品/VOC摘要/最多3行动和证据的老板核心路径，四张AI短句结论由019已授权Insight支持；自动定时日报/历史与完整配置在第二批补齐。若现有019响应不能支持四卡，先指出合同差额，不另造第二套模型服务、不伪造结论。老板页当前尚未实现。Phase4提供其正确、可读的同版指标与规则，不扩成无业务价值的基础设施。
+
+Gate03 REVIEW4 PASS (ea1c15f/business bc5e4b2). TASK013-016 are authorized, current task013 TODO pending actual START. P06 first block defines this handoff. Writer Codex04; Z02 idle/frozen verified by UI, no START yet. Gate04 requires independent review after freeze. No purchase/deployment/new test is claimed.
+
+## Historical handoff snapshots below
+
+# 当前交接 · GATE03 REVIEW4 PASS · Owner阶段放行待定
+
+唯一Z02于17:47完成PLAN-MVP-20260927-01只读核对，Codex本轮从桌面核实终答及空闲：确认013–019必要依赖、021片段读019 Insight且关闭日报区可行、031草案B-5必须纠正；补出新E2E/共享UI基元/真实私有存储上线依赖。执行者估计98–155小时仅工程判断；Codex补入遗漏的027约2–4小时后按100–160小时管理，MVP46–75小时；纠正执行者沿用旧MVP小计及“备案不可能赶上”的绝对判断（只可说不能保证）。9/30冲刺、必要时10/1–2MVP收口；10/5功能冻结、10/8完整终验仍为Owner目标。Z02未写文件/测试/sync/Git，Codex04持写入；未发START。
+
+Owner于2026-09-27最新要求先MVP、市场反馈后迭代，最晚2026-10-08完成所有开发；已知域名未备案，测试数据先用公开/合成样本。具体两批范围、任务片段前置、自动阶段接续、TASK031规则见docs/SEPT28_BETA_PROPOSAL.md顶部PLAN-MVP-20260927-01，方案待Owner确认；新目标不等于上述执行变更或部署采购已批准。完整P0仍须最终补齐，旧11月估计和旧A/B不是执行依据。
+
+Owner要求先MVP市场验证、最晚10/8完成所有开发，已确认有域名未备案、先找数据测试。已在原提案顶部写PLAN-MVP-20260927-01：9/30核心MVP、10/5功能冻结、10/6–8终验；82–124可执行小时仅时间盒待校准。向产品-开发/最新Z02首次实际发只读可行性请求，消息可见且输入框清空，未发START；Codex04持管理写入。完整P0不删，具体顺序/接续/031仍待确认。HEAD ea1c15f不变，无业务改动/测试/提交/合并/采购/部署。
+
+Owner工期/准备与消息恢复说明：`docs/OWNER_LAUNCH_BRIEF_2026-09-27.md`、`docs/OWNER_CONVERSATION_RECOVERY_2026-09-27.md`；原11月中旬/6–9周排期建议已撤回，旧有效日预算未按AI实绩校准，暂无确认的替代日期；仅说明材料，阶段放行仍待明确答复。
+
+GATE_03 REVIEW4独立PASS，冻结phase/03-import@ea1c15f（业务bc5e4b2），差异6539fcb..ea1c15f，main85a93ec。H03损坏staging恢复语义、H04父订单更正覆盖均关闭，H01–H08/M01/M02无剩余本Gate技术缺陷；Gate02 REVIEW5 PASS保持。原TASK008–012技术验收完成，达到约35功能节点（不是工时百分比）。
+
+本轮独立新/tmp+新PG17：12迁移/typecheck0/integration139/四套g3=18+4+21+4全绿聚合0/R4补充10全过；脚本任一套失败聚合1、全成功0。unit/build/E2E未重复无变更部分，引用R3独立72/build0/E2E8，Z02本候选自测另列。R1 42/R2 57/R3 61件哈希保持，本轮PG57034停止、临时根移除；Z02 55502资产未动。
+
+正式15节报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_4_2026-09-27.md；证据GATE_03_REVIEW_4_EVIDENCE_2026-09-27.json、gate-03-review-4-evidence/README/observations/原始日志。
+
+当前写入者Codex04，Z02于16:30管理更正后最终冻结空闲。通过通知G3R4-20260927-02已于16:55首次实际送达，Z02于16:55完成只读ACK（Codex本轮核验终答及空闲）：确认ea1c15f/业务bc5e4b2、R4 PASS与阶段边界，继续冻结。此前锁屏阻塞解除，历史记录保留；未发送START。当前下一责任人Owner/P09，Checkpoint=YES，等待Phase3验收及Phase4明确放行；未获答复不开发TASK013、不合并main。
+
+完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警AI日报本人行动/必要页面运维保持；自助独立注册仍是交付要求，TASK031合同待批准。Owner目前仅授权到Phase3；技术PASS不等于阶段放行。Phase4 TASK013–016、main合并、采购、正式部署未放行；不以工期问答、迁移、心跳或无人回复替代授权。
+
+双方执行CTX-RULE-20260927-01保留当前窗口：没有实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口，不按占用/长度/心跳/预计长任务提前换窗。压缩仍可靠则继续，未知不臆测；确需时才按STATE_PROTOCOL原交接流程，不fork、不建worktree/重复自动化。
+
+## 历史交接（2026-09-27T16:40:55+08:00前，非当前指令）
+
+# 当前交接 · GATE_03 REVIEW3 返修候选已冻结 · 待Codex04独立复审（R4）
+
+G3R3-20260927-02返修由最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）完成并冻结单一候选，本地feat+chore提交于phase/03-import（基线6539fcb/业务ca5ad76），未推送未合并未部署。写入权已交回Codex04；复审范围6539fcb..新HEAD。
+
+修复：H04——orders头更正（expected/业务日变化）在已有提交事务内维护受影响来源/日期的order_items最新有效覆盖（行齐破坏→partial、事实迁移→刷新来源级计数；保留历史、不造未声明日期、不代用户升级，补齐恢复走用户声明路径）；H03——staging解析/结构损坏（截断/JSON null）转稳定409 PREVIEW_STAGING_CORRUPT零副作用，真实存储网络故障保留可重试；错任务/过期/权限/正常/重放保持。
+
+验证（新/tmp=git archive 6539fcb+在途、新PG17 aiea-pg-g3r3z02仅127.0.0.1:55502，旧容器已清）：修前g3r3红基线1PASS/3FAIL复现、隔离后g3-contract修前即18/18（隔离正交）；修后tsc0/unit72/integration139/g3r3 4/4/**test:g3四套18+4+21+4全绿聚合exit0**/build0/E2E8。探针维护（授权内）：app副本H04d独立业务日（断言complete/2n不变，docs冻结原件SHA不动）、g3r3探针入树、test:g3四进程聚合。未运行：100000行/SIGKILL/Docker生产Worker全链/真实OSS云。
+
+原R1/R2/R3关闭标准与已关项不重开；Gate03 PASS后约35功能节点停向Owner反馈，Phase4/TASK013/TASK031/main合并/部署未放行。新PG容器与/tmp副本保留供只读核对。
+
+## 历史：G3R3交付时点交接（16:10快照）
+
+# 当前交接 · GATE_03 REVIEW3 FAIL · G3R3-20260927-02
+
+最新独立GATE03 REVIEW3 FAIL，1HIGH H04父订单更正覆盖、1MEDIUM H03损坏staging错误语义。H02/H08/M02已关闭；H03错任务提交风险关闭、H04历史缺行/unchanged/DST通过；H01/H05/H06/H07和Gate02 REVIEW5保持。冻结phase/03-import@6539fcb（业务ca5ad76），本轮dd975cd..6539fcb，main85a93ec；后续复审6539fcb..新冻结HEAD。正式报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_3_2026-09-27.md（15节）、同轮EVIDENCE索引与gate-03-review-3-evidence/README/observations/g3r3-independent。
+
+当前写入者Codex04；Z02 15:47最终冻结。新P08首块为完整返修合同，首次只读ACK→管理sync读回→同编号START后转交写入；真实回执见R3 coordination-receipt与唯一进度，已首次实际发送、Z02 16:08完整只读ACK无阻塞；管理sync读回后待首次START，当前未发。TASK009→010一次一项；app探针H04d可受控修隔离，历史原件不动。
+
+完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警/AI日报本人行动/必要页面运维、技术栈与依赖不变。Owner仅授权Phase3 TASK008–012；Gate03独立PASS约35节点停Owner，Phase4/TASK013、TASK031开户合同、main合并、购买、正式部署未放行。重大范围疑义立即停问Owner，普通原合同返修直接协作；已关闭问题无新改动/有效反例不重开。
+
+Owner最新CTX-RULE-20260927-01：Codex和ZCode默认保留当前窗口，无实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口；不按75%/85%、长度、心跳次数或预计长任务换窗。实际压缩仍可靠就继续，未知不臆测。确需时才按STATE_PROTOCOL原冻结/只读ACK/COMPLETE/激活流程，不fork、不建worktree或自动化。
+
+## 历史交接（2026-09-27T15:59:26+08:00前，非当前状态）
+
+# 当前交接 · GATE_03 REVIEW2 返修候选已冻结 · 待Codex04独立复审（R3）
+
+G3R2-20260927-02返修由最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）完成并冻结单一候选，本地feat+chore提交于phase/03-import（基线dd975cd/业务6b408cb），未推送未合并未部署。写入权已交回Codex04；复审范围dd975cd..新HEAD。
+
+修复：H03 manifest身份（task_id/preview_version/checksum）认领前核验，错配409零副作用；H04来源日全部最终订单行齐（含历史/unchanged/零行订单）+相邻本地午夜IANA日窗（DST 23h/25h），record_count维持来源级口径；H08完整定位段遮盖（无省地址/楼栋房间）+系统掩码不算有效正文；H02退款事件级择新总账（旧版合法no-op）；M02 test:g3三套独立进程聚合退出码任一失败非0。
+
+验证（新/tmp=git archive dd975cd+在途、新PG17 aiea-pg-g3r2z02仅127.0.0.1:55501，旧R1容器已清）：修前g3r2红基线9FAIL/12PASS精确复现→修后21/21；tsc0/unit72/integration139/g3-h04 4/4/build0/E2E8；g3-contract冻结件17/18——唯H04d探针隔离前提缺陷（全跑6n对写死2n；Reviewer选择性单跑=同店H04a零行订单按合同压partial对complete断言），两种模式均如实单列待Reviewer受控纠正前提，不改2→6不改合同。test:g3真实exit 1/0/0→聚合1（M02实测）。legacy“行遗漏”用例迁独立业务日（共享店铺他人零行订单头在来源日语义下压partial，断言语义不变）。未运行：100000行/SIGKILL/Docker生产Worker全链/真实OSS云。
+
+原R1/R2关闭标准与已关项（H01/H05/H06/H07、M01正常no-op、011技术通过）不重开；Gate03 PASS后约35功能节点停向Owner反馈，Phase4/TASK031/main合并/部署未放行。新PG容器与/tmp副本保留供只读核对。
+
+## 历史：G3R2返修开工交接（15:25快照）
+
+# 当前交接 · GATE_03 REVIEW2 FAIL · G3R2-20260927-02返修进行中（Z02）
+
+G3R2-20260927-02 START已于2026-09-27T15:25:05+08:00实际送达最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4），Z02记回执并独占业务/唯一进度/sync/Git写入权；Codex04（01a0e16d-be56-7741-bced-49133cdcafeb）只读。返修范围：H03 staging身份完整性、H04来源日行齐+IANA日窗、H08完整脱敏/有效正文、H02旧退款择新、M02脚本退出码；按008→009→010→012收口，011不另改。修前红基线（R2探针入app树隔离进程）→修后新/tmp+新PG17验证→冻结单一新候选交回Codex04复审dd975cd..新HEAD。
+
+## 历史：R2交付时点交接（15:21快照）
+
+# 当前交接 · GATE_03 REVIEW2 FAIL · G3R2-20260927-02
+
+Owner最新换窗要求（CTX-RULE-20260927-01，适用于Codex与ZCode）：默认保留当前窗口；没有实际上下文压缩或明确污染依据不新开窗口。不按75%/85%占用、对话长度、心跳次数或预计长任务提前换窗。压缩本身也不自动迁移，仍能可靠继续就留原窗口；仅实际压缩后影响可靠接续或有可举证的污染、确需换窗时才按STATE_PROTOCOL原流程交接，情况未知不臆测。此要求替代较早的提前换窗触发条件。 当前04/Z02保留，未创建新会话。已更新原自动化与项目规则，并已通过桌面首次送达Z02；Z02 15:16已只读ACK确认最新规则，未发送START。
+
+通信恢复（2026-09-27T15:18:57+08:00）：G3R2-20260927-02/P08及CTX-RULE-20260927-01已首次送达最新Z02，Z02已15:16只读ACK、无阻塞；Codex04管理sync读回后待首次START，送达前仍持管理写入。14:30锁屏仅为历史阻塞。
+
+Codex04已完成独立复审，冻结phase/03-import@dd975cd（业务6b408cb），差异8f3f28d..dd975cd。结论3HIGH(H03/H04/H08)/2MEDIUM(H02残余/M02)；H01/H05/H06/H07关闭，M01正常通过、H04连带不重复计。TASK011广告技术通过但依赖/Gate未解除，008–012暂仍BLOCKED。
+
+正式15节报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_2_2026-09-27.md、GATE_03_REVIEW_2_EVIDENCE_2026-09-27.json、gate-03-review-2-evidence/README.md。新/tmp+新PG17独立12迁移/tsc/unit72/integration139/build/E2E8通过；原18受控隔离去重18PASS、H04四对照4PASS；补充21有效12PASS/9FAIL。原R1证据保持，本轮环境已清理，未改业务/未提交推送/未部署。
+
+新返修完整提示词prompts/P08_FIX.md首个text块：仅剩余五组根因，先只读ACK，Codex04管理sync读回后发送G3R2-20260927-02 START；真实送达/写入权只以12_PROGRESS最新回执为准。目前Z02保持13:54冻结。唯一最新Z02 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，旧Z01退出；Codex迁移MIGRATE-20260927-03 COMPLETE且04实际激活，旧03退出。
+
+后续新候选按dd975cd..新冻结HEAD复审。原完整P0和Phase3授权不变，Gate02 R5 PASS保持；独立Gate03 PASS后约35节点停Owner，Phase4/TASK031/main合并/正式部署未放行。
+
+---
+
+## 历史交接（不作当前状态）
+
+# 当前交接 · GATE_03 R2待独立复审 · MIGRATE-20260927-03 COMPLETE
+
+Z02已交回G3R1-20260927-02冻结候选：phase/03-import，HEAD dd975cdedf55e9b4ac86691b150301e5b5e074f2（管理）、业务6b408cbe2182b605c1bcaabc485af4b8d1e476f9；复审范围8f3f28d..dd975cd。Codex03桌面核实13:44终答与空闲，主业务工作树无未提交。未推送/合并/部署。GATE03 REVIEW1仍FAIL至新独立结论；Gate02 REVIEW5 PASS保持。
+
+本次上下文迁移COMPLETE：新04（01a0e16d-be56-7741-bced-49133cdcafeb）已只读ACK，原自动化已转接；03完成最终sync读回并发完成通知后04接管。P13首块为完整接手；Z02继续冻结，本次不RESUME开发。候选与原H01–H08/M01范围不变。
+
+Z02自测（尚非独立结果）：tsc0/unit72/integration139（排除两个g3）/g3-contract17/18（H04d固定2n共享店铺假设有缺陷）/g3-h04-contract4/4/build0/E2E8。H04C01按04_DATA_MODEL:406与R1:73保持来源级最终事实计数；新Reviewer须保留历史并受控修正探针隔离，不为通过测试改合同。package test:g3分号串两个进程只返回末次状态，必须分别捕获真实退出码；预览API record剥离/完整脱敏等按差异验证。
+
+新独立/tmp代码归档与另起PG17仅127.0.0.1；Z02资产/tmp/aiea-fix-g3r1-20260927-z02/repo、aiea-pg-g3r1z02@127.0.0.1:55500仅供核对，不冒充独立环境。P07指定具体新候选；报告/索引保留原合同关闭标准。独立PASS后约35功能节点反馈Owner，Phase4/TASK031/main合并/部署未放行。
+
+## 历史：Z02 13:42冻结交接原文（排版17/18见上方澄清）
+
+# 当前交接 · GATE_03 REVIEW1 返修候选已冻结 · 待Codex独立复审（R2）
+
+G3R1-20260927-02返修由最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）完成并冻结单一候选：H01–H08/相邻M01预览+提交双侧落地（金额Prisma.Decimal），本地feat+chore提交于phase/03-import（基线fe57663/已审8f3f28d），未推送未合并未部署。写入权已交回Codex03；复审范围8f3f28d..新HEAD。
+
+验证（新/tmp副本git archive+在途文件、新PG17 aiea-pg-g3r1z02仅127.0.0.1:55500——ENV01已读回确认；ENV02代码快照重建，误复制的rsync已停止清理）：tsc0/unit72/integration139（排除两个g3单跑文件）/g3-contract单跑17**18**（唯H04d 6n vs 写死2n——H04C01确认的探针共享店铺隔离假设缺陷，待Reviewer受控纠正后复核，不据此宣称该项关闭）/新增g3-h04-contract四对照4/4（隔离2n、同源累计3n、显式零409、空缺日partial）/build0/E2E8。
+
+环境与测试要点：g3-contract为冻结证据文件（隔离单跑设计，与singleFork共享进程套件不兼容，会同进程毒化后续文件503），package.json已将test:integration排除两个g3文件、test:g3独立进程单跑；预览API已剥离record防PII外泄；imports.test旧“错误行preview_ready”用例按H01新合同更新为failed。
+
+原报告H01–H08/M01关闭标准及TASK008→012依赖不变；已关闭Gate02 R5不重开。Gate03 PASS后约35功能节点停向Owner反馈，Phase4/TASK031/main合并/部署未放行。新PG容器aiea-pg-g3r1z02保留运行供ENV01只读核对。
+
+
+## 历史：Z02返修开工交接（12:07快照）
+
+# 当前交接 · GATE_03 REVIEW1 FAIL · G3R1-20260927-02返修进行中（Z02）
+
+ZCODE-MIGRATE-20260927-01已COMPLETE，RESUME于2026-09-27T12:07:38+08:00由唯一最新Z02（【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）实际接收；主副本业务/唯一进度/sync/Git写入权归Z02，Codex03只读，旧【历史Z01】保持冻结退出。返修接续原G3R1-20260927-02：按008→012一次一TASK收口H01–H08/相邻M01。
+
+HEAD fe57663、业务277109d、已审8f3f28d、main85a93ec。两处在途业务diff（importPreview与handler）及未跟踪g3-contract测试为中间态起点并保留；commitTask提交内核缺口按原合同完成，金额用Decimal/精确整数。最终单一候选按P08新/tmp副本+本次新PG17验证后冻结交Codex独立复审（复审范围8f3f28d..新冻结HEAD）。
+
+原报告H01–H08/M01关闭标准及TASK008→012依赖不变；已关闭Gate02 R5不重开。Gate03通过后约35功能节点停向Owner反馈，Phase4/TASK031/main合并/部署未放行。
+
+## 历史：ZCode换窗COMPLETE交接（12:04快照）
+
+# 当前交接 · GATE_03 REVIEW1 FAIL · ZCODE-MIGRATE-20260927-01
+
+ZCODE-MIGRATE-20260927-01 COMPLETE；新Z02 【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4 已12:00只读ACK，版本/在途差异/哈希/原合同/授权均核对通过；旧【历史Z01｜已交接】接手AI电商助手P0交接计划保持冻结。Codex03完成sync读回后只向新Z02发本编号RESUME，送达前仍由Codex管理写入。实际激活以12_PROGRESS同编号后续回执为准。
+
+HEAD fe57663、业务277109d、已审8f3f28d、main85a93ec。实际两个在途业务diff（importPreview与handler）及未跟踪g3-contract测试保留；commitTask仍未改。旧自述两项TS未独立复测，未有新通过候选。快照/哈希在docs/reviews/zcode-migration-20260927-01/。
+
+原报告H01–H08/M01关闭标准及TASK008→012依赖不变；已关闭Gate02 R5不重开。Gate03通过后约35功能节点停向Owner反馈，Phase4/TASK031/main合并/部署未放行。
+
+## 历史：Codex03接管与恢复准备
+
+# 当前交接 · GATE_03 REVIEW1 FAIL · MIGRATE-20260927-02换窗
+
+G3R1-20260927-02已11:01 START，TASK008返修开工；11:09 ZCode因Owner上下文换窗要求冻结全部写入交Codex管理。迁移MIGRATE-20260927-02已COMPLETE，唯一【最新03】电商中台｜P0开发与独立审查（01a0e0d7-253e-7f13-9ae5-027c827e73dd）已完成只读ACK，原codex-zcode目标已转接；前任02号与01号均标历史已交接。最终sync读回和完成通知后新窗口首次发本迁移RESUME接续；送达前ZCode继续冻结，不重发START。
+
+本地/远端phase/03-import=fe57663（START管理），业务277109d、已审冻结8f3f28d、main85a93ec。主副本未跟踪ai-ecommerce-assistant/tests/integration/g3-contract.test.ts保留；本次迁移管理未提交，无新业务修复候选或独立通过结果。
+
+GATE03 REVIEW1仍FAIL 8HIGH/1MEDIUM；原范围85a93ec..8f3f28d。报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_1_2026-09-27.md、索引及原始证据不变，后续按8f3f28d..新冻结HEAD及触发边界复审。Gate02 Review5 PASS/Phase2已放行保持。
+
+原定功能→六类CSV支撑经营/商品/广告/售后/VOC可靠事实；合同→TASK008–012及04/08/10/11；修复→H01–H08+相邻M01；关闭→有效反例和合法/隔离/事务回归，再独立复审。完整P0不缩减，疑义停问Owner；Gate03 PASS后约35功能节点反馈，Phase4/TASK031草案/main合并/部署未放行。
+
+03号已收到正式激活通知并核对COMPLETE/自动化目标/ZCode11:09冻结ACK；当前管理准备RESUME，尚未发送。送达后由ZCode先记真实接收并统一进度导航/状态块、sync，再继续原返修；Codex转只读。当前恢复入口P08首块；实际送达及写入权以12_PROGRESS最新RESUME回执为准。
+
+## 历史：本次修正前交接（10:58快照，仅追溯）
+
+# 当前交接 · GATE_03 REVIEW1 FAIL · G3R1-20260927-02
+
+Phase3 TASK008–012 独立审查FAIL，8 HIGH/1 MEDIUM；P08已于2026-09-27桌面恢复后首次送达，ZCode10:56只读ACK全部范围且无合同冲突；下一工具ZCode/P08，Codex sync读回后发START转交写入；Checkpoint=YES。只读ACK后待Codex START才接管写入。最新事实以12_PROGRESS为准。
+
+冻结8f3f28d（业务277109d），已放行main85a93ec；本轮审查范围85a93ec..8f3f28d。常规12迁移/typecheck/unit72/integration139/build/E2E8通过；18个独立业务场景有效1PASS/17FAIL。正式报告 [GATE03 REVIEW1](docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_1_2026-09-27.md)，[索引](docs/reviews/GATE_03_REVIEW_1_EVIDENCE_2026-09-27.json)，[复现](docs/reviews/gate-03-review-1-evidence/README.md)。
+
+原定功能→六类CSV可确认导入并支撑经营/商品/广告/售后/VOC事实；原合同→09_TASKS 008–012及04/08/10/11；本轮范围→报告8组HIGH及相邻no-op修复；关闭标准→各节有效反例转绿、正常路径与触发回归保持，再交Codex独立复审。不得扩基础设施或修改业务口径；重要范围疑义停问Owner。
+
+ZCode02:14确认G3R1-20260927-01冻结，Codex管理收尾；G3R1-20260927-02实际送达/ACK/START见证据receipt与唯一进度。下一轮范围8f3f28d..新冻结HEAD；Gate02 R5 PASS和已关项不变。Phase3尚未到约35可验收功能节点，PASS后Owner决定下一Phase；不开始013、不合并main、不部署，TASK031未获批准。
+
+本轮审查报告/证据及管理修改尚未提交推送；保留历史管理差异，不reset/clean。sync只更新视图。旧交接全部在下，旧“当前”标题均为历史原文，不能覆盖本节。
+
+---
+
+## 历史交接原文（只作追溯）
+
 # 当前交接 · Phase 3 接续准备（PH3-20260927-01）
 
 Owner在新对话明确要求开始后续开发（原话见进度PH3-20260927-01）。在REVIEW5 PASS基础上，授权落实为放行Phase2并按原Git生命周期接续Phase3 TASK-008–012，一次一项；到GATE_03/六类导入功能节点停开发，Codex独立审查后向Owner反馈，再决定后续阶段。此处不扩大为所有未来Phase自动放行，不审批TASK-031草案、资源购买或正式部署。
@@ -27,7 +200,51 @@ Owner在新对话明确要求开始后续开发（原话见进度PH3-20260927-01
 
 ## 历史：REVIEW4复修交接及以前记录原文保留
 
-# CODEX_REVIEW_GATE_02 · REVIEW 4 复修完成交接（当前）
+# CODEX_REVIEW_GATE_03 · Phase 3 六类导入链路复修完成交接（当前）
+
+> 直接协作交接编号 `PH3-20260927-01`：Owner 放行 Phase 2 并授权 Phase 3 TASK-008–012；ZCode 已完成全部五个 TASK 并冻结候选 **277109d**，写入权交回 Codex 执行 GATE_03 独立复审（prompts/P07_CODE_REVIEW.md 首个 text 块）。自测全绿不等于 Gate PASS；PASS 后按 STATE_PROTOCOL 向 Owner 反馈约 35% 功能节点。
+
+更新时间：2026-09-27T01:52:00+08:00；执行者：ZCode。**Phase 3 / TASK-008–012 全部完成 / GATE_03 待独立复审 / Checkpoint=YES / 下一工具 Codex。**
+
+## 复审定位信息
+
+| 项 | 候选 |
+|---|---|
+| Current Branch | `phase/03-import`（本地/远端 = 277109d） |
+| Base | main `85a93ec`（Phase 2 已按 Owner 放行合并） |
+| **复审范围** | **`a80d62a..实际 HEAD`**（业务提交 a5e9b7b/10adb88/277109d 三个；管理差异单列） |
+| 上轮审查 | GATE_02 REVIEW 5 = PASS（4b9e139，业务 b32f731）；Phase 2 已合并 main |
+| Checkpoint | YES；GATE_03 结论后按 STATE_PROTOCOL 向 Owner 反馈；不合并 main、不部署、不开始 TASK-013 |
+
+## 各 TASK 交付与验证
+
+| TASK | 交付 | 提交 |
+|---|---|---|
+| 008 mapping/校验/预览 | PUT mapping（CAS/时区/覆盖声明）、全量校验（折叠/同刻冲突/未知SKU/缺失引用/越界）、staging manifest、脱敏预览、错误文件签名下载、幂等键 | a5e9b7b |
+| 009 原子提交内核 | POST commit（preview_version CAS+confirmation、店铺事务锁、Product/SKU 自然键 upsert、重验旧版本不覆盖、DataCoverage、dataset_version 递增、审计）、重放复用、注入回滚恢复 preview_ready、sku-aliases 显式别名 | 10adb88 |
+| 010 订单头/行 | orders/order_items 自然键精确对照 upsert、缺行 partial、付款状态回退拒绝、跨店 409 | 277109d |
+| 011 广告日 | AdMetric campaign/date/归因组/币种幂等 upsert、晚到归因替换 | 277109d |
+| 012 客服/售后/退款 | 消息脱敏落库+SKU 关联；case→AfterSaleRecord；refund→RefundEvent（case 关联/越界预览拒绝） | 277109d |
+
+## ZCode 记录的验证（277109d，/tmp 远端 clone + 一次性 PG17 @5435，Node 24.21.0）
+
+typecheck 0（--incremental false）；unit **72/72**；integration **139/139**（TASK-008 +9、009 +5、010 +4、011/012 +3）；build 0；e2e 8/8。日志：ai-ecommerce-assistant/docs/reviews/gate-03-task008-evidence/、gate-03-task009-evidence/、gate-03-final-evidence/。
+
+## 边界
+
+- 无新迁移、无依赖变化；F05/F07/F10/F13/F15 沿用；F17 恢复 UI/通用别名工作台未提前（仅显式映射端点）。
+- 真实 OSS 云验证维持限定延期（TASK-029 或启用/部署前）。
+- 提交口径：GATE_03 以「a80d62a..277109d」业务差异执行，其后管理差异单列。
+
+---
+
+# CODEX_REVIEW_GATE_02 · REVIEW 4 复修完成交接（历史：Gate02 收尾）
+
+> 2026-09-26：直接协作交接编号 `G2R4-20260926-02` 执行完成：ZCode 复修 REVIEW 4 剩余 H06/H08 请求级收尾并冻结候选 **b32f731**，写入权交回 Codex 独立复审（P07 首个 text 块）。自测全绿不等于 Gate PASS；PASS 后仍等 Owner 明确"放行 Phase 2"。
+
+---
+
+# CODEX_REVIEW_GATE_02 · REVIEW 4 复修完成交接（历史：Gate02 收尾）
 
 > 2026-09-26：直接协作交接编号 `G2R4-20260926-02` 执行完成：ZCode 复修 REVIEW 4 剩余 H06/H08 请求级收尾并冻结候选 **b32f731**，写入权交回 Codex 独立复审（P07 首个 text 块）。自测全绿不等于 Gate PASS；PASS 后仍等 Owner 明确"放行 Phase 2"。
 

@@ -1,0 +1,13 @@
+072f9ba chore(gate-02): next_action 字段统一为稳定口径（同步生成视图）
+b6cbe6b chore(gate-02): 复审口径改为 ce5f286..实际 HEAD（业务止于 b2fa10f，其后均纯管理），终止哈希自引用循环
+da620af chore(gate-02): 复审基线更正为实际 HEAD 12b1732（业务修复止于 b2fa10f）；sync 读回一致
+12b1732 chore(gate-02): 复修完成冻结 b2fa10f，更新唯一进度/交接/P07 复审提示词；sync 读回一致
+b2fa10f fix(GATE_02): http_idempotency 唯一索引名对齐 Prisma 约定（消除 migrate diff 的 RENAME 差异）
+7616c4c build(TASK-007): 初始化/重置脚本产出 dist bundle（容器内无 pnpm/corepack 联网场景可用）
+9263890 fix(TASK-007/M04): ali-oss 运行时外置——修复 Web/Worker 生产构建
+da6de14 test(GATE_02 适配): H08 夹具店铺按 tag 改名（G2-M02 org+name 唯一）；迁移计数断言 10→12
+36e7764 fix(TASK-007): G2-H05–H09 权限链/真流式限额/幂等/失败恢复/私有运行配置 + M01/M03/M04/L02
+13c95e4 chore(G2-L01): 删除未使用的 'auth 2.ts' / 'dbUrl 2.ts' 意外副本（与原文件逐字节相同）
+1c8909c fix(TASK-006): G2-H03 解析边界收紧 + G2-H04 CanonicalBatch/覆盖声明合同与规范 oracle
+286527d chore(deps): 锁定 csv-parse（TASK-006 合同选型 11:88）与 busboy/ali-oss（TASK-007 流式 multipart 与 OSS 适配）
+5690395 fix(TASK-005): G2-H01 覆盖摘要按角色/有效版本/右开90天窗口；G2-H02 原子版本 CAS；G2-M02 同名唯一约束

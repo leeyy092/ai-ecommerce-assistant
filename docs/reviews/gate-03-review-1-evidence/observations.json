@@ -1,0 +1,476 @@
+[
+  {
+    "log": "probes.log",
+    "id": "C01",
+    "result": {
+      "replayVersion": "6",
+      "refundCount": 1,
+      "refundAmount": "20"
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H01",
+    "result": {
+      "status": "preview_ready",
+      "errorCount": 1,
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "fd7acc2d-a358-44e4-ae3f-ee56ae19e051",
+            "status": "committed",
+            "committed_dataset_version": "8",
+            "insert": 1,
+            "update": 0,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "50f47488-e51d-4630-b830-68206ca2c181"
+          }
+        }
+      },
+      "inserted": 1
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H02a",
+    "result": {
+      "status": "preview_ready",
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "5fdf45d6-cfcd-4938-a79a-5a3763c15fe0",
+            "status": "committed",
+            "committed_dataset_version": "13",
+            "insert": 1,
+            "update": 0,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "e4f28d1f-bb40-4538-8a18-83e0b243f366"
+          }
+        }
+      },
+      "total": 120,
+      "paid": 100
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H02b",
+    "result": {
+      "status": "preview_ready",
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "66327402-52c9-483b-a3f1-5ca7bc652977",
+            "status": "committed",
+            "committed_dataset_version": "17",
+            "insert": 2,
+            "update": 0,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "431d6374-57a4-4c50-ae63-015bc341d5e2"
+          }
+        }
+      }
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H02c",
+    "result": {
+      "status": "preview_ready",
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "f8f88e35-2bb9-4468-a037-bbfabf4da14c",
+            "status": "committed",
+            "committed_dataset_version": "22",
+            "insert": 0,
+            "update": 1,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "a5718373-5aa9-4758-b716-52b44ba8d24b"
+          }
+        }
+      },
+      "amount": "10",
+      "quantity": 1
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H03a",
+    "result": {
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "acce734d-6e4e-4bfe-a21a-ce260d6a8ac1",
+            "status": "committed",
+            "committed_dataset_version": "24",
+            "insert": 1,
+            "update": 0,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "f1676aeb-4f15-4983-a8e1-4a26fb69709f"
+          }
+        }
+      },
+      "text": "旧问题",
+      "sourceUpdatedAt": "2026-09-11T01:00:00.000Z"
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H03b",
+    "result": {
+      "generatedAt": "2026-09-25T17:23:44.776Z",
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "e4bc541e-797c-42cf-99fa-baed90c9b673",
+            "status": "committed",
+            "committed_dataset_version": "25",
+            "insert": 1,
+            "update": 0,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "c41d26c5-ee8c-4a11-a20b-4a0895ccfd10"
+          }
+        }
+      }
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H03c",
+    "result": {
+      "status": 202,
+      "body": {
+        "data": {
+          "id": "bc3a2e76-d851-49ad-a821-f39c096974b2",
+          "status": "committed",
+          "committed_dataset_version": "26",
+          "insert": 1,
+          "update": 0,
+          "unchanged": 0,
+          "no_op": false,
+          "reused": false
+        },
+        "meta": {
+          "request_id": "9eb42491-4007-4a91-92b0-c4c2cdfb09ff"
+        }
+      }
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H04a",
+    "result": {
+      "status": "preview_ready",
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "461466fc-4a44-4b99-be0d-d53c2e287d8f",
+            "status": "committed",
+            "committed_dataset_version": "27",
+            "insert": 1,
+            "update": 0,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "3872a736-a667-4d2c-bc3c-1d698cc14886"
+          }
+        }
+      },
+      "rows": [
+        {
+          "id": "38124105-9527-4fb3-be5d-4541293196a1",
+          "orgId": "23d3def5-3401-4bab-82d4-0491fe3595db",
+          "storeId": "b9fca84a-175f-43d2-b46d-177407414185",
+          "dataSourceId": "9c54b603-2cda-4e35-90a5-bd9f49cba2c9",
+          "sourceKind": "orders",
+          "channel": "default_channel",
+          "coverageDate": "2026-09-01T00:00:00.000Z",
+          "status": "complete",
+          "explicitZero": false,
+          "recordCount": "1",
+          "datasetVersion": "27",
+          "importTaskId": "461466fc-4a44-4b99-be0d-d53c2e287d8f",
+          "createdAt": "2026-09-26T18:23:44.812Z",
+          "updatedAt": "2026-09-26T18:23:44.812Z",
+          "rowVersion": 1
+        },
+        {
+          "id": "274ce6ab-10f5-460f-9781-1433d5261d5f",
+          "orgId": "23d3def5-3401-4bab-82d4-0491fe3595db",
+          "storeId": "b9fca84a-175f-43d2-b46d-177407414185",
+          "dataSourceId": "9c54b603-2cda-4e35-90a5-bd9f49cba2c9",
+          "sourceKind": "orders",
+          "channel": "default_channel",
+          "coverageDate": "2026-09-02T00:00:00.000Z",
+          "status": "complete",
+          "explicitZero": false,
+          "recordCount": "0",
+          "datasetVersion": "27",
+          "importTaskId": "461466fc-4a44-4b99-be0d-d53c2e287d8f",
+          "createdAt": "2026-09-26T18:23:44.813Z",
+          "updatedAt": "2026-09-26T18:23:44.813Z",
+          "rowVersion": 1
+        }
+      ]
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H04b",
+    "result": {
+      "before": "28",
+      "after": "29",
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "cb15a7fb-41e3-455a-a432-da66a0f2c10d",
+            "status": "committed",
+            "committed_dataset_version": "29",
+            "insert": 0,
+            "update": 0,
+            "unchanged": 1,
+            "no_op": true,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "bfc96bc7-15f1-4795-b3f6-53905449dc8f"
+          }
+        }
+      }
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H05",
+    "result": {
+      "aliasStatus": 201,
+      "status": "failed",
+      "errorCode": "SKU_NOT_FOUND"
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H06",
+    "result": {
+      "status": "failed",
+      "errorCode": "VERSION_CONFLICT"
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "M01",
+    "result": {
+      "inputLength": 252,
+      "storedLength": 201,
+      "hasIssue": false
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H07",
+    "result": {
+      "status": "preview_ready",
+      "errorCode": null
+    }
+  },
+  {
+    "log": "probes.log",
+    "id": "H04c",
+    "result": {
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "0ee28a45-b8aa-49cd-85dc-1f5548a29dc4",
+            "status": "committed",
+            "committed_dataset_version": "35",
+            "insert": 1,
+            "update": 0,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "fb7c3d92-b846-410a-81bc-dcd949c657d3"
+          }
+        }
+      },
+      "duplicateOrders": 2,
+      "settings": {}
+    }
+  },
+  {
+    "log": "probes-coverage.log",
+    "id": "H04a",
+    "result": {
+      "status": "preview_ready",
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "67c54080-a4ea-4729-8f72-1f472d094493",
+            "status": "committed",
+            "committed_dataset_version": "1",
+            "insert": 1,
+            "update": 0,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "a1ab01fd-9e2f-4763-9d39-f50a394c5b47"
+          }
+        }
+      },
+      "rows": [
+        {
+          "id": "40c26dee-e4f7-4bbc-b4a1-78a1a7cdc9e8",
+          "orgId": "94bb547e-df3b-4e5f-9453-0d994b493d33",
+          "storeId": "9d8eed6b-49be-4689-86d9-47fefb064686",
+          "dataSourceId": "a5c9be1f-a299-4174-bc47-92500425811f",
+          "sourceKind": "orders",
+          "channel": "default_channel",
+          "coverageDate": "2026-09-01T00:00:00.000Z",
+          "status": "complete",
+          "explicitZero": false,
+          "recordCount": "1",
+          "datasetVersion": "1",
+          "importTaskId": "67c54080-a4ea-4729-8f72-1f472d094493",
+          "createdAt": "2026-09-26T18:25:01.405Z",
+          "updatedAt": "2026-09-26T18:25:01.405Z",
+          "rowVersion": 1
+        },
+        {
+          "id": "8fb745f6-2fb6-4c07-a78d-e2c7dd4a988e",
+          "orgId": "94bb547e-df3b-4e5f-9453-0d994b493d33",
+          "storeId": "9d8eed6b-49be-4689-86d9-47fefb064686",
+          "dataSourceId": "a5c9be1f-a299-4174-bc47-92500425811f",
+          "sourceKind": "orders",
+          "channel": "default_channel",
+          "coverageDate": "2026-09-02T00:00:00.000Z",
+          "status": "complete",
+          "explicitZero": false,
+          "recordCount": "0",
+          "datasetVersion": "1",
+          "importTaskId": "67c54080-a4ea-4729-8f72-1f472d094493",
+          "createdAt": "2026-09-26T18:25:01.406Z",
+          "updatedAt": "2026-09-26T18:25:01.406Z",
+          "rowVersion": 1
+        }
+      ]
+    }
+  },
+  {
+    "log": "probes-coverage.log",
+    "id": "H04d",
+    "result": {
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "a2b9bdef-dea5-4600-b7ae-3289b7666418",
+            "status": "committed",
+            "committed_dataset_version": "4",
+            "insert": 2,
+            "update": 0,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "d42e814e-7336-4833-83a6-1a7417d0b9f2"
+          }
+        }
+      },
+      "rows": [
+        {
+          "id": "5b227759-3a4b-4aba-b9ea-6fc583f6724c",
+          "orgId": "94bb547e-df3b-4e5f-9453-0d994b493d33",
+          "storeId": "9d8eed6b-49be-4689-86d9-47fefb064686",
+          "dataSourceId": "a5c9be1f-a299-4174-bc47-92500425811f",
+          "sourceKind": "order_items",
+          "channel": "default_channel",
+          "coverageDate": "2026-09-01T00:00:00.000Z",
+          "status": "partial",
+          "explicitZero": false,
+          "recordCount": "0",
+          "datasetVersion": "4",
+          "importTaskId": "a2b9bdef-dea5-4600-b7ae-3289b7666418",
+          "createdAt": "2026-09-26T18:25:01.479Z",
+          "updatedAt": "2026-09-26T18:25:01.479Z",
+          "rowVersion": 1
+        }
+      ]
+    }
+  },
+  {
+    "log": "probes-fields.log",
+    "id": "H01b",
+    "result": {
+      "status": "preview_ready",
+      "commit": {
+        "status": 202,
+        "body": {
+          "data": {
+            "id": "c07196a8-35fd-4f11-81d9-53a6175b3446",
+            "status": "committed",
+            "committed_dataset_version": "1",
+            "insert": 1,
+            "update": 0,
+            "unchanged": 0,
+            "no_op": false,
+            "reused": false
+          },
+          "meta": {
+            "request_id": "58c441dc-d2d5-4512-9313-e71b3a23d158"
+          }
+        }
+      },
+      "storedCurrency": "USD",
+      "storeCurrency": "CNY"
+    }
+  },
+  {
+    "log": "probes-fields.log",
+    "id": "M01b",
+    "result": {
+      "redactedText": "收货地址：测试省测试市测试区测试路88号2栋301室；杯盖漏水",
+      "syntheticAddressPreserved": true
+    }
+  }
+]

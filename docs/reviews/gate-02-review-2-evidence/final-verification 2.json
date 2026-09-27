@@ -1,0 +1,78 @@
+{
+  "completedAt": "2026-09-16T14:28:21.771897+08:00",
+  "reviewDecision": "FAIL",
+  "high": 6,
+  "medium": 2,
+  "sync": {
+    "exit": 0,
+    "seconds": 14.65,
+    "result": {
+      "registered": 1,
+      "updated": 1,
+      "errors": [],
+      "generated_at": "2026-09-16T14:25:37+08:00"
+    }
+  },
+  "views": {
+    "at": "2026-09-16T14:26:41.423779+08:00",
+    "checks": {
+      "mdFullPrompt": true,
+      "htmlFullPrompt": true,
+      "mdTask": true,
+      "mdStatus": true,
+      "mdOwner": true,
+      "mdCheckpoint": true,
+      "htmlState": true,
+      "controlState": true,
+      "frozenHeadRecordedInBoth": true
+    },
+    "gitSnapshotLines": [
+      "- Git：本地 Git 待核实（命令不可用或超时）；待核实。",
+      "- 分支：待核实；版本：待核实。"
+    ],
+    "localGitSnapshotAvailable": false,
+    "note": "Task/status/owner/full prompt/checkpoint match. Product OS Git status subprocess timed out; actual HEAD/branch and remote refs verified separately. Hash in prompt does not mean automatic local Git snapshot succeeded."
+  },
+  "integrity": {
+    "at": "2026-09-16T14:26:44.295744+08:00",
+    "applicationFiles": 152,
+    "priorGate02Files": 72,
+    "changed": [],
+    "knownEphemeralSecretHits": [],
+    "businessCodeModified": false,
+    "priorReviewPreserved": true
+  },
+  "runtimeCleanup": {
+    "ports": {
+      "3324": "free",
+      "55574": "free",
+      "3344": "free",
+      "55575": "free"
+    },
+    "tempDirectories": [
+      {
+        "path": "/tmp/aiea-g2r2-9hnwja_c",
+        "existsAfter": false
+      },
+      {
+        "path": "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-g2r2-l1341_o7",
+        "existsAfter": false
+      }
+    ],
+    "activePointerRemoved": true,
+    "docker": "TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE\nImages          0         0         0B        0B\nContainers      0         0         0B        0B\nLocal Volumes   0         0         0B        0B\nBuild Cache     0         0         0B        0B\n",
+    "details": [
+      "compose-down.json",
+      "cleanup-owned.json",
+      "pg-stop.json",
+      "extra-temp-cleanup.json"
+    ]
+  },
+  "ownerReleasedPhase2": false,
+  "businessCodeModified": false,
+  "committedOrPushedByReviewer": false,
+  "mergedMain": false,
+  "deployed": false,
+  "task008Started": false,
+  "limitation": "Product OS local Git status snapshot timeout; branch/HEAD and remote refs independently verified, all application hashes unchanged."
+}

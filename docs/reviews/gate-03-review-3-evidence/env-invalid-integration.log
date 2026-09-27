@@ -1,0 +1,928 @@
+
+> ai-ecommerce-assistant@0.1.0 test:integration /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+> env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1 --exclude '**/g3-contract.test.ts' --exclude '**/g3-h04-contract.test.ts' --exclude '**/g3r2-contract.test.ts'
+
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+(node:47667) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ❯ tests/integration/imports.test.ts (60 tests | 46 failed | 6 skipped) 3872ms
+   × TASK-007｜上传、幂等与任务查询 > O 上传 csv（entity_type 合同字段）→ 201 任务（sha256/行数/filename/bytes）；重复上传返回同任务 125ms
+     → expected 400 to be 201 // Object.is equality
+   × TASK-007｜上传、幂等与任务查询 > G2-H07：并发同内容上传恰产生一个任务（部分唯一索引原子认领） 19ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-007｜上传、幂等与任务查询 > G2-H07：Idempotency-Key 头——同 key 同 body 复用；同 key 异 body 409；multipart 字段不冒充请求幂等 6ms
+     → expected 400 to be 201 // Object.is equality
+   × TASK-007｜上传、幂等与任务查询 > 审计：import_upload 同事务写入 5ms
+     → expected 0 to be greater than or equal to 1
+   × TASK-007｜类型权限（G2-H05） > C 不能上传订单文件（403）；C 可上传客户消息（201）且不入 public 6ms
+     → expected 400 to be 403 // Object.is equality
+   × TASK-007｜类型权限（G2-H05） > C 可查询/签名下载自己的消息任务；P 可查询自己的订单任务；C 查询订单任务 403 15ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-007｜类型权限（G2-H05） > 降权后旧任务与链接拒绝：C 消息任务在成员禁用后查询 403、下载 403 189ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-007｜限制与拒绝 > mock 数据源不接受上传（422）；归档店拒绝（409） 8ms
+     → expected 400 to be 422 // Object.is equality
+   × TASK-007｜限制与拒绝 > 超过 10 万逻辑行即停止解析（422 TOO_MANY_ROWS） 50ms
+     → expected 400 to be 422 // Object.is equality
+   × TASK-007｜限制与拒绝 > G2-H06：quoted 换行按单条逻辑记录计数（50,001 条不误拒） 37ms
+     → expected 400 to be 201 // Object.is equality
+   × TASK-007｜限制与拒绝 > 超过 20MB 真实分块流在接收链路立即中止（422 FILE_TOO_LARGE，不等 multipart 结束） 19ms
+     → expected 400 to be 422 // Object.is equality
+   × TASK-007｜限制与拒绝 > M03：非 .csv 扩展名 415；非法 UTF-8 422 INVALID_ENCODING 5ms
+     → expected 400 to be 415 // Object.is equality
+   × TASK-007｜限制与拒绝 > G2-H08 窗口1：落盘失败不产生任务，重试创建全新任务（无空键复用） 4ms
+     → expected [ 500, 503 ] to include 400
+   ↓ TASK-007｜签名下载与 validate/恢复边界 > 未签名下载 403；正确签名 200 且内容一致；默认有效期 300 秒（G2-L02）
+   ↓ TASK-007｜签名下载与 validate/恢复边界 > validate handler：解析统计入库；错误行写私有对象；组装 CanonicalBatch（G2-H04 消费点）
+   ↓ TASK-007｜签名下载与 validate/恢复边界 > G2-H05：执行前撤权 → 任务终态 failed UPLOAD_PERMISSION_REVOKED，不解析
+   ↓ TASK-007｜签名下载与 validate/恢复边界 > G2-H08 窗口2/3：投递丢失由 dispatcher 补投；悬挂 validating 落失败终态
+   ↓ TASK-007｜签名下载与 validate/恢复边界 > G2-H08：文件缺失为明确失败终态（SOURCE_FILE_MISSING），重投幂等跳过
+   ↓ TASK-007｜签名下载与 validate/恢复边界 > commit 边界：显式拒绝（TASK-008 实现），不冒充已提交
+   × GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H05：领域全局 User 禁用（Membership 仍 active）→ 未终态任务终态拒绝 183ms
+     → expected [ 200, 201 ] to include 400
+   × GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H06：空行前缀+100001 条数据仍拒绝（422 TOO_MANY_ROWS），计数不因空行停摆 32ms
+     → expected 400 to be 422 // Object.is equality
+   × GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H06：字段缺失/类型不支持/角色拒绝/扩展名拒绝不留临时文件 6ms
+     → expected 400 to be 403 // Object.is equality
+   × GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H07：已有内容+新 key 复用并绑定存档——同 key 同 body 200、异 body 409 4ms
+     → expected 400 to be 201 // Object.is equality
+   × GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H07：Key 按用户隔离；并发同 key 异 body 恰一 201 一 409，且无无文件任务 7ms
+     → expected 400 to be 201 // Object.is equality
+   × GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H07：存档写入失败 → 上传不无保护成功（503），无任务残留 5ms
+     → expected 400 to be 503 // Object.is equality
+   × GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H08：tmp 目录不可写（写流 EACCES）→ 503 可控返回，无任务、不崩溃 5ms
+     → expected [ 500, 503 ] to include 400
+   × GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-M04：OSS 驱动调用链——本地 spool 直读、落位走远端 put、本地临时清理 4ms
+     → expected 400 to be 201 // Object.is equality
+   ✓ GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放 > G2-R3-H06/H08：multipart 提前截断（未闭合即关闭）→ 400 UPLOAD_INTERRUPTED，不留 tmp、无新任务 209ms
+   × GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放 > G2-R3-H06：请求未结束但行数超限 → 稳定 422 TOO_MANY_ROWS（不降级为通用 multipart 错误） 13ms
+     → expected 400 to be 422 // Object.is equality
+   ✓ GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放 > G2-R3-H06/H08：请求源中途 error（客户端断开）→ 400 UPLOAD_INTERRUPTED，不留 tmp、无新任务 206ms
+   × GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放 > G2-R3-M06：同 key 同 body 并发 → 败者按存档首次 201 重放（非 200），恰一个任务且文件可读 10ms
+     → expected 400 to be 201 // Object.is equality
+   ✓ GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放 > G2-R3-M06：Key 长度边界 7/129 → 422（8/128 合法路径由既有用例覆盖） 9ms
+   × GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 对照：完整合法尾部（products）→ 201、恰 1 任务、tmp=0 5ms
+     → expected 400 to be 201 // Object.is equality
+   ✓ GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 H06/H08：文件部分完成后尾部截断（products）→ 4xx，不留 tmp、无新任务 209ms
+   ✓ GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 H06/H08：文件部分完成后 socket 取消（products）→ 不留 tmp、无新任务 215ms
+   × GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 对照：CustomerService 合成消息完整尾部 → 201、tmp=0 6ms
+     → expected 400 to be 201 // Object.is equality
+   ✓ GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 H06/H08：CS 消息 0ms 快速截断 → 不留 tmp、无新任务 208ms
+   ✓ GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 H06/H08：CS 消息 350ms 延迟截断（spool 已成功落定）→ 不留 tmp、无新任务 210ms
+   ✓ GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 H06/H08：CS 消息 350ms 后取消（spool 已成功落定）→ 不留 tmp、无新任务 211ms
+   × TASK-008｜字段映射、全量校验、预览与错误下载 > PUT mapping：CAS 版本 409、时区不一致 422、C 角色 403；正常 202 后校验产生 preview_version=1 8ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-008｜字段映射、全量校验、预览与错误下载 > 缺列（映射无法覆盖必填字段）→ failed+MISSING_COLUMN；错误文件可签名下载且无错误文件时 404 8ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-008｜字段映射、全量校验、预览与错误下载 > 仅表头文件：无声明 → empty_file；显式零事件 → coverage_only 预览且不推断完整 7ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-008｜字段映射、全量校验、预览与错误下载 > 同自然键同 source_updated_at 不同内容 → DUPLICATE_KEY_CONFLICT 整文件失败，不最后一行胜出 5ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-008｜字段映射、全量校验、预览与错误下载 > 未知 SKU 与缺失订单引用 → SKU_NOT_FOUND/MISSING_ORDER_REFERENCE 行级错误（整文件失败） 6ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-008｜字段映射、全量校验、预览与错误下载 > insert/update/unchanged 分类：较新更新、相同内容无变化、旧版本不覆盖 18ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-008｜字段映射、全量校验、预览与错误下载 > 覆盖缺口：声明范围内缺失日期在预览列出（不从行数推断完整） 5ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-008｜字段映射、全量校验、预览与错误下载 > 预览脱敏：customer_messages 预览样本不含原始手机号/邮箱 4ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-008｜字段映射、全量校验、预览与错误下载 > uploaded 未校验任务 → preview 409 PREVIEW_NOT_READY；t8 tmp 无残留 4ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 预览过期/缺确认/C 角色 → 409/422/403；正常提交 → 202、落库、版本+1、覆盖与审计在 4ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 重复提交同任务 → 200 复用，dataset_version 不变、行数不变 4ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 提交失败（注入约束）→ 整文件回滚：任务回 preview_ready、版本与行数不变 4ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 并发同任务提交 → 恰一次生效，版本只 +1、行数不翻倍；确认后更名重传 → update 且身份不变 4ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-009｜原子提交内核、商品主数据与 SKU 别名 > sku-aliases：正常 201；重复 409；跨店 canonical 404 5ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-010｜订单头与订单行导入 > 多行订单只建一单；两行落库；更正订单行替换金额且身份不变 5ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-010｜订单头与订单行导入 > 行遗漏：expected=2 只到 1 行 → 允许提交但该日期覆盖强制 partial；补齐后恢复声明状态 5ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-010｜订单头与订单行导入 > 订单行引用跨店/不存在订单 → 409 整文件回滚，无行落库 7ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-010｜订单头与订单行导入 > 多行同订单不同 SKU 齐全 → 订单数 1（GMV 口径属 TASK-014） 4ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-011/012｜广告与客服/售后/退款提交 > 广告日提交：幂等落库、晚到归因替换不累加 5ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-011/012｜广告与客服/售后/退款提交 > 客服消息提交：脱敏落库、SKU 关联 5ms
+     → expected [ 200, 201 ] to include 400
+   × TASK-011/012｜广告与客服/售后/退款提交 > 售后 case+refund 原子提交：金额/累计件数越界在预览拒绝；正常两行落库 7ms
+     → expected [ 200, 201 ] to include 400
+ ✓ tests/integration/stores.test.ts (14 tests) 1210ms
+stderr | tests/integration/gate01.auth.test.ts > Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封） > M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[internal] request_id=42d03a33-5286-4cb6-a8de-33ccc22d367b 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+stderr | tests/integration/gate01.auth.test.ts > Gate-01 REVIEW_5｜TASK-003（H12 邀请时效 / M03 限流故障信封） > M03：限流数据库故障 → 预览/接受返回 503 JSON 信封（含 request_id），不再 500 非 JSON
+[internal] request_id=07ff91bd-38fa-4a6b-b656-06c7aea4fdc4 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `23514`. Message: `new row for relation "auth_rate_limit" violates check constraint "ck_m03_block_invite"`
+
+ ✓ tests/integration/gate01.auth.test.ts (17 tests) 2944ms
+Loaded Prisma config from prisma.config.ts.
+
+ ✓ tests/integration/gate01.db.test.ts (13 tests) 3000ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 A——父行改归属未提交时插入旧组织审计引用，后者必须失败  338ms
+   ✓ Gate-01 H08｜AuditLog 店铺同域强制（数据库级） > H08 REVIEW_4：并发交错方向 B——审计引用未提交时改父行归属，后者必须失败且引用方正常提交  329ms
+   ✓ Gate-01 正式复核 H08/H09/M04 增补 > H08：升级守卫——存量跨域引用使 v2 迁移失败（拒绝静默通过）  542ms
+   ✓ Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏） > M06：applyMigrationsUpTo 首次执行到目标、重复不越界、不存在目标明确失败  384ms
+   ✓ Gate-01 REVIEW_5｜TASK-002（H12 连接边界 / M06 upTo / M07 Schema 同步护栏） > M07：官方 migrate diff 不再净删除审计同域复合外键（重建必须同引用且配平）  889ms
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 成员 PATCH：审计故障 → 角色与版本零提交
+[internal] request_id=82e8f9e4-eb02-4328-a618-a40a97982763 
+Invalid `db.auditLog.create()` invocation in
+/private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_member_audit"`
+
+stderr | tests/integration/gate01.access.test.ts > Gate-01 H07｜成员/组织管理与审计原子 > 组织 PATCH：审计故障 → 名称与版本零提交
+[internal] request_id=d565c908-9577-4dfb-8750-8dcf8bd64e7b 
+Invalid `db.auditLog.create()` invocation in
+/private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo/src/services/audit.ts:21:21
+
+  18 }
+  19 
+  20 export async function writeAudit(db: Prisma.TransactionClient, entry: AuditEntry): Promise<void> {
+→ 21   await db.auditLog.create(
+Database error. Code: `23514`. Message: `new row for relation "audit_log" violates check constraint "ck_inject_org_audit"`
+
+ ✓ tests/integration/gate01.access.test.ts (7 tests) 1500ms
+ ✓ tests/integration/auth.test.ts (8 tests) 1482ms
+ ✓ tests/integration/permissions.test.ts (7 tests) 1340ms
+ ✓ tests/integration/database.test.ts (9 tests) 558ms
+ ✓ tests/integration/db.test.ts (4 tests) 10ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜签名下载与 validate/恢复边界
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:438:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/47]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 46 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜上传、幂等与任务查询 > O 上传 csv（entity_type 合同字段）→ 201 任务（sha256/行数/filename/bytes）；重复上传返回同任务
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/integration/imports.test.ts:145:24
+    143|   it("O 上传 csv（entity_type 合同字段）→ 201 任务（sha256/行数/filename/bytes）；重复上…
+    144|     const res = await upload(owner.cookie, { kind: "products", content…
+    145|     expect(res.status).toBe(201);
+       |                        ^
+    146|     const body = (await res.json()) as { data: { id: string; file_sha2…
+    147|     expect(body.data.status).toBe("uploaded");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜上传、幂等与任务查询 > G2-H07：并发同内容上传恰产生一个任务（部分唯一索引原子认领）
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ tests/integration/imports.test.ts:185:26
+    183|     const ids = new Set<string>();
+    184|     for (const r of results) {
+    185|       expect([200, 201]).toContain(r.status);
+       |                          ^
+    186|       const body = (await r.json()) as { data: { id: string } };
+    187|       ids.add(body.data.id);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜上传、幂等与任务查询 > G2-H07：Idempotency-Key 头——同 key 同 body 复用；同 key 异 body 409；multipart 字段不冒充请求幂等
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/integration/imports.test.ts:201:26
+    199|     const changed = PRODUCTS_CSV.replace("CUP-RED", "CUP-IDEM-B");
+    200|     const first = await uploadOnce(key, base);
+    201|     expect(first.status).toBe(201);
+       |                          ^
+    202|     const firstBody = (await first.json()) as { data: { id: string } };
+    203|     const second = await uploadOnce(key, base);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜上传、幂等与任务查询 > 审计：import_upload 同事务写入
+AssertionError: expected 0 to be greater than or equal to 1
+ ❯ tests/integration/imports.test.ts:234:19
+    232|   it("审计：import_upload 同事务写入", async () => {
+    233|     const count = await db.auditLog.count({ where: { action: "import_u…
+    234|     expect(count).toBeGreaterThanOrEqual(1);
+       |                   ^
+    235|   });
+    236| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜类型权限（G2-H05） > C 不能上传订单文件（403）；C 可上传客户消息（201）且不入 public
+AssertionError: expected 400 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 400
+
+ ❯ tests/integration/imports.test.ts:241:29
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜类型权限（G2-H05） > C 可查询/签名下载自己的消息任务；P 可查询自己的订单任务；C 查询订单任务 403
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:258:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜类型权限（G2-H05） > 降权后旧任务与链接拒绝：C 消息任务在成员禁用后查询 403、下载 403
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:285:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜限制与拒绝 > mock 数据源不接受上传（422）；归档店拒绝（409）
+AssertionError: expected 400 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 400
+
+ ❯ tests/integration/imports.test.ts:307:24
+    305|     });
+    306|     const res = await upload(owner.cookie, { storeId: mockStoreId, dat…
+    307|     expect(res.status).toBe(422);
+       |                        ^
+    308| 
+    309|     await db.store.update({ where: { id: storeId }, data: { status: "a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜限制与拒绝 > 超过 10 万逻辑行即停止解析（422 TOO_MANY_ROWS）
+AssertionError: expected 400 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 400
+
+ ❯ tests/integration/imports.test.ts:322:24
+    320|     }
+    321|     const res = await upload(operator.cookie, { kind: "order_items", f…
+    322|     expect(res.status).toBe(422);
+       |                        ^
+    323|     expect(((await res.json()) as { error: { code: string } }).error.c…
+    324|   }, 120_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜限制与拒绝 > G2-H06：quoted 换行按单条逻辑记录计数（50,001 条不误拒）
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/integration/imports.test.ts:333:24
+    331|     }
+    332|     const res = await upload(operator.cookie, { kind: "customer_messag…
+    333|     expect(res.status).toBe(201);
+       |                        ^
+    334|     expect(((await res.json()) as { data: { row_count: number } }).dat…
+    335|   }, 120_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜限制与拒绝 > 超过 20MB 真实分块流在接收链路立即中止（422 FILE_TOO_LARGE，不等 multipart 结束）
+AssertionError: expected 400 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 400
+
+ ❯ tests/integration/imports.test.ts:386:24
+    384|       } as RequestInit, operator.cookie),
+    385|     );
+    386|     expect(res.status).toBe(422);
+       |                        ^
+    387|     expect(((await res.json()) as { error: { code: string } }).error.c…
+    388|     // 请求体永不结束：响应能返回本身即证明未等待 multipart 结束；
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜限制与拒绝 > M03：非 .csv 扩展名 415；非法 UTF-8 422 INVALID_ENCODING
+AssertionError: expected 400 to be 415 // Object.is equality
+
+- Expected
++ Received
+
+- 415
++ 400
+
+ ❯ tests/integration/imports.test.ts:397:25
+    395|   it("M03：非 .csv 扩展名 415；非法 UTF-8 422 INVALID_ENCODING", async () => {
+    396|     const xlsx = await upload(owner.cookie, { kind: "products", filena…
+    397|     expect(xlsx.status).toBe(415);
+       |                         ^
+    398|     expect(((await xlsx.json()) as { error: { code: string } }).error.…
+    399| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-007｜限制与拒绝 > G2-H08 窗口1：落盘失败不产生任务，重试创建全新任务（无空键复用）
+AssertionError: expected [ 500, 503 ] to include 400
+ ❯ tests/integration/imports.test.ts:419:26
+    417|     try {
+    418|       const failed = await upload(owner.cookie, { kind: "order_items",…
+    419|       expect([500, 503]).toContain(failed.status);
+       |                          ^
+    420|       // 关键：没有产生 rawObjectKey 为空的任务（旧行为会 reused 空 key 任务）
+    421|       expect(await db.importTask.count({ where: { orgId, rawObjectKey:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H05：领域全局 User 禁用（Membership 仍 active）→ 未终态任务终态拒绝
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:601:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H06：空行前缀+100001 条数据仍拒绝（422 TOO_MANY_ROWS），计数不因空行停摆
+AssertionError: expected 400 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 400
+
+ ❯ tests/integration/imports.test.ts:621:24
+    619|     }
+    620|     const res = await upload(operator.cookie, { kind: "order_items", f…
+    621|     expect(res.status).toBe(422);
+       |                        ^
+    622|     expect(((await res.json()) as { error: { code: string } }).error.c…
+    623|     expect(privateTmpFileCount()).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H06：字段缺失/类型不支持/角色拒绝/扩展名拒绝不留临时文件
+AssertionError: expected 400 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 400
+
+ ❯ tests/integration/imports.test.ts:629:30
+    627|     const before = privateTmpFileCount();
+    628|     const forbidden = await upload(cs.cookie, { kind: "orders", conten…
+    629|     expect(forbidden.status).toBe(403);
+       |                              ^
+    630|     const badExt = await upload(owner.cookie, { kind: "products", file…
+    631|     expect(badExt.status).toBe(415);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H07：已有内容+新 key 复用并绑定存档——同 key 同 body 200、异 body 409
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/integration/imports.test.ts:642:25
+    640|     // 前置：无 Idempotency-Key 的首次上传，使内容已存在
+    641|     const seed = await upload(owner.cookie, { kind: "products", conten…
+    642|     expect(seed.status).toBe(201);
+       |                         ^
+    643|     const first = await uploadHeader(owner.cookie, key, content);
+    644|     expect(first.status).toBe(200); // 已有内容 → 复用（200），同时绑定本 key 的存档
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H07：Key 按用户隔离；并发同 key 异 body 恰一 201 一 409，且无无文件任务
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/integration/imports.test.ts:661:23
+    659|     const ua = await uploadHeader(owner.cookie, sharedKey, contentA);
+    660|     const ub = await uploadHeader(operator.cookie, sharedKey, contentB…
+    661|     expect(ua.status).toBe(201);
+       |                       ^
+    662|     expect(ub.status).toBe(201);
+    663| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H07：存档写入失败 → 上传不无保护成功（503），无任务残留
+AssertionError: expected 400 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 400
+
+ ❯ tests/integration/imports.test.ts:697:20
+    695|       await db.$executeRaw`ALTER TABLE http_idempotency RENAME COLUMN …
+    696|     }
+    697|     expect(status).toBe(503);
+       |                    ^
+    698|     expect(await db.importTask.count({ where: { orgId, fileSha256: cre…
+    699|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-H08：tmp 目录不可写（写流 EACCES）→ 503 可控返回，无任务、不崩溃
+AssertionError: expected [ 500, 503 ] to include 400
+ ❯ tests/integration/imports.test.ts:719:24
+    717|       chmodSync(tmpDir, 0o755);
+    718|     }
+    719|     expect([500, 503]).toContain(status);
+       |                        ^
+    720|     expect(await db.importTask.count({ where: { orgId, fileSha256: cre…
+    721|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 2 回归｜H05/H06/H07/H08/M04 > G2-R2-M04：OSS 驱动调用链——本地 spool 直读、落位走远端 put、本地临时清理
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/integration/imports.test.ts:766:26
+    764|     try {
+    765|       const res = await upload(owner.cookie, { kind: "products", conte…
+    766|       expect(res.status).toBe(201);
+       |                          ^
+    767|       const body = (await res.json()) as { data: { id: string; file_sh…
+    768|       const task = await db.importTask.findUniqueOrThrow({ where: { id…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放 > G2-R3-H06：请求未结束但行数超限 → 稳定 422 TOO_MANY_ROWS（不降级为通用 multipart 错误）
+AssertionError: expected 400 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 400
+
+ ❯ tests/integration/imports.test.ts:891:24
+    889|     }
+    890|     const res = await postRaw(operator.cookie, chunks, "never");
+    891|     expect(res.status).toBe(422);
+       |                        ^
+    892|     expect(((await res.json()) as { error: { code: string } }).error.c…
+    893|     await new Promise((r) => setTimeout(r, 200));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 3 回归｜H06/H08 中断清理、TOO_MANY_ROWS 竞态与 M06 并发重放 > G2-R3-M06：同 key 同 body 并发 → 败者按存档首次 201 重放（非 200），恰一个任务且文件可读
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/integration/imports.test.ts:922:24
+    920|     const ids = new Set<string>();
+    921|     for (const r of responses) {
+    922|       expect(r.status).toBe(201);
+       |                        ^
+    923|       ids.add(((await r.json()) as { data: { id: string } }).data.id);
+    924|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 对照：完整合法尾部（products）→ 201、恰 1 任务、tmp=0
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/integration/imports.test.ts:1022:24
+    1020|     const before = tmpFileCount();
+    1021|     const res = await postTail(operator.cookie, { kind: "products", fi…
+    1022|     expect(res.status).toBe(201);
+       |                        ^
+    1023|     await new Promise((r) => setTimeout(r, 200));
+    1024|     expect(tmpFileCount()).toBe(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的请求级收尾 > R4 对照：CustomerService 合成消息完整尾部 → 201、tmp=0
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/integration/imports.test.ts:1056:24
+    1054|     const before = tmpFileCount();
+    1055|     const res = await postTail(cs.cookie, { kind: "customer_messages",…
+    1056|     expect(res.status).toBe(201);
+       |                        ^
+    1057|     await new Promise((r) => setTimeout(r, 200));
+    1058|     expect(tmpFileCount()).toBe(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > PUT mapping：CAS 版本 409、时区不一致 422、C 角色 403；正常 202 后校验产生 preview_version=1
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:1135:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 缺列（映射无法覆盖必填字段）→ failed+MISSING_COLUMN；错误文件可签名下载且无错误文件时 404
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:1172:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 仅表头文件：无声明 → empty_file；显式零事件 → coverage_only 预览且不推断完整
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:1197:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 同自然键同 source_updated_at 不同内容 → DUPLICATE_KEY_CONFLICT 整文件失败，不最后一行胜出
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:1222:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 未知 SKU 与缺失订单引用 → SKU_NOT_FOUND/MISSING_ORDER_REFERENCE 行级错误（整文件失败）
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:1234:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > insert/update/unchanged 分类：较新更新、相同内容无变化、旧版本不覆盖
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:1258:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 覆盖缺口：声明范围内缺失日期在预览列出（不从行数推断完整）
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:1304:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > 预览脱敏：customer_messages 预览样本不含原始手机号/邮箱
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:1319:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-008｜字段映射、全量校验、预览与错误下载 > uploaded 未校验任务 → preview 409 PREVIEW_NOT_READY；t8 tmp 无残留
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:1329:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 预览过期/缺确认/C 角色 → 409/422/403；正常提交 → 202、落库、版本+1、覆盖与审计在
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ validatedProductsTask tests/integration/imports.test.ts:1368:18
+ ❯ tests/integration/imports.test.ts:1376:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 重复提交同任务 → 200 复用，dataset_version 不变、行数不变
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ validatedProductsTask tests/integration/imports.test.ts:1368:18
+ ❯ tests/integration/imports.test.ts:1418:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 提交失败（注入约束）→ 整文件回滚：任务回 preview_ready、版本与行数不变
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ validatedProductsTask tests/integration/imports.test.ts:1368:18
+ ❯ tests/integration/imports.test.ts:1431:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > 并发同任务提交 → 恰一次生效，版本只 +1、行数不翻倍；确认后更名重传 → update 且身份不变
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ validatedProductsTask tests/integration/imports.test.ts:1368:18
+ ❯ tests/integration/imports.test.ts:1449:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-009｜原子提交内核、商品主数据与 SKU 别名 > sku-aliases：正常 201；重复 409；跨店 canonical 404
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ validatedProductsTask tests/integration/imports.test.ts:1368:18
+ ❯ tests/integration/imports.test.ts:1473:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-010｜订单头与订单行导入 > 多行订单只建一单；两行落库；更正订单行替换金额且身份不变
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ commitChain tests/integration/imports.test.ts:1529:20
+ ❯ tests/integration/imports.test.ts:1552:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-010｜订单头与订单行导入 > 行遗漏：expected=2 只到 1 行 → 允许提交但该日期覆盖强制 partial；补齐后恢复声明状态
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ commitChain tests/integration/imports.test.ts:1529:20
+ ❯ tests/integration/imports.test.ts:1577:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-010｜订单头与订单行导入 > 订单行引用跨店/不存在订单 → 409 整文件回滚，无行落库
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ tests/integration/imports.test.ts:1615:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-010｜订单头与订单行导入 > 多行同订单不同 SKU 齐全 → 订单数 1（GMV 口径属 TASK-014）
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ commitChain tests/integration/imports.test.ts:1529:20
+ ❯ tests/integration/imports.test.ts:1625:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-011/012｜广告与客服/售后/退款提交 > 广告日提交：幂等落库、晚到归因替换不累加
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ chain11_12 tests/integration/imports.test.ts:1663:20
+ ❯ tests/integration/imports.test.ts:1673:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-011/012｜广告与客服/售后/退款提交 > 客服消息提交：脱敏落库、SKU 关联
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ chain11_12 tests/integration/imports.test.ts:1663:20
+ ❯ tests/integration/imports.test.ts:1694:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/47]⎯
+
+ FAIL  tests/integration/imports.test.ts > TASK-011/012｜广告与客服/售后/退款提交 > 售后 case+refund 原子提交：金额/累计件数越界在预览拒绝；正常两行落库
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ makeTask tests/integration/imports.test.ts:137:22
+    135|   const res = await upload(cookie, { kind, content });
+    136|   // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
+    137|   expect([200, 201]).toContain(res.status);
+       |                      ^
+    138|   const body = (await res.json()) as { data: { id: string; file_sha256…
+    139|   return { id: body.data.id, sha: body.data.file_sha256 };
+ ❯ chain11_12 tests/integration/imports.test.ts:1663:20
+ ❯ tests/integration/imports.test.ts:1704:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/47]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Invalid state: Controller is already closed
+ ❯ ReadableStreamDefaultController.close node:internal/webstreams/readablestream:1181:13
+ ❯ Timeout.terminate [as _onTimeout] tests/integration/imports.test.ts:996:24
+    994|             controller.close();
+    995|           } else if (opts.tail === "truncate") {
+    996|             controller.close();
+       |                        ^
+    997|           } else {
+    998|             controller.error(new Error("client disconnected"));
+ ❯ listOnTimeout node:internal/timers:685:17
+ ❯ processTimers node:internal/timers:618:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'ERR_INVALID_STATE' }
+This error originated in "tests/integration/imports.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "R4 H06/H08：CS 消息 350ms 后取消（spool 已成功落定）→ 不留 tmp、无新任务". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  46 failed | 87 passed | 6 skipped (139)
+     Errors  1 error
+   Start at  15:49:36
+   Duration  17.55s (transform 435ms, setup 547ms, collect 852ms, tests 15.92s, environment 0ms, prepare 56ms)
+
+ ELIFECYCLE  Command failed with exit code 1.

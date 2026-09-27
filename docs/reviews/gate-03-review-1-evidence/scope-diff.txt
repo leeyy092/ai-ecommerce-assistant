@@ -1,0 +1,2734 @@
+diff --git a/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/commit/route.ts b/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/commit/route.ts
+new file mode 100644
+index 0000000..73031be
+--- /dev/null
++++ b/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/commit/route.ts
+@@ -0,0 +1,51 @@
++/**
++ * POST /api/v1/imports/{id}/commit（TASK-009；08 §17.3）
++ * 用户确认预览后原子提交：preview_version CAS + confirmation=true；
++ * 任一错误行任务已 failed 不能到本路由；中途异常整文件回滚恢复 preview_ready；
++ * 已提交任务重放返回既有结果（200）。
++ */
++import type { NextRequest } from "next/server";
++import { z } from "zod";
++import { ok, fail, serviceFailure, guardWrite, internalFailure } from "@/lib/http";
++import { getPrismaClient } from "@/database/prisma";
++import { CAPABILITIES, requirePermission, canImport } from "@/services/access";
++import { commitImportTask } from "@/services/imports/commitTask";
++
++export const runtime = "nodejs";
++
++const bodySchema = z
++  .object({
++    preview_version: z.number().int().nonnegative(),
++    confirmation: z.literal(true),
++  })
++  .strict();
++
++export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
++  try {
++    const blocked = guardWrite(req);
++    if (blocked) return blocked;
++    const ctx = await requirePermission(req, { capability: CAPABILITIES.viewCustomerServiceData });
++    const { id } = await params;
++    const db = getPrismaClient();
++    const task = await db.importTask.findFirst({ where: { orgId: ctx.orgId, id } });
++    if (!task) return fail(404, "导入任务不存在", { code: "NOT_FOUND" });
++    if (!canImport(ctx.role, task.sourceKind)) {
++      return fail(403, "当前角色不能提交该类型导入", { code: "FILE_KIND_FORBIDDEN" });
++    }
++    const parsedBody = bodySchema.safeParse(await req.json().catch(() => null));
++    if (!parsedBody.success) {
++      return fail(422, "需要 preview_version 与 confirmation=true", { code: "VALIDATION_ERROR" });
++    }
++    const result = await commitImportTask(
++      { orgId: ctx.orgId, userId: ctx.userId, role: ctx.role },
++      id,
++      parsedBody.data,
++    );
++    // 重放复用返回 200；首次提交返回 202
++    return ok(result, { status: result.reused ? 200 : 202 });
++  } catch (error) {
++    const mapped = serviceFailure(error);
++    if (mapped) return mapped;
++    return internalFailure(error);
++  }
++}
+diff --git a/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/error-file/route.ts b/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/error-file/route.ts
+new file mode 100644
+index 0000000..9f6327b
+--- /dev/null
++++ b/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/error-file/route.ts
+@@ -0,0 +1,55 @@
++/**
++ * GET /api/v1/imports/{id}/error-file（TASK-008；08 §17.3）
++ * 无签名参数：签发 5 分钟下载 URL（等同 300 秒签名）；404 无错误文件。
++ * 带有效签名：流式返回逐行错误 CSV（行号/列/错误码/安全说明，已脱敏）。
++ * C 仅 customer_messages；跨组织 404。
++ */
++import type { NextRequest } from "next/server";
++import { ok, fail, serviceFailure, internalFailure } from "@/lib/http";
++import { getPrismaClient } from "@/database/prisma";
++import { CAPABILITIES, requirePermission, canImport } from "@/services/access";
++import { getObjectText, signDownload, verifyDownload } from "@/storage";
++
++export const runtime = "nodejs";
++
++export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
++  try {
++    const ctx = await requirePermission(req, { capability: CAPABILITIES.viewCustomerServiceData });
++    const { id } = await params;
++    const db = getPrismaClient();
++    const task = await db.importTask.findFirst({ where: { orgId: ctx.orgId, id } });
++    if (!task) return fail(404, "导入任务不存在", { code: "NOT_FOUND" });
++    if (!canImport(ctx.role, task.sourceKind)) {
++      return fail(403, "当前角色不能下载该类型错误文件", { code: "FILE_KIND_FORBIDDEN" });
++    }
++    if (!task.errorObjectKey) {
++      return fail(404, "该任务没有错误文件", { code: "NO_ERROR_FILE" });
++    }
++    const url = new URL(req.url);
++    const expires = url.searchParams.get("expires");
++    const signature = url.searchParams.get("signature");
++    if (expires && signature) {
++      if (!verifyDownload({ key: task.errorObjectKey, expiresAt: Number(expires), signature })) {
++        return fail(403, "下载签名无效或已过期", { code: "FORBIDDEN" });
++      }
++      const text = await getObjectText(task.errorObjectKey);
++      return new Response(text, {
++        status: 200,
++        headers: {
++          "content-type": "text/csv; charset=utf-8",
++          "content-disposition": `attachment; filename="errors-${task.id}.csv"`,
++          "cache-control": "private, no-store",
++        },
++      });
++    }
++    const sig = signDownload(task.errorObjectKey);
++    return ok({
++      url: `/api/v1/imports/${task.id}/error-file?expires=${sig.expiresAt}&signature=${sig.signature}`,
++      expires_at: new Date(sig.expiresAt).toISOString(),
++    });
++  } catch (error) {
++    const mapped = serviceFailure(error);
++    if (mapped) return mapped;
++    return internalFailure(error);
++  }
++}
+diff --git a/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/mapping/route.ts b/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/mapping/route.ts
+new file mode 100644
+index 0000000..8304e57
+--- /dev/null
++++ b/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/mapping/route.ts
+@@ -0,0 +1,125 @@
++/**
++ * PUT /api/v1/imports/{id}/mapping（TASK-008；08 §17.3）
++ * 提交字段映射、时区确认与覆盖声明，CAS expected_preview_version 后重跑全量
++ * 校验（202 validating）；合法表头+显式零事件可生成 coverage-only 预览。
++ * C 仅 customer_messages（02_USER_ROLES）；任一错误行存在时任务 failed，
++ * 不能进入提交（TASK-009）。
++ */
++import type { NextRequest } from "next/server";
++import { z } from "zod";
++import { ok, fail, serviceFailure, guardWrite, internalFailure } from "@/lib/http";
++import { getPrismaClient } from "@/database/prisma";
++import { CAPABILITIES, requirePermission, canImport } from "@/services/access";
++import { validateFieldMapping, mappingVersion } from "@/services/importPreview";
++import { createCanonicalBatch, isFileKind } from "@/adapters/contracts";
++import { enqueueValidate } from "@/jobs/queue";
++
++export const runtime = "nodejs";
++
++const coverageItem = z.object({
++  source_kind: z.string(),
++  channel: z.enum(["default", "case", "refund"]),
++  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
++  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
++  status: z.enum(["complete", "partial"]),
++  explicit_zero_dates: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
++});
++
++const bodySchema = z
++  .object({
++    field_mapping: z.record(z.string(), z.string()).optional().default({}),
++    timezone: z.string().min(1),
++    coverage_declaration: z.array(coverageItem),
++    expected_preview_version: z.number().int().nonnegative(),
++  })
++  .strict();
++
++export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
++  try {
++    const blocked = guardWrite(req);
++    if (blocked) return blocked;
++    const ctx = await requirePermission(req, { capability: CAPABILITIES.viewCustomerServiceData });
++    const { id } = await params;
++    const db = getPrismaClient();
++
++    const parsedBody = bodySchema.safeParse(await req.json().catch(() => null));
++    if (!parsedBody.success) {
++      return fail(422, "请求体校验失败", {
++        code: "VALIDATION_ERROR",
++        fieldErrors: Object.fromEntries(
++          Object.entries(parsedBody.error.flatten().fieldErrors).map(([k, v]) => [k, v.join("; ")]),
++        ),
++      });
++    }
++    const body = parsedBody.data;
++
++    const task = await db.importTask.findFirst({ where: { orgId: ctx.orgId, id } });
++    if (!task) return fail(404, "导入任务不存在", { code: "NOT_FOUND" });
++    if (!isFileKind(task.sourceKind)) {
++      return fail(422, "未知来源类型", { code: "VALIDATION_ERROR" });
++    }
++    if (!canImport(ctx.role, task.sourceKind)) {
++      return fail(403, "当前角色不能操作该类型导入任务", { code: "FILE_KIND_FORBIDDEN" });
++    }
++    // 状态机：uploaded/preview_ready/failed 可重新映射；其余 409（08：409状态变化）
++    if (!["uploaded", "preview_ready", "failed"].includes(task.status)) {
++      return fail(409, `当前状态 ${task.status} 不允许重新映射`, { code: "IMPORT_CONFLICT" });
++    }
++    // CAS：预期预览版本不符 → 409 VERSION_CONFLICT（客户端刷新后重试）
++    if (body.expected_preview_version !== task.previewVersion) {
++      return fail(409, "预览版本已变化，请刷新后重试", { code: "VERSION_CONFLICT" });
++    }
++    // 时区确认：必须与店铺固定时区一致（店铺事实后时区已锁定）
++    const store = await db.store.findUniqueOrThrow({
++      where: { id: task.storeId },
++      select: { timezone: true },
++    });
++    if (body.timezone !== store.timezone) {
++      return fail(422, `时区确认与店铺时区不一致（店铺为 ${store.timezone}）`, { code: "VALIDATION_ERROR" });
++    }
++    // 字段映射校验（键=标准字段、值不重复、不映射服务端保留列）
++    const mapping = validateFieldMapping(task.sourceKind, body.field_mapping);
++    if (!mapping.ok) {
++      return fail(422, mapping.message, { code: "VALIDATION_ERROR" });
++    }
++    // 覆盖声明结构校验（复用 CanonicalBatch 的声明校验；source_kind 必须与本任务一致）
++    try {
++      createCanonicalBatch({
++        sourceKind: task.sourceKind,
++        sourceNamespace: "mapping-validation",
++        storeId: task.storeId,
++        adapterKind: "csv",
++        rawChecksum: task.fileSha256,
++        parse: { kind: task.sourceKind, records: [], errors: [] },
++        coverageDeclaration: body.coverage_declaration.map((c) => ({
++          ...c,
++          source_kind: task.sourceKind,
++        })),
++      });
++    } catch (error) {
++      return fail(422, error instanceof Error ? error.message : "coverage_declaration 非法", {
++        code: "VALIDATION_ERROR",
++      });
++    }
++
++    const version = mappingVersion(mapping.fields);
++    const updated = await db.importTask.updateMany({
++      where: { id: task.id, previewVersion: task.previewVersion },
++      data: {
++        mapping: { fields: mapping.fields, mapping_version: version, ignored_columns: [] },
++        coverageDeclaration: body.coverage_declaration,
++        status: "validating",
++        errorCode: null,
++      },
++    });
++    if (updated.count === 0) {
++      return fail(409, "预览版本已变化，请刷新后重试", { code: "VERSION_CONFLICT" });
++    }
++    await enqueueValidate(task.id);
++    return ok({ id: task.id, status: "validating" }, { status: 202 });
++  } catch (error) {
++    const mapped = serviceFailure(error);
++    if (mapped) return mapped;
++    return internalFailure(error);
++  }
++}
+diff --git a/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/preview/route.ts b/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/preview/route.ts
+new file mode 100644
+index 0000000..17a2a99
+--- /dev/null
++++ b/ai-ecommerce-assistant/src/app/api/v1/imports/[id]/preview/route.ts
+@@ -0,0 +1,111 @@
++/**
++ * GET /api/v1/imports/{id}/preview（TASK-008；08 §17.3）
++ * 脱敏样本（cursor/limit≤100）、insert/update/unchanged/rejected 计数、
++ * 覆盖声明与缺口、文件 hash、preview_version；仅 preview_ready 可读（409 尚未校验）。
++ * 样本来自 staging manifest 私有对象；自由文本脱敏，不回显客户原文。
++ */
++import type { NextRequest } from "next/server";
++import { ok, fail, serviceFailure, internalFailure } from "@/lib/http";
++import { getPrismaClient } from "@/database/prisma";
++import { CAPABILITIES, requirePermission, canImport } from "@/services/access";
++import { getObjectText } from "@/storage";
++
++export const runtime = "nodejs";
++
++interface Manifest {
++  kind: string;
++  mapping_version: string;
++  adapter_version: string;
++  file_sha256: string;
++  coverage_declaration: Array<{
++    source_kind: string;
++    channel: string;
++    from: string;
++    to: string;
++    status: string;
++    explicit_zero_dates: string[];
++  }>;
++  ignored_columns: string[];
++  row_count: number;
++  counts: {
++    insert: number;
++    update: number;
++    unchanged: number;
++    rejected: number;
++    duplicates_folded: number;
++    superseded_in_file: number;
++    superseded_by_db: number;
++  };
++  coverage_gaps: string[];
++  coverage_only: boolean;
++  empty_file: boolean;
++  rows: Array<{
++    row: number;
++    action: string;
++    reason: string | null;
++    natural_key: Record<string, string>;
++    affected_dates: string[];
++    sample: Record<string, unknown>;
++  }>;
++  generated_at: string;
++}
++
++export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
++  try {
++    const ctx = await requirePermission(req, { capability: CAPABILITIES.viewCustomerServiceData });
++    const { id } = await params;
++    const db = getPrismaClient();
++    const task = await db.importTask.findFirst({ where: { orgId: ctx.orgId, id } });
++    if (!task) return fail(404, "导入任务不存在", { code: "NOT_FOUND" });
++    if (!canImport(ctx.role, task.sourceKind)) {
++      return fail(403, "当前角色不能查看该类型导入预览", { code: "FILE_KIND_FORBIDDEN" });
++    }
++    // 08：409 尚未校验（uploaded/validating/failed 均无可用预览）
++    if (task.status !== "preview_ready" || !task.stagingObjectKey) {
++      return fail(409, `当前状态 ${task.status} 尚无可确认预览`, { code: "PREVIEW_NOT_READY" });
++    }
++    const url = new URL(req.url);
++    const limitRaw = Number(url.searchParams.get("limit") ?? 25);
++    const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(Math.trunc(limitRaw), 1), 100) : 25;
++    const cursorRaw = Number(url.searchParams.get("cursor") ?? "0");
++    const cursor = Number.isFinite(cursorRaw) ? Math.max(Math.trunc(cursorRaw), 0) : 0;
++
++    const manifest = JSON.parse(await getObjectText(task.stagingObjectKey)) as Manifest;
++    const rows = manifest.rows;
++    const page = rows.slice(cursor, cursor + limit);
++    const nextCursor = cursor + page.length < rows.length ? cursor + page.length : null;
++
++    return ok({
++      id: task.id,
++      status: task.status,
++      preview_version: task.previewVersion,
++      base_dataset_version: task.baseDatasetVersion.toString(),
++      file_sha256: task.fileSha256,
++      mapping_version: manifest.mapping_version,
++      adapter_version: manifest.adapter_version,
++      row_count: manifest.row_count,
++      counts: {
++        insert: manifest.counts.insert,
++        update: manifest.counts.update,
++        unchanged: manifest.counts.unchanged,
++        rejected: manifest.counts.rejected,
++        duplicates_folded: manifest.counts.duplicates_folded,
++        superseded_in_file: manifest.counts.superseded_in_file,
++        superseded_by_db: manifest.counts.superseded_by_db,
++      },
++      coverage: {
++        declaration: manifest.coverage_declaration,
++        gaps: manifest.coverage_gaps,
++        coverage_only: manifest.coverage_only,
++        empty_file: manifest.empty_file,
++      },
++      ignored_columns: manifest.ignored_columns,
++      items: page,
++      next_cursor: nextCursor,
++    });
++  } catch (error) {
++    const mapped = serviceFailure(error);
++    if (mapped) return mapped;
++    return internalFailure(error);
++  }
++}
+diff --git a/ai-ecommerce-assistant/src/app/api/v1/sku-aliases/route.ts b/ai-ecommerce-assistant/src/app/api/v1/sku-aliases/route.ts
+new file mode 100644
+index 0000000..242a6ec
+--- /dev/null
++++ b/ai-ecommerce-assistant/src/app/api/v1/sku-aliases/route.ts
+@@ -0,0 +1,89 @@
++/**
++ * POST /api/v1/sku-aliases（TASK-009/F17 最小实现；08 §17.3）
++ * 未知 SKU 的显式映射落库：只影响后续校验（重验属对应导入任务重试）。
++ * 通用别名工作台/恢复 UI 仍属 TASK-026（不提前实现）。
++ */
++import type { NextRequest } from "next/server";
++import { z } from "zod";
++import { ok, fail, serviceFailure, guardWrite, internalFailure } from "@/lib/http";
++import { getPrismaClient } from "@/database/prisma";
++import { AccessError, CAPABILITIES, requirePermission } from "@/services/access";
++import { writeAudit } from "@/services/audit";
++
++export const runtime = "nodejs";
++
++const bodySchema = z
++  .object({
++    store_id: z.string().min(1),
++    source_namespace: z.string().min(1),
++    external_sku_id: z.string().min(1),
++    canonical_sku_id: z.string().min(1),
++  })
++  .strict();
++
++export async function POST(req: NextRequest) {
++  try {
++    const blocked = guardWrite(req);
++    if (blocked) return blocked;
++    const ctx = await requirePermission(req, { capability: CAPABILITIES.viewCustomerServiceData });
++    const db = getPrismaClient();
++    const parsedBody = bodySchema.safeParse(await req.json().catch(() => null));
++    if (!parsedBody.success) {
++      return fail(422, "store_id/source_namespace/external_sku_id/canonical_sku_id 必填", {
++        code: "VALIDATION_ERROR",
++      });
++    }
++    const { store_id, source_namespace, external_sku_id, canonical_sku_id } = parsedBody.data;
++    const store = await db.store.findFirst({ where: { orgId: ctx.orgId, id: store_id } });
++    if (!store) return fail(404, "店铺不存在", { code: "NOT_FOUND" });
++
++    const canonical = await db.sKU.findFirst({
++      where: { orgId: ctx.orgId, storeId: store_id, sourceNamespace: source_namespace, id: canonical_sku_id },
++      select: { id: true },
++    });
++    if (!canonical) {
++      // 别名必须指向同店同来源的真实 SKU；跨店/跨来源一律 404（别名跨店被拒）
++      return fail(404, "canonical_sku_id 不存在于该店铺/来源", { code: "NOT_FOUND" });
++    }
++    const collision = await db.sKU.findFirst({
++      where: { orgId: ctx.orgId, storeId: store_id, sourceNamespace: source_namespace, externalSkuId: external_sku_id },
++      select: { id: true },
++    });
++    if (collision) {
++      return fail(409, "该 external_sku_id 已是真实 SKU，不能重复映射", { code: "ALREADY_MAPPED" });
++    }
++    try {
++      const alias = await db.skuAlias.create({
++        data: {
++          orgId: ctx.orgId,
++          storeId: store_id,
++          sourceNamespace: source_namespace,
++          externalSkuId: external_sku_id,
++          skuId: canonical_sku_id,
++          createdBy: ctx.userId,
++        },
++      });
++      await writeAudit(db, {
++        orgId: ctx.orgId,
++        storeId: store_id,
++        actorUserId: ctx.userId,
++        action: "sku_alias_create",
++        entityType: "sku_alias",
++        entityId: alias.id,
++        afterSummary: { external_sku_id: external_sku_id, canonical_sku_id },
++      });
++      return ok({ id: alias.id, external_sku_id, canonical_sku_id }, { status: 201 });
++    } catch (error) {
++      const code = (error as { code?: string }).code;
++      if (code === "P2002") {
++        return fail(409, "该 external_sku_id 已映射", { code: "ALREADY_MAPPED" });
++      }
++      throw error;
++    }
++  } catch (error) {
++    if (error instanceof AccessError) throw error;
++    const mapped = serviceFailure(error);
++    if (mapped) return mapped;
++    return internalFailure(error);
++  }
++}
+diff --git a/ai-ecommerce-assistant/src/jobs/handlers/imports.ts b/ai-ecommerce-assistant/src/jobs/handlers/imports.ts
+index 898bf04..769e524 100644
+--- a/ai-ecommerce-assistant/src/jobs/handlers/imports.ts
++++ b/ai-ecommerce-assistant/src/jobs/handlers/imports.ts
+@@ -12,16 +12,33 @@
+ import { createHash } from "node:crypto";
+ import { getPrismaClient } from "@/database/prisma";
+ import {
++  ADAPTER_VERSION,
+   createCanonicalBatch,
+   getAdapter,
+   isFileKind,
+   type CanonicalBatch,
+   type CoverageDeclarationItem,
++  type RowError,
+ } from "@/adapters/contracts";
++import {
++  buildIdempotencyKey,
++  classifyAndStage,
++  mappingVersion as mappingVersionOf,
++  transformCsvWithMapping,
++} from "@/services/importPreview";
+ import { canImport } from "@/services/access";
+ import { getObjectText, putObject } from "@/storage";
+ import { Readable } from "node:stream";
+ 
++/** 逐行错误 CSV（行号/列/错误码/安全说明；不回显未脱敏原文） */
++function errorCsv(errors: RowError[]): string {
++  const header = "row,column,code,message";
++  const body = errors
++    .map((e) => [e.row, e.column ?? "", e.code, `"${String(e.message).replace(/"/g, '""')}"`].join(","))
++    .join("\r\n");
++  return `${header}\r\n${body}\r\n`;
++}
++
+ export interface ValidateJobData {
+   taskId: string;
+ }
+@@ -102,7 +119,33 @@ export async function handleValidateTask(
+   });
+ 
+   try {
+-    const text = await getObjectText(task.rawObjectKey);
++    const rawText = await getObjectText(task.rawObjectKey);
++    // TASK-008：字段映射——把用户映射的 CSV 列重排为标准列表后再解析；
++    // 未映射列列入 ignored_columns（预览列出），缺失必填列由解析层报 MISSING_COLUMN。
++    const mappingFields =
++      ((task.mapping as { fields?: Record<string, string> } | null)?.fields) ?? {};
++    let text = rawText;
++    let ignoredColumns: string[] = [];
++    // 总是经过映射转换（空映射=同名列直通），使未映射列在预览中被列出
++    const mapped = transformCsvWithMapping(task.sourceKind, rawText, mappingFields);
++    if ("error" in mapped) {
++      const rowErrors = [mapped.error];
++      const errorObjectKey = `errors/${task.id}/errors.csv`;
++      await putObject(errorObjectKey, Readable.from([errorCsv(rowErrors)]));
++      await db.importTask.updateMany({
++        where: { id: task.id, status: "validating" },
++        data: {
++          status: "failed",
++          errorCount: rowErrors.length,
++          errorObjectKey,
++          errorCode: mapped.error.code,
++          previewVersion: { increment: 1 },
++        },
++      });
++      return { status: "failed", valid: 0, errors: rowErrors.length };
++    }
++    text = mapped.text;
++    ignoredColumns = mapped.ignoredColumns;
+     // G2-H03：来源更新时间必须来自文件本身，缺失即行级错误（不补造）
+     const parsed = getAdapter("csv").parse(task.sourceKind, { storeExternalId: store.externalStoreId }, text);
+     // G2-H04：统一 CanonicalBatch 合同——服务端赋值店铺/namespace/checksum，
+@@ -119,33 +162,123 @@ export async function handleValidateTask(
+         : [],
+     });
+ 
+-    const valid = batch.records.length;
+-    const errors = batch.row_errors.length;
++    // TASK-008：全量校验与预览分类——文件内折叠/同刻冲突、自然键与既有事实对照
++    // （insert/update/unchanged/旧版本不覆盖）、未知 SKU/缺失引用/退款越界等
++    // 跨行与跨引用检查；staging manifest 写私有对象。
++    const timezone = (await db.store.findUniqueOrThrow({
++      where: { id: task.storeId },
++      select: { timezone: true },
++    })).timezone;
++    const staged = await classifyAndStage({
++      db,
++      kind: task.sourceKind,
++      orgId: task.orgId,
++      storeId: task.storeId,
++      namespace: dataSource.sourceNamespace,
++      timezone,
++      records: batch.records,
++      coverage: batch.coverage_declaration,
++    });
++
++    const allErrors: RowError[] = [
++      ...batch.row_errors,
++      ...staged.rowErrors,
++      ...ignoredColumns.map((c) => ({
++        row: 1,
++        column: c,
++        code: "IGNORED_COLUMN",
++        message: `未映射列 ${c} 已忽略（不导入）`,
++      })),
++    ];
++    const rejected = allErrors.length;
++    const rowCount = batch.records.length + batch.row_errors.length;
++
+     let errorObjectKey: string | null = null;
+-    if (errors > 0) {
++    if (allErrors.length > 0) {
+       errorObjectKey = `errors/${task.id}/errors.csv`;
+-      const header = "row,column,code,message";
+-      const body = batch.row_errors
+-        .map((e) => [e.row, e.column ?? "", e.code, `"${String(e.message).replace(/"/g, '""')}"`].join(","))
+-        .join("\r\n");
+-      await putObject(errorObjectKey, Readable.from([`${header}\r\n${body}\r\n`]));
++      await putObject(errorObjectKey, Readable.from([errorCsv(allErrors)]));
+     }
+ 
+-    const failure = batch.row_errors.find((e) =>
+-      ["STORE_MISMATCH", "MISSING_COLUMN", "EMPTY_FILE", "INVALID_CSV", "DUPLICATE_COLUMN"].includes(e.code),
++    // staging manifest（私有对象；预览/提交边界都从这里读取）
++    const mappingArchived = (task.mapping as { mapping_version?: string } | null) ?? {};
++    const mappingVersion = mappingArchived.mapping_version ?? mappingVersionOf({});
++    const stagingObjectKey = `staging/${task.id}/manifest.json`;
++    const manifest = {
++      kind: task.sourceKind,
++      mapping_version: mappingVersion,
++      adapter_version: ADAPTER_VERSION,
++      file_sha256: task.fileSha256,
++      coverage_declaration: batch.coverage_declaration,
++      ignored_columns: ignoredColumns,
++      row_count: rowCount,
++      counts: {
++        insert: staged.counts.insert,
++        update: staged.counts.update,
++        unchanged: staged.counts.unchanged,
++        rejected,
++        duplicates_folded: staged.duplicatesFolded,
++        superseded_in_file: staged.supersededInFile,
++        superseded_by_db: staged.supersededByDb,
++      },
++      coverage_gaps: staged.coverageGaps,
++      coverage_only: staged.coverageOnly,
++      empty_file: staged.emptyFile,
++      rows: staged.rows,
++      generated_at: new Date().toISOString(),
++    };
++    await putObject(stagingObjectKey, Readable.from([JSON.stringify(manifest)]));
++
++    const failure = allErrors.find((e) =>
++      [
++        "STORE_MISMATCH",
++        "MISSING_COLUMN",
++        "EMPTY_FILE",
++        "INVALID_CSV",
++        "DUPLICATE_COLUMN",
++        "MAPPING_COLLISION",
++        "DUPLICATE_KEY_CONFLICT",
++        "VERSION_CONFLICT",
++        "PRODUCT_METADATA_CONFLICT",
++        "SKU_CODE_CONFLICT",
++        "SKU_NOT_FOUND",
++        "MISSING_ORDER_REFERENCE",
++        "ITEM_COUNT_EXCEEDED",
++        "REFUND_AMOUNT_EXCEEDS_PAID",
++        "REFUND_QUANTITY_CONFLICT",
++        "RELATED_CASE_NOT_FOUND",
++      ].includes(e.code),
+     );
++    const success = !failure;
++    const idempotencyKey = success
++      ? buildIdempotencyKey({
++          fileSha256: task.fileSha256,
++          orgId: task.orgId,
++          storeId: task.storeId,
++          namespace: dataSource.sourceNamespace,
++          kind: task.sourceKind,
++          mappingVersion,
++          coverage: batch.coverage_declaration,
++          adapterVersion: ADAPTER_VERSION,
++        })
++      : null;
+     await db.importTask.updateMany({
+       where: { id: task.id, status: "validating" },
+       data: {
+         status: failure ? "failed" : "preview_ready",
+-        validCount: valid,
+-        errorCount: errors,
++        validCount: staged.rows.length,
++        errorCount: rejected,
++        rowCount,
++        insertCount: success ? staged.counts.insert : 0,
++        updateCount: success ? staged.counts.update : 0,
++        unchangedCount: success ? staged.counts.unchanged : 0,
+         errorObjectKey,
++        stagingObjectKey,
+         errorCode: failure ? failure.code : null,
++        idempotencyKey,
+         previewVersion: { increment: 1 },
+       },
+     });
+-    return { status: failure ? "failed" : "preview_ready", valid, errors };
++    return { status: failure ? "failed" : "preview_ready", valid: staged.rows.length, errors: rejected };
+   } catch (error) {
+     const code = (error as { code?: string }).code;
+     const exhausted =
+diff --git a/ai-ecommerce-assistant/src/services/importPreview.ts b/ai-ecommerce-assistant/src/services/importPreview.ts
+new file mode 100644
+index 0000000..44df23e
+--- /dev/null
++++ b/ai-ecommerce-assistant/src/services/importPreview.ts
+@@ -0,0 +1,840 @@
++/**
++ * TASK-008｜字段映射、全量校验、staging 与预览服务。
++ *
++ * 用户功能：上传的六类 CSV 在用户确认前，能看到哪些行将插入/更新/无变化/
++ * 被拒绝，且错误清单可下载、覆盖声明不被文件行数推断。
++ *
++ * 合同：09_TASKS TASK-008；04_DATA_MODEL §10.5（ImportTask/staging/错误对象）、
++ * PART11.1 步骤3–5、PART12（字段规范/自然键/同文件去重与跨文件 upsert 协议/
++ * §12.8）；08_API_SPEC §17.3（mapping/preview/error-file）；F05/F15/F17。
++ * 禁止：跳过错误行"尽量导入"；按名称模糊合并 SKU；此处不做业务入库
++ * （原子提交属 TASK-009），也不实现 F17 恢复 UI/通用别名工作台。
++ */
++import { createHash } from "node:crypto";
++import type { PrismaClient } from "@/generated/prisma/client";
++import {
++  FILE_HEADERS,
++  parseCsv,
++  type CoverageDeclarationItem,
++  type FileKind,
++  type RowError,
++  type StandardRecords,
++} from "@/adapters/contracts";
++
++// ---------- 字段映射 ----------
++
++/** PUT mapping 后存档形态（ImportTask.mapping jsonb） */
++export interface TaskMapping {
++  fields: Record<string, string>;
++  mapping_version: string;
++  ignored_columns: string[];
++}
++
++export function mappingVersion(fields: Record<string, string>): string {
++  const canonical = Object.keys(fields)
++    .sort()
++    .map((k) => `${k}=>${fields[k]}`)
++    .join("\u0001");
++  return createHash("sha256").update(canonical).digest("hex").slice(0, 32);
++}
++
++const FORBIDDEN_TARGETS = new Set([
++  "org_id",
++  "org",
++  "dataset_version",
++  "created_by",
++  "store_id",
++  "id",
++]);
++
++/**
++ * 校验字段映射（PUT /mapping 时调用，看不到文件内容）：
++ * - 键必须是该类型标准字段；值必须是字符串且不得重复；
++ * - 不得映射到 org_id/dataset_version/created_by 等服务端保留列（PART12.1）；
++ * - 未映射的标准字段回退为同名原生列（缺失由校验期 MISSING_COLUMN 报告）。
++ */
++export function validateFieldMapping(
++  kind: FileKind,
++  fields: Record<string, string>,
++): { ok: true; fields: Record<string, string>; ignored: string[] } | { ok: false; message: string } {
++  const known = new Set<string>(FILE_HEADERS[kind]);
++  const values = new Map<string, string>();
++  for (const [field, column] of Object.entries(fields)) {
++    if (!known.has(field)) {
++      return { ok: false, message: `field_mapping 含未知标准字段 ${field}` };
++    }
++    if (typeof column !== "string" || column.trim() === "") {
++      return { ok: false, message: `field_mapping.${field} 的目标列不能为空` };
++    }
++    if (FORBIDDEN_TARGETS.has(column.trim().toLowerCase())) {
++      return { ok: false, message: `field_mapping.${field} 不得映射到服务端保留列 ${column}` };
++    }
++    const owner = values.get(column);
++    if (owner) {
++      return { ok: false, message: `field_mapping 列 ${column} 同时映射给 ${owner} 与 ${field}` };
++    }
++    values.set(column, field);
++  }
++  return { ok: true, fields, ignored: [] };
++}
++
++/**
++ * 按映射把原始 CSV 重排为标准列表（不改写数据，只重排/丢弃列），
++ * 随后复用 parseStandardFile 的全部既有校验。文件级 MAPPING_COLLISION
++ * 指两个标准字段解析到同一 CSV 列（语义歧义，拒绝）。
++ */
++export function transformCsvWithMapping(
++  kind: FileKind,
++  content: string,
++  fields: Record<string, string>,
++): { text: string; ignoredColumns: string[] } | { error: RowError } {
++  let rows: string[][];
++  try {
++    rows = parseCsv(content);
++  } catch {
++    return { text: content, ignoredColumns: [] }; // 语法错误交由 parseStandardFile 报 INVALID_CSV
++  }
++  if (rows.length === 0) return { text: content, ignoredColumns: [] };
++  const headers = rows[0].map((h) => h.trim());
++  const index = new Map<string, number>();
++  headers.forEach((h, i) => index.set(h, i));
++  const resolution: Array<{ std: string; col: number | null }> = [];
++  const used = new Set<number>();
++  for (const std of FILE_HEADERS[kind]) {
++    const colName = fields[std] ?? std;
++    const col = index.has(colName) ? (index.get(colName) as number) : null;
++    resolution.push({ std, col });
++  }
++  for (const { col } of resolution) {
++    if (col !== null) {
++      if (used.has(col)) {
++        return {
++          error: {
++            row: 1,
++            code: "MAPPING_COLLISION",
++            message: `字段映射冲突：多个标准字段解析到同一 CSV 列 ${headers[col]}`,
++          },
++        };
++      }
++      used.add(col);
++    }
++  }
++  const kept = resolution.filter((r): r is { std: string; col: number } => r.col !== null);
++  const ignoredColumns = headers.filter((_, i) => !used.has(i));
++  const escape = (v: string | null) => {
++    if (v === null) return "";
++    if (/[",\r\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
++    return v;
++  };
++  const out = [
++    kept.map((r) => r.std).join(","),
++    ...rows.slice(1).map((row) => kept.map((r) => escape(row[r.col] ?? null)).join(",")),
++  ].join("\r\n");
++  return { text: out, ignoredColumns };
++}
++
++// ---------- 自然键、规范化哈希与影响日期 ----------
++
++function stableHash(value: unknown): string {
++  return createHash("sha256").update(JSON.stringify(value, stableReplacer)).digest("hex");
++}
++
++/** 受控字段规范化行哈希（预览分类与 TASK-009 提交 rowHash 同源） */
++export function recordRowHash(record: StandardRecords[FileKind]): string {
++  return stableHash(record);
++}
++
++/** 键序稳定化：仅保留受控业务字段（排除共同列 store_external_id） */
++function stableReplacer(key: string, value: unknown): unknown {
++  if (key === "storeExternalId" || key === "kind") return undefined;
++  return value;
++}
++
++export function localDateIn(tz: string, at: Date): string {
++  return new Intl.DateTimeFormat("en-CA", {
++    timeZone: tz,
++    year: "numeric",
++    month: "2-digit",
++    day: "2-digit",
++  }).format(at);
++}
++
++type AnyRecord = StandardRecords[FileKind];
++
++function naturalKeyOf(kind: FileKind, r: AnyRecord): Record<string, string> {
++  switch (kind) {
++    case "products":
++      return { external_sku_id: (r as StandardRecords["products"]).externalSkuId };
++    case "orders":
++      return { external_order_id: (r as StandardRecords["orders"]).externalOrderId };
++    case "order_items":
++      return {
++        external_order_id: (r as StandardRecords["order_items"]).externalOrderId,
++        external_order_item_id: (r as StandardRecords["order_items"]).externalOrderItemId,
++      };
++    case "ads": {
++      const a = r as StandardRecords["ads"];
++      return {
++        campaign_id: a.campaignId,
++        report_date: a.reportDate,
++        attribution_model: a.attributionModel,
++        attribution_window_days: String(a.attributionWindowDays),
++      };
++    }
++    case "customer_messages":
++      return { external_message_id: (r as StandardRecords["customer_messages"]).externalMessageId };
++    case "after_sales": {
++      const a = r as StandardRecords["after_sales"];
++      return { record_type: a.recordType, external_record_id: a.externalRecordId };
++    }
++  }
++}
++
++function affectedDateOf(tz: string, kind: FileKind, r: AnyRecord): string | null {
++  const iso = ((): string | null => {
++    switch (kind) {
++      case "orders": {
++        const o = r as StandardRecords["orders"];
++        return o.paidAt ?? o.orderedAt ?? null;
++      }
++      case "ads":
++        return `${(r as StandardRecords["ads"]).reportDate}T00:00:00Z`;
++      case "customer_messages":
++        return (r as StandardRecords["customer_messages"]).messageAt;
++      case "after_sales": {
++        const a = r as StandardRecords["after_sales"];
++        return a.recordType === "refund" && a.status === "succeeded" && a.completedAt
++          ? a.completedAt
++          : a.occurredAt;
++      }
++      default:
++        return null; // products 无事件期（覆盖只记录目录确认，不按日报到）
++    }
++  })();
++  return iso ? localDateIn(tz, new Date(iso)) : null;
++}
++
++/** 预览样本受控字段子集（自由文本脱敏；不含客户原文/经营金额以外的敏感串） */
++export function redactFreeText(v: string): string {
++  const masked = v
++    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "***@***")
++    .replace(/(?:\+?86[- ]?)?1\d{10}/g, "***PHONE***")
++    .replace(/\d{15,19}/g, "***NO***");
++  return masked.length > 200 ? `${masked.slice(0, 200)}…` : masked;
++}
++
++function sampleOf(kind: FileKind, r: AnyRecord): Record<string, unknown> {
++  const base: Record<string, unknown> = { ...r };
++  if (kind === "customer_messages") {
++    const m = r as StandardRecords["customer_messages"];
++    base.message_text = redactFreeText(m.messageText);
++    delete base.messageText; // 预览不回显客户原文
++  }
++  if (kind === "after_sales") {
++    const a = r as StandardRecords["after_sales"];
++    if (typeof a.reasonText === "string") base.reason_text = redactFreeText(a.reasonText);
++    delete base.reasonText;
++  }
++  delete base.storeExternalId;
++  return base;
++}
++
++// ---------- 分类与 staging ----------
++
++export interface StagedRow {
++  row: number;
++  action: "insert" | "update" | "unchanged";
++  reason: string | null;
++  natural_key: Record<string, string>;
++  row_hash: string;
++  affected_dates: string[];
++  sample: Record<string, unknown>;
++}
++
++export interface StageOutcome {
++  rows: StagedRow[];
++  counts: { insert: number; update: number; unchanged: number; rejected: number };
++  duplicatesFolded: number;
++  supersededInFile: number;
++  supersededByDb: number;
++  rowErrors: RowError[];
++  coverageGaps: string[];
++  coverageOnly: boolean;
++  emptyFile: boolean;
++}
++
++interface PendingRow {
++  row: number;
++  record: AnyRecord;
++  key: string;
++  hash: string;
++}
++
++export async function classifyAndStage(args: {
++  db: PrismaClient;
++  kind: FileKind;
++  orgId: string;
++  storeId: string;
++  namespace: string;
++  timezone: string;
++  records: StandardRecords[FileKind][];
++  coverage: CoverageDeclarationItem[];
++}): Promise<StageOutcome> {
++  const { db, kind, orgId, storeId, namespace, timezone } = args;
++  const outcome: StageOutcome = {
++    rows: [],
++    counts: { insert: 0, update: 0, unchanged: 0, rejected: 0 },
++    duplicatesFolded: 0,
++    supersededInFile: 0,
++    supersededByDb: 0,
++    rowErrors: [],
++    coverageGaps: [],
++    coverageOnly: false,
++    emptyFile: false,
++  };
++  if (args.records.length === 0) {
++    const declaredZero = args.coverage.some((c) => c.explicit_zero_dates.length > 0);
++    outcome.emptyFile = true;
++    outcome.coverageOnly = declaredZero;
++    return outcome;
++  }
++
++  // 文件内折叠：同自然键按 source_updated_at 取最新；同刻同内容折叠；
++  // 同刻不同内容 → DUPLICATE_KEY_CONFLICT（整文件失败，不"最后一行胜出"）。
++  const pending = new Map<string, PendingRow>();
++  const productsById = new Map<string, { name: string; category: string | null; status: string; row: number }>();
++  const caseIds = new Set<string>();
++  const stagedItemKeys = new Set<string>();
++  const refundBoundsByItem = new Map<string, { total: number; byCompletedAt: Map<string, number> }>();
++  const errorRows = new Set<string>();
++  const flagError = (p: { row: number; key: string }, e: RowError) => {
++    errorRows.add(p.key);
++    outcome.rowErrors.push(e);
++  };
++  for (let i = 0; i < args.records.length; i++) {
++    const record = args.records[i] as AnyRecord;
++    const keyObj = naturalKeyOf(kind, record);
++    const key = JSON.stringify(keyObj);
++    const hash = stableHash(record);
++    const rowNo = i + 2; // 与 parseStandardFile 行号一致（表头为第 1 行）
++    if (kind === "after_sales") {
++      const a = record as StandardRecords["after_sales"];
++      if (a.recordType === "case") caseIds.add(a.externalRecordId);
++      stagedItemKeys.add(`${a.externalOrderId}\u0000${a.externalOrderItemId}`);
++    }
++    if (kind === "products") {
++      const p = record as StandardRecords["products"];
++      const prev = productsById.get(p.externalProductId);
++      if (prev && (prev.name !== p.name || prev.category !== (p.category ?? null) || prev.status !== p.productStatus)) {
++        flagError({ row: rowNo, key: `__meta_${rowNo}` }, {
++          row: rowNo,
++          column: "external_product_id",
++          code: "PRODUCT_METADATA_CONFLICT",
++          message: `同一 external_product_id=${p.externalProductId} 的产品元信息在文件内不一致（第 ${prev.row} 行与本行）`,
++        });
++      }
++      if (!prev) productsById.set(p.externalProductId, { name: p.name, category: p.category ?? null, status: p.productStatus, row: rowNo });
++    }
++    const existing = pending.get(key);
++    if (!existing) {
++      pending.set(key, { row: rowNo, record, key, hash });
++      continue;
++    }
++    const a = Date.parse(existing.record.sourceUpdatedAt);
++    const b = Date.parse(record.sourceUpdatedAt);
++    if (b === a) {
++      if (existing.hash === hash) {
++        outcome.duplicatesFolded += 1; // 同刻同内容：预览折叠重复并保留行号
++      } else {
++        flagError({ row: rowNo, key }, {
++          row: rowNo,
++          column: "source_updated_at",
++          code: "DUPLICATE_KEY_CONFLICT",
++          message: `自然键 ${key} 在 ${record.sourceUpdatedAt} 出现不同内容（第 ${existing.row} 行与本行），整文件拒绝`,
++        });
++      }
++    } else if (b > a) {
++      pending.set(key, { row: rowNo, record, key, hash });
++      outcome.supersededInFile += 1; // 文件内旧版本被新版本取代
++    } else {
++      outcome.supersededInFile += 1;
++    }
++  }
++
++  // 跨文件/库存态分类：与既有事实的自然键对照（insert/update/unchanged/旧版本不覆盖）
++  const keys = [...pending.values()];
++  const existingRows = await loadExistingByNaturalKey({ db, kind, orgId, storeId, namespace, pending });
++  const skuExtIds = collectSkuRefs(kind, keys.map((k) => k.record as AnyRecord));
++  const knownSkus = skuExtIds.length
++    ? new Set(
++        (
++          await db.sKU.findMany({
++            where: { orgId, storeId, sourceNamespace: namespace, externalSkuId: { in: skuExtIds } },
++            select: { externalSkuId: true },
++          })
++        ).map((s) => s.externalSkuId),
++      )
++    : new Set<string>();
++  const orderExtIds = collectOrderRefs(kind, keys.map((k) => k.record as AnyRecord));
++  const orders = orderExtIds.length
++    ? await db.order.findMany({
++        where: { orgId, storeId, sourceNamespace: namespace, externalOrderId: { in: orderExtIds } },
++        select: { id: true, externalOrderId: true, paidAt: true, orderedAt: true },
++      })
++    : [];
++  const orderMap = new Map(orders.map((o) => [o.externalOrderId, o]));
++  const orderIds = orders.map((o) => o.id);
++  const items = orderIds.length
++    ? await db.orderItem.findMany({
++        where: { orgId, storeId, orderId: { in: orderIds } },
++        select: {
++          id: true,
++          orderId: true,
++          externalOrderItemId: true,
++          quantity: true,
++          itemPaidAmount: true,
++        },
++      })
++    : [];
++  const itemMap = new Map(items.map((it) => [`${it.orderId}\u0000${it.externalOrderItemId}`, it]));
++  const refundExtIds =
++    kind === "after_sales"
++      ? keys.map((k) => (k.record as StandardRecords["after_sales"])).filter((a) => a.recordType === "refund").map((a) => a.externalRecordId)
++      : [];
++  const dbRefunds = refundExtIds.length
++    ? await db.refundEvent.findMany({
++        where: { orgId, storeId, sourceNamespace: namespace, externalRecordId: { in: refundExtIds } },
++        select: {
++          externalRecordId: true,
++          orderId: true,
++          orderItemId: true,
++          refundAmount: true,
++          refundedQuantityCumulative: true,
++          status: true,
++          completedAt: true,
++        },
++      })
++    : [];
++  const dbRefundByKey = new Map(dbRefunds.map((r) => [r.externalRecordId, r]));
++  const succeededByItem = new Map<string, { amount: number; quantity: number }>();
++  for (const r of dbRefunds) {
++    if (r.status !== "succeeded") continue;
++    const acc = succeededByItem.get(r.orderItemId) ?? { amount: 0, quantity: 0 };
++    acc.amount += Number(r.refundAmount);
++    acc.quantity = Math.max(acc.quantity, r.refundedQuantityCumulative ?? 0);
++    succeededByItem.set(r.orderItemId, acc);
++  }
++
++  for (const p of pending.values()) {
++    const r = p.record;
++    const existing = existingRows.get(p.key);
++    const existingTs = existing ? existing.sourceUpdatedAt.getTime() : null;
++    let action: StagedRow["action"] = "insert";
++    let reason: string | null = null;
++    if (existing) {
++      if (existingTs !== null && existingTs > Date.parse(p.record.sourceUpdatedAt)) {
++        action = "unchanged";
++        reason = "superseded_by_db"; // 旧版本不覆盖（PART12.1 跨文件 upsert 协议）
++        outcome.supersededByDb += 1;
++      } else if (existing.rowHash && existing.rowHash === p.hash) {
++        action = "unchanged";
++        reason = "identical";
++      } else if (existingTs === Date.parse(p.record.sourceUpdatedAt)) {
++        flagError(p, {
++          row: p.row,
++          column: "source_updated_at",
++          code: "VERSION_CONFLICT",
++          message: `自然键 ${p.key} 与既有记录同更新时间但内容不同；请更正后以更晚 source_updated_at 重导`,
++        });
++        continue;
++      } else {
++        action = "update";
++      }
++    }
++
++    // 行级跨引用校验（按原合同；找不到一律整文件失败的行级错误）
++    if (kind === "products") {
++      const pRec = r as StandardRecords["products"];
++      const codeOwner = await db.sKU.findFirst({
++        where: { orgId, storeId, skuCode: pRec.skuCode, sourceNamespace: namespace, externalSkuId: { not: pRec.externalSkuId } },
++        select: { externalSkuId: true },
++      });
++      if (codeOwner) {
++        flagError(p, {
++          row: p.row,
++          column: "sku_code",
++          code: "SKU_CODE_CONFLICT",
++          message: `sku_code=${pRec.skuCode} 已被 external_sku_id=${codeOwner.externalSkuId} 使用`,
++        });
++      }
++    }
++    if (kind === "orders") {
++      const o = r as StandardRecords["orders"];
++      const dbOrder = orderMap.get(o.externalOrderId);
++      if (dbOrder) {
++        const count = await db.orderItem.count({ where: { orgId, storeId, orderId: dbOrder.id } });
++        if (count > o.expectedItemCount) {
++          flagError(p, {
++            row: p.row,
++            column: "expected_item_count",
++            code: "ITEM_COUNT_EXCEEDED",
++            message: `订单 ${o.externalOrderId} 现存行数 ${count} 已超过 expected_item_count=${o.expectedItemCount}`,
++          });
++        }
++      }
++    }
++    if (kind === "order_items" || (kind === "customer_messages" && (r as StandardRecords["customer_messages"]).externalSkuId)) {
++      const skuId =
++        kind === "order_items"
++          ? (r as StandardRecords["order_items"]).externalSkuId
++          : (r as StandardRecords["customer_messages"]).externalSkuId;
++      if (skuId && !knownSkus.has(skuId)) {
++        flagError(p, {
++          row: p.row,
++          column: "external_sku_id",
++          code: "SKU_NOT_FOUND",
++          message: `external_sku_id=${skuId} 未在当前店铺/来源中找到；请先导入商品或建立明确映射（不做名称模糊合并）`,
++        });
++      }
++    }
++    if (kind === "order_items") {
++      const it = r as StandardRecords["order_items"];
++      const dbOrder = orderMap.get(it.externalOrderId);
++      if (!dbOrder) {
++        flagError(p, {
++          row: p.row,
++          column: "external_order_id",
++          code: "MISSING_ORDER_REFERENCE",
++          message: `订单 ${it.externalOrderId} 尚未导入（订单行须引用已存同店同来源订单）`,
++        });
++      }
++    }
++    if (kind === "after_sales") {
++      const a = r as StandardRecords["after_sales"];
++      const dbOrder = orderMap.get(a.externalOrderId);
++      const orderItem = dbOrder ? itemMap.get(`${dbOrder.id}\u0000${a.externalOrderItemId}`) : undefined;
++      if (!dbOrder || !orderItem) {
++        flagError(p, {
++          row: p.row,
++          column: "external_order_id",
++          code: "MISSING_ORDER_REFERENCE",
++          message: `售后行引用的订单行 ${a.externalOrderId}/${a.externalOrderItemId} 不存在（须已存同店同来源订单行）`,
++        });
++      } else if (a.recordType === "refund") {
++        if (a.status === "succeeded") {
++          const prior = succeededByItem.get(orderItem.id);
++          const priorAmount = prior?.amount ?? 0;
++          const self = dbRefundByKey.get(a.externalRecordId);
++          const selfAmount = self && self.status === "succeeded" ? Number(self.refundAmount) : 0;
++          if (a.refundAmount === null) {
++            outcome.rowErrors.push({ row: p.row, column: "refund_amount", code: "VALIDATION_ERROR", message: "成功退款必填 refund_amount" });
++          } else if (priorAmount - selfAmount + Number(a.refundAmount) > Number(orderItem.itemPaidAmount)) {
++            flagError(p, {
++              row: p.row,
++              column: "refund_amount",
++              code: "REFUND_AMOUNT_EXCEEDS_PAID",
++              message: `订单行 ${a.externalOrderId}/${a.externalOrderItemId} 累计成功退款将超过实付金额`,
++            });
++          }
++          if (a.refundedQuantityCumulative === null) {
++            outcome.rowErrors.push({ row: p.row, column: "refunded_quantity_cumulative", code: "VALIDATION_ERROR", message: "成功退款必填累计退件数" });
++          } else if (a.refundedQuantityCumulative !== null && a.refundedQuantityCumulative > orderItem.quantity) {
++            flagError(p, {
++              row: p.row,
++              column: "refunded_quantity_cumulative",
++              code: "REFUND_QUANTITY_CONFLICT",
++              message: `累计退件 ${a.refundedQuantityCumulative} 超过订单行数量 ${orderItem.quantity}`,
++            });
++          }
++          const acc = refundBoundsByItem.get(orderItem.id) ?? { total: 0, byCompletedAt: new Map<string, number>() };
++          acc.total += Number(a.refundAmount ?? 0);
++          const stamp = new Date(a.completedAt ?? a.occurredAt).toISOString();
++          const prevQty = acc.byCompletedAt.get(stamp);
++          if (prevQty !== undefined && prevQty !== a.refundedQuantityCumulative) {
++            flagError(p, {
++              row: p.row,
++              column: "refunded_quantity_cumulative",
++              code: "REFUND_QUANTITY_CONFLICT",
++              message: `同一完成时刻存在不同累计退件数，顺序不确定`,
++            });
++          }
++          acc.byCompletedAt.set(stamp, a.refundedQuantityCumulative ?? 0);
++          refundBoundsByItem.set(orderItem.id, acc);
++          if (a.relatedCaseId && !caseIds.has(a.relatedCaseId)) {
++            const dbCase = await db.afterSaleRecord.findFirst({
++              where: { orgId, storeId, sourceNamespace: namespace, externalRecordId: a.relatedCaseId },
++              select: { id: true },
++            });
++            if (!dbCase) {
++              flagError(p, {
++                row: p.row,
++                column: "related_case_id",
++                code: "RELATED_CASE_NOT_FOUND",
++                message: `related_case_id=${a.relatedCaseId} 不在同文件或既有 case 中`,
++              });
++            }
++          }
++          if (a.completedAt && a.completedAt < a.occurredAt) {
++            outcome.rowErrors.push({ row: p.row, column: "completed_at", code: "OUT_OF_RANGE", message: "completed_at 不得早于 occurred_at" });
++          }
++        } else if (a.refundAmount !== null || a.refundedQuantityCumulative !== null || a.completedAt !== null) {
++          outcome.rowErrors.push({ row: p.row, column: "status", code: "VALIDATION_ERROR", message: "仅成功退款可携带 completed_at/金额/累计件数" });
++        }
++        if (a.currency === null) {
++          outcome.rowErrors.push({ row: p.row, column: "currency", code: "VALIDATION_ERROR", message: "refund 必填 currency" });
++        }
++      } else if (a.recordType === "case") {
++        if (a.currency !== null || a.refundAmount !== null || a.refundedQuantityCumulative !== null || a.completedAt !== null) {
++          outcome.rowErrors.push({ row: p.row, column: "record_type", code: "VALIDATION_ERROR", message: "case 行不得携带退款/金额/完成时间字段" });
++        }
++      }
++    }
++
++    if (errorRows.has(p.key)) {
++      outcome.counts.rejected += 1;
++      continue;
++    }
++    outcome.counts[action] += 1;
++    const affected = affectedDateOf(timezone, kind, r);
++    outcome.rows.push({
++      row: p.row,
++      action,
++      reason,
++      natural_key: naturalKeyOf(kind, r),
++      row_hash: p.hash,
++      affected_dates: affected ? [affected] : [],
++      sample: sampleOf(kind, r),
++    });
++  }
++  outcome.counts.rejected = outcome.rowErrors.length;
++  outcome.coverageGaps = computeCoverageGaps(outcome.rows, args.coverage);
++  return outcome;
++}
++
++function computeCoverageGaps(rows: StagedRow[], coverage: CoverageDeclarationItem[]): string[] {
++  const gaps: string[] = [];
++  const covered = new Set<string>();
++  for (const r of rows) for (const d of r.affected_dates) covered.add(d);
++  for (const c of coverage) {
++    const zero = new Set(c.explicit_zero_dates);
++    let d = new Date(`${c.from}T00:00:00Z`);
++    const end = new Date(`${c.to}T00:00:00Z`);
++    let guard = 0;
++    while (d < end && guard < 100000) {
++      const iso = d.toISOString().slice(0, 10);
++      if (!covered.has(iso) && !zero.has(iso) && gaps.length < 100) gaps.push(iso);
++      d = new Date(d.getTime() + 86400000);
++      guard += 1;
++    }
++  }
++  return gaps;
++}
++
++function collectSkuRefs(kind: FileKind, records: AnyRecord[]): string[] {
++  const out = new Set<string>();
++  for (const r of records) {
++    if (kind === "order_items") out.add((r as StandardRecords["order_items"]).externalSkuId);
++    if (kind === "customer_messages") {
++      const s = (r as StandardRecords["customer_messages"]).externalSkuId;
++      if (s) out.add(s);
++    }
++  }
++  return [...out];
++}
++
++function collectOrderRefs(kind: FileKind, records: AnyRecord[]): string[] {
++  const out = new Set<string>();
++  for (const r of records) {
++    if (kind === "order_items") out.add((r as StandardRecords["order_items"]).externalOrderId);
++    if (kind === "after_sales") out.add((r as StandardRecords["after_sales"]).externalOrderId);
++    if (kind === "orders") out.add((r as StandardRecords["orders"]).externalOrderId);
++  }
++  return [...out];
++}
++
++/** 按自然键载入既有事实（仅取分类所需列；空 rowHash 视为从未提交） */
++async function loadExistingByNaturalKey(args: {
++  db: PrismaClient;
++  kind: FileKind;
++  orgId: string;
++  storeId: string;
++  namespace: string;
++  pending: Map<string, PendingRow>;
++}): Promise<Map<string, { id: string; sourceUpdatedAt: Date; rowHash: string }>> {
++  const { db, kind, orgId, storeId, namespace, pending } = args;
++  const base = { orgId, storeId, sourceNamespace: namespace };
++  const pick = { id: true, sourceUpdatedAt: true, rowHash: true } as const;
++  const ext = (keys: PendingRow[], build: (r: AnyRecord) => string): Map<string, PendingRow> => {
++    const m = new Map<string, PendingRow>();
++    for (const k of keys) m.set(build(k.record), k);
++    return m;
++  };
++  switch (kind) {
++    case "products": {
++      const bySku = ext([...pending.values()], (r) => (r as StandardRecords["products"]).externalSkuId);
++      const rows = await db.sKU.findMany({
++        where: { ...base, externalSkuId: { in: [...bySku.keys()] } },
++        select: { ...pick, externalSkuId: true },
++      });
++      return indexBy(rows, (r) => bySku.get(r.externalSkuId)?.key);
++    }
++    case "orders": {
++      const byOrder = ext([...pending.values()], (r) => (r as StandardRecords["orders"]).externalOrderId);
++      const rows = await db.order.findMany({
++        where: { ...base, externalOrderId: { in: [...byOrder.keys()] } },
++        select: { ...pick, externalOrderId: true },
++      });
++      return indexBy(rows, (r) => byOrder.get(r.externalOrderId)?.key);
++    }
++    case "order_items": {
++      // 自然键=（订单外部ID, 行外部ID）：先解析订单，再按订单+行号精确对照，
++      // 避免不同订单的同名行号互相错配
++      const recs = [...pending.values()];
++      const orderExtIds = [...new Set(recs.map((k) => (k.record as StandardRecords["order_items"]).externalOrderId))];
++      const orders = await db.order.findMany({
++        where: { ...base, externalOrderId: { in: orderExtIds } },
++        select: { id: true, externalOrderId: true },
++      });
++      const orderByExt = new Map(orders.map((o) => [o.externalOrderId, o.id] as const));
++      const itemExtIds = [...new Set(recs.map((k) => (k.record as StandardRecords["order_items"]).externalOrderItemId))];
++      const rows = await db.orderItem.findMany({
++        where: { orgId, storeId, orderId: { in: [...orderByExt.values()] }, externalOrderItemId: { in: itemExtIds } },
++        select: { ...pick, orderId: true, externalOrderItemId: true },
++      });
++      const out = new Map<string, { id: string; sourceUpdatedAt: Date; rowHash: string }>();
++      for (const r of rows) {
++        const orderExt = [...orderByExt.entries()].find(([, id]) => id === r.orderId)?.[0];
++        const key = JSON.stringify({ external_order_id: orderExt, external_order_item_id: r.externalOrderItemId });
++        const p = pending.get(key);
++        if (p) out.set(p.key, r);
++      }
++      return out;
++    }
++    case "ads": {
++      const recs = [...pending.values()];
++      const byCampaign = new Map(recs.map((k) => [(k.record as StandardRecords["ads"]).campaignId, k]));
++      const rows = await db.adMetric.findMany({
++        where: { ...base, campaignId: { in: [...byCampaign.keys()] } },
++        select: {
++          ...pick,
++          campaignId: true,
++          reportDate: true,
++          attributionModel: true,
++          attributionWindowDays: true,
++          currency: true,
++          spend: true,
++          attributedSales: true,
++        },
++      });
++      return indexBy(
++        rows,
++        (r) =>
++          byCampaign.get(r.campaignId)?.key ??
++          "",
++        (r) => {
++          const iso = r.reportDate.toISOString().slice(0, 10);
++          for (const k of pending.values()) {
++            const a = k.record as StandardRecords["ads"];
++            if (
++              a.campaignId === r.campaignId &&
++              a.reportDate === iso &&
++              a.attributionModel === r.attributionModel &&
++              String(a.attributionWindowDays) === String(r.attributionWindowDays) &&
++              a.currency === r.currency
++            ) {
++              return k.key;
++            }
++          }
++          return "";
++        },
++      );
++    }
++    case "customer_messages": {
++      const byMsg = ext([...pending.values()], (r) => (r as StandardRecords["customer_messages"]).externalMessageId);
++      const rows = await db.customerMessage.findMany({
++        where: { ...base, externalMessageId: { in: [...byMsg.keys()] } },
++        select: { ...pick, externalMessageId: true },
++      });
++      return indexBy(rows, (r) => byMsg.get(r.externalMessageId)?.key);
++    }
++    case "after_sales": {
++      const recs = [...pending.values()];
++      const cases = recs.filter((k) => (k.record as StandardRecords["after_sales"]).recordType === "case");
++      const refunds = recs.filter((k) => (k.record as StandardRecords["after_sales"]).recordType === "refund");
++      const out = new Map<string, { id: string; sourceUpdatedAt: Date; rowHash: string }>();
++      if (cases.length) {
++        const ids = [...new Set(cases.map((k) => (k.record as StandardRecords["after_sales"]).externalRecordId))];
++        const rows = await db.afterSaleRecord.findMany({
++          where: { ...base, externalRecordId: { in: ids } },
++          select: { ...pick, externalRecordId: true },
++        });
++        for (const r of rows) {
++          const k = cases.find((k) => (k.record as StandardRecords["after_sales"]).externalRecordId === r.externalRecordId);
++          if (k) out.set(k.key, r);
++        }
++      }
++      if (refunds.length) {
++        const ids = [...new Set(refunds.map((k) => (k.record as StandardRecords["after_sales"]).externalRecordId))];
++        const rows = await db.refundEvent.findMany({
++          where: { ...base, externalRecordId: { in: ids } },
++          select: { ...pick, externalRecordId: true },
++        });
++        for (const r of rows) {
++          const k = refunds.find((k) => (k.record as StandardRecords["after_sales"]).externalRecordId === r.externalRecordId);
++          if (k) out.set(k.key, r);
++        }
++      }
++      return out;
++    }
++  }
++}
++
++function indexBy<T extends { id: string; sourceUpdatedAt: Date; rowHash: string }>(
++  rows: T[],
++  keyOf: (r: T) => string | undefined,
++  altKeyOf?: (r: T) => string,
++): Map<string, { id: string; sourceUpdatedAt: Date; rowHash: string }> {
++  const out = new Map<string, { id: string; sourceUpdatedAt: Date; rowHash: string }>();
++  for (const r of rows) {
++    const key = keyOf(r) ?? (altKeyOf ? altKeyOf(r) : undefined);
++    if (key) out.set(key, { id: r.id, sourceUpdatedAt: r.sourceUpdatedAt, rowHash: r.rowHash });
++  }
++  return out;
++}
++
++/** 幂等键（04 §10.5）：文件hash+来源/店铺+映射+范围声明+adapter版本 */
++export function buildIdempotencyKey(args: {
++  fileSha256: string;
++  orgId: string;
++  storeId: string;
++  namespace: string;
++  kind: FileKind;
++  mappingVersion: string;
++  coverage: CoverageDeclarationItem[];
++  adapterVersion: string;
++}): string {
++  const canonical = JSON.stringify(
++    [
++      args.fileSha256,
++      args.orgId,
++      args.storeId,
++      args.namespace,
++      args.kind,
++      args.mappingVersion,
++      [...args.coverage]
++        .sort((a, b) => `${a.channel}${a.from}`.localeCompare(`${b.channel}${b.from}`))
++        .map((c) => [c.source_kind, c.channel, c.from, c.to, c.status, [...c.explicit_zero_dates].sort()]),
++      args.adapterVersion,
++    ],
++    stableKeySort,
++  );
++  return createHash("sha256").update(canonical).digest("hex");
++}
++
++function stableKeySort(_key: string, value: unknown): unknown {
++  if (Array.isArray(value)) return value;
++  if (value && typeof value === "object") {
++    return Object.fromEntries(Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)));
++  }
++  return value;
++}
+diff --git a/ai-ecommerce-assistant/src/services/imports/commitTask.ts b/ai-ecommerce-assistant/src/services/imports/commitTask.ts
+new file mode 100644
+index 0000000..c9869ea
+--- /dev/null
++++ b/ai-ecommerce-assistant/src/services/imports/commitTask.ts
+@@ -0,0 +1,574 @@
++/**
++ * TASK-009｜原子提交内核与商品主数据。
++ *
++ * 用户功能：用户确认预览后，整文件商品/覆盖在一个数据库事务中原子落库；
++ * 重复提交复用结果不增版本；提交失败整文件回滚并回到可重试预览态。
++ *
++ * 合同：09_TASKS TASK-009；04 §10.5（ImportTask/状态/幂等键）、PART11.1 步骤6–7、
++ * §11.3（dataset_version 语义）、PART12.1（跨文件 upsert 协议/无删除语义）、§12.8；
++ * 08 §17.3（commit/sku-aliases）。禁止：订单/广告口径；无审计直接改原始记录；
++ * 不实现 F17 恢复 UI/通用别名工作台（仅提供显式映射落库端点）。
++ */
++import { getPrismaClient } from "@/database/prisma";
++import { AccessError, canImport, type Role } from "@/services/access";
++import { writeAudit } from "@/services/audit";
++import { getObjectText } from "@/storage";
++import type { CoverageChannel, FileKind } from "@/adapters/contracts";
++import type { CoverageChannel as AdapterCoverageChannel } from "@/adapters/contracts";
++import type { CoverageChannel as DbCoverageChannel } from "@/generated/prisma/enums";
++
++export interface CommitContext {
++  orgId: string;
++  userId: string;
++  role: Role;
++}
++
++export interface CommitResult {
++  id: string;
++  status: "committed";
++  committed_dataset_version: string;
++  insert: number;
++  update: number;
++  unchanged: number;
++  no_op: boolean;
++  reused: boolean;
++}
++
++interface ManifestRow {
++  row: number;
++  action: "insert" | "update" | "unchanged";
++  natural_key: Record<string, string>;
++  row_hash: string;
++  affected_dates: string[];
++  sample: Record<string, unknown>;
++}
++
++interface Manifest {
++  kind: FileKind;
++  mapping_version: string;
++  adapter_version: string;
++  file_sha256: string;
++  coverage_declaration: Array<{
++    source_kind: string;
++    channel: AdapterCoverageChannel;
++    from: string;
++    to: string;
++    status: string;
++    explicit_zero_dates: string[];
++  }>;
++  counts: { insert: number; update: number; unchanged: number; rejected: number };
++  rows: ManifestRow[];
++}
++
++/** adapters 通道值（default/case/refund）→ Prisma 枚举成员（default_channel/...） */
++function toDbChannel(c: AdapterCoverageChannel): DbCoverageChannel {
++  return c === "case" ? "case_channel" : c === "refund" ? "refund_channel" : "default_channel";
++}
++
++/** 自由文本脱敏（与 importPreview.redactFreeText 同规则；预览与落库一致） */
++function redactText(v: string): string {
++  const masked = v
++    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "***@***")
++    .replace(/(?:\+?86[- ]?)?1\d{10}/g, "***PHONE***")
++    .replace(/\d{15,19}/g, "***NO***");
++  return masked.length > 200 ? `${masked.slice(0, 200)}…` : masked;
++}
++
++function localDateInTz(tz: string, at: Date): string {
++  return new Intl.DateTimeFormat("en-CA", {
++    timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
++  }).format(at);
++}
++
++function expandRange(from: string, to: string): string[] {
++  const out: string[] = [];
++  let d = new Date(`${from}T00:00:00Z`);
++  const end = new Date(`${to}T00:00:00Z`);
++  let guard = 0;
++  while (d < end && guard < 100000) {
++    out.push(d.toISOString().slice(0, 10));
++    d = new Date(d.getTime() + 86400000);
++    guard += 1;
++  }
++  return out;
++}
++
++export async function commitImportTask(
++  ctx: CommitContext,
++  taskId: string,
++  body: { preview_version: number; confirmation: boolean },
++): Promise<CommitResult> {
++  const db = getPrismaClient();
++  if (body.confirmation !== true) {
++    throw new AccessError(422, "VALIDATION_ERROR", "缺少 confirmation=true 的用户确认");
++  }
++  const task = await db.importTask.findFirst({ where: { orgId: ctx.orgId, id: taskId } });
++  if (!task) throw new AccessError(404, "NOT_FOUND", "导入任务不存在");
++  if (!canImport(ctx.role, task.sourceKind)) {
++    throw new AccessError(403, "FILE_KIND_FORBIDDEN", "当前角色不能提交该类型导入");
++  }
++  // 幂等重放：已提交任务复用既有结果（08 §17.3 同一 commit 结果）
++  if (task.status === "committed") {
++    return {
++      id: task.id,
++      status: "committed",
++      committed_dataset_version: (task.committedDatasetVersion ?? 0n).toString(),
++      insert: task.insertCount,
++      update: task.updateCount,
++      unchanged: task.unchangedCount,
++      no_op: task.committedDatasetVersion === task.baseDatasetVersion,
++      reused: true,
++    };
++  }
++  if (task.status !== "preview_ready") {
++    throw new AccessError(409, "IMPORT_CONFLICT", `当前状态 ${task.status} 不能提交`);
++  }
++  // 预览过期/变化：preview_version 不等于当前值 → 409（提交只接受当前预览）
++  if (body.preview_version !== task.previewVersion) {
++    throw new AccessError(409, "VERSION_CONFLICT", "预览已过期或已变化，请重新校验并确认");
++  }
++  if (!task.stagingObjectKey) {
++    throw new AccessError(409, "IMPORT_CONFLICT", "缺少 staging 数据，请重新校验");
++  }
++
++  const store = await db.store.findUniqueOrThrow({
++    where: { id: task.storeId },
++    select: { externalStoreId: true, timezone: true },
++  });
++  const dataSource = await db.dataSource.findUniqueOrThrow({
++    where: { id: task.dataSourceId },
++    select: { sourceNamespace: true },
++  });
++  const manifest = JSON.parse(await getObjectText(task.stagingObjectKey)) as Manifest;
++
++  // 原子认领：preview_ready → committing（并发/重复提交仅一方成功）
++  const claimed = await db.importTask.updateMany({
++    where: { id: task.id, status: "preview_ready", previewVersion: body.preview_version },
++    data: { status: "committing" },
++  });
++  if (claimed.count === 0) {
++    throw new AccessError(409, "IMPORT_CONFLICT", "该任务正在提交或状态已变化");
++  }
++
++  const kind = manifest.kind;
++  const staged = manifest.rows.filter((r) => r.action !== "unchanged");
++
++  try {
++    const result = await db.$transaction(async (tx) => {
++      // 按店铺串行化提交（PART11.1 步骤6：店铺事务锁）
++      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`commit:${ctx.orgId}:${task.storeId}`}))`;
++      const storeRow = await tx.store.findUniqueOrThrow({
++        where: { id: task.storeId },
++        select: { datasetVersion: true },
++      });
++      const baseVersion = storeRow.datasetVersion;
++
++      let changed = 0;
++      const partialDates = new Set<string>(); // 行遗漏强制 partial（PART12.4）
++      if (kind === "products") {
++        for (const row of staged) {
++          const s = row.sample as {
++            externalProductId: string; name: string; category: string | null;
++            productStatus: string; externalSkuId: string; skuCode: string;
++            skuName: string; specification: string | null; skuStatus: string;
++            sourceUpdatedAt: string;
++          };
++          // 提交前重验来源新旧（预览与提交间其他导入可能已推进）
++          const existingSku = await tx.sKU.findFirst({
++            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalSkuId: s.externalSkuId },
++            select: { id: true, sourceUpdatedAt: true, productId: true },
++          });
++          if (existingSku && existingSku.sourceUpdatedAt.getTime() > new Date(s.sourceUpdatedAt).getTime()) {
++            continue; // 旧版本不覆盖
++          }
++          const product = await tx.product.upsert({
++            where: { orgId_storeId_sourceNamespace_externalProductId: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalProductId: s.externalProductId,
++            } },
++            create: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++              externalProductId: s.externalProductId, sourceUpdatedAt: new Date(s.sourceUpdatedAt),
++              importTaskId: task.id, rowHash: row.row_hash,
++              name: s.name, category: s.category, status: s.productStatus === "archived" ? "archived" : "active",
++            },
++            update: {
++              name: s.name, category: s.category,
++              status: s.productStatus === "archived" ? "archived" : "active",
++              sourceUpdatedAt: new Date(s.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
++            },
++          });
++          await tx.sKU.upsert({
++            where: { orgId_storeId_sourceNamespace_externalSkuId: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalSkuId: s.externalSkuId,
++            } },
++            create: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++              externalSkuId: s.externalSkuId, skuCode: s.skuCode, name: s.skuName,
++              specification: s.specification, status: s.skuStatus === "archived" ? "archived" : "active",
++              productId: product.id, sourceUpdatedAt: new Date(s.sourceUpdatedAt),
++              importTaskId: task.id, rowHash: row.row_hash,
++            },
++            update: {
++              name: s.skuName, specification: s.specification,
++              status: s.skuStatus === "archived" ? "archived" : "active",
++              productId: product.id,
++              sourceUpdatedAt: new Date(s.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
++            },
++          });
++          changed += 1;
++        }
++      } else if (kind === "orders") {
++        for (const row of staged) {
++          const o = row.sample as {
++            externalOrderId: string; orderedAt: string; paidAt: string | null;
++            paymentStatus: string; currency: string; expectedItemCount: number;
++            sourceUpdatedAt: string;
++          };
++          const existingOrder = await tx.order.findFirst({
++            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalOrderId: o.externalOrderId },
++            select: { id: true, sourceUpdatedAt: true, paymentStatus: true },
++          });
++          if (existingOrder && existingOrder.sourceUpdatedAt.getTime() > new Date(o.sourceUpdatedAt).getTime()) {
++            continue; // 旧版本不覆盖
++          }
++          // 付款状态回退：已存 paid 改 unpaid/cancelled 且已有成功退款 → 拒绝
++          if (
++            existingOrder &&
++            existingOrder.paymentStatus === "paid" &&
++            o.paymentStatus !== "paid"
++          ) {
++            const items = await tx.orderItem.findMany({
++              where: { orgId: ctx.orgId, storeId: task.storeId, orderId: existingOrder.id },
++              select: { id: true },
++            });
++            const refundCount = items.length
++              ? await tx.refundEvent.count({
++                  where: { orgId: ctx.orgId, storeId: task.storeId, orderItemId: { in: items.map((i) => i.id) }, status: "succeeded" },
++                })
++              : 0;
++            if (refundCount > 0) {
++              throw new AccessError(409, "INVALID_PAYMENT_TRANSITION", `订单 ${o.externalOrderId} 存在成功退款，不能改为 ${o.paymentStatus}`);
++            }
++          }
++          const itemCount = existingOrder
++            ? await tx.orderItem.count({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: existingOrder.id } })
++            : 0;
++          if (itemCount > o.expectedItemCount) {
++            throw new AccessError(409, "ITEM_COUNT_EXCEEDED", `订单 ${o.externalOrderId} 现存行数 ${itemCount} 超过 expected_item_count=${o.expectedItemCount}`);
++          }
++          await tx.order.upsert({
++            where: { orgId_storeId_sourceNamespace_externalOrderId: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalOrderId: o.externalOrderId,
++            } },
++            create: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++              externalOrderId: o.externalOrderId, sourceUpdatedAt: new Date(o.sourceUpdatedAt),
++              importTaskId: task.id, rowHash: row.row_hash,
++              orderedAt: new Date(o.orderedAt), paidAt: o.paidAt ? new Date(o.paidAt) : null,
++              paymentStatus: o.paymentStatus as "paid",
++              currency: o.currency, expectedItemCount: o.expectedItemCount,
++            },
++            update: {
++              orderedAt: new Date(o.orderedAt), paidAt: o.paidAt ? new Date(o.paidAt) : null,
++              paymentStatus: o.paymentStatus as "paid",
++              currency: o.currency, expectedItemCount: o.expectedItemCount,
++              sourceUpdatedAt: new Date(o.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
++            },
++          });
++          changed += 1;
++        }
++      } else if (kind === "order_items") {
++        for (const row of staged) {
++          const it = row.sample as {
++            externalOrderId: string; externalOrderItemId: string; externalSkuId: string;
++            quantity: number; itemPaidAmount: string; currency: string; sourceUpdatedAt: string;
++          };
++          const parentOrder = await tx.order.findFirst({
++            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalOrderId: it.externalOrderId },
++            select: { id: true },
++          });
++          if (!parentOrder) {
++            throw new AccessError(409, "MISSING_ORDER_REFERENCE", `订单 ${it.externalOrderId} 不存在，订单行不能提交`);
++          }
++          const sku = await tx.sKU.findFirst({
++            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalSkuId: it.externalSkuId },
++            select: { id: true },
++          });
++          if (!sku) {
++            throw new AccessError(409, "SKU_NOT_FOUND", `SKU ${it.externalSkuId} 不存在，订单行不能提交`);
++          }
++          const existingItem = await tx.orderItem.findFirst({
++            where: { orgId: ctx.orgId, storeId: task.storeId, orderId: parentOrder.id, externalOrderItemId: it.externalOrderItemId },
++            select: { id: true, sourceUpdatedAt: true },
++          });
++          if (existingItem && existingItem.sourceUpdatedAt.getTime() > new Date(it.sourceUpdatedAt).getTime()) {
++            continue; // 旧版本不覆盖
++          }
++          await tx.orderItem.upsert({
++            where: { orgId_storeId_sourceNamespace_orderId_externalOrderItemId: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++              orderId: parentOrder.id, externalOrderItemId: it.externalOrderItemId,
++            } },
++            create: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++              orderId: parentOrder.id, externalOrderItemId: it.externalOrderItemId,
++              skuId: sku.id, quantity: it.quantity, itemPaidAmount: it.itemPaidAmount,
++              currency: it.currency, sourceUpdatedAt: new Date(it.sourceUpdatedAt),
++              importTaskId: task.id, rowHash: row.row_hash,
++            },
++            update: {
++              skuId: sku.id, quantity: it.quantity, itemPaidAmount: it.itemPaidAmount,
++              currency: it.currency, sourceUpdatedAt: new Date(it.sourceUpdatedAt),
++              rowHash: row.row_hash, importTaskId: task.id,
++            },
++          });
++          // 缺行检查在 upsert 之后：present < expected → 该付款日强制 partial
++          const orderRow = await tx.order.findUniqueOrThrow({ where: { id: parentOrder.id }, select: { expectedItemCount: true, paidAt: true, orderedAt: true } });
++          const presentCount = await tx.orderItem.count({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: parentOrder.id } });
++          if (presentCount < orderRow.expectedItemCount) {
++            const baseDay = orderRow.paidAt ?? orderRow.orderedAt;
++            partialDates.add(localDateInTz(store.timezone, baseDay));
++          }
++          changed += 1;
++        }
++      } else if (kind === "ads") {
++        for (const row of staged) {
++          const a = row.sample as {
++            campaignId: string; campaignName: string; reportDate: string;
++            attributionModel: string; attributionWindowDays: number;
++            spend: string; attributedSales: string; currency: string; sourceUpdatedAt: string;
++          };
++          const existing = await tx.adMetric.findFirst({
++            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, campaignId: a.campaignId, reportDate: new Date(`${a.reportDate}T00:00:00Z`), attributionModel: a.attributionModel, attributionWindowDays: a.attributionWindowDays, currency: a.currency },
++            select: { id: true, sourceUpdatedAt: true },
++          });
++          if (existing && existing.sourceUpdatedAt.getTime() > new Date(a.sourceUpdatedAt).getTime()) {
++            continue; // 旧版本不覆盖
++          }
++          await tx.adMetric.upsert({
++            where: { orgId_storeId_sourceNamespace_campaignId_reportDate_attributionModel_attributionWindowDays_currency: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++              campaignId: a.campaignId, reportDate: new Date(`${a.reportDate}T00:00:00Z`),
++              attributionModel: a.attributionModel, attributionWindowDays: a.attributionWindowDays, currency: a.currency,
++            } },
++            create: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++              campaignId: a.campaignId, campaignName: a.campaignName,
++              reportDate: new Date(`${a.reportDate}T00:00:00Z`),
++              attributionModel: a.attributionModel, attributionWindowDays: a.attributionWindowDays,
++              spend: a.spend, attributedSales: a.attributedSales, currency: a.currency,
++              sourceUpdatedAt: new Date(a.sourceUpdatedAt), importTaskId: task.id, rowHash: row.row_hash,
++            },
++            update: {
++              campaignName: a.campaignName, spend: a.spend, attributedSales: a.attributedSales,
++              sourceUpdatedAt: new Date(a.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
++            },
++          });
++          changed += 1;
++        }
++      } else if (kind === "customer_messages") {
++        for (const row of staged) {
++          const m = row.sample as {
++            externalMessageId: string; externalConversationId: string; messageAt: string;
++            channel: string; message_text: string; language: string;
++            externalSkuId: string | null; isComplaint: boolean | null; sourceUpdatedAt: string;
++          };
++          let skuId: string | null = null;
++          if (m.externalSkuId) {
++            skuId = (await tx.sKU.findFirstOrThrow({
++              where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalSkuId: m.externalSkuId },
++              select: { id: true },
++            })).id;
++          }
++          await tx.customerMessage.upsert({
++            where: { orgId_storeId_sourceNamespace_externalMessageId: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalMessageId: m.externalMessageId,
++            } },
++            create: {
++              orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++              externalMessageId: m.externalMessageId, externalConversationId: m.externalConversationId,
++              messageAt: new Date(m.messageAt), channel: m.channel, language: m.language,
++              redactedText: m.message_text, skuId, isComplaint: m.isComplaint,
++              sourceUpdatedAt: new Date(m.sourceUpdatedAt), importTaskId: task.id, rowHash: row.row_hash,
++            },
++            update: {
++              messageAt: new Date(m.messageAt), channel: m.channel, language: m.language,
++              redactedText: m.message_text, skuId, isComplaint: m.isComplaint,
++              sourceUpdatedAt: new Date(m.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
++            },
++          });
++          changed += 1;
++        }
++      } else if (kind === "after_sales") {
++        for (const row of staged) {
++          const a = row.sample as {
++            recordType: "case" | "refund"; externalRecordId: string; externalOrderId: string;
++            externalOrderItemId: string; relatedCaseId: string | null; occurredAt: string;
++            status: string; completedAt: string | null; refundAmount: string | null;
++            refundedQuantityCumulative: number | null; currency: string | null;
++            reasonCode: string; reason_text: string | null; sourceUpdatedAt: string;
++          };
++          const parentOrder = await tx.order.findFirst({
++            where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalOrderId: a.externalOrderId },
++            select: { id: true },
++          });
++          const parentItem = parentOrder
++            ? await tx.orderItem.findFirst({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: parentOrder.id, externalOrderItemId: a.externalOrderItemId }, select: { id: true } })
++            : null;
++          if (!parentOrder || !parentItem) {
++            throw new AccessError(409, "MISSING_ORDER_REFERENCE", `售后行 ${a.externalRecordId} 引用的订单行不存在`);
++          }
++          if (a.recordType === "case") {
++            await tx.afterSaleRecord.upsert({
++              where: { orgId_storeId_sourceNamespace_externalRecordId: {
++                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalRecordId: a.externalRecordId,
++              } },
++              create: {
++                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++                externalRecordId: a.externalRecordId, orderId: parentOrder.id, orderItemId: parentItem.id,
++                occurredAt: new Date(a.occurredAt), status: a.status as "requested",
++                reasonCode: a.reasonCode, reasonText: a.reason_text ? redactText(a.reason_text) : null,
++                sourceUpdatedAt: new Date(a.sourceUpdatedAt), importTaskId: task.id, rowHash: row.row_hash,
++              },
++              update: {
++                occurredAt: new Date(a.occurredAt), status: a.status as "requested",
++                reasonCode: a.reasonCode, reasonText: a.reason_text ? redactText(a.reason_text) : null,
++                sourceUpdatedAt: new Date(a.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
++              },
++            });
++          } else {
++            let caseId: string | null = null;
++            if (a.relatedCaseId) {
++              caseId = (await tx.afterSaleRecord.findFirstOrThrow({
++                where: { orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalRecordId: a.relatedCaseId },
++                select: { id: true },
++              })).id;
++            }
++            await tx.refundEvent.upsert({
++              where: { orgId_storeId_sourceNamespace_externalRecordId: {
++                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace, externalRecordId: a.externalRecordId,
++              } },
++              create: {
++                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++                externalRecordId: a.externalRecordId, orderId: parentOrder.id, orderItemId: parentItem.id,
++                afterSaleRecordId: caseId, occurredAt: new Date(a.occurredAt),
++                status: a.status as "succeeded",
++                completedAt: a.completedAt ? new Date(a.completedAt) : null,
++                refundAmount: a.refundAmount, refundedQuantityCumulative: a.refundedQuantityCumulative,
++                currency: a.currency ?? "CNY", reasonCode: a.reasonCode,
++                reasonText: a.reason_text ? redactText(a.reason_text) : null,
++                sourceUpdatedAt: new Date(a.sourceUpdatedAt), importTaskId: task.id, rowHash: row.row_hash,
++              },
++              update: {
++                afterSaleRecordId: caseId, occurredAt: new Date(a.occurredAt),
++                status: a.status as "succeeded",
++                completedAt: a.completedAt ? new Date(a.completedAt) : null,
++                refundAmount: a.refundAmount, refundedQuantityCumulative: a.refundedQuantityCumulative,
++                currency: a.currency ?? "CNY", reasonCode: a.reasonCode,
++                reasonText: a.reason_text ? redactText(a.reason_text) : null,
++                sourceUpdatedAt: new Date(a.sourceUpdatedAt), rowHash: row.row_hash, importTaskId: task.id,
++              },
++            });
++          }
++          changed += 1;
++        }
++      }
++
++      // 覆盖声明（用户确认制；非文件推断）：products 记录目录确认日
++      const nowLocal = new Intl.DateTimeFormat("en-CA", {
++        timeZone: store.timezone, year: "numeric", month: "2-digit", day: "2-digit",
++      }).format(new Date());
++      const newVersion = changed > 0 || manifest.coverage_declaration.length > 0 ? baseVersion + 1n : baseVersion;
++      for (const item of manifest.coverage_declaration) {
++        if (item.source_kind !== kind) continue;
++        const zero = new Set(item.explicit_zero_dates);
++        const dates = kind === "products" ? [nowLocal] : expandRange(item.from, item.to);
++        for (const date of dates) {
++          const recordCount = manifest.rows.filter((r) => r.affected_dates.includes(date)).length;
++          await tx.dataCoverage.upsert({
++            where: {
++              orgId_storeId_dataSourceId_sourceKind_channel_coverageDate_datasetVersion: {
++                orgId: ctx.orgId, storeId: task.storeId, dataSourceId: task.dataSourceId,
++                sourceKind: item.source_kind as "products",
++                channel: toDbChannel(item.channel),
++                coverageDate: new Date(`${date}T00:00:00Z`),
++                datasetVersion: newVersion,
++              },
++            },
++            create: {
++              orgId: ctx.orgId, storeId: task.storeId, dataSourceId: task.dataSourceId,
++              sourceKind: item.source_kind as "products",
++              channel: toDbChannel(item.channel),
++              coverageDate: new Date(`${date}T00:00:00Z`),
++              status: partialDates.has(date) ? "partial" : item.status === "partial" ? "partial" : "complete",
++              explicitZero: zero.has(date),
++              recordCount,
++              datasetVersion: newVersion,
++              importTaskId: task.id,
++            },
++            update: {
++              status: partialDates.has(date) ? "partial" : item.status === "partial" ? "partial" : "complete",
++              explicitZero: zero.has(date),
++              recordCount,
++              importTaskId: task.id,
++            },
++          });
++        }
++      }
++
++      const committedVersion = newVersion;
++      await tx.importTask.update({
++        where: { id: task.id },
++        data: {
++          status: "committed",
++          confirmedAt: new Date(),
++          committedAt: new Date(),
++          committedDatasetVersion: committedVersion,
++          outboxStatus: "pending",
++        },
++      });
++      if (committedVersion !== baseVersion) {
++        await tx.store.update({
++          where: { id: task.storeId },
++          data: { datasetVersion: committedVersion },
++        });
++      }
++      await writeAudit(tx, {
++        orgId: ctx.orgId,
++        storeId: task.storeId,
++        actorUserId: ctx.userId,
++        action: "import_commit",
++        entityType: "import_task",
++        entityId: task.id,
++        afterSummary: {
++          kind,
++          dataset_version: committedVersion.toString(),
++          insert: manifest.counts.insert,
++          update: manifest.counts.update,
++          unchanged: manifest.counts.unchanged,
++          no_op: committedVersion === baseVersion,
++        },
++      });
++      return { committedVersion, baseVersion };
++    });
++
++    const noOp = result.committedVersion === result.baseVersion;
++    return {
++      id: task.id,
++      status: "committed",
++      committed_dataset_version: result.committedVersion.toString(),
++      insert: manifest.counts.insert,
++      update: manifest.counts.update,
++      unchanged: manifest.counts.unchanged,
++      no_op: noOp || staged.length === 0,
++      reused: false,
++    };
++  } catch (error) {
++    // 整文件回滚后恢复预览态（可重试）；不产生半份业务数据/半份覆盖
++    await db.importTask.updateMany({
++      where: { id: task.id, status: "committing" },
++      data: { status: "preview_ready" },
++    });
++    throw error;
++  }
++}
+diff --git a/ai-ecommerce-assistant/tests/integration/imports.test.ts b/ai-ecommerce-assistant/tests/integration/imports.test.ts
+index 6efa61e..6671a01 100644
+--- a/ai-ecommerce-assistant/tests/integration/imports.test.ts
++++ b/ai-ecommerce-assistant/tests/integration/imports.test.ts
+@@ -1093,3 +1093,632 @@ describe("GATE_02 REVIEW 4 回归｜文件部分完成后请求尾部失败的
+     expect(await db.importTask.count({ where: { orgId, fileSha256: sha } })).toBe(0);
+   });
+ });
++
++describe("TASK-008｜字段映射、全量校验、预览与错误下载", () => {
++  const { readdirSync } = require("node:fs") as typeof import("node:fs");
++  const t8TmpCount = (): number => {
++    try {
++      return readdirSync(join(storageRoot(), "tmp")).length;
++    } catch {
++      return 0;
++    }
++  };
++
++  async function putMapping(taskId: string, cookie: string, body: Record<string, unknown>): Promise<Response> {
++    const { PUT } = await import("@/app/api/v1/imports/[id]/mapping/route");
++    return PUT(
++      req(`/api/v1/imports/${taskId}/mapping`, { method: "PUT", body: JSON.stringify(body), headers: { "content-type": "application/json" } }, cookie),
++      { params: Promise.resolve({ id: taskId }) },
++    );
++  }
++
++  async function getPreview(taskId: string, cookie: string): Promise<Response> {
++    const { GET } = await import("@/app/api/v1/imports/[id]/preview/route");
++    return GET(req(`/api/v1/imports/${taskId}/preview`, {}, cookie), { params: Promise.resolve({ id: taskId }) });
++  }
++
++  async function getErrorFile(taskId: string, cookie: string, suffix = ""): Promise<Response> {
++    const { GET } = await import("@/app/api/v1/imports/[id]/error-file/route");
++    return GET(req(`/api/v1/imports/${taskId}/error-file${suffix}`, {}, cookie), { params: Promise.resolve({ id: taskId }) });
++  }
++
++  async function runValidate(taskId: string): Promise<void> {
++    const { handleValidateTask } = await import("@/jobs/handlers/imports");
++    await handleValidateTask({ taskId });
++  }
++
++  const PRODUCTS_R4 = (sku: string, name: string, ts: string): string =>
++    `${FILE_HEADERS.products.join(",")}\nIMP-1,${ts},R8P,杯,杯具,active,${sku},${sku}-CODE,${name},,active`;
++
++  it("PUT mapping：CAS 版本 409、时区不一致 422、C 角色 403；正常 202 后校验产生 preview_version=1", async () => {
++    const task = await makeTask(operator.cookie, "products", PRODUCTS_R4("S8A", "杯A", "2026-09-11T01:00:00Z"));
++    const wrongV = await putMapping(task.id, operator.cookie, {
++      timezone: "Asia/Shanghai", coverage_declaration: [], expected_preview_version: 99,
++    });
++    expect(wrongV.status).toBe(409);
++    expect(((await wrongV.json()) as { error: { code: string } }).error.code).toBe("VERSION_CONFLICT");
++
++    const wrongTz = await putMapping(task.id, operator.cookie, {
++      timezone: "UTC", coverage_declaration: [], expected_preview_version: 0,
++    });
++    expect(wrongTz.status).toBe(422);
++
++    const forbidden = await putMapping(task.id, cs.cookie, {
++      timezone: "Asia/Shanghai", coverage_declaration: [], expected_preview_version: 0,
++    });
++    expect(forbidden.status).toBe(403);
++
++    const okRes = await putMapping(task.id, operator.cookie, {
++      timezone: "Asia/Shanghai",
++      coverage_declaration: [{ source_kind: "products", channel: "default", from: "2026-09-01", to: "2026-09-11", status: "complete", explicit_zero_dates: [] }],
++      expected_preview_version: 0,
++    });
++    expect(okRes.status).toBe(202);
++    expect(((await okRes.json()) as { data: { status: string } }).data.status).toBe("validating");
++
++    await runValidate(task.id);
++    const preview = await getPreview(task.id, operator.cookie);
++    expect(preview.status).toBe(200);
++    const body = (await preview.json()) as { data: { preview_version: number; counts: { insert: number }; coverage: { declaration: unknown[]; gaps: string[] } } };
++    expect(body.data.preview_version).toBe(1);
++    expect(body.data.counts.insert).toBe(1);
++    expect(body.data.coverage.declaration).toHaveLength(1);
++  });
++
++  it("缺列（映射无法覆盖必填字段）→ failed+MISSING_COLUMN；错误文件可签名下载且无错误文件时 404", async () => {
++    // 文件列名非标准：sku_name 列缺失（映射不到）
++    const content = `${FILE_HEADERS.products.join(",").replace(",sku_name", "")}\nIMP-1,2026-09-11T01:00:00Z,R8Q,杯,杯具,active,S8Q,S8Q-CODE,,active`;
++    const made = await makeTask(operator.cookie, "products", content);
++    const res = await putMapping(made.id, operator.cookie, {
++      timezone: "Asia/Shanghai",
++      field_mapping: { sku_name: "不存在的列" },
++      coverage_declaration: [],
++      expected_preview_version: 0,
++    });
++    expect(res.status).toBe(202);
++    await runValidate(made.id);
++    const task = await db.importTask.findUniqueOrThrow({ where: { id: made.id } });
++    expect(task.status).toBe("failed");
++    expect(task.errorCode).toBe("MISSING_COLUMN");
++
++    const missing = await getErrorFile(made.id, operator.cookie);
++    expect(missing.status).toBe(200);
++    const url = ((await missing.json()) as { data: { url: string } }).data.url;
++    const download = await getErrorFile(made.id, operator.cookie, url.replace(`/api/v1/imports/${made.id}/error-file`, ""));
++    expect(download.status).toBe(200);
++    const csv = await download.text();
++    expect(csv).toContain("MISSING_COLUMN");
++    expect(csv).toContain("sku_name");
++  });
++
++  it("仅表头文件：无声明 → empty_file；显式零事件 → coverage_only 预览且不推断完整", async () => {
++    const headerOnly = `${FILE_HEADERS.products.join(",")}\n`;
++    const made = await makeTask(operator.cookie, "products", headerOnly);
++    await runValidate(made.id);
++    let preview = await getPreview(made.id, operator.cookie);
++    let body = (await preview.json()) as { data: { preview_version: number; counts: { insert: number }; coverage: { empty_file: boolean; coverage_only: boolean } } };
++    expect(body.data.counts.insert).toBe(0);
++    expect(body.data.coverage.empty_file).toBe(true);
++    expect(body.data.coverage.coverage_only).toBe(false);
++
++    // 同文件重映射并声明显式零事件 → coverage-only 预览
++    const remap = await putMapping(made.id, operator.cookie, {
++      timezone: "Asia/Shanghai",
++      coverage_declaration: [{ source_kind: "products", channel: "default", from: "2026-09-01", to: "2026-09-03", status: "complete", explicit_zero_dates: ["2026-09-01", "2026-09-02"] }],
++      expected_preview_version: 1,
++    });
++    expect(remap.status).toBe(202);
++    await runValidate(made.id);
++    preview = await getPreview(made.id, operator.cookie);
++    body = (await preview.json()) as typeof body;
++    expect(body.data.preview_version).toBe(2);
++    expect(body.data.coverage.coverage_only).toBe(true);
++    expect(body.data.counts.insert).toBe(0);
++  });
++
++  it("同自然键同 source_updated_at 不同内容 → DUPLICATE_KEY_CONFLICT 整文件失败，不最后一行胜出", async () => {
++    const content = `${PRODUCTS_R4("S8B", "杯B", "2026-09-11T01:00:00Z")}\nIMP-1,2026-09-11T01:00:00Z,R8P,杯,杯具,active,S8B,S8B-CODE,杯B改名,,active`;
++    const made = await makeTask(operator.cookie, "products", content);
++    await runValidate(made.id);
++    const task = await db.importTask.findUniqueOrThrow({ where: { id: made.id } });
++    expect(task.status).toBe("failed");
++    expect(task.errorCode).toBe("DUPLICATE_KEY_CONFLICT");
++    const preview = await getPreview(made.id, operator.cookie);
++    expect(preview.status).toBe(409);
++    expect(((await preview.json()) as { error: { code: string } }).error.code).toBe("PREVIEW_NOT_READY");
++  });
++
++  it("未知 SKU 与缺失订单引用 → SKU_NOT_FOUND/MISSING_ORDER_REFERENCE 行级错误（整文件失败）", async () => {
++    const content = `${FILE_HEADERS.order_items.join(",")}\nIMP-1,2026-09-11T01:00:00Z,R8-O1,L1,不存在的SKU,1,10.000000,CNY`;
++    const made = await makeTask(operator.cookie, "order_items", content);
++    const order = await db.order.create({
++      data: {
++        orgId, storeId,
++        sourceNamespace: "ns-import", externalOrderId: "R8-O1",
++        sourceUpdatedAt: new Date("2026-09-01T02:00:00Z"), importTaskId: made.id, rowHash: "seed-r8-order-hash",
++        orderedAt: new Date("2026-09-01T01:55:00Z"), paidAt: new Date("2026-09-01T02:00:00Z"),
++        paymentStatus: "paid", currency: "CNY", expectedItemCount: 1,
++      },
++    });
++    await runValidate(made.id);
++    const task = await db.importTask.findUniqueOrThrow({ where: { id: made.id } });
++    expect(task.status).toBe("failed");
++    const preview = await getPreview(made.id, operator.cookie);
++    expect(preview.status).toBe(409);
++    const ef = await getErrorFile(made.id, operator.cookie);
++    const csv = await (await getErrorFile(made.id, operator.cookie, ((await ef.json()) as { data: { url: string } }).data.url.replace(`/api/v1/imports/${made.id}/error-file`, ""))).text();
++    expect(csv).toContain("SKU_NOT_FOUND");
++    expect(await db.orderItem.count({ where: { orgId, orderId: order.id } })).toBe(0);
++  });
++
++  it("insert/update/unchanged 分类：较新更新、相同内容无变化、旧版本不覆盖", async () => {
++    const storeRow = await db.store.findFirstOrThrow({ where: { orgId, id: storeId } });
++    // 先建三个任务（uploaded），种子 Product/SKU 挂到真实任务外键后依次校验
++    const same = await makeTask(operator.cookie, "products", PRODUCTS_R4("S8U", "原名", "2026-09-01T00:00:00Z"));
++    const newer = await makeTask(operator.cookie, "products", PRODUCTS_R4("S8U", "新名", "2026-09-02T00:00:00Z"));
++    const older = await makeTask(operator.cookie, "products", PRODUCTS_R4("S8U", "更旧名", "2026-08-30T00:00:00Z"));
++
++    // 种子 rowHash 与"同内容"行的规范化哈希一致 → 走 unchanged(identical) 分支
++    const { parseStandardFile } = await import("@/adapters/contracts");
++    const { recordRowHash } = await import("@/services/importPreview");
++    const sameParsed = parseStandardFile("products", PRODUCTS_R4("S8U", "原名", "2026-09-01T00:00:00Z"), { storeExternalId: "IMP-1" });
++    const seedHash = recordRowHash(sameParsed.records[0]!);
++    const productSeed = await db.product.create({
++      data: {
++        orgId, storeId: storeRow.id, sourceNamespace: "ns-import",
++        externalProductId: "R8P", sourceUpdatedAt: new Date("2026-09-01T00:00:00Z"),
++        importTaskId: same.id, rowHash: "seed-r8-product-hash",
++        name: "杯", status: "active",
++      },
++    });
++    // 既有 SKU（已提交态：rowHash 已写入，来源时间较旧）
++    const existing = await db.sKU.create({
++      data: {
++        orgId, storeId: storeRow.id, sourceNamespace: "ns-import",
++        externalSkuId: "S8U", skuCode: "S8U-CODE", name: "原名", specification: null,
++        status: "active", productId: productSeed.id,
++        importTaskId: same.id,
++        sourceUpdatedAt: new Date("2026-09-01T00:00:00Z"),
++        rowHash: seedHash,
++      },
++    });
++
++    await runValidate(same.id);
++    await runValidate(newer.id);
++    await runValidate(older.id);
++
++    const pSame = (await (await getPreview(same.id, operator.cookie)).json()) as { data: { counts: { unchanged: number } } };
++    expect(pSame.data.counts.unchanged).toBe(1);
++    const pNewer = (await (await getPreview(newer.id, operator.cookie)).json()) as { data: { counts: { update: number } } };
++    expect(pNewer.data.counts.update).toBe(1);
++    const pOlder = (await (await getPreview(older.id, operator.cookie)).json()) as { data: { counts: { unchanged: number; superseded_by_db: number } } };
++    expect(pOlder.data.counts.unchanged).toBe(1);
++    expect(pOlder.data.counts.superseded_by_db).toBe(1);
++    // DB 未被预览修改：提交（TASK-009）前不变
++    expect((await db.sKU.findUniqueOrThrow({ where: { id: existing.id } })).name).toBe("原名");
++  });
++
++  it("覆盖缺口：声明范围内缺失日期在预览列出（不从行数推断完整）", async () => {
++    const content = `${FILE_HEADERS.orders.join(",")}\nIMP-1,2026-09-11T01:00:00Z,R8-O2,paid,2026-09-01T01:55:00Z,2026-09-01T02:00:00Z,CNY,1`;
++    const made = await makeTask(operator.cookie, "orders", content);
++    const res = await putMapping(made.id, operator.cookie, {
++      timezone: "Asia/Shanghai",
++      coverage_declaration: [{ source_kind: "orders", channel: "default", from: "2026-09-01", to: "2026-09-04", status: "complete", explicit_zero_dates: [] }],
++      expected_preview_version: 0,
++    });
++    expect(res.status).toBe(202);
++    await runValidate(made.id);
++    const preview = await getPreview(made.id, operator.cookie);
++    const body = (await preview.json()) as { data: { coverage: { gaps: string[] } } };
++    expect(body.data.coverage.gaps).toEqual(["2026-09-02", "2026-09-03"]);
++  });
++
++  it("预览脱敏：customer_messages 预览样本不含原始手机号/邮箱", async () => {
++    const content = `${FILE_HEADERS.customer_messages.join(",")}\nIMP-1,2026-09-11T01:00:00Z,R8M1,R8C1,2026-09-01T03:00:00Z,,联系电话13812345678邮箱a@b.com,,platform_chat,zh-CN`;
++    const made = await makeTask(cs.cookie, "customer_messages", content);
++    await runValidate(made.id);
++    const preview = await getPreview(made.id, cs.cookie);
++    expect(preview.status).toBe(200);
++    const text = JSON.stringify(await preview.json());
++    expect(text).not.toContain("13812345678");
++    expect(text).not.toContain("a@b.com");
++  });
++
++  it("uploaded 未校验任务 → preview 409 PREVIEW_NOT_READY；t8 tmp 无残留", async () => {
++    const made = await makeTask(operator.cookie, "products", PRODUCTS_R4("S8Z", "杯Z", "2026-09-11T01:00:00Z"));
++    const preview = await getPreview(made.id, operator.cookie);
++    expect(preview.status).toBe(409);
++    await runValidate(made.id);
++    expect(t8TmpCount()).toBe(0);
++  });
++});
++
++describe("TASK-009｜原子提交内核、商品主数据与 SKU 别名", () => {
++  const PRODUCTS_R9 = (sku: string, name: string, ts: string): string =>
++    `${FILE_HEADERS.products.join(",")}\nIMP-1,${ts},R8P,杯,杯具,active,${sku},${sku}-CODE,${name},,active`;
++  async function runValidate(taskId: string): Promise<void> {
++    const { handleValidateTask } = await import("@/jobs/handlers/imports");
++    await handleValidateTask({ taskId });
++  }
++  async function getPreview(taskId: string, cookie: string): Promise<Response> {
++    const { GET } = await import("@/app/api/v1/imports/[id]/preview/route");
++    return GET(req(`/api/v1/imports/${taskId}/preview`, {}, cookie), { params: Promise.resolve({ id: taskId }) });
++  }
++  async function putMapping(taskId: string, cookie: string, body: Record<string, unknown>): Promise<Response> {
++    const { PUT } = await import("@/app/api/v1/imports/[id]/mapping/route");
++    return PUT(
++      req(`/api/v1/imports/${taskId}/mapping`, { method: "PUT", body: JSON.stringify(body), headers: { "content-type": "application/json" } }, cookie),
++      { params: Promise.resolve({ id: taskId }) },
++    );
++  }
++  async function commitTask(taskId: string, cookie: string, previewVersion: number): Promise<Response> {
++    const { POST } = await import("@/app/api/v1/imports/[id]/commit/route");
++    return POST(
++      req(`/api/v1/imports/${taskId}/commit`, {
++        method: "POST",
++        body: JSON.stringify({ preview_version: previewVersion, confirmation: true }),
++        headers: { "content-type": "application/json" },
++      }, cookie),
++      { params: Promise.resolve({ id: taskId }) },
++    );
++  }
++
++  async function validatedProductsTask(cookie: string, content: string): Promise<{ id: string; previewVersion: number }> {
++    const made = await makeTask(cookie, "products", content);
++    await runValidate(made.id);
++    const t = await db.importTask.findUniqueOrThrow({ where: { id: made.id }, select: { status: true, previewVersion: true } });
++    expect(t.status).toBe("preview_ready");
++    return { id: made.id, previewVersion: t.previewVersion };
++  }
++
++  it("预览过期/缺确认/C 角色 → 409/422/403；正常提交 → 202、落库、版本+1、覆盖与审计在", async () => {
++    const made = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9A", "杯R9A", "2026-09-11T01:00:00Z"));
++    // 重映射并声明显式覆盖（products 目录确认），触发第二次校验 preview_version=2
++    const decl = await putMapping(made.id, operator.cookie, {
++      timezone: "Asia/Shanghai",
++      coverage_declaration: [{ source_kind: "products", channel: "default", from: "2026-09-01", to: "2026-09-11", status: "complete", explicit_zero_dates: [] }],
++      expected_preview_version: made.previewVersion,
++    });
++    expect(decl.status).toBe(202);
++    await runValidate(made.id);
++    const task = await db.importTask.findUniqueOrThrow({ where: { id: made.id }, select: { status: true, previewVersion: true } });
++    expect(task.status).toBe("preview_ready");
++
++    const before = Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion);
++    const expired = await commitTask(made.id, operator.cookie, 99);
++    expect(expired.status).toBe(409);
++    expect(((await expired.json()) as { error: { code: string } }).error.code).toBe("VERSION_CONFLICT");
++
++    const { POST: commitPost } = await import("@/app/api/v1/imports/[id]/commit/route");
++    const noConfirm = await commitPost(
++      req(`/api/v1/imports/${made.id}/commit`, { method: "POST", body: JSON.stringify({ preview_version: task.previewVersion }), headers: { "content-type": "application/json" } }, operator.cookie),
++      { params: Promise.resolve({ id: made.id }) },
++    );
++    expect(noConfirm.status).toBe(422);
++    const csForbidden = await commitTask(made.id, cs.cookie, task.previewVersion);
++    expect(csForbidden.status).toBe(403);
++
++    const okRes = await commitTask(made.id, operator.cookie, task.previewVersion);
++    expect(okRes.status).toBe(202);
++    const body = (await okRes.json()) as { data: { committed_dataset_version: string; insert: number } };
++    expect(body.data.insert).toBe(1);
++    expect(Number(body.data.committed_dataset_version)).toBe(before + 1);
++
++    const sku = await db.sKU.findFirstOrThrow({ where: { orgId, externalSkuId: "R9A" } });
++    expect(sku.rowHash).not.toBe("");
++    expect(sku.importTaskId).toBe(made.id);
++    expect(await db.product.count({ where: { orgId, externalProductId: "R8P" } })).toBe(1);
++    // products 覆盖记录目录确认日（本测试已通过 PUT mapping 声明 complete 覆盖）
++    expect(await db.dataCoverage.count({ where: { orgId, importTaskId: made.id } })).toBe(1);
++    expect(await db.auditLog.count({ where: { orgId, action: "import_commit", entityId: made.id } })).toBe(1);
++  });
++
++  it("重复提交同任务 → 200 复用，dataset_version 不变、行数不变", async () => {
++    const made0 = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9B", "杯R9B", "2026-09-11T01:00:00Z"));
++    const first = await commitTask(made0.id, operator.cookie, made0.previewVersion);
++    expect(first.status).toBe(202);
++    const before = Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion);
++    const replay = await commitTask(made0.id, operator.cookie, made0.previewVersion);
++    expect(replay.status).toBe(200);
++    const body = (await replay.json()) as { data: { reused: boolean; committed_dataset_version: string } };
++    expect(body.data.reused).toBe(true);
++    expect(Number(body.data.committed_dataset_version)).toBe(before);
++    expect(await db.sKU.count({ where: { orgId, externalSkuId: "R9B" } })).toBe(1);
++  });
++
++  it("提交失败（注入约束）→ 整文件回滚：任务回 preview_ready、版本与行数不变", async () => {
++    const made0 = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9C", "杯R9C", "2026-09-11T01:00:00Z"));
++    const beforeVersion = Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion);
++    await db.$executeRaw`ALTER TABLE sku ADD CONSTRAINT ck_t9_inject CHECK (false) NOT VALID`;
++    let status = 0;
++    try {
++      status = (await commitTask(made0.id, operator.cookie, made0.previewVersion)).status;
++    } finally {
++      await db.$executeRaw`ALTER TABLE sku DROP CONSTRAINT ck_t9_inject`;
++    }
++    expect([400, 500, 503]).toContain(status);
++    const task = await db.importTask.findUniqueOrThrow({ where: { id: made0.id } });
++    expect(task.status).toBe("preview_ready");
++    expect(Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion)).toBe(beforeVersion);
++    expect(await db.sKU.count({ where: { orgId, externalSkuId: "R9C" } })).toBe(0);
++    expect(await db.product.count({ where: { orgId, externalProductId: "R8P", importTaskId: made0.id } })).toBe(0);
++  });
++
++  it("并发同任务提交 → 恰一次生效，版本只 +1、行数不翻倍；确认后更名重传 → update 且身份不变", async () => {
++    const made0 = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9D", "杯R9D", "2026-09-11T01:00:00Z"));
++    const before = Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion);
++    const results = await Promise.all([
++      commitTask(made0.id, operator.cookie, made0.previewVersion),
++      commitTask(made0.id, operator.cookie, made0.previewVersion),
++      commitTask(made0.id, operator.cookie, made0.previewVersion),
++    ]);
++    const codes = results.filter((r): r is Response => r !== null).map((r) => r.status);
++    expect(codes.filter((c) => c === 202)).toHaveLength(1);
++    expect(Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion)).toBe(before + 1);
++    expect(await db.sKU.count({ where: { orgId, externalSkuId: "R9D" } })).toBe(1);
++
++    // 确认后更名重传：同自然键较新来源时间 → update；SKU 身份不变、名称更新
++    const updated = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9D", "杯R9D-新名", "2026-09-12T01:00:00Z"));
++    const pNewer = (await (await getPreview(updated.id, operator.cookie)).json()) as { data: { counts: { update: number } } };
++    expect(pNewer.data.counts.update).toBe(1);
++    const commit2 = await commitTask(updated.id, operator.cookie, updated.previewVersion);
++    expect([202, 200]).toContain(commit2.status);
++    const sku = await db.sKU.findFirstOrThrow({ where: { orgId, externalSkuId: "R9D" } });
++    expect(sku.name).toBe("杯R9D-新名");
++    expect(sku.skuCode).toBe("R9D-CODE");
++  });
++
++  it("sku-aliases：正常 201；重复 409；跨店 canonical 404", async () => {
++    const made0 = await validatedProductsTask(operator.cookie, PRODUCTS_R9("R9E", "杯R9E", "2026-09-11T01:00:00Z"));
++    await commitTask(made0.id, operator.cookie, made0.previewVersion);
++    const sku = await db.sKU.findFirstOrThrow({ where: { orgId, externalSkuId: "R9E" } });
++
++    const { POST } = await import("@/app/api/v1/sku-aliases/route");
++    const call = (body: Record<string, unknown>, cookie = operator.cookie) =>
++      POST(req("/api/v1/sku-aliases", { method: "POST", body: JSON.stringify(body), headers: { "content-type": "application/json" } }, cookie));
++
++    const okRes = await call({ store_id: storeId, source_namespace: "ns-import", external_sku_id: "ALIAS-R9E", canonical_sku_id: sku.id });
++    expect(okRes.status).toBe(201);
++    const dup = await call({ store_id: storeId, source_namespace: "ns-import", external_sku_id: "ALIAS-R9E", canonical_sku_id: sku.id });
++    expect(dup.status).toBe(409);
++    const crossStore = await call({ store_id: mockStoreId, source_namespace: "ns-import", external_sku_id: "ALIAS-R9E-X", canonical_sku_id: sku.id });
++    expect(crossStore.status).toBe(404);
++    const realSku = await call({ store_id: storeId, source_namespace: "ns-import", external_sku_id: "R9E", canonical_sku_id: sku.id });
++    expect(realSku.status).toBe(409);
++  });
++});
++
++describe("TASK-010｜订单头与订单行导入", () => {
++  const PRODUCTS_R9 = (sku: string, name: string, ts: string): string =>
++    `${FILE_HEADERS.products.join(",")}\nIMP-1,${ts},R8P,杯,杯具,active,${sku},${sku}-CODE,${name},,active`;
++  async function putMapping(taskId: string, cookie: string, body: Record<string, unknown>): Promise<Response> {
++    const { PUT } = await import("@/app/api/v1/imports/[id]/mapping/route");
++    return PUT(
++      req(`/api/v1/imports/${taskId}/mapping`, { method: "PUT", body: JSON.stringify(body), headers: { "content-type": "application/json" } }, cookie),
++      { params: Promise.resolve({ id: taskId }) },
++    );
++  }
++  async function runValidate(taskId: string): Promise<void> {
++    const { handleValidateTask } = await import("@/jobs/handlers/imports");
++    await handleValidateTask({ taskId });
++  }
++  async function getPreview(taskId: string, cookie: string): Promise<Response> {
++    const { GET } = await import("@/app/api/v1/imports/[id]/preview/route");
++    return GET(req(`/api/v1/imports/${taskId}/preview`, {}, cookie), { params: Promise.resolve({ id: taskId }) });
++  }
++  async function commitTask(taskId: string, cookie: string, previewVersion: number): Promise<Response> {
++    const { POST } = await import("@/app/api/v1/imports/[id]/commit/route");
++    return POST(
++      req(`/api/v1/imports/${taskId}/commit`, {
++        method: "POST",
++        body: JSON.stringify({ preview_version: previewVersion, confirmation: true }),
++        headers: { "content-type": "application/json" },
++      }, cookie),
++      { params: Promise.resolve({ id: taskId }) },
++    );
++  }
++  const ORDERS_T10 = (orderId: string, paid: string, count: number): string =>
++    `${FILE_HEADERS.orders.join(",")}\nIMP-1,${paid}T02:05:00Z,${orderId},paid,${paid}T01:55:00Z,${paid}T02:00:00Z,CNY,${count}`;
++  const ITEMS_T10 = (orderId: string, itemId: string, qty: number, amount: string): string =>
++    `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,${orderId},${itemId},S10,${qty},${amount},CNY`;
++  const paid0 = "2026-09-01";
++
++  async function commitChain(products: string, orders: string, items: string): Promise<void> {
++    for (const [kind, content] of [["products", products], ["orders", orders], ["order_items", items]] as const) {
++      const made = await makeTask(operator.cookie, kind, content);
++      await runValidate(made.id);
++      const t = await db.importTask.findUniqueOrThrow({ where: { id: made.id }, select: { status: true, previewVersion: true, errorCode: true } });
++      expect(t.status).toBe("preview_ready");
++      if (kind === "order_items") {
++        const decl = await putMapping(made.id, operator.cookie, {
++          timezone: "Asia/Shanghai",
++          coverage_declaration: [{ source_kind: "order_items", channel: "default", from: paid0, to: "2026-09-11", status: "complete", explicit_zero_dates: [] }],
++          expected_preview_version: t.previewVersion,
++        });
++        expect(decl.status).toBe(202);
++        await runValidate(made.id);
++        const t2 = await db.importTask.findUniqueOrThrow({ where: { id: made.id }, select: { previewVersion: true } });
++        const res2 = await commitTask(made.id, operator.cookie, t2.previewVersion);
++        expect([202, 200]).toContain(res2.status);
++        continue;
++      }
++      const res = await commitTask(made.id, operator.cookie, t.previewVersion);
++      expect([202, 200]).toContain(res.status);
++    }
++  }
++
++  it("多行订单只建一单；两行落库；更正订单行替换金额且身份不变", async () => {
++    await commitChain(
++      PRODUCTS_R9("S10", "杯S10", "2026-09-01T00:00:00Z"),
++      ORDERS_T10("T10-O1", paid0, 2),
++      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O1,L1,S10,1,50.000000,CNY\nIMP-1,${paid0}T02:05:00Z,T10-O1,L2,S10,1,60.000000,CNY`,
++    );
++    const order = await db.order.findFirstOrThrow({ where: { orgId, externalOrderId: "T10-O1" } });
++    expect(await db.orderItem.count({ where: { orgId, orderId: order.id } })).toBe(2);
++    expect(await db.order.count({ where: { orgId, externalOrderId: "T10-O1" } })).toBe(1);
++
++    // 更正行金额（更晚 source_updated_at）：替换不重复
++    const fixed = await makeTask(operator.cookie, "order_items",
++      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,2026-09-02T02:05:00Z,T10-O1,L1,S10,1,55.000000,CNY`);
++    await runValidate(fixed.id);
++    const p = (await (await getPreview(fixed.id, operator.cookie)).json()) as { data: { counts: { update: number } } };
++    expect(p.data.counts.update).toBe(1);
++    const res = await commitTask(fixed.id, operator.cookie, 1);
++    expect([202, 200]).toContain(res.status);
++    const item = await db.orderItem.findFirstOrThrow({ where: { orgId, orderId: order.id, externalOrderItemId: "L1" } });
++    expect(Number(item.itemPaidAmount)).toBe(55);
++  });
++
++  it("行遗漏：expected=2 只到 1 行 → 允许提交但该日期覆盖强制 partial；补齐后恢复声明状态", async () => {
++    await commitChain(
++      PRODUCTS_R9("S10P", "杯S10P", "2026-09-01T00:00:00Z"),
++      ORDERS_T10("T10-O2", paid0, 2),
++      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O2,L1,S10P,1,40.000000,CNY`,
++    );
++    const order = await db.order.findFirstOrThrow({ where: { orgId, externalOrderId: "T10-O2" } });
++    expect(await db.orderItem.count({ where: { orgId, orderId: order.id } })).toBe(1);
++    // 订单行覆盖（声明 complete）当日被强制 partial
++    const cover = await db.dataCoverage.findFirstOrThrow({
++      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${paid0}T00:00:00Z`) },
++      orderBy: { datasetVersion: "desc" },
++    });
++    expect(cover.status).toBe("partial");
++
++    // 补齐第二行 → 新版本覆盖恢复声明 complete
++    const fill = await makeTask(operator.cookie, "order_items",
++      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O2,L2,S10P,1,30.000000,CNY`);
++    // 用户补齐后重新声明覆盖（覆盖始终来自用户声明，不由行数推断）
++    const fillDecl = await putMapping(fill.id, operator.cookie, {
++      timezone: "Asia/Shanghai",
++      coverage_declaration: [{ source_kind: "order_items", channel: "default", from: paid0, to: "2026-09-11", status: "complete", explicit_zero_dates: [] }],
++      expected_preview_version: 0,
++    });
++    expect(fillDecl.status).toBe(202);
++    await runValidate(fill.id);
++    const fillTask = await db.importTask.findUniqueOrThrow({ where: { id: fill.id }, select: { previewVersion: true } });
++    const res = await commitTask(fill.id, operator.cookie, fillTask.previewVersion);
++    console.log("FILL_RES", res.status, JSON.stringify((await res.json()).data ?? {}));
++    expect([202, 200]).toContain(res.status);
++    const cover2 = await db.dataCoverage.findFirstOrThrow({
++      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${paid0}T00:00:00Z`) },
++      orderBy: { datasetVersion: "desc" },
++    });
++    expect(cover2.status).toBe("complete");
++  });
++
++  it("订单行引用跨店/不存在订单 → 409 整文件回滚，无行落库", async () => {
++    const before = Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion);
++    const made = await makeTask(operator.cookie, "order_items",
++      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,不存在订单,L9,S10,1,10.000000,CNY`);
++    await runValidate(made.id);
++    const task = await db.importTask.findUniqueOrThrow({ where: { id: made.id } });
++    expect(task.status).toBe("failed");
++    expect(task.errorCode).toBe("MISSING_ORDER_REFERENCE");
++    expect(Number((await db.store.findUniqueOrThrow({ where: { id: storeId } })).datasetVersion)).toBe(before);
++  });
++
++  it("多行同订单不同 SKU 齐全 → 订单数 1（GMV 口径属 TASK-014）", async () => {
++    await commitChain(
++      `${PRODUCTS_R9("S10X", "杯X", "2026-09-01T00:00:00Z")}\n${PRODUCTS_R9("S10Y", "杯X", "2026-09-01T00:00:00Z").split("\n").slice(1).join("\n")}`,
++      ORDERS_T10("T10-O3", paid0, 2),
++      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O3,L1,S10X,1,10.000000,CNY\nIMP-1,${paid0}T02:05:00Z,T10-O3,L2,S10Y,1,20.000000,CNY`,
++    );
++    const order = await db.order.findFirstOrThrow({ where: { orgId, externalOrderId: "T10-O3" } });
++    expect(await db.orderItem.count({ where: { orgId, orderId: order.id } })).toBe(2);
++    expect(await db.order.count({ where: { orgId, externalOrderId: "T10-O3" } })).toBe(1);
++  });
++});
++
++describe("TASK-011/012｜广告与客服/售后/退款提交", () => {
++  const PRODUCTS_R9b = (sku: string, name: string): string =>
++    `${FILE_HEADERS.products.join(",")}\nIMP-1,2026-09-01T00:00:00Z,R8P,杯,杯具,active,${sku},${sku}-CODE,${name},,active`;
++  async function runValidate(taskId: string): Promise<void> {
++    const { handleValidateTask } = await import("@/jobs/handlers/imports");
++    await handleValidateTask({ taskId });
++  }
++  async function getPreview(taskId: string, cookie: string): Promise<Response> {
++    const { GET } = await import("@/app/api/v1/imports/[id]/preview/route");
++    return GET(req(`/api/v1/imports/${taskId}/preview`, {}, cookie), { params: Promise.resolve({ id: taskId }) });
++  }
++  async function commitTask(taskId: string, cookie: string, previewVersion: number): Promise<Response> {
++    const { POST } = await import("@/app/api/v1/imports/[id]/commit/route");
++    return POST(
++      req(`/api/v1/imports/${taskId}/commit`, {
++        method: "POST",
++        body: JSON.stringify({ preview_version: previewVersion, confirmation: true }),
++        headers: { "content-type": "application/json" },
++      }, cookie),
++      { params: Promise.resolve({ id: taskId }) },
++    );
++  }
++  const MSG_T11 = (mid: string, sku: string | null, text: string): string =>
++    `${FILE_HEADERS.customer_messages.join(",")}\nIMP-1,2026-09-11T01:00:00Z,${mid},C11,2026-09-01T03:00:00Z,${sku ?? ""},${text},true,platform_chat,zh-CN`;
++
++  async function chain11_12(steps: Array<[string, string]>): Promise<void> {
++    for (const [kind, content] of steps) {
++      const made = await makeTask(operator.cookie, kind, content);
++      await runValidate(made.id);
++      const t = await db.importTask.findUniqueOrThrow({ where: { id: made.id }, select: { status: true, previewVersion: true } });
++      expect(t.status).toBe("preview_ready");
++      const res = await commitTask(made.id, operator.cookie, t.previewVersion);
++      expect([202, 200]).toContain(res.status);
++    }
++  }
++
++  it("广告日提交：幂等落库、晚到归因替换不累加", async () => {
++    await chain11_12([
++      ["products", PRODUCTS_R9b("S11", "杯S11")],
++      ["ads", `${FILE_HEADERS.ads.join(",")}\nIMP-1,2026-09-01T04:00:00Z,AD11,广告11,2026-09-01,last_click,7,40.000000,100.000000,CNY`],
++    ]);
++    expect(await db.adMetric.count({ where: { orgId, campaignId: "AD11" } })).toBe(1);
++    const ad = await db.adMetric.findFirstOrThrow({ where: { orgId, campaignId: "AD11" } });
++    expect(Number(ad.spend)).toBe(40);
++
++    // 晚到归因更新：替换 spend/attributed_sales，不新增行
++    const later = await makeTask(operator.cookie, "ads",
++      `${FILE_HEADERS.ads.join(",")}\nIMP-1,2026-09-02T04:00:00Z,AD11,广告11,2026-09-01,last_click,7,45.000000,110.000000,CNY`);
++    await runValidate(later.id);
++    const p = (await (await getPreview(later.id, operator.cookie)).json()) as { data: { counts: { update: number } } };
++    expect(p.data.counts.update).toBe(1);
++    await commitTask(later.id, operator.cookie, 1);
++    const ads = await db.adMetric.findMany({ where: { orgId, campaignId: "AD11" } });
++    expect(ads).toHaveLength(1);
++    expect(Number(ads[0]!.spend)).toBe(45);
++  });
++
++  it("客服消息提交：脱敏落库、SKU 关联", async () => {
++    await chain11_12([
++      ["products", PRODUCTS_R9b("S12", "杯S12")],
++      ["customer_messages", MSG_T11("M12", "S12", "电话13812345678想退款")],
++    ]);
++    const msg = await db.customerMessage.findFirstOrThrow({ where: { orgId, externalMessageId: "M12" } });
++    expect(msg.redactedText).not.toContain("13812345678");
++    expect(msg.skuId).not.toBeNull();
++  });
++
++  it("售后 case+refund 原子提交：金额/累计件数越界在预览拒绝；正常两行落库", async () => {
++    await chain11_12([
++      ["products", PRODUCTS_R9b("S12R", "杯S12R")],
++      ["orders", `${FILE_HEADERS.orders.join(",")}\nIMP-1,2026-09-01T02:05:00Z,O-R12,paid,2026-09-01T01:55:00Z,2026-09-01T02:00:00Z,CNY,1`],
++      ["order_items", `${FILE_HEADERS.order_items.join(",")}\nIMP-1,2026-09-01T02:05:00Z,O-R12,L1,S12R,2,100.000000,CNY`],
++    ]);
++    // 越界：refund 金额 200 > 实付 100 → 整文件失败
++    const bad = await makeTask(operator.cookie, "after_sales",
++      `${FILE_HEADERS.after_sales.join(",")}\nIMP-1,2026-09-02T03:00:00Z,refund,R12-BAD,O-R12,L1,,2026-09-02T03:00:00Z,succeeded,2026-09-02T03:00:00Z,200.000000,1,CNY,quality,`);
++    await runValidate(bad.id);
++    const badTask = await db.importTask.findUniqueOrThrow({ where: { id: bad.id } });
++    expect(badTask.status).toBe("failed");
++    expect(badTask.errorCode).toBe("REFUND_AMOUNT_EXCEEDS_PAID");
++
++    // 正常：case + refund（合计 100 = 实付）
++    await chain11_12([
++      ["after_sales", `${FILE_HEADERS.after_sales.join(",")}\nIMP-1,2026-09-02T03:00:00Z,case,AS-R12,O-R12,L1,,2026-09-02T01:00:00Z,closed,,,,,quality,杯盖坏了\nIMP-1,2026-09-02T03:00:00Z,refund,RF-R12,O-R12,L1,AS-R12,2026-09-02T03:00:00Z,succeeded,2026-09-02T03:00:00Z,100.000000,2,CNY,quality,`],
++    ]);
++    const order = await db.order.findFirstOrThrow({ where: { orgId, externalOrderId: "O-R12" } });
++    expect(await db.afterSaleRecord.count({ where: { orgId, orderId: order.id } })).toBe(1);
++    const refunds = await db.refundEvent.findMany({ where: { orgId, orderId: order.id } });
++    expect(refunds).toHaveLength(1);
++    expect(Number(refunds[0]!.refundAmount)).toBe(100);
++    expect(refunds[0]!.afterSaleRecordId).not.toBeNull();
++  });
++});

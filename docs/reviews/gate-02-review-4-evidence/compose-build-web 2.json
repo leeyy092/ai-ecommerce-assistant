@@ -1,0 +1,13 @@
+{
+  "name": "compose-build-web",
+  "args": [
+    "docker",
+    "compose",
+    "-p",
+    "aiea-review4-t6xh",
+    "build",
+    "web"
+  ],
+  "exit": 0,
+  "seconds": 339.61
+}

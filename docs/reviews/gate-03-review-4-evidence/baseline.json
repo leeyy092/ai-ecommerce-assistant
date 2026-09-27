@@ -1,0 +1,15 @@
+{
+  "review_id": "G3R4-20260927-01",
+  "business_freeze": "2026-09-27T16:24:05+08:00",
+  "archived_head": "ea1c15ff8477c041873922109221f09a36e2aebf",
+  "business": "bc5e4b2885a71091b0560440c34cffe1d27ee9d3",
+  "range": "6539fcb..ea1c15ff8477c041873922109221f09a36e2aebf",
+  "branch": "phase/03-import",
+  "created_at": "2026-09-27T16:31:07.811907+08:00",
+  "main_worktree_business_diff": "",
+  "note": "Z02 business frozen, pending management-only queued correction; final management HEAD to verify before closeout",
+  "final_head": "ea1c15ff8477c041873922109221f09a36e2aebf",
+  "final_ui": "Z02 16:30 final management correction complete and idle confirmed; no business changes",
+  "business_diff_empty": true,
+  "management_diff_preserved": true
+}

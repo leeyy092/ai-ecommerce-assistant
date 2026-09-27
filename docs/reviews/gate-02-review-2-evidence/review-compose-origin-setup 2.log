@@ -1,0 +1,20 @@
+{"status":403,"body":{"message":"Invalid origin","code":"INVALID_ORIGIN"}}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+403 !== 200
+
+    at file:///private/tmp/aiea-g2r2-9hnwja_c/scripts/review-compose.mjs:6:204
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 403,
+  expected: 200,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

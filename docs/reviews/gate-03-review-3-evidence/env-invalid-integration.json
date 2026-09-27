@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/tmp/aiea-node24/bin/pnpm",
+    "test:integration"
+  ],
+  "cwd": "repo",
+  "exit_code": 1,
+  "seconds": 18.37,
+  "started_at": "2026-09-27T15:49:35+0800"
+}

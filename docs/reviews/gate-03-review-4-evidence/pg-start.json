@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/opt/homebrew/opt/postgresql@17/bin/pg_ctl",
+    "-D",
+    "/private/tmp/aiea-g3r4-20260927-2qkdz_5d/pgdata",
+    "-l",
+    "/private/tmp/aiea-g3r4-20260927-2qkdz_5d/evidence/postgres.log",
+    "-o",
+    "-p 57034 -h 127.0.0.1 -k /private/tmp/aiea-g3r4-20260927-2qkdz_5d/pgsock",
+    "start"
+  ],
+  "cwd": "/private/tmp/aiea-g3r4-20260927-2qkdz_5d/repo",
+  "exit_code": 0,
+  "seconds": 0.136,
+  "started_at": "2026-09-27T16:31:15+0800"
+}

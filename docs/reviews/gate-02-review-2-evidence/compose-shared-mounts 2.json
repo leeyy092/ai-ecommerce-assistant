@@ -1,0 +1,13 @@
+{
+  "name": "compose-shared-mounts",
+  "args": [
+    "docker",
+    "inspect",
+    "--format",
+    "{{.Name}} {{.Image}} {{json .Mounts}}",
+    "aiea-g2r2-9hnwja-web-1",
+    "aiea-g2r2-9hnwja-worker-1"
+  ],
+  "exit": 0,
+  "seconds": 0.04
+}

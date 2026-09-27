@@ -1,0 +1,18 @@
+
+> ai-ecommerce-assistant@0.1.0 test /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+> vitest run tests/unit
+
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+ ✓ tests/unit/spool-interruption.test.ts (3 tests) 283ms
+ ✓ tests/unit/adapters.test.ts (47 tests) 28ms
+ ✓ tests/unit/storage-oss.test.ts (4 tests) 7ms
+ ✓ tests/unit/env.test.ts (11 tests) 3ms
+ ✓ tests/unit/permissions.test.ts (7 tests) 1ms
+
+ Test Files  5 passed (5)
+      Tests  72 passed (72)
+   Start at  15:50:34
+   Duration  1.25s (transform 231ms, setup 569ms, collect 130ms, tests 321ms, environment 0ms, prepare 65ms)
+

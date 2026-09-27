@@ -1,0 +1,8 @@
+{
+  "command": [
+    "/opt/homebrew/opt/postgresql@17/bin/postgres",
+    "--version"
+  ],
+  "exit_code": 0,
+  "seconds": 0.012
+}

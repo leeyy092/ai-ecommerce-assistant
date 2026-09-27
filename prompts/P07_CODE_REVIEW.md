@@ -1,3 +1,66 @@
+# P07 · GATE03 REVIEW4已经PASS
+
+```text
+本轮独立复审已经结束，禁止把历史FAIL当成当前待修复。
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant，总控/Users/yuyuyu/Documents/AI-Workspace。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE/12_PROGRESS当前导航与最新记录/CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN/DEVELOPMENT_HANDOFF，核对Git和写入权。
+唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已实际激活，原codex-zcode ACTIVE每10分钟目标04，旧03/02/01退出。唯一最新Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE，旧Z01退出。身份/迁移/写入权以后续12_PROGRESS最新记录为准，不拿旧COMPLETE或心跳接管。
+GATE_03 REVIEW4独立PASS，冻结phase/03-import@ea1c15f（业务bc5e4b2），差异6539fcb..ea1c15f，main85a93ec。H03损坏staging恢复语义、H04父订单更正覆盖均关闭，H01–H08/M01/M02无剩余本Gate技术缺陷；Gate02 REVIEW5 PASS保持。原TASK008–012技术验收完成，达到约35功能节点（不是工时百分比）。
+本轮独立新/tmp+新PG17：12迁移/typecheck0/integration139/四套g3=18+4+21+4全绿聚合0/R4补充10全过；脚本任一套失败聚合1、全成功0。unit/build/E2E未重复无变更部分，引用R3独立72/build0/E2E8，Z02本候选自测另列。R1 42/R2 57/R3 61件哈希保持，本轮PG57034停止、临时根移除；Z02 55502资产未动。
+正式15节报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_4_2026-09-27.md；证据GATE_03_REVIEW_4_EVIDENCE_2026-09-27.json、gate-03-review-4-evidence/README/observations/原始日志。
+当前写入者Codex04，Z02于16:30管理更正后最终冻结空闲。通过通知G3R4-20260927-02已于16:55首次实际送达，Z02于16:55完成只读ACK（Codex本轮核验终答及空闲）：确认ea1c15f/业务bc5e4b2、R4 PASS与阶段边界，继续冻结。此前锁屏阻塞解除，历史记录保留；未发送START。当前下一责任人Owner/P09，Checkpoint=YES，等待Phase3验收及Phase4明确放行；未获答复不开发TASK013、不合并main。
+完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警AI日报本人行动/必要页面运维保持；自助独立注册仍是交付要求，TASK031合同待批准。Owner目前仅授权到Phase3；技术PASS不等于阶段放行。Phase4 TASK013–016、main合并、采购、正式部署未放行；不以工期问答、迁移、心跳或无人回复替代授权。
+双方执行CTX-RULE-20260927-01保留当前窗口：没有实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口，不按占用/长度/心跳/预计长任务提前换窗。压缩仍可靠则继续，未知不臆测；确需时才按STATE_PROTOCOL原交接流程，不fork、不建worktree/重复自动化。
+没有新业务变更不重复复审；当前下一步Owner/P09。新业务候选须另界定基线与差异，保持既有通过结论身份。
+```
+
+## 历史首块（2026-09-27T16:40:55+08:00前，非当前指令）
+
+```text
+最新独立GATE03 REVIEW3 FAIL，1HIGH H04父订单更正覆盖、1MEDIUM H03损坏staging错误语义。H02/H08/M02已关闭；H03错任务提交风险关闭、H04历史缺行/unchanged/DST通过；H01/H05/H06/H07和Gate02 REVIEW5保持。冻结phase/03-import@6539fcb（业务ca5ad76），本轮dd975cd..6539fcb，main85a93ec；后续复审6539fcb..新冻结HEAD。正式报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_3_2026-09-27.md（15节）、同轮EVIDENCE索引与gate-03-review-3-evidence/README/observations/g3r3-independent。
+当前R3已FAIL，不重复审查同候选。下一步G3R3-20260927-02/P08，实际ACK/START/写入权以12_PROGRESS最新记录为准。取得新冻结和交回后再审6539fcb..新HEAD，按R3报告两项关闭标准及触发回归在新/tmp+本次新PG17验证。
+完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警/AI日报本人行动/必要页面运维、技术栈与依赖不变。Owner仅授权Phase3 TASK008–012；Gate03独立PASS约35节点停Owner，Phase4/TASK013、TASK031开户合同、main合并、购买、正式部署未放行。重大范围疑义立即停问Owner，普通原合同返修直接协作；已关闭问题无新改动/有效反例不重开。
+Owner最新CTX-RULE-20260927-01：Codex和ZCode默认保留当前窗口，无实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口；不按75%/85%、长度、心跳次数或预计长任务换窗。实际压缩仍可靠就继续，未知不臆测。确需时才按STATE_PROTOCOL原冻结/只读ACK/COMPLETE/激活流程，不fork、不建worktree或自动化。
+```
+
+---
+
+## 历史入口（以下仅追溯）
+
+# P07 · GATE_03 REVIEW1 返修后的独立复审入口
+
+```text
+你是Codex独立Reviewer。根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发。先完整读P13首块，再读AGENTS、.product-os.json、STATE_PROTOCOL、00_START_HERE、12_PROGRESS当前导航/最新回执、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN。核验最新协调迁移/自动化目标与写入权；MIGRATE-20260927-03 PREPARING时新04仅只读ACK，收到本次COMPLETE与完成通知后才执行。
+Z02已冻结G3R1-20260927-02新候选：phase/03-import，HEAD dd975cdedf55e9b4ac86691b150301e5b5e074f2（管理）、业务6b408cbe2182b605c1bcaabc485af4b8d1e476f9；未推送/合并/部署。此次GATE03 R2复审范围8f3f28d..dd975cd，业务/管理分开；GATE03 R1仍FAIL到独立结论，不采信自测作为PASS。
+完整读docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_1_2026-09-27.md、GATE_03_REVIEW_1_EVIDENCE_2026-09-27.json、gate-03-review-1-evidence/README.md；逐项核对H01–H08/M01关闭标准与09_TASKS008–012及04/08/10/11原合同。Gate02 REVIEW5及已关闭项无新改动/有效反例不重开。
+H04C01：原g3-contract的H04d共享店铺却固定2n，原R1隔离单跑才为2；不得为通过探针改合同，也不能把固定2n误差直接判业务FAIL。保留历史证据，在独立副本受控改测试隔离/明确最终事实预期，复验来源级含历史计数、独立来源/channel/业务日期、显式零/缺行。新增四对照待独立验证。test:g3两个vitest以分号相连会只返回末个退出码，须逐进程捕获真实结果；test:integration排除了两g3文件不能代表全部通过。preview API record原文剥离与H08脱敏亦按新差异回归。
+从冻结提交git archive到独立/tmp并另建本次PG17（仅127.0.0.1），不复制主.postgres/.runtime/.tools/.env，不用Z02自测库冒充独立证据。按新差异与原关闭标准验证，保存真实命令/退出码/修前修后；不因换窗重跑无变化旧候选。
+报告15节并生成新证据索引，更新唯一进度/交接/下一提示词，sync读回首页md/html和总控PROJECTS。FAIL给有效反例/合同/关闭标准并仅发最新ZCode；PASS后约35功能节点停向Owner反馈并等后续Phase明确放行。不改主业务、不开始013、合并main或部署；TASK031仍待批准，完整P0不缩减。Z02当前保持冻结，本次换Codex窗口不用RESUME开发。
+```
+
+---
+
+## 历史审查提示词（不得覆盖当前）
+
+# P07 · GATE_03 独立复审入口（当前）
+
+更新：2026-09-27T01:52:00+08:00。ZCode 已完成 Phase 3 全部 TASK（008–012），候选冻结 277109d；本首个 text 块为 GATE_03 独立复审完整提示词。
+
+```text
+请接手 AI 电商运营助手 GATE_03 独立复审（直接协作编号续 PH3-20260927-01）。根目录 /Users/yuyuyu/Documents/ChatGPT/产品-开发，应用 ai-ecommerce-assistant，总控 /Users/yuyuyu/Documents/AI-Workspace。只审 Phase 3 TASK-008–012 新增差异及被触发回归，不改业务代码、不开始 TASK-013、不合并 main、不部署。
+按序读 AGENTS.md、.product-os.json、docs/STATE_PROTOCOL.md、00_START_HERE.md、唯一进度 docs/ai-ecommerce-assistant/12_PROGRESS.md、CODEX_REVIEW_HANDOFF.md、FINAL_DECISIONS 第6/7/8节、PHASE_PLAN.md，再读 09_TASKS TASK-008–012 原合同与 04_DATA_MODEL PART10.5/11/12、08_API_SPEC §17.1/§17.3、02_USER_ROLES、10_ACCEPTANCE、11_DEVELOPMENT_RULES。
+核对实际 HEAD/分支/工作树。基线：GATE_02 REVIEW5 PASS（4b9e139，业务 b32f731），main=85a93ec（Phase2 已按放行合并）；候选 phase/03-import=277109d（业务提交 a5e9b7b→10adb88→277109d），复审差异 **a80d62a..实际 HEAD**（管理差异单列）。
+ZCode 交付（须独立验证）：①TASK-008 mapping/全量校验/staging/脱敏预览/错误下载/幂等键（a5e9b7b）；②TASK-009 commit 内核（preview_version CAS+confirmation、店铺事务锁、Product/SKU 自然键 upsert、旧版本不覆盖、DataCoverage、dataset_version 递增、审计、重放复用、注入回滚恢复 preview_ready、sku-aliases 显式别名）（10adb88）；③TASK-010 orders/order_items 自然键精确对照、缺行付款日强制 partial、付款回退拒绝、跨店 409；TASK-011 AdMetric 幂等替换；TASK-012 消息脱敏+SKU 关联、case/RefundEvent 原子提交（277109d）。
+重点按各 TASK 验收：任一错误行整文件 failed 不能提交；预览过期 409；覆盖不由行数推断（explicit_zero/coverage-only 语义）；未知 SKU 显式处理不模糊合并；同刻不同内容 DUPLICATE_KEY_CONFLICT/VERSION_CONFLICT；跨店/缺失引用拒绝；缺行强制 partial；退款越界 REFUND_AMOUNT_EXCEEDS_PAID/REFUND_QUANTITY_CONFLICT 预览拒绝；重放复用不增版本；并发 commit 恰一生效；事务回滚恢复 preview_ready 且零半份写入。
+验证仅新 /tmp 归档+新 PG17，不采信 ZCode 日志。ZCode 自测：typecheck0/unit72/integration139/build0/e2e8；日志 ai-ecommerce-assistant/docs/reviews/gate-03-{task008,task009,final}-evidence/。真实 OSS 云验证维持限定延期。Phase1/2 已关闭项与 M06 仅新改动触发时回归；D01 不重开；开户合同不扩本 Gate。
+按 15 节输出 PASS/FAIL/BLOCKED 报告及机器证据，保留历史。重读最新 12_PROGRESS 更新任务表/摘要/状态块/交接/下一提示词，运行 Product OS sync 并读回首页 md/html 与总控 PROJECTS。FAIL 交 ZCode/P08；GATE_03 通过后按 STATE_PROTOCOL 向 Owner 反馈约 35% 功能节点（六类导入闭环）并由 Owner 决定后续阶段。测试、审查、Owner、GitHub、部署分开记录。
+```
+
+---
+
+## 历史：GATE_02 REVIEW 4 修复后的下一轮复审提示词
+
+---
+
 # GATE_02 REVIEW5 PASS · 当前无需继续复审
 
 ```text
@@ -132,4 +195,13 @@ M/L 核定：M01 entity_type+响应字段；M02 org+name 唯一+409；M03 .csv 4
 输出逐项复核依据、真实执行结果、未运行原因与剩余问题；按项目协议给出 PASS / FAIL / BLOCKED，测试、审查、Owner 放行、GitHub 同步、部署和真实试用分开记录。FAIL 交 ZCode 修复；PASS 后仍等 Owner 阶段放行；本轮不执行合并或新 Phase。
 
 收尾重新读取磁盘最新进度，更新原 12_PROGRESS.md 的任务表、当前摘要、唯一状态块及 CODEX_REVIEW_HANDOFF.md，保留历史，设置实际下一工具/完整提示词/完成标准/Checkpoint。运行 /usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync 并读回项目 00_START_HERE.md/.html 与总控 00_CONTROL_CENTER/PROJECTS.md，确认一致。用户明确只读时不写回或刷新。
+```
+
+
+## 历史首块（2026-09-27T15:59:26+08:00替换，非当前指令）
+
+```text
+先读P13首块与12_PROGRESS当前导航/最新交接。R2已经独立FAIL，冻结dd975cd/业务6b408cb，结论及证据见docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_2_2026-09-27.md和同轮索引。
+当前下一步是G3R2-20260927-02/P08返修，不重复审查同一候选。H03/H04/H08、H02残余/M02未关闭；H01/H05/H06/H07保持关闭，TASK011技术通过不重开。Z02写入时Codex只读；取得新冻结/写入权后，先核对新HEAD与dd975cd..新HEAD差异、管理/业务分开，再在新/tmp归档和本次新PG17按R2报告§4/5/13复审。实际新基线与测试计划由该次交接更新，不能把旧P07下方历史当待执行。
+新复审保留原原件/日志，H04按来源日全部最终事实与IANA边界，测试隔离修正不改合同。FAIL直接反馈最新ZCode，PASS约35节点停Owner；完整P0、Phase3授权、TASK031/Phase4/部署未放行边界不变。
 ```

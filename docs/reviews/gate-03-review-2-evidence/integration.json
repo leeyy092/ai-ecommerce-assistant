@@ -1,0 +1,10 @@
+{
+  "command": [
+    "pnpm",
+    "test:integration"
+  ],
+  "cwd": "/tmp/aiea-g3r2-20260927-nes78fkd/repo",
+  "exit_code": 0,
+  "seconds": 29.846,
+  "started_at": "2026-09-27T14:09:24+0800"
+}

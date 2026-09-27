@@ -1,0 +1,38 @@
+[
+  {
+    "name": "H07 H08 concurrent long HTTP key conflict must not commit an objectless second task",
+    "expected": {
+      "waits": 2,
+      "statuses": [
+        201,
+        409
+      ],
+      "taskRows": 1,
+      "objectlessTasks": 0
+    },
+    "actual": {
+      "waits": 2,
+      "statuses": [
+        201,
+        409
+      ],
+      "taskRows": 2,
+      "objectlessTasks": 1,
+      "rows": [
+        {
+          "id": "711f4674-8f59-49c1-b3c5-02c227785253",
+          "rawObjectKey": "raw/711f4674-8f59-49c1-b3c5-02c227785253/source.csv",
+          "status": "uploaded",
+          "outboxStatus": "pending"
+        },
+        {
+          "id": "da92a754-0f21-4160-9dc5-49719af9578a",
+          "rawObjectKey": "raw/da92a754-0f21-4160-9dc5-49719af9578a/source.csv",
+          "status": "uploaded",
+          "outboxStatus": "dispatched"
+        }
+      ]
+    },
+    "status": "FAIL"
+  }
+]

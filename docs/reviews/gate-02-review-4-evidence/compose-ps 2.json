@@ -1,0 +1,12 @@
+{
+  "name": "compose-ps",
+  "args": [
+    "docker",
+    "compose",
+    "-p",
+    "aiea-review4-t6xh",
+    "ps"
+  ],
+  "exit": 0,
+  "seconds": 0.29
+}

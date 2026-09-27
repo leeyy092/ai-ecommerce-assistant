@@ -1,0 +1,307 @@
+[
+  {
+    "name": "M01 normal entity_type and response fields",
+    "expected": {
+      "status": 201,
+      "bytes": true,
+      "filename": "test.csv",
+      "rows": 1
+    },
+    "actual": {
+      "status": 201,
+      "bytes": true,
+      "filename": "test.csv",
+      "rows": 1
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H07 sequential content reuse",
+    "expected": {
+      "status": 200,
+      "same": true
+    },
+    "actual": {
+      "status": 200,
+      "same": true
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H05 current role query matrix",
+    "expected": [
+      200,
+      200,
+      403,
+      404
+    ],
+    "actual": [
+      200,
+      200,
+      403,
+      404
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H05 L02 signed download and isolation",
+    "expected": [
+      403,
+      403,
+      200,
+      true,
+      404,
+      true
+    ],
+    "actual": [
+      403,
+      403,
+      200,
+      true,
+      404,
+      true
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H01 effective coverage role projection",
+    "expected": [
+      [
+        124,
+        2
+      ],
+      [
+        4,
+        1
+      ]
+    ],
+    "actual": [
+      [
+        124,
+        2
+      ],
+      [
+        4,
+        1
+      ]
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H01 date validation and exclusive end",
+    "expected": [
+      0,
+      422,
+      422,
+      422
+    ],
+    "actual": [
+      0,
+      422,
+      422,
+      422
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H02 row lock concurrent CAS",
+    "expected": [
+      200,
+      409,
+      2,
+      1
+    ],
+    "actual": [
+      200,
+      409,
+      2,
+      1
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "M02 concurrent name uniqueness",
+    "expected": [
+      201,
+      409,
+      409
+    ],
+    "actual": [
+      201,
+      409,
+      409
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H07 concurrent same bytes one task",
+    "expected": {
+      "statuses": [
+        200,
+        200,
+        200,
+        201
+      ],
+      "ids": 1,
+      "rows": 1
+    },
+    "actual": {
+      "statuses": [
+        200,
+        200,
+        200,
+        201
+      ],
+      "ids": 1,
+      "rows": 1
+    },
+    "status": "PASS"
+  },
+  {
+    "name": "H07 ordinary HTTP replay and conflict",
+    "expected": [
+      201,
+      201,
+      true,
+      409
+    ],
+    "actual": [
+      201,
+      201,
+      true,
+      409
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H07 reusable content binds a new HTTP key",
+    "expected": [
+      200,
+      200,
+      409,
+      1
+    ],
+    "actual": [
+      200,
+      200,
+      201,
+      1
+    ],
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    200,\n    200,\n+   201,\n-   409,\n    1\n  ]\n"
+  },
+  {
+    "name": "H07 key isolation across users",
+    "expected": [
+      201,
+      201
+    ],
+    "actual": [
+      201,
+      503
+    ],
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    201,\n+   503\n-   201\n  ]\n"
+  },
+  {
+    "name": "H07 expiration allows a new request after 24h",
+    "expected": [
+      201,
+      201
+    ],
+    "actual": [
+      201,
+      503
+    ],
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    201,\n+   503\n-   201\n  ]\n"
+  },
+  {
+    "name": "H08 HTTP ledger failure cannot report unprotected success",
+    "expected": true,
+    "actual": false,
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n\nfalse !== true\n"
+  },
+  {
+    "name": "H06 rejected type cleans spool",
+    "expected": {
+      "status": 415,
+      "newTempFiles": 0
+    },
+    "actual": {
+      "status": 415,
+      "newTempFiles": 1
+    },
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   newTempFiles: 1,\n-   newTempFiles: 0,\n    status: 415\n  }\n"
+  },
+  {
+    "name": "H06 forbidden role cleans spool",
+    "expected": {
+      "status": 403,
+      "newTempFiles": 0
+    },
+    "actual": {
+      "status": 403,
+      "newTempFiles": 1
+    },
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   newTempFiles: 1,\n-   newTempFiles: 0,\n    status: 403\n  }\n"
+  },
+  {
+    "name": "M03 strict UTF8",
+    "expected": [
+      422,
+      "INVALID_ENCODING"
+    ],
+    "actual": [
+      422,
+      "INVALID_ENCODING"
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H06 quoted newline logical count",
+    "expected": [
+      201,
+      50001
+    ],
+    "actual": [
+      201,
+      50001
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "H06 blank-line CSV cannot bypass 100000 rows",
+    "expected": [
+      422,
+      "TOO_MANY_ROWS"
+    ],
+    "actual": [
+      201,
+      0
+    ],
+    "status": "FAIL",
+    "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   201,\n+   0\n-   422,\n-   'TOO_MANY_ROWS'\n  ]\n"
+  },
+  {
+    "name": "H05 revoked session query and download",
+    "expected": [
+      403,
+      403
+    ],
+    "actual": [
+      403,
+      403
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "M03 default rate bucket enforces 20 per minute",
+    "expected": true,
+    "actual": true,
+    "status": "PASS"
+  }
+]

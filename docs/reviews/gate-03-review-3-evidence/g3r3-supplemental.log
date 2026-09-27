@@ -1,0 +1,76 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+(node:48328) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stderr | tests/integration/g3r3-independent.test.ts > R3 remaining closure checks > R3-H03 malformed staging truncated returns controlled 409 without writes
+[internal] request_id=311151b8-f448-4dae-82a5-ed4600aedb79 Expected property name or '}' in JSON at position 1 (line 1 column 2)
+
+stdout | tests/integration/g3r3-independent.test.ts > R3 remaining closure checks > R3-H03 malformed staging truncated returns controlled 409 without writes
+G3_EVIDENCE {"id":"R3-H03-truncated","result":{"commit":{"status":503,"body":{"error":{"code":"INTERNAL_ERROR","message":"服务器内部错误，请稍后重试","retryable":true,"request_id":"311151b8-f448-4dae-82a5-ed4600aedb79"}}},"before":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0},"after":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0}}}
+
+stderr | tests/integration/g3r3-independent.test.ts > R3 remaining closure checks > R3-H03 malformed staging null returns controlled 409 without writes
+[internal] request_id=367f2747-36c9-4abf-b485-7a82f8f5dd35 Cannot destructure property 'checksum' of 'manifest' as it is null.
+
+stdout | tests/integration/g3r3-independent.test.ts > R3 remaining closure checks > R3-H03 malformed staging null returns controlled 409 without writes
+G3_EVIDENCE {"id":"R3-H03-null","result":{"commit":{"status":503,"body":{"error":{"code":"INTERNAL_ERROR","message":"服务器内部错误，请稍后重试","retryable":true,"request_id":"367f2747-36c9-4abf-b485-7a82f8f5dd35"}}},"before":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0},"after":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0}}}
+
+stdout | tests/integration/g3r3-independent.test.ts > R3 remaining closure checks > R3-H03 structurally intact expired manifest reaches stale guard
+G3_EVIDENCE {"id":"R3-H03-stale","result":{"commit":{"status":409,"body":{"error":{"code":"IMPORT_PREVIEW_STALE","message":"预览已超过 24 小时有效期，请重新校验后确认","retryable":false,"request_id":"36324c16-61fb-450a-aa62-896ca247ffbd"}}},"before":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0},"after":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0}}}
+
+stdout | tests/integration/g3r3-independent.test.ts > R3 remaining closure checks > R3-H04 parent expected count correction invalidates prior complete item coverage
+G3_EVIDENCE {"id":"R3-H04-parent","result":{"commit":{"status":202,"body":{"data":{"id":"87ea6f9a-22b5-44c6-b98a-14ae75264e4d","status":"committed","committed_dataset_version":"4","insert":0,"update":1,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"fe69de5f-9e79-4ed7-b344-4fbc14b427d0"}}},"before":{"id":"8eaa2d95-fbd1-4b7e-90a4-e0856a079397","orgId":"aaa7af1f-5234-4c12-b37e-e0bb12bf3bc8","storeId":"922e32b1-73fc-437a-aa77-6f0d939adffe","dataSourceId":"e276779a-562f-4406-9e7e-d17e0d76c211","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"1","datasetVersion":"3","importTaskId":"91f62055-d6c7-40f9-b0d1-0f70df7194f9","createdAt":"2026-09-27T07:52:05.220Z","updatedAt":"2026-09-27T07:52:05.220Z","rowVersion":1},"after":{"id":"8eaa2d95-fbd1-4b7e-90a4-e0856a079397","orgId":"aaa7af1f-5234-4c12-b37e-e0bb12bf3bc8","storeId":"922e32b1-73fc-437a-aa77-6f0d939adffe","dataSourceId":"e276779a-562f-4406-9e7e-d17e0d76c211","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"1","datasetVersion":"3","importTaskId":"91f62055-d6c7-40f9-b0d1-0f70df7194f9","createdAt":"2026-09-27T07:52:05.220Z","updatedAt":"2026-09-27T07:52:05.220Z","rowVersion":1},"expected":2,"present":1,"facts":{"version":"4","products":1,"skus":1,"orders":1,"items":1,"refunds":0,"cases":0,"messages":0,"coverage":2,"pending":4}}}
+
+ ❯ tests/integration/g3r3-independent.test.ts (4 tests | 3 failed) 1797ms
+   × R3 remaining closure checks > R3-H03 malformed staging truncated returns controlled 409 without writes 293ms
+     → expected 503 to be 409 // Object.is equality
+   × R3 remaining closure checks > R3-H03 malformed staging null returns controlled 409 without writes 44ms
+     → expected 503 to be 409 // Object.is equality
+   ✓ R3 remaining closure checks > R3-H03 structurally intact expired manifest reaches stale guard 37ms
+   × R3 remaining closure checks > R3-H04 parent expected count correction invalidates prior complete item coverage 200ms
+     → expected 'complete' to be 'partial' // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3r3-independent.test.ts > R3 remaining closure checks > R3-H03 malformed staging truncated returns controlled 409 without writes
+ FAIL  tests/integration/g3r3-independent.test.ts > R3 remaining closure checks > R3-H03 malformed staging null returns controlled 409 without writes
+AssertionError: expected 503 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 503
+
+ ❯ tests/integration/g3r3-independent.test.ts:207:54
+    205|       await putObject(t.stagingObjectKey!,Readable.from([payload]));
+    206|       const c=await commit(t);const after=await facts();log(`R3-H03-${…
+    207|       expect(after).toEqual(before);expect(c.status).toBe(409);
+       |                                                      ^
+    208|     });
+    209|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/integration/g3r3-independent.test.ts > R3 remaining closure checks > R3-H04 parent expected count correction invalidates prior complete item coverage
+AssertionError: expected 'complete' to be 'partial' // Object.is equality
+
+Expected: "partial"
+Received: "complete"
+
+ ❯ tests/integration/g3r3-independent.test.ts:226:118
+    224|     const present=await db.orderItem.count({where:{storeId,orderId:ord…
+    225|     log("R3-H04-parent",{commit:c,before,after,expected:order.expected…
+    226|     expect(c.status).toBe(202);expect(order.expectedItemCount).toBe(2)…
+       |                                                                                                                      ^
+    227|   });
+    228| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+   Start at  15:52:02
+   Duration  2.61s (transform 274ms, setup 441ms, collect 153ms, tests 1.80s, environment 0ms, prepare 59ms)
+

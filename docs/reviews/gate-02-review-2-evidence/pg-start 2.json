@@ -1,0 +1,14 @@
+{
+  "name": "pg-start",
+  "args": [
+    "pg_ctl",
+    "-D",
+    "/tmp/aiea-g2r2-9hnwja_c/pgdata",
+    "-l",
+    "/tmp/aiea-g2r2-9hnwja_c/evidence/postgres.log",
+    "-w",
+    "start"
+  ],
+  "exit": 0,
+  "seconds": 0.19
+}

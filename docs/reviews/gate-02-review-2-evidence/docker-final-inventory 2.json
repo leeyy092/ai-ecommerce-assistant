@@ -1,0 +1,10 @@
+{
+  "name": "docker-final-inventory",
+  "args": [
+    "docker",
+    "system",
+    "df"
+  ],
+  "exit": 0,
+  "seconds": 0.04
+}
