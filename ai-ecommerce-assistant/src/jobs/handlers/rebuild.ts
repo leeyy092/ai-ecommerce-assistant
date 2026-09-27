@@ -5,10 +5,12 @@ import { getPrismaClient } from "@/database/prisma";
 import { runRebuildJob, type RebuildOutcome } from "@/services/snapshot";
 import { registerBasicMetricsBuilder } from "@/services/metrics/basic";
 import { registerCohortMetricsBuilder } from "@/services/metrics/cohort";
+import { registerRulesBuilder } from "@/services/alerts/engine";
 
-// TASK-014/015 起注册真实构建器（幂等；rules=016 完成后追加，注册表不齐不发布）
+// TASK-014/015/016 真实构建器齐备（幂等注册；三项不齐不发布）
 registerBasicMetricsBuilder();
 registerCohortMetricsBuilder();
+registerRulesBuilder();
 
 export async function handleRebuildJob(data: { jobRunId: string }): Promise<RebuildOutcome> {
   const db = getPrismaClient();
