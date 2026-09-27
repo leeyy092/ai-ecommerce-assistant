@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/tmp/aiea-node24/bin/pnpm",
+    "exec",
+    "prisma",
+    "generate"
+  ],
+  "cwd": "/tmp/aiea-g3r2-20260927-nes78fkd/repo",
+  "exit_code": 0,
+  "seconds": 1.408,
+  "started_at": "2026-09-27T14:07:57+0800"
+}

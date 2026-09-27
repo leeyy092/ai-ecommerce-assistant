@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/opt/homebrew/opt/postgresql@17/bin/postgres",
+    "--version"
+  ],
+  "cwd": "/tmp/aiea-g3r2-20260927-nes78fkd/repo",
+  "exit_code": 0,
+  "seconds": 0.039,
+  "started_at": "2026-09-27T14:07:48+0800"
+}

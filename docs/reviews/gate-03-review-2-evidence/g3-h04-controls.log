@@ -1,0 +1,15 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r2-20260927-nes78fkd/repo
+
+(node:39233) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ tests/integration/g3-h04-contract.test.ts > G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照1｜隔离环境一次导齐 L1/L2：该来源日 record_count=2 且 complete 402ms
+ ✓ tests/integration/g3-h04-contract.test.ts > G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照2｜同源同日已有 O1-L1 事实，再接收 O2 的 L1/L2：计数含历史最终事实=3 151ms
+ ✓ tests/integration/g3-h04-contract.test.ts > G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照3｜显式零声明与该来源既有事实冲突：整文件拒绝、不写覆盖 76ms
+ ✓ tests/integration/g3-h04-contract.test.ts > G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照4｜无接收事实且未显式声明零的空缺日保持 partial、record_count=0 56ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  14:09:15
+   Duration  2.23s (transform 248ms, setup 423ms, collect 149ms, tests 1.47s, environment 0ms, prepare 49ms)
+

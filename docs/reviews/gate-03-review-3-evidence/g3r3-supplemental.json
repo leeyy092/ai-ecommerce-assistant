@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/tmp/aiea-node24/bin/pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "tests/integration/g3r3-independent.test.ts",
+    "--maxWorkers=1",
+    "--minWorkers=1"
+  ],
+  "cwd": "/private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo",
+  "exit_code": 1,
+  "seconds": 3.424,
+  "started_at": "2026-09-27T15:52:02+0800"
+}

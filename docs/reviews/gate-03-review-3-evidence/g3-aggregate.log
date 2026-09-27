@@ -1,0 +1,186 @@
+
+> ai-ecommerce-assistant@0.1.0 test:g3 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+> env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 sh -c 'vitest run tests/integration/g3-contract.test.ts --maxWorkers=1 --minWorkers=1; a=$?; vitest run tests/integration/g3-h04-contract.test.ts --maxWorkers=1 --minWorkers=1; b=$?; vitest run tests/integration/g3r2-contract.test.ts --maxWorkers=1 --minWorkers=1; c=$?; echo "g3 per-suite exits: $a $b $c"; s=0; [ $a -ne 0 ] && s=1; [ $b -ne 0 ] && s=1; [ $c -ne 0 ] && s=1; exit $s'
+
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+(node:48133) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement
+G3_EVIDENCE {"id":"C01","result":{"replayVersion":"6","refundCount":1,"refundAmount":"20"}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset
+G3_EVIDENCE {"id":"H01","result":{"status":"failed","errorCount":1,"commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"e58816c9-a28f-4470-941a-449386209e33"}}},"inserted":0}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H02a refund total includes successful events from earlier files
+G3_EVIDENCE {"id":"H02a","result":{"status":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"beecf792-4dd1-4052-a6dc-b9b7d463116e"}}},"total":60,"paid":100}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H02b refund bounds include all rows of the current file
+G3_EVIDENCE {"id":"H02b","result":{"status":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"28ab4c18-e1c8-49f7-8541-054bd83d9c9b"}}}}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H02c order-item correction must respect existing successful refund bounds
+G3_EVIDENCE {"id":"H02c","result":{"status":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"b541d3d8-e992-420d-9be8-7b89b88c1313"}}},"amount":"100","quantity":2}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H03a preview race cannot overwrite a newer customer message
+G3_EVIDENCE {"id":"H03a","result":{"commit":{"status":202,"body":{"data":{"id":"5dcb2edd-ecf0-4178-94c7-0cd6d9412865","status":"committed","committed_dataset_version":"19","insert":1,"update":0,"unchanged":0,"no_op":true,"reused":false},"meta":{"request_id":"71013cf3-d628-4077-ada6-4dd26729e491"}}},"text":"新问题","sourceUpdatedAt":"2026-09-12T01:00:00.000Z"}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H03b preview older than 24h must reject confirmation
+G3_EVIDENCE {"id":"H03b","result":{"generatedAt":"2026-09-26T06:51:20.514Z","commit":{"status":409,"body":{"error":{"code":"PREVIEW_IDENTITY_MISMATCH","message":"staging 数据与任务/原文件/当前预览不一致，请重新校验后确认","retryable":false,"request_id":"86bd53da-dd05-41af-82a5-b0809da38550"}}}}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H03c committing another user's preview must recheck the uploader permission
+G3_EVIDENCE {"id":"H03c","result":{"status":403,"body":{"error":{"code":"UPLOAD_PERMISSION_REVOKED","message":"导入者身份已失效或无该类型导入权限，不能提交","retryable":false,"request_id":"d492a742-9886-4480-94a5-14e19716aa28"}}}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete
+G3_EVIDENCE {"id":"H04a","result":{"status":"preview_ready","commit":{"status":202,"body":{"data":{"id":"bd356c93-768d-4a62-93a3-3faf60e54b43","status":"committed","committed_dataset_version":"20","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"592d8ad1-8af1-4f85-84f0-c0ebc8216944"}}},"rows":[{"id":"a0611eed-12f7-4834-876e-724264989d77","orgId":"afb003ce-a7a3-44fe-bb95-d5784ab4a211","storeId":"2bc49952-b1cf-4f7b-bf48-aaf52f9eb03d","dataSourceId":"dabf865f-f7f8-4d38-b8db-0b6514999c2c","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"5","datasetVersion":"20","importTaskId":"bd356c93-768d-4a62-93a3-3faf60e54b43","createdAt":"2026-09-27T07:51:20.580Z","updatedAt":"2026-09-27T07:51:20.580Z","rowVersion":1},{"id":"d4a46278-2227-400a-aabf-b7b3c25f0fe5","orgId":"afb003ce-a7a3-44fe-bb95-d5784ab4a211","storeId":"2bc49952-b1cf-4f7b-bf48-aaf52f9eb03d","dataSourceId":"dabf865f-f7f8-4d38-b8db-0b6514999c2c","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-09-02T00:00:00.000Z","status":"partial","explicitZero":false,"recordCount":"0","datasetVersion":"20","importTaskId":"bd356c93-768d-4a62-93a3-3faf60e54b43","createdAt":"2026-09-27T07:51:20.582Z","updatedAt":"2026-09-27T07:51:20.582Z","rowVersion":1}]}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op
+G3_EVIDENCE {"id":"H04b","result":{"before":"21","after":"21","commit":{"status":202,"body":{"data":{"id":"5ab60447-d775-4d17-b7f0-7bd0e6a62d49","status":"committed","committed_dataset_version":"21","insert":0,"update":0,"unchanged":1,"no_op":true,"reused":false},"meta":{"request_id":"e6c3d6c4-bbf0-426b-89cb-63f5ecccb5e0"}}}}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation
+G3_EVIDENCE {"id":"H05","result":{"aliasStatus":201,"status":"preview_ready","errorCode":null}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H06 same campaign on a different report date has a distinct natural key
+G3_EVIDENCE {"id":"H06","result":{"status":"preview_ready","errorCode":null}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt
+G3_EVIDENCE {"id":"M01","result":{"inputLength":252,"storedLength":252,"hasIssue":true}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps
+G3_EVIDENCE {"id":"H07","result":{"status":"failed","errorCode":"DUPLICATE_KEY_CONFLICT"}}
+
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H04c first confirmed source is authoritative for the channel
+G3_EVIDENCE {"id":"H04c","result":{"commit":{"status":409,"body":{"error":{"code":"SOURCE_MIGRATION_REQUIRED","message":"channel orders/default 已绑定权威来源 dabf865f-f7f8-4d38-b8db-0b6514999c2c；本任务来源为 6570e72a-76f3-45c0-9eaa-3bbee62050b7，不能写入（来源迁移属后续单独任务）","retryable":false,"request_id":"32141070-e13e-48b9-8ef2-65f797d2cef6"}}},"duplicateOrders":1,"settings":{"authoritative_source_ids":{"ads/default":"dabf865f-f7f8-4d38-b8db-0b6514999c2c","orders/default":"dabf865f-f7f8-4d38-b8db-0b6514999c2c","after_sales/case":"dabf865f-f7f8-4d38-b8db-0b6514999c2c","after_sales/refund":"dabf865f-f7f8-4d38-b8db-0b6514999c2c","order_items/default":"dabf865f-f7f8-4d38-b8db-0b6514999c2c","customer_messages/default":"dabf865f-f7f8-4d38-b8db-0b6514999c2c"}}}}
+
+stdout | tests/integration/g3-contract.test.ts > H04d final complete order-item batch must not retain transient partial state
+G3_EVIDENCE {"id":"H04d","result":{"commit":{"status":202,"body":{"data":{"id":"742fe4a4-c904-4ffa-8947-2b17e8ee1412","status":"committed","committed_dataset_version":"29","insert":2,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"6d0f8b57-a2a3-4fbb-8b70-ba12b3570b70"}}},"rows":[{"id":"a3da0bf8-acfb-44b2-a4e4-6961818c0bb5","orgId":"afb003ce-a7a3-44fe-bb95-d5784ab4a211","storeId":"2bc49952-b1cf-4f7b-bf48-aaf52f9eb03d","dataSourceId":"dabf865f-f7f8-4d38-b8db-0b6514999c2c","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"partial","explicitZero":false,"recordCount":"6","datasetVersion":"29","importTaskId":"742fe4a4-c904-4ffa-8947-2b17e8ee1412","createdAt":"2026-09-27T07:51:21.111Z","updatedAt":"2026-09-27T07:51:21.111Z","rowVersion":1}]}}
+
+stdout | tests/integration/g3-contract.test.ts > H01b business currency must equal the selected store currency
+G3_EVIDENCE {"id":"H01b","result":{"status":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"eee69e10-ce29-49d9-a204-5ac36e3fb24c"}}},"storeCurrency":"CNY"}}
+
+stdout | tests/integration/g3-contract.test.ts > M01b synthetic street address is redacted before the customer-message fact is stored
+G3_EVIDENCE {"id":"M01b","result":{"redactedText":"收货地址：***ADDRESS***；杯盖漏水","syntheticAddressPreserved":false}}
+
+ ❯ tests/integration/g3-contract.test.ts (18 tests | 1 failed) 3578ms
+   ✓ G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement  884ms
+   ✓ G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset 53ms
+   ✓ G3 independent contract > H02a refund total includes successful events from earlier files 202ms
+   ✓ G3 independent contract > H02b refund bounds include all rows of the current file 129ms
+   ✓ G3 independent contract > H02c order-item correction must respect existing successful refund bounds 143ms
+   ✓ G3 independent contract > H03a preview race cannot overwrite a newer customer message 45ms
+   ✓ G3 independent contract > H03b preview older than 24h must reject confirmation 19ms
+   ✓ G3 independent contract > H03c committing another user's preview must recheck the uploader permission 19ms
+   ✓ G3 independent contract > H04a absent undeclared-zero date cannot become complete 50ms
+   ✓ G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op 65ms
+   ✓ G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation 102ms
+   ✓ G3 independent contract > H06 same campaign on a different report date has a distinct natural key 65ms
+   ✓ G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt 44ms
+   ✓ G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps 24ms
+   ✓ G3 independent contract > H04c first confirmed source is authoritative for the channel 102ms
+   × H04d final complete order-item batch must not retain transient partial state 135ms
+     → expected 'partial' to be 'complete' // Object.is equality
+   ✓ H01b business currency must equal the selected store currency 26ms
+   ✓ M01b synthetic street address is redacted before the customer-message fact is stored 27ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > H04d final complete order-item batch must not retain transient partial state
+AssertionError: expected 'partial' to be 'complete' // Object.is equality
+
+Expected: "complete"
+Received: "partial"
+
+ ❯ tests/integration/g3-contract.test.ts:235:345
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 passed (18)
+   Start at  15:51:16
+   Duration  4.78s (transform 376ms, setup 648ms, collect 223ms, tests 3.58s, environment 0ms, prepare 73ms)
+
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+(node:48153) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ tests/integration/g3-h04-contract.test.ts (4 tests) 1870ms
+   ✓ G3R1-H04C01 record_count 合同口径（来源级、整批后最终事实） > 对照1｜隔离环境一次导齐 L1/L2：该来源日 record_count=2 且 complete  567ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  15:51:21
+   Duration  2.94s (transform 336ms, setup 560ms, collect 247ms, tests 1.87s, environment 0ms, prepare 71ms)
+
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+(node:48172) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H01 invalid mixed file is atomic across facts coverage version and outbox
+G3_EVIDENCE {"id":"R2-H01","result":{"taskStatus":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"05e54c08-6021-4284-8748-2161abc57ce0"}}},"before":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0},"after":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0}}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H02 Decimal legal partial refunds and replacement retain exact totals
+G3_EVIDENCE {"id":"R2-H02-decimal","result":[{"id":"R1","amount":"0.05","qty":1},{"id":"R2","amount":"0.2","qty":1}]}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H02 stale refund must use retained newer fact in final ledger
+G3_EVIDENCE {"id":"R2-H02-stale","result":{"taskStatus":"preview_ready","error":null,"commit":{"status":202,"body":{"data":{"id":"13601635-d58d-4920-9013-7b0ffe6142d2","status":"committed","committed_dataset_version":"4","insert":0,"update":0,"unchanged":1,"no_op":true,"reused":false},"meta":{"request_id":"9f5fd999-e90b-4f78-bf41-bd2d6c3f5628"}}},"before":{"version":"4","products":1,"skus":1,"orders":1,"items":1,"refunds":2,"cases":0,"messages":0,"coverage":0,"pending":4},"after":{"version":"4","products":1,"skus":1,"orders":1,"items":1,"refunds":2,"cases":0,"messages":0,"coverage":0,"pending":4}}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H02 concurrent reference change rejects old refund preview without writes
+G3_EVIDENCE {"id":"R2-H02-race","result":{"commit":{"status":409,"body":{"error":{"code":"IMPORT_PREVIEW_STALE","message":"预览后数据已变化，重新校验未通过；请重新校验并确认预览","retryable":false,"request_id":"4499f114-9145-4010-bd14-ecd519e6586d"}}},"before":{"version":"4","products":1,"skus":1,"orders":1,"items":1,"refunds":1,"cases":0,"messages":0,"coverage":0,"pending":4},"after":{"version":"4","products":1,"skus":1,"orders":1,"items":1,"refunds":1,"cases":0,"messages":0,"coverage":0,"pending":4}}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H03 wrong task staging identity cannot commit another preview
+G3_EVIDENCE {"id":"R2-H03-identity","result":{"commit":{"status":409,"body":{"error":{"code":"PREVIEW_IDENTITY_MISMATCH","message":"staging 数据与任务/原文件/当前预览不一致，请重新校验后确认","retryable":false,"request_id":"4bae6c7e-57e0-4431-b77f-5c0a74bd8717"}}},"before":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0},"after":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0},"saved":[]}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H03 same-time different content after preview must reject
+G3_EVIDENCE {"id":"R2-H03-conflict","result":{"status":409,"body":{"error":{"code":"IMPORT_PREVIEW_STALE","message":"预览后数据已变化，重新校验未通过；请重新校验并确认预览","retryable":false,"request_id":"89de397e-6617-48fa-a72f-38059e498d62"}}}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H04 another existing incomplete order keeps source day partial
+G3_EVIDENCE {"id":"R2-H04-history-missing","result":{"id":"5b9bc181-7806-46da-bd5f-e8108a30b777","orgId":"56b61253-6ca3-451c-bd4f-4044f639668d","storeId":"3159fc1a-0cae-4794-b9b0-ba77611eec69","dataSourceId":"41259ce3-7080-451e-846f-7a1e3c42da68","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"partial","explicitZero":false,"recordCount":"2","datasetVersion":"6","importTaskId":"25d861a7-2204-41b2-9582-956d6ae68f1b","createdAt":"2026-09-27T07:51:29.172Z","updatedAt":"2026-09-27T07:51:29.172Z","rowVersion":1}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H04 unchanged partial order cannot become complete on duplicate-row upload
+G3_EVIDENCE {"id":"R2-H04-unchanged","result":{"commit":{"status":202,"body":{"data":{"id":"0e67538f-9535-4271-a5b5-f9d7247f1284","status":"committed","committed_dataset_version":"3","insert":0,"update":0,"unchanged":1,"no_op":true,"reused":false},"meta":{"request_id":"8db90ca4-bee4-4f5a-9aee-60258ab03570"}}},"before":{"version":"3","products":1,"skus":1,"orders":1,"items":1,"refunds":0,"cases":0,"messages":0,"coverage":1,"pending":3},"after":{"version":"3","products":1,"skus":1,"orders":1,"items":1,"refunds":0,"cases":0,"messages":0,"coverage":1,"pending":3},"coverage":{"id":"fde1108f-a84d-48dd-af9f-5877ed3307d9","orgId":"56b61253-6ca3-451c-bd4f-4044f639668d","storeId":"a07a0670-a3d5-4b81-afb4-aa272fbb559c","dataSourceId":"e925c38e-dc75-4c06-aaf9-0711698ab14d","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"partial","explicitZero":false,"recordCount":"1","datasetVersion":"3","importTaskId":"c04c797e-5ce7-4608-89ec-3a2a258ed277","createdAt":"2026-09-27T07:51:29.250Z","updatedAt":"2026-09-27T07:51:29.250Z","rowVersion":1}}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H05 zero confirmation binds the entire trading source group
+G3_EVIDENCE {"id":"R2-H05-zero","result":{"settings":{"authoritative_source_ids":{"orders/default":"90054e52-9fa3-4548-86c1-16f79b9de654","after_sales/case":"90054e52-9fa3-4548-86c1-16f79b9de654","after_sales/refund":"90054e52-9fa3-4548-86c1-16f79b9de654","order_items/default":"90054e52-9fa3-4548-86c1-16f79b9de654"}},"commit":{"status":409,"body":{"error":{"code":"SOURCE_MIGRATION_REQUIRED","message":"channel orders/default 已绑定权威来源 90054e52-9fa3-4548-86c1-16f79b9de654；本任务来源为 f38638d5-2669-45eb-83cc-2484e3c42134，不能写入（来源迁移属后续单独任务）","retryable":false,"request_id":"c6f6af93-bc43-4295-b6cb-cd169677f615"}}}}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H05 concurrent first source confirmations bind one group atomically
+G3_EVIDENCE {"id":"R2-H05-concurrent","result":{"results":[{"status":409,"body":{"error":{"code":"SOURCE_MIGRATION_REQUIRED","message":"channel orders/default 已绑定权威来源 d606115c-f884-4d1d-ae6c-cc11443d2046；本任务来源为 5af67017-27e9-4d39-b81e-b22e353c2bf2，不能写入（来源迁移属后续单独任务）","retryable":false,"request_id":"5d4bca85-0a61-4b05-9f81-c0d98eae99ef"}}},{"status":202,"body":{"data":{"id":"f38dc281-e1a8-4ed4-b589-767fef798719","status":"committed","committed_dataset_version":"1","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"144ab309-f58a-44ab-b92a-cb82f7ea9b6c"}}}],"settings":{"authoritative_source_ids":{"orders/default":"d606115c-f884-4d1d-ae6c-cc11443d2046","after_sales/case":"d606115c-f884-4d1d-ae6c-cc11443d2046","after_sales/refund":"d606115c-f884-4d1d-ae6c-cc11443d2046","order_items/default":"d606115c-f884-4d1d-ae6c-cc11443d2046"}}}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H07 attribution model and window remain independent natural keys
+G3_EVIDENCE {"id":"R2-H07","result":[{"model":"first_click","window":7,"spend":"30"},{"model":"last_click","window":7,"spend":"11"},{"model":"last_click","window":14,"spend":"20"}]}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H08 preview has no raw record and full masked business body is preserved
+G3_EVIDENCE {"id":"R2-H08-full","result":{"preview":{"data":{"id":"f34708be-4700-4f91-b3b2-815dbc604609","status":"preview_ready","preview_version":1,"base_dataset_version":"0","file_sha256":"36bdb7146d0259c79f54cce16f3bb1ea473159e2d151e1d9b19cbe6d1f854384","mapping_version":"e3b0c44298fc1c149afbf4c8996fb924","adapter_version":"adapter-v1","row_count":1,"counts":{"insert":1,"update":0,"unchanged":0,"rejected":0,"duplicates_folded":0,"superseded_in_file":0,"superseded_by_db":0},"coverage":{"declaration":[],"gaps":[],"coverage_only":false,"empty_file":false},"ignored_columns":[],"items":[{"row":2,"action":"insert","reason":null,"natural_key":{"external_message_id":"M-full"},"affected_dates":["2026-09-01"],"sample":{"kind":"customer_messages","sourceUpdatedAt":"2026-09-11T01:00:00.000Z","externalMessageId":"M-full","externalConversationId":"C-full","messageAt":"2026-09-01T03:00:00.000Z","externalSkuId":null,"isComplaint":null,"channel":"platform_chat","language":"zh-CN","message_text":"business business business business business business business business business business business business business business business business business business business business business business bu…"}}],"next_cursor":null},"meta":{"request_id":"fb6ee734-c546-4895-95b2-78c19c681790"}},"stored":"business business business business business business business business business business business business business business business business business business business business business business business business business business business business business business  tail issue phone ***PHONE*** email ***@***"}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H08 phone-only text must fail after redaction leaves no business content
+G3_EVIDENCE {"id":"R2-H08-empty-phone","result":{"taskStatus":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"603438d7-68b2-422b-ac6d-930afb37300f"}}},"rows":[]}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H08 address without province and building-room suffix must be fully masked
+G3_EVIDENCE {"id":"R2-H08-address","result":{"stored":"收货地址：***ADDRESS***；杯盖漏水","preview":{"data":{"id":"c37ca550-6b78-46a6-acea-78f2fe0ecd5a","status":"preview_ready","preview_version":1,"base_dataset_version":"0","file_sha256":"248e875cdc3545740f14fab13a00d573c9ba16063982003992ef2cfc52429bf7","mapping_version":"e3b0c44298fc1c149afbf4c8996fb924","adapter_version":"adapter-v1","row_count":1,"counts":{"insert":1,"update":0,"unchanged":0,"rejected":0,"duplicates_folded":0,"superseded_in_file":0,"superseded_by_db":0},"coverage":{"declaration":[],"gaps":[],"coverage_only":false,"empty_file":false},"ignored_columns":[],"items":[{"row":2,"action":"insert","reason":null,"natural_key":{"external_message_id":"M-address"},"affected_dates":["2026-09-01"],"sample":{"kind":"customer_messages","sourceUpdatedAt":"2026-09-11T01:00:00.000Z","externalMessageId":"M-address","externalConversationId":"C-address","messageAt":"2026-09-01T03:00:00.000Z","externalSkuId":null,"isComplaint":null,"channel":"platform_chat","language":"zh-CN","message_text":"收货地址：***ADDRESS***；杯盖漏水"}}],"next_cursor":null},"meta":{"request_id":"25e950c5-d54e-47aa-93d6-78716c625ee1"}}}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H08 after-sales reason retains long business text and masks full address
+G3_EVIDENCE {"id":"R2-H08-reason","result":{"text":"问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明杯盖漏水；收货地址：***ADDRESS***"}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-M01 identical facts and declaration create no coverage version or outbox
+G3_EVIDENCE {"id":"R2-M01","result":{"commit":{"status":202,"body":{"data":{"id":"a1217227-ae1a-4e24-9c0f-bc916ac4f566","status":"committed","committed_dataset_version":"1","insert":0,"update":0,"unchanged":1,"no_op":true,"reused":false},"meta":{"request_id":"eebda064-8bcc-445d-8c1b-576c42ff0d54"}}},"before":{"version":"1","products":0,"skus":0,"orders":1,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":1,"pending":1},"after":{"version":"1","products":0,"skus":0,"orders":1,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":1,"pending":1}}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H04 DST spring day cannot count the next local day's first hour
+G3_EVIDENCE {"id":"R2-H04-DST-spring","result":{"taskStatus":"preview_ready","commit":{"status":202,"body":{"data":{"id":"1e3799c7-f301-449f-ad24-9c7ca40b0eba","status":"committed","committed_dataset_version":"1","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"e6d69b7a-676c-4426-ae3b-d7842d7d2164"}}}}}
+
+stdout | tests/integration/g3r2-contract.test.ts > R2 original closure boundaries > R2-H04 DST fall day includes the last local hour
+G3_EVIDENCE {"id":"R2-H04-DST-fall","result":{"id":"b9eb7d27-7952-4644-bb03-388cd896f668","orgId":"56b61253-6ca3-451c-bd4f-4044f639668d","storeId":"935f6ab2-5b53-40cd-ab78-8f6205cac7ed","dataSourceId":"0f00b012-4370-4633-9177-7f4757afa3a6","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-11-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"1","datasetVersion":"1","importTaskId":"cc82c4d6-67a3-421a-af51-e09c49b07a32","createdAt":"2026-09-27T07:51:30.070Z","updatedAt":"2026-09-27T07:51:30.070Z","rowVersion":1}}
+
+ ✓ tests/integration/g3r2-contract.test.ts (21 tests) 3815ms
+   ✓ R2 original closure boundaries > R2-H01 invalid mixed file is atomic across facts coverage version and outbox  411ms
+   ✓ R2 original closure boundaries > R2-H02 Decimal legal partial refunds and replacement retain exact totals  364ms
+
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+   Start at  15:51:25
+   Duration  4.87s (transform 360ms, setup 532ms, collect 247ms, tests 3.82s, environment 0ms, prepare 84ms)
+
+g3 per-suite exits: 1 0 0
+ ELIFECYCLE  Command failed with exit code 1.

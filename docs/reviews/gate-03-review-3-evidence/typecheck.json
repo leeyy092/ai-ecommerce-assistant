@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/tmp/aiea-node24/bin/pnpm",
+    "exec",
+    "tsc",
+    "--noEmit",
+    "--incremental",
+    "false"
+  ],
+  "cwd": "repo",
+  "exit_code": 0,
+  "seconds": 8.808,
+  "started_at": "2026-09-27T15:49:17+0800"
+}

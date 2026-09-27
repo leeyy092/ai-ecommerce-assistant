@@ -1,0 +1,11 @@
+{
+  "root": "/tmp/aiea-g3r3-20260927-lr9ar3ai",
+  "source_root": "/Users/yuyuyu/Documents/ChatGPT/\u4ea7\u54c1-\u5f00\u53d1",
+  "head": "6539fcbf149ec6e31175ab2731340988123790b9",
+  "base": "dd975cdedf55e9b4ac86691b150301e5b5e074f2",
+  "business": "ca5ad76b313c1c836ec75cde1631e769414e2569",
+  "pg_port": 57024,
+  "web_port": 57025,
+  "node": "/tmp/aiea-node24/bin",
+  "pg_bin": "/opt/homebrew/opt/postgresql@17/bin"
+}

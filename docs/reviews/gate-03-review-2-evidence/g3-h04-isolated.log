@@ -1,0 +1,35 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r2-20260927-nes78fkd/repo
+
+(node:39210) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H02a refund total includes successful events from earlier files
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H02b refund bounds include all rows of the current file
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H02c order-item correction must respect existing successful refund bounds
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H03a preview race cannot overwrite a newer customer message
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H03b preview older than 24h must reject confirmation
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H03c committing another user's preview must recheck the uploader permission
+stdout | tests/integration/g3-contract.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete
+G3_EVIDENCE {"id":"H04a","result":{"status":"preview_ready","commit":{"status":202,"body":{"data":{"id":"b31480d7-8119-49ce-9f97-7fb2991cc60a","status":"committed","committed_dataset_version":"1","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"c7a497a9-5888-444d-91d1-628ba66fcb93"}}},"rows":[{"id":"e1805b6f-9ef0-4ca3-b2ac-03382db40ec1","orgId":"81469d5a-4c7d-4c6a-8a47-f99f42d501bf","storeId":"2a8e1178-c7f2-44e4-b33b-24046a68695b","dataSourceId":"e3c0c266-7f2b-4cc2-bd6e-758bede27053","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"1","datasetVersion":"1","importTaskId":"b31480d7-8119-49ce-9f97-7fb2991cc60a","createdAt":"2026-09-27T06:09:14.525Z","updatedAt":"2026-09-27T06:09:14.525Z","rowVersion":1},{"id":"960f42e5-2f59-4f70-95a5-43a4c843c79d","orgId":"81469d5a-4c7d-4c6a-8a47-f99f42d501bf","storeId":"2a8e1178-c7f2-44e4-b33b-24046a68695b","dataSourceId":"e3c0c266-7f2b-4cc2-bd6e-758bede27053","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-09-02T00:00:00.000Z","status":"partial","explicitZero":false,"recordCount":"0","datasetVersion":"1","importTaskId":"b31480d7-8119-49ce-9f97-7fb2991cc60a","createdAt":"2026-09-27T06:09:14.527Z","updatedAt":"2026-09-27T06:09:14.527Z","rowVersion":1}]}}
+
+ ✓ tests/integration/g3-contract.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete 344ms
+stdout | tests/integration/g3-contract.test.ts > H04d final complete order-item batch must not retain transient partial state
+G3_EVIDENCE {"id":"H04d","result":{"commit":{"status":202,"body":{"data":{"id":"1913c7f0-9e3e-4450-b9fa-9431a2866358","status":"committed","committed_dataset_version":"4","insert":2,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"aed55a11-3a35-413d-9275-a6515a272444"}}},"rows":[{"id":"e67027c4-b80d-4dde-8090-03993902c425","orgId":"81469d5a-4c7d-4c6a-8a47-f99f42d501bf","storeId":"2a8e1178-c7f2-44e4-b33b-24046a68695b","dataSourceId":"e3c0c266-7f2b-4cc2-bd6e-758bede27053","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"2","datasetVersion":"4","importTaskId":"1913c7f0-9e3e-4450-b9fa-9431a2866358","createdAt":"2026-09-27T06:09:14.657Z","updatedAt":"2026-09-27T06:09:14.657Z","rowVersion":1}]}}
+
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H06 same campaign on a different report date has a distinct natural key
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps
+ ↓ tests/integration/g3-contract.test.ts > G3 independent contract > H04c first confirmed source is authoritative for the channel
+ ✓ tests/integration/g3-contract.test.ts > H04d final complete order-item batch must not retain transient partial state 122ms
+ ↓ tests/integration/g3-contract.test.ts > H01b business currency must equal the selected store currency
+ ↓ tests/integration/g3-contract.test.ts > M01b synthetic street address is redacted before the customer-message fact is stored
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 16 skipped (18)
+   Start at  14:09:12
+   Duration  2.49s (transform 258ms, setup 422ms, collect 143ms, tests 1.72s, environment 0ms, prepare 50ms)
+

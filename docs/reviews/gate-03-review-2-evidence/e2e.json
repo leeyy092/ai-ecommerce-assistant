@@ -1,0 +1,14 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "playwright",
+    "test",
+    "--config",
+    "playwright.review.config.ts"
+  ],
+  "cwd": "/tmp/aiea-g3r2-20260927-nes78fkd/repo",
+  "exit_code": 0,
+  "seconds": 7.829,
+  "started_at": "2026-09-27T14:12:47+0800"
+}

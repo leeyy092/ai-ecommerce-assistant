@@ -1,0 +1,97 @@
+{
+  "effective": {
+    "R2-H01 invalid mixed file is atomic across facts coverage version and outbox": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H02 Decimal legal partial refunds and replacement retain exact totals": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H02 cumulative quantity chronology and same-time consistency reject atomically": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H02 stale refund must use retained newer fact in final ledger": {
+      "result": "FAIL",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H02 concurrent reference change rejects old refund preview without writes": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H03 wrong task staging identity cannot commit another preview": {
+      "result": "FAIL",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H03 same-time different content after preview must reject": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H04 another existing incomplete order keeps source day partial": {
+      "result": "FAIL",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H04 unchanged partial order cannot become complete on duplicate-row upload": {
+      "result": "FAIL",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H05 zero confirmation binds the entire trading source group": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H05 concurrent first source confirmations bind one group atomically": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H07 attribution model and window remain independent natural keys": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H08 preview has no raw record and full masked business body is preserved": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H08 phone-only text must fail after redaction leaves no business content": {
+      "result": "FAIL",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H08 email-only empty content rejection remains valid": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H08 address without province and building-room suffix must be fully masked": {
+      "result": "FAIL",
+      "log": "g3-r2-targeted.log"
+    },
+    "R2-H08 after-sales reason retains long business text and masks full address": {
+      "result": "FAIL",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-M01 identical facts and declaration create no coverage version or outbox": {
+      "result": "PASS",
+      "log": "g3-r2-supplemental.log"
+    },
+    "R2-H06 original same-source alias contract resolves canonical SKU": {
+      "result": "PASS",
+      "log": "g3-r2-targeted.log"
+    },
+    "R2-H04 DST spring day cannot count the next local day's first hour": {
+      "result": "FAIL",
+      "log": "g3-r2-targeted.log"
+    },
+    "R2-H04 DST fall day includes the last local hour": {
+      "result": "FAIL",
+      "log": "g3-r2-targeted.log"
+    }
+  },
+  "excluded_cross_namespace_probe": {
+    "result": "FAIL",
+    "log": "g3-r2-supplemental.log"
+  },
+  "reason": "outside the confirmed same-source R1 closure precondition; preserved, not a finding",
+  "totals": {
+    "PASS": 12,
+    "FAIL": 9
+  }
+}

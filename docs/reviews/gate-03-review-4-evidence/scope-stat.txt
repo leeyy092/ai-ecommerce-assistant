@@ -1,0 +1,5 @@
+ ai-ecommerce-assistant/package.json                |   4 +-
+ .../src/services/imports/commitTask.ts             |  67 +++++-
+ .../tests/integration/g3-contract.test.ts          |   5 +-
+ .../tests/integration/g3r3-contract.test.ts        | 228 +++++++++++++++++++++
+ 4 files changed, 299 insertions(+), 5 deletions(-)

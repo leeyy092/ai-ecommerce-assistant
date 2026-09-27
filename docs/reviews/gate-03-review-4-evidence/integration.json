@@ -1,0 +1,11 @@
+{
+  "command": [
+    "pnpm",
+    "run",
+    "test:integration"
+  ],
+  "cwd": "/private/tmp/aiea-g3r4-20260927-2qkdz_5d/repo",
+  "exit_code": 0,
+  "seconds": 32.985,
+  "started_at": "2026-09-27T16:32:09+0800"
+}

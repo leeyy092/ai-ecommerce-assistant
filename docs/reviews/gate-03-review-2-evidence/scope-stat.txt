@@ -1,0 +1,9 @@
+ ai-ecommerce-assistant/package.json                |   3 +-
+ .../src/app/api/v1/imports/[id]/preview/route.ts   |  13 +-
+ .../src/jobs/handlers/imports.ts                   | 126 ++---
+ .../src/services/importPreview.ts                  | 417 ++++++++++++-----
+ .../src/services/imports/commitTask.ts             | 514 ++++++++++++++++-----
+ .../tests/integration/g3-contract.test.ts          | 242 ++++++++++
+ .../tests/integration/g3-h04-contract.test.ts      | 218 +++++++++
+ .../tests/integration/imports.test.ts              |   5 +-
+ 8 files changed, 1232 insertions(+), 306 deletions(-)

@@ -1,0 +1,18 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "tests/integration/g3-contract.test.ts",
+    "-t",
+    "H04a|H04d",
+    "--maxWorkers=1",
+    "--minWorkers=1",
+    "--reporter=verbose"
+  ],
+  "cwd": "/tmp/aiea-g3r2-20260927-nes78fkd/repo",
+  "exit_code": 0,
+  "seconds": 3.224,
+  "started_at": "2026-09-27T14:09:11+0800"
+}

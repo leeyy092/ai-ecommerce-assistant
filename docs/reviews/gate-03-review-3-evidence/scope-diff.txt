@@ -1,0 +1,708 @@
+diff --git a/ai-ecommerce-assistant/package.json b/ai-ecommerce-assistant/package.json
+index fb55cc1..2f659a3 100644
+--- a/ai-ecommerce-assistant/package.json
++++ b/ai-ecommerce-assistant/package.json
+@@ -22,8 +22,8 @@
+     "worker:status": "tsx src/jobs/status.ts",
+     "typecheck": "tsc --noEmit",
+     "test": "vitest run tests/unit",
+-    "test:integration": "env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1 --exclude '**/g3-contract.test.ts' --exclude '**/g3-h04-contract.test.ts'",
+-    "test:g3": "env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 sh -c 'vitest run tests/integration/g3-contract.test.ts --maxWorkers=1 --minWorkers=1; vitest run tests/integration/g3-h04-contract.test.ts --maxWorkers=1 --minWorkers=1'",
++    "test:integration": "env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 vitest run tests/integration --maxWorkers=1 --minWorkers=1 --exclude '**/g3-contract.test.ts' --exclude '**/g3-h04-contract.test.ts' --exclude '**/g3r2-contract.test.ts'",
++    "test:g3": "env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy PRISMA_HIDE_UPDATE_MESSAGE=1 sh -c 'vitest run tests/integration/g3-contract.test.ts --maxWorkers=1 --minWorkers=1; a=$?; vitest run tests/integration/g3-h04-contract.test.ts --maxWorkers=1 --minWorkers=1; b=$?; vitest run tests/integration/g3r2-contract.test.ts --maxWorkers=1 --minWorkers=1; c=$?; echo \"g3 per-suite exits: $a $b $c\"; s=0; [ $a -ne 0 ] && s=1; [ $b -ne 0 ] && s=1; [ $c -ne 0 ] && s=1; exit $s'",
+     "test:e2e": "playwright test",
+     "build:scripts": "esbuild scripts/init-owner.ts scripts/reset-owner-password.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist/scripts --external:ali-oss --external:proxy-agent --banner:js=\"var __aieaImportMetaUrl=require('url').pathToFileURL(__filename).href;\" --define:import.meta.url=__aieaImportMetaUrl"
+   },
+diff --git a/ai-ecommerce-assistant/src/jobs/handlers/imports.ts b/ai-ecommerce-assistant/src/jobs/handlers/imports.ts
+index a93aae8..8fef383 100644
+--- a/ai-ecommerce-assistant/src/jobs/handlers/imports.ts
++++ b/ai-ecommerce-assistant/src/jobs/handlers/imports.ts
+@@ -9,6 +9,7 @@
+  * 解析经 TASK-006 统一 Adapter 并组装 typed CanonicalBatch（G2-H04 合同消费点）。
+  * 不做：业务入库、dataset_version 递增、快照评估（TASK-008/013 边界）。
+  */
++import { createHash } from "node:crypto";
+ import { getPrismaClient } from "@/database/prisma";
+ import {
+   ADAPTER_VERSION,
+@@ -178,11 +179,15 @@ export async function handleValidateTask(
+     }
+ 
+     // staging manifest（私有对象；预览/提交边界都从这里读取）
++    // H03：身份与完整性绑定——task_id/原文件sha/当前preview_version + 内容校验和，
++    // 提交侧逐项核验，错任务/损坏/换版staging一律拒绝
+     const mappingArchived = (task.mapping as { mapping_version?: string } | null) ?? {};
+     const mappingVersion = mappingArchived.mapping_version ?? mappingVersionOf({});
+     const stagingObjectKey = `staging/${task.id}/manifest.json`;
+-    const manifest = {
++    const manifestBase = {
+       kind: task.sourceKind,
++      task_id: task.id,
++      preview_version: task.previewVersion + 1,
+       mapping_version: mappingVersion,
+       adapter_version: ADAPTER_VERSION,
+       file_sha256: task.fileSha256,
+@@ -204,6 +209,8 @@ export async function handleValidateTask(
+       rows: staged.rows,
+       generated_at: new Date().toISOString(),
+     };
++    const manifestChecksum = createHash("sha256").update(JSON.stringify(manifestBase)).digest("hex");
++    const manifest = { ...manifestBase, checksum: manifestChecksum };
+     await putObject(stagingObjectKey, Readable.from([JSON.stringify(manifest)]));
+ 
+     const idempotencyKey = success
+diff --git a/ai-ecommerce-assistant/src/services/importPreview.ts b/ai-ecommerce-assistant/src/services/importPreview.ts
+index a4fabed..b1e3d5c 100644
+--- a/ai-ecommerce-assistant/src/services/importPreview.ts
++++ b/ai-ecommerce-assistant/src/services/importPreview.ts
+@@ -216,13 +216,26 @@ function affectedDateOf(tz: string, kind: FileKind, r: AnyRecord): string | null
+   return iso ? localDateIn(tz, new Date(iso)) : null;
+ }
+ 
+-/** 自由文本脱敏：邮箱/电话/地址掩码；不截断业务正文（列限长由输入校验保证） */
++/** 自由文本脱敏：邮箱/电话/地址掩码；不截断业务正文（列限长由输入校验保证）。
++ *  地址遮盖完整定位段：省/市/区各级可选，含无省地址与“号/栋/室”等楼栋房间后缀（H08） */
+ export function redactFreeText(v: string): string {
+   return v
+     .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "***@***")
+     .replace(/(?:\+?86[- ]?)?1\d{10}/g, "***PHONE***")
+     .replace(/\d{15,19}/g, "***NO***")
+-    .replace(/[\u4e00-\u9fa5]{2,8}(?:省|自治区)[\u4e00-\u9fa5]{2,8}(?:市|州|盟)[\u4e00-\u9fa5]{2,8}(?:区|县|旗)[^，。；\s]*?(?:号|栋|室|院|座)/g, "***ADDRESS***");
++    .replace(
++      /[\u4e00-\u9fa5]{0,10}(?:省|自治区)?[\u4e00-\u9fa5]{1,10}(?:市|州|盟)[\u4e00-\u9fa5]{0,10}(?:区|县|旗)?[\u4e00-\u9fa5]{0,12}(?:路|街|道|巷)?\d{1,6}(?:号|幢|栋|座|单元|楼层|层|室|院)(?:\d{0,6}(?:号|幢|栋|座|单元|楼层|层|室|院))*/g,
++      "***ADDRESS***",
++    );
++}
++
++/** 系统掩码占位不算有效业务正文（H08：纯手机号/纯邮箱脱敏后须判空） */
++export function hasBusinessContent(redacted: string): boolean {
++  const residual = redacted
++    .replace(/\*/g, "")
++    .replace(/@/g, "")
++    .replace(/\b(PHONE|NO|ADDRESS)\b/g, "");
++  return /[\u4e00-\u9fa5A-Za-z0-9]/.test(residual);
+ }
+ 
+ /** 预览摘录有界展示；完整脱敏正文由提交侧从 record 取（H08：摘录与正文分离） */
+@@ -427,25 +440,43 @@ export async function classifyAndStage(args: {
+   const historyRefunds = affectedItemIds.length
+     ? await db.refundEvent.findMany({
+         where: { orgId, storeId, orderItemId: { in: affectedItemIds }, status: "succeeded" },
+-        select: { externalRecordId: true, orderItemId: true, refundAmount: true, refundedQuantityCumulative: true, completedAt: true, occurredAt: true },
++        select: { externalRecordId: true, sourceUpdatedAt: true, orderItemId: true, refundAmount: true, refundedQuantityCumulative: true, completedAt: true, occurredAt: true },
+       })
+     : [];
+   const decOf = (v: unknown): Prisma.Decimal => new Prisma.Decimal(v == null ? 0 : String(v));
+-  const historyByItem = new Map<string, Array<{ amount: Prisma.Decimal; qty: number; completedAt: string; externalRecordId: string }>>();
++  // H02（R2）：事件级“最终生效事实”择新——库中同自然键较新时，文件旧版本为合法 no-op，
++  // 总账以库中事实为准；文件较新或为新事件时以文件行参与（R2-H02-stale）
++  const dbTsByEvent = new Map(historyRefunds.map((r) => [r.externalRecordId, r.sourceUpdatedAt.getTime()]));
++  interface LedgerFact {
++    externalRecordId: string; itemId: string; amount: Prisma.Decimal;
++    qty: number; completedAt: string; itemRow: number;
++  }
++  const ledgerFacts = new Map<string, LedgerFact>(); // key: externalRecordId
+   for (const r of historyRefunds) {
+-    if (refundExtIds.includes(r.externalRecordId)) continue; // 本文件将替换的同自然键行不重复计入
+-    const arr = historyByItem.get(r.orderItemId) ?? [];
+-    arr.push({ amount: decOf(r.refundAmount), qty: r.refundedQuantityCumulative ?? 0, completedAt: (r.completedAt ?? r.occurredAt ?? new Date(0)).toISOString(), externalRecordId: r.externalRecordId });
+-    historyByItem.set(r.orderItemId, arr);
++    ledgerFacts.set(r.externalRecordId, {
++      externalRecordId: r.externalRecordId, itemId: r.orderItemId, amount: decOf(r.refundAmount),
++      qty: r.refundedQuantityCumulative ?? 0,
++      completedAt: (r.completedAt ?? r.occurredAt ?? new Date(0)).toISOString(), itemRow: 1,
++    });
++  }
++  for (const f of inFileRefunds) {
++    if (f.status !== "succeeded") continue;
++    const parentOrder = orderMap.get(f.externalOrderId);
++    const parentItem = parentOrder ? itemMap.get(`${parentOrder.id}\u0000${f.externalOrderItemId}`) : undefined;
++    if (!parentItem) continue; // 引用缺失已在上方报错
++    const dbTs = dbTsByEvent.get(f.externalRecordId);
++    if (dbTs !== undefined && dbTs >= Date.parse(f.sourceUpdatedAt)) continue; // 库中较新/相同：文件行为旧版本，合法 no-op
++    ledgerFacts.set(f.externalRecordId, {
++      externalRecordId: f.externalRecordId, itemId: parentItem.id, amount: decOf(f.refundAmount),
++      qty: f.refundedQuantityCumulative ?? 0,
++      completedAt: new Date(f.completedAt ?? f.occurredAt).toISOString(), itemRow: f.__row,
++    });
+   }
+-  const pendingRowOf = (event: string): number =>
+-    inFileRefunds.find((a) => a.externalRecordId === event)?.__row ?? 1;
+ 
+-  // H02c：订单行金额/件数更正不得突破既有成功退款上界（预览侧全历史校验）
++  // H02c：订单行金额/件数更正不得突破既有成功退款上界（预览侧按库中最终事实校验）
+   const priorRefundsByItem = new Map<string, { total: Prisma.Decimal; maxQty: number }>();
+   if (kind === "order_items") {
+     for (const r of historyRefunds) {
+-      if (refundExtIds.includes(r.externalRecordId)) continue;
+       const acc = priorRefundsByItem.get(r.orderItemId) ?? { total: new Prisma.Decimal(0), maxQty: 0 };
+       acc.total = acc.total.add(decOf(r.refundAmount));
+       acc.maxQty = Math.max(acc.maxQty, r.refundedQuantityCumulative ?? 0);
+@@ -592,9 +623,8 @@ export async function classifyAndStage(args: {
+     }
+     if (kind === "customer_messages") {
+       const m = r as StandardRecords["customer_messages"];
+-      // H08：脱敏后无有效业务内容则明确报错，不静默丢行（04 §12.6）
+-      const redacted = redactFreeText(m.messageText);
+-      if (!/[\u4e00-\u9fa5A-Za-z0-9]/.test(redacted.replace(/\*+/g, ""))) {
++      // H08：脱敏后无有效业务内容则明确报错，不静默丢行（04 §12.6；系统掩码不算正文）
++      if (!hasBusinessContent(redactFreeText(m.messageText))) {
+         flagError(p, {
+           row: p.row,
+           column: "message_text",
+@@ -671,66 +701,58 @@ export async function classifyAndStage(args: {
+       record: r,
+     });
+   }
+-  // H02：按订单行合并“全部既有成功退款 + 本文件最终集合”的退款总账（Decimal 精确整数运算）
++  // H02（R2）：按订单行对“最终生效事实集合”做全历史总账校验（Decimal 精确整数运算）
+   if (kind === "after_sales" && inFileRefunds.length > 0) {
+-    const finalByItem = new Map<string, Array<{ event: string; amount: Prisma.Decimal; qty: number; completedAt: string }>>();
+-    for (const a of inFileRefunds) {
+-      if (a.status !== "succeeded") continue;
+-      const parentOrder = orderMap.get(a.externalOrderId);
+-      const parentItem = parentOrder ? itemMap.get(`${parentOrder.id}\u0000${a.externalOrderItemId}`) : undefined;
+-      if (!parentItem) continue; // 引用缺失已在上方报错
+-      const arr = finalByItem.get(parentItem.id) ?? [];
+-      arr.push({ event: a.externalRecordId, amount: decOf(a.refundAmount), qty: a.refundedQuantityCumulative ?? 0, completedAt: new Date(a.completedAt ?? a.occurredAt).toISOString() });
+-      finalByItem.set(parentItem.id, arr);
++    const factsByItem = new Map<string, LedgerFact[]>();
++    for (const f of ledgerFacts.values()) {
++      const arr = factsByItem.get(f.itemId) ?? [];
++      arr.push(f);
++      factsByItem.set(f.itemId, arr);
+     }
+-    for (const [itemId, finals] of finalByItem) {
++    for (const [itemId, facts] of factsByItem) {
+       const orderItem = itemById.get(itemId);
+       if (!orderItem) continue;
+       const paid = orderItem.itemPaidAmount instanceof Prisma.Decimal ? orderItem.itemPaidAmount : decOf(orderItem.itemPaidAmount);
+       const qtyCap = orderItem.quantity;
+-      // 最终集合 = 历史成功退款（排除本文件同自然键替换行）+ 本文件行
+-      const merged = [
+-        ...(historyByItem.get(itemId) ?? []),
+-        ...finals.map((f) => ({ amount: f.amount, qty: f.qty, completedAt: f.completedAt, externalRecordId: f.event })),
+-      ];
+-      const total = merged.reduce((sum, r) => sum.add(r.amount), new Prisma.Decimal(0));
++      const repRow = facts.reduce((m, f) => Math.min(m, f.itemRow), Number.MAX_SAFE_INTEGER);
++      const total = facts.reduce((s, f) => s.add(f.amount), new Prisma.Decimal(0));
+       if (total.gt(paid)) {
+         outcome.rowErrors.push({
+-          row: finals[0] ? pendingRowOf(finals[0].event) : 1,
++          row: repRow,
+           column: "refund_amount",
+           code: "REFUND_AMOUNT_EXCEEDS_PAID",
+           message: `订单行合计成功退款 ${total.toString()} 超过实付金额 ${paid.toString()}`,
+         });
+       }
+-      const sorted = [...merged].sort((x, y) => x.completedAt.localeCompare(y.completedAt));
++      const sorted = [...facts].sort((x, y) => x.completedAt.localeCompare(y.completedAt));
+       let prevQty = 0;
+       const byStamp = new Map<string, number>();
+-      for (const r of sorted) {
+-        if (r.qty < prevQty) {
++      for (const f of sorted) {
++        if (f.qty < prevQty) {
+           outcome.rowErrors.push({
+-            row: pendingRowOf(r.externalRecordId),
++            row: f.itemRow,
+             column: "refunded_quantity_cumulative",
+             code: "REFUND_QUANTITY_CONFLICT",
+             message: "累计退件数按完成时间必须非递减",
+           });
+           break;
+         }
+-        prevQty = r.qty;
+-        const stamp = r.completedAt;
+-        if (byStamp.has(stamp) && byStamp.get(stamp) !== r.qty) {
++        prevQty = f.qty;
++        const stamp = f.completedAt;
++        if (byStamp.has(stamp) && byStamp.get(stamp) !== f.qty) {
+           outcome.rowErrors.push({
+-            row: pendingRowOf(r.externalRecordId),
++            row: f.itemRow,
+             column: "refunded_quantity_cumulative",
+             code: "REFUND_QUANTITY_CONFLICT",
+             message: "同一完成时刻存在不同累计退件数，顺序不确定",
+           });
+           break;
+         }
+-        byStamp.set(stamp, r.qty);
++        byStamp.set(stamp, f.qty);
+       }
+       if (prevQty > qtyCap) {
+         outcome.rowErrors.push({
+-          row: finals[0] ? pendingRowOf(finals[0].event) : 1,
++          row: repRow,
+           column: "refunded_quantity_cumulative",
+           code: "REFUND_QUANTITY_CONFLICT",
+           message: `累计退件 ${prevQty} 超过订单行数量 ${qtyCap}`,
+diff --git a/ai-ecommerce-assistant/src/services/imports/commitTask.ts b/ai-ecommerce-assistant/src/services/imports/commitTask.ts
+index ed71472..5c512e5 100644
+--- a/ai-ecommerce-assistant/src/services/imports/commitTask.ts
++++ b/ai-ecommerce-assistant/src/services/imports/commitTask.ts
+@@ -14,6 +14,7 @@
+  * 原子绑定；H06 显式别名提交消费；H02 退款全历史提交重验与行更正上界；
+  * H08 完整脱敏正文（与预览摘录分离）；M01 同语义重复不增版本。
+  */
++import { createHash } from "node:crypto";
+ import { getPrismaClient } from "@/database/prisma";
+ import { AccessError, canImport, type Role } from "@/services/access";
+ import { writeAudit } from "@/services/audit";
+@@ -71,6 +72,10 @@ interface Manifest {
+   counts: { insert: number; update: number; unchanged: number; rejected: number };
+   rows: ManifestRow[];
+   generated_at?: string;
++  /** H03：身份与完整性绑定字段（新流水线写入） */
++  task_id?: string;
++  preview_version?: number;
++  checksum?: string;
+ }
+ 
+ /** adapters 通道值（default/case/refund）→ Prisma 枚举成员（default_channel/...） */
+@@ -128,12 +133,18 @@ function tzOffsetMs(tz: string, at: Date): number {
+   return asUtc - at.getTime();
+ }
+ 
+-/** 店铺本地自然日 → UTC 窗口 [start, end)（两遍逼近消除 DST 偏差） */
+-function localDayUtcRange(tz: string, date: string): { start: Date; end: Date } {
++/** 店铺本地自然日的本地午夜对应 UTC 时刻（两遍逼近消除 DST 偏差） */
++function localMidnightUtc(tz: string, date: string): Date {
+   const naive = Date.parse(`${date}T00:00:00Z`);
+-  let start = new Date(naive - tzOffsetMs(tz, new Date(naive)));
+-  start = new Date(naive - tzOffsetMs(tz, start));
+-  return { start, end: new Date(start.getTime() + 86400000) };
++  let at = new Date(naive - tzOffsetMs(tz, new Date(naive)));
++  at = new Date(naive - tzOffsetMs(tz, at));
++  return at;
++}
++
++/** 店铺本地自然日 → UTC 窗口 [start, end)：起止各为相邻本地午夜，IANA 时区 DST 正确（H04） */
++function localDayUtcRange(tz: string, date: string): { start: Date; end: Date } {
++  const nextDate = new Date(Date.parse(`${date}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
++  return { start: localMidnightUtc(tz, date), end: localMidnightUtc(tz, nextDate) };
+ }
+ 
+ /** 该来源日已接收事实计数（G3R1-H04C01 合同口径：租户/店铺/来源namespace/类型/channel/业务日，
+@@ -230,6 +241,20 @@ export async function commitImportTask(
+   });
+   const manifest = JSON.parse(await getObjectText(task.stagingObjectKey)) as Manifest;
+ 
++  // H03：staging 身份与完整性绑定——与任务/原文件/当前预览逐项一致，校验和防错配与损坏；
++  // 不一致一律 409 且零业务副作用（正常确认/幂等重放/时效与权限保护保持）
++  const { checksum: manifestChecksum, ...manifestBody } = manifest as unknown as Record<string, unknown>;
++  const identityOk =
++    manifest.task_id === task.id &&
++    manifest.file_sha256 === task.fileSha256 &&
++    manifest.kind === task.sourceKind &&
++    manifest.preview_version === task.previewVersion &&
++    typeof manifestChecksum === "string" &&
++    manifestChecksum === createHash("sha256").update(JSON.stringify(manifestBody)).digest("hex");
++  if (!identityOk) {
++    throw new AccessError(409, "PREVIEW_IDENTITY_MISMATCH", "staging 数据与任务/原文件/当前预览不一致，请重新校验后确认");
++  }
++
+   // H03b：staging 时效——预览 24 小时有效，过期必须重新校验（不接受确认）
+   const generatedAt = Date.parse(manifest.generated_at ?? "");
+   if (!Number.isFinite(generatedAt) || Date.now() - generatedAt > 24 * 3600 * 1000) {
+@@ -326,7 +351,6 @@ export async function commitImportTask(
+       const staged = effectiveRows.filter((r) => r.action !== "unchanged");
+ 
+       let changed = 0;
+-      const parentOrderIds = new Set<string>(); // order_items 提交后行齐复核（H04）
+       const affectedRefundItemIds = new Set<string>(); // after_sales 提交后退款总账重验（H02）
+       if (kind === "products") {
+         for (const row of staged) {
+@@ -453,7 +477,6 @@ export async function commitImportTask(
+           if (!parentOrder) {
+             throw new AccessError(409, "MISSING_ORDER_REFERENCE", `订单 ${it.externalOrderId} 不存在，订单行不能提交`);
+           }
+-          parentOrderIds.add(parentOrder.id);
+           // H06：直接 SKU 或显式别名解析（与预览共享口径）
+           const skuId = await resolveSkuId(tx, ctx.orgId, task.storeId, dataSource.sourceNamespace, it.externalSkuId);
+           if (!skuId) {
+@@ -711,17 +734,28 @@ export async function commitImportTask(
+         }
+       }
+ 
+-      // H04：行齐判断按提交后最终事实（不留逐行暂时缺行的 partial 标记）
++      // H04（R2）：行齐按所声明来源日的全部相关最终订单判断——含历史与 unchanged，
++      // 不只本任务发生变更的订单；任一订单缺行即该来源日保持 partial
+       const partialDates = new Set<string>();
+       if (kind === "order_items") {
+-        for (const pid of parentOrderIds) {
+-          const orderRow = await tx.order.findUniqueOrThrow({
+-            where: { id: pid },
+-            select: { expectedItemCount: true, paidAt: true, orderedAt: true },
+-          });
+-          const presentCount = await tx.orderItem.count({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: pid } });
+-          if (presentCount < orderRow.expectedItemCount) {
+-            partialDates.add(localDateInTz(store.timezone, orderRow.paidAt ?? orderRow.orderedAt));
++        for (const item of manifest.coverage_declaration) {
++          if (item.source_kind !== kind) continue;
++          for (const date of expandRange(item.from, item.to)) {
++            const { start, end } = localDayUtcRange(store.timezone, date);
++            const ordersOnDay = await tx.order.findMany({
++              where: {
++                orgId: ctx.orgId, storeId: task.storeId, sourceNamespace: dataSource.sourceNamespace,
++                OR: [{ paidAt: { gte: start, lt: end } }, { paidAt: null, orderedAt: { gte: start, lt: end } }],
++              },
++              select: { id: true, expectedItemCount: true },
++            });
++            for (const o of ordersOnDay) {
++              const present = await tx.orderItem.count({ where: { orgId: ctx.orgId, storeId: task.storeId, orderId: o.id } });
++              if (present < o.expectedItemCount) {
++                partialDates.add(date);
++                break;
++              }
++            }
+           }
+         }
+       }
+diff --git a/ai-ecommerce-assistant/tests/integration/g3r2-contract.test.ts b/ai-ecommerce-assistant/tests/integration/g3r2-contract.test.ts
+new file mode 100644
+index 0000000..7b78e43
+--- /dev/null
++++ b/ai-ecommerce-assistant/tests/integration/g3r2-contract.test.ts
+@@ -0,0 +1,292 @@
++/**
++ * TASK-007｜文件上传、私有存储与 ImportTask 集成测试（真实 PostgreSQL + 真实会话）。
++ * 验收：超限即停止（真实流式接收：字节/逻辑行）；客户消息不进 public；
++ *       C 不能上传/查看/下载订单文件（H05）；重复请求返回同任务（含并发，H07）；
++ *       Idempotency-Key 头隔离与冲突 409（H07）；失败窗口可恢复/有终态（H08）；
++ *       validate 队列边界与权限重查；签名下载 5 分钟默认（L02）。
++ */
++import { createHash } from "node:crypto";
++import { randomUUID } from "node:crypto";
++import { mkdtempSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
++import { NextRequest } from "next/server";
++import type { PrismaClient } from "@/generated/prisma/client";
++import { applyMigrations, createTestDatabase, dropTestDatabase, resetDbSingletons, resolveDatabaseUrl } from "../helpers/pgMigrate";
++import { FILE_HEADERS } from "@/adapters/contracts";
++import { setStorageRoot, storageRoot } from "@/storage";
++
++const adminUrl = resolveDatabaseUrl().replace(/\/[^/?]+(\?.*)?$/, "/postgres$1");
++const testUrl = await createTestDatabase(adminUrl, randomUUID().slice(0, 8));
++const privateRoot = mkdtempSync(join(tmpdir(), "aiea-storage-"));
++setStorageRoot(privateRoot);
++
++process.env.DATABASE_URL = testUrl;
++process.env.BETTER_AUTH_SECRET ??= "test-secret-please-ignore-0123456789abcdef";
++process.env.BETTER_AUTH_URL = "http://127.0.0.1:3000";
++// 限流阈值放宽仅用于测试（F10 阈值本身由常量默认值 20 在生产生效）
++process.env.UPLOAD_RATE_LIMIT_PER_MIN = "10000";
++
++let db: PrismaClient;
++type Auth = ReturnType<(typeof import("@/lib/auth"))["getAuth"]>;
++let auth: Auth;
++const PASSWORD = "imports-pass-123";
++
++let owner: { userId: string; email: string; cookie: string };
++let cs: { cookie: string };
++let operator: { userId: string; email: string; cookie: string };
++let orgId: string;
++let storeId: string;
++let dataSourceId: string;
++let mockStoreId: string;
++
++function req(path: string, init: RequestInit = {}, cookie?: string): NextRequest {
++  const headers = new Headers(init.headers);
++  if (cookie) headers.set("cookie", cookie);
++  return new NextRequest(`http://127.0.0.1:3000${path}`, { ...init, headers } as ConstructorParameters<typeof NextRequest>[1]);
++}
++
++function csvFile(name: string, content: string): File {
++  return new File([content], name, { type: "text/csv" });
++}
++
++async function loginCookie(email: string): Promise<string> {
++  const r = await auth.api.signInEmail({ body: { email, password: PASSWORD }, asResponse: true });
++  return r.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
++}
++
++async function seedUser(t: string, role: "owner" | "customer_service" | "operator", org: string): Promise<{ userId: string; email: string; cookie: string }> {
++  const email = `${role}-${t}@example.com`;
++  const created = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: role }, asResponse: false });
++  const user = await db.user.create({ data: { id: randomUUID(), authUserId: created.user.id, email, displayName: role } });
++  await db.membership.create({ data: { orgId: org, userId: user.id, role } });
++  return { userId: user.id, email, cookie: await loginCookie(email) };
++}
++
++beforeAll(async () => {
++  await applyMigrations(testUrl);
++  resetDbSingletons();
++  const { getPrismaClient } = await import("@/database/prisma");
++  db = getPrismaClient();
++  auth = (await import("@/lib/auth")).getAuth();
++
++  const t = randomUUID().slice(0, 8);
++  const { initOwner } = await import("@/services/ownerInit");
++  const ownerEmail = `owner-${t}@example.com`;
++  const r = await initOwner(
++    db,
++    { orgName: `I组织${t}`, email: ownerEmail, displayName: "owner", demoMode: false, password: PASSWORD },
++    async (email, password, name) => {
++      const result = await auth.api.signUpEmail({ body: { email, password, name }, asResponse: false });
++      return { authUserId: result.user.id };
++    },
++  );
++  orgId = r.orgId;
++  owner = { userId: r.userId, email: ownerEmail, cookie: await loginCookie(ownerEmail) };
++  cs = await seedUser(`${t}cs`, "customer_service", orgId);
++  operator = await seedUser(`${t}op`, "operator", orgId);
++
++  storeId = (
++    await db.store.create({
++      data: { orgId, name: "导入店", externalStoreId: "IMP-1", platform: "manual", currency: "CNY", timezone: "Asia/Shanghai" },
++    })
++  ).id;
++  dataSourceId = (
++    await db.dataSource.create({
++      data: { orgId, storeId, sourceNamespace: "ns-import", name: "导入源", adapterKind: "csv" },
++    })
++  ).id;
++  mockStoreId = (
++    await db.store.create({
++      data: { orgId, name: "演示导入店", externalStoreId: "IMP-DEMO", platform: "manual", currency: "CNY", timezone: "Asia/Shanghai", demoMode: true },
++    })
++  ).id;
++}, 420_000);
++
++afterAll(async () => {
++  await db?.$disconnect();
++  const { resetClientPool } = await import("@/database/prisma");
++  await resetClientPool();
++  await dropTestDatabase(adminUrl, testUrl);
++});
++
++const PRODUCTS_CSV = [
++  "store_external_id,source_updated_at,external_product_id,product_name,category,product_status,external_sku_id,sku_code,sku_name,specification,sku_status",
++  "IMP-1,2026-09-11T01:00:00Z,P1,保温杯,杯具,active,S1,CUP-RED,红杯,,active",
++  "IMP-1,2026-09-11T01:00:00Z,P1,保温杯,杯具,active,S2,CUP-BLUE,蓝杯,,active",
++].join("\n");
++
++async function upload(cookie: string, opts: {
++  storeId?: string; dataSourceId?: string; kind?: string; kindField?: string;
++  filename?: string; content: string; idempotencyField?: string;
++}): Promise<Response> {
++  const { POST } = await import("@/app/api/v1/imports/route");
++  const form = new FormData();
++  form.set("store_id", opts.storeId ?? storeId);
++  form.set("data_source_id", opts.dataSourceId ?? dataSourceId);
++  form.set(opts.kindField ?? "entity_type", opts.kind ?? "products");
++  if (opts.idempotencyField) form.set("idempotency_key", opts.idempotencyField);
++  form.set("file", csvFile(opts.filename ?? "products.csv", opts.content));
++  return POST(req("/api/v1/imports", { method: "POST", body: form }, cookie));
++}
++
++async function makeTask(cookie: string, kind: string, content: string): Promise<{ id: string; sha: string }> {
++  const res = await upload(cookie, { kind, content });
++  // 内容此前可能已上传（复用返回 200）；两者均产出同一任务
++  expect([200, 201]).toContain(res.status);
++  const body = (await res.json()) as { data: { id: string; file_sha256: string } };
++  return { id: body.data.id, sha: body.data.file_sha256 };
++}
++
++// Independent Gate 03 contract probes. App implementation remains frozen.
++const ts = "2026-09-11T01:00:00Z";
++const csv = (kind: keyof typeof FILE_HEADERS, rows: string[]) => `${FILE_HEADERS[kind].join(",")}\n${rows.join("\n").replaceAll("IMP-1,", `${externalId},`)}`;
++const pRow = (id: string, stamp = ts, name = "杯") => `IMP-1,${stamp},P-${id},${name},杯具,active,S-${id},CODE-${id},杯,,active`;
++const oRow = (id: string, count=1) => `IMP-1,${ts},O-${id},paid,2026-09-01T01:55:00Z,2026-09-01T02:00:00Z,CNY,${count}`;
++const iRow = (id: string, line="L1", amount="100.000000", quantity=2, stamp=ts, sku=`S-${id}`) => `IMP-1,${stamp},O-${id},${line},${sku},${quantity},${amount},CNY`;
++const rRow = (id: string, event: string, amount="60.000000", qty=1, day="03") => `IMP-1,${ts},refund,${event},O-${id},L1,,2026-09-${day}T03:00:00Z,succeeded,2026-09-${day}T04:00:00Z,${amount},${qty},CNY,quality,漏水`;
++const mRow = (id:string, text:string, stamp=ts) => `IMP-1,${stamp},M-${id},C-${id},2026-09-01T03:00:00Z,,${text},,platform_chat,zh-CN`;
++function log(id:string, result:unknown) { console.log("G3_EVIDENCE",JSON.stringify({id,result},(_k,v)=>typeof v==="bigint"?v.toString():v)); }
++async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], coverage?:unknown[], cookie=owner.cookie, source=dataSourceId) {
++  const response=await upload(cookie,{kind,content:csv(kind,rows),dataSourceId:source});
++  expect([200,201]).toContain(response.status);
++  const id=(await response.json()).data.id as string;
++  if (coverage) {
++    const {PUT}=await import("@/app/api/v1/imports/[id]/mapping/route");
++    const res=await PUT(req(`/api/v1/imports/${id}/mapping`,{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({timezone:storeTimezone,coverage_declaration:coverage,expected_preview_version:0})},cookie),{params:Promise.resolve({id})});
++    expect(res.status).toBe(202);
++  }
++  await (await import("@/jobs/handlers/imports")).handleValidateTask({taskId:id});
++  return db.importTask.findUniqueOrThrow({where:{id}});
++}
++async function commit(t:{id:string;previewVersion:number},cookie=owner.cookie) {
++  const {POST}=await import("@/app/api/v1/imports/[id]/commit/route");
++  const res=await POST(req(`/api/v1/imports/${t.id}/commit`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({preview_version:t.previewVersion,confirmation:true})},cookie),{params:Promise.resolve({id:t.id})});
++  return {status:res.status,body:await res.json()};
++}
++async function good(kind:keyof typeof FILE_HEADERS,rows:string[]) {const t=await prepare(kind,rows);expect(t.status).toBe("preview_ready");const c=await commit(t);expect(c.status).toBe(202);return t;}
++async function chain(id:string,count=1) {await good("products",[pRow(id)]);await good("orders",[oRow(id,count)]);await good("order_items",[iRow(id)]);}
++const coverage=(kind:string,from="2026-09-01",to="2026-09-02",channel="default",zero:string[]=[])=>[{source_kind:kind,channel,from,to,status:"complete",explicit_zero_dates:zero}];
++
++// R2 supplemental probes: every test gets a fresh store and namespace scope.
++let externalId = "IMP-1";
++let storeTimezone = "Asia/Shanghai";
++beforeEach(async () => {
++  storeTimezone = "Asia/Shanghai";
++  externalId = `R2-${randomUUID().slice(0,8)}`;
++  storeId = (await db.store.create({data:{orgId,name:externalId,externalStoreId:externalId,platform:"manual",currency:"CNY",timezone:"Asia/Shanghai"}})).id;
++  dataSourceId = (await db.dataSource.create({data:{orgId,storeId,sourceNamespace:"ns-import",name:externalId,adapterKind:"csv"}})).id;
++});
++async function facts() {
++  const where={orgId,storeId};
++  return {
++    version:(await db.store.findUniqueOrThrow({where:{id:storeId}})).datasetVersion.toString(),
++    products:await db.product.count({where}),skus:await db.sKU.count({where}),orders:await db.order.count({where}),items:await db.orderItem.count({where}),
++    refunds:await db.refundEvent.count({where}),cases:await db.afterSaleRecord.count({where}),messages:await db.customerMessage.count({where}),
++    coverage:await db.dataCoverage.count({where}),pending:await db.importTask.count({where:{...where,outboxStatus:"pending"}}),
++  };
++}
++async function preview(t:{id:string}, cookie=owner.cookie) {
++  const {GET}=await import("@/app/api/v1/imports/[id]/preview/route");
++  const res=await GET(req(`/api/v1/imports/${t.id}/preview`,{},cookie),{params:Promise.resolve({id:t.id})});
++  return {status:res.status,body:await res.json()};
++}
++async function latestCoverage(kind:string) {
++  return db.dataCoverage.findFirst({where:{orgId,storeId,sourceKind:kind as "order_items",coverageDate:new Date("2026-09-01T00:00:00Z")},orderBy:{datasetVersion:"desc"}});
++}
++
++describe("R2 original closure boundaries",()=>{
++  it("R2-H01 invalid mixed file is atomic across facts coverage version and outbox",async()=>{
++    const before=await facts();const t=await prepare("products",[pRow("valid"),pRow("bad","not-a-time")]);const c=await commit(t);const after=await facts();log("R2-H01",{taskStatus:t.status,commit:c,before,after});
++    expect(t.status).toBe("failed");expect(c.status).toBe(409);expect(after).toEqual(before);
++  });
++  it("R2-H02 Decimal legal partial refunds and replacement retain exact totals",async()=>{
++    await good("products",[pRow("decimal")]);await good("orders",[oRow("decimal")]);await good("order_items",[iRow("decimal","L1","0.300000",2)]);
++    await good("after_sales",[rRow("decimal","R1","0.100000",1,"03"),rRow("decimal","R2","0.200000",1,"04")]);
++    const before=await facts();const bad=await prepare("after_sales",[rRow("decimal","R3","0.000001",1,"05")]);expect(bad.status).toBe("failed");expect(await facts()).toEqual(before);
++    await good("after_sales",[rRow("decimal","R1","0.050000",1,"03").replace(ts,"2026-09-12T01:00:00Z")]);
++    const rows=await db.refundEvent.findMany({where:{storeId},orderBy:{externalRecordId:"asc"}});log("R2-H02-decimal",rows.map(r=>({id:r.externalRecordId,amount:r.refundAmount?.toString(),qty:r.refundedQuantityCumulative})));expect(rows.map(r=>r.refundAmount?.toString())).toEqual(["0.05","0.2"]);
++  });
++  it("R2-H02 cumulative quantity chronology and same-time consistency reject atomically",async()=>{
++    await chain("qty");await good("after_sales",[rRow("qty","R1","20",2,"03")]);const before=await facts();
++    for(const day of ["03","04"]){const t=await prepare("after_sales",[rRow("qty",`R-${day}`,"20",1,day)]);expect(t.status).toBe("failed");expect(await facts()).toEqual(before);}
++  });
++  it("R2-H02 stale refund must use retained newer fact in final ledger",async()=>{
++    await chain("stale");await good("after_sales",[rRow("stale","R1","20",1,"03").replace(ts,"2026-09-12T01:00:00Z"),rRow("stale","R2","60",1,"04")]);
++    const before=await facts();const t=await prepare("after_sales",[rRow("stale","R1","60",1,"03")]);const c=await commit(t);const after=await facts();log("R2-H02-stale",{taskStatus:t.status,error:t.errorCode,commit:c,before,after});
++    expect(t.status).toBe("preview_ready");expect(c.status).toBe(202);expect(after).toEqual(before);
++  });
++  it("R2-H02 concurrent reference change rejects old refund preview without writes",async()=>{
++    await chain("race");const pending=await prepare("after_sales",[rRow("race","R2","60")]);await good("after_sales",[rRow("race","R1","60")]);const before=await facts();const c=await commit(pending);const after=await facts();log("R2-H02-race",{commit:c,before,after});expect(c.status).toBe(409);expect(after).toEqual(before);
++  });
++  it("R2-H03 wrong task staging identity cannot commit another preview",async()=>{
++    const a=await prepare("products",[pRow("confirmed")]);const b=await prepare("products",[pRow("unconfirmed")]);
++    const {getObjectText,putObject}=await import("@/storage");const {Readable}=await import("node:stream");
++    await putObject(a.stagingObjectKey!,Readable.from([await getObjectText(b.stagingObjectKey!)]));
++    const before=await facts();const c=await commit(a);const after=await facts();const saved=await db.sKU.findMany({where:{storeId},select:{externalSkuId:true}});log("R2-H03-identity",{commit:c,before,after,saved});expect(c.status).toBe(409);expect(after).toEqual(before);
++  });
++  it("R2-H03 same-time different content after preview must reject",async()=>{
++    const old=await prepare("customer_messages",[mRow("conflict","old issue")]);await good("customer_messages",[mRow("conflict","new issue")]);const before=await facts();const c=await commit(old);log("R2-H03-conflict",c);expect(c.status).toBe(409);expect(await facts()).toEqual(before);
++  });
++  it("R2-H04 another existing incomplete order keeps source day partial",async()=>{
++    await chain("missing",2);await good("products",[pRow("complete")]);await good("orders",[oRow("complete")]);
++    const t=await prepare("order_items",[iRow("complete")],coverage("order_items"));expect((await commit(t)).status).toBe(202);
++    const cov=await latestCoverage("order_items");log("R2-H04-history-missing",cov);expect(cov?.recordCount).toBe(2n);expect(cov?.status).toBe("partial");
++  });
++  it("R2-H04 unchanged partial order cannot become complete on duplicate-row upload",async()=>{
++    await good("products",[pRow("repeat")]);await good("orders",[oRow("repeat",2)]);
++    const a=await prepare("order_items",[iRow("repeat")],coverage("order_items"));expect((await commit(a)).status).toBe(202);expect((await latestCoverage("order_items"))?.status).toBe("partial");const before=await facts();
++    const b=await prepare("order_items",[iRow("repeat"),iRow("repeat")],coverage("order_items"));const c=await commit(b);const after=await facts();const cov=await latestCoverage("order_items");log("R2-H04-unchanged",{commit:c,before,after,coverage:cov});expect(c.status).toBe(202);expect(cov?.status).toBe("partial");expect(after).toEqual(before);
++  });
++  it("R2-H05 zero confirmation binds the entire trading source group",async()=>{
++    const t=await prepare("orders",[],coverage("orders","2026-09-01","2026-09-02","default",["2026-09-01"]));expect((await commit(t)).status).toBe(202);
++    const settings=(await db.store.findUniqueOrThrow({where:{id:storeId}})).settings as any;expect(Object.values(settings.authoritative_source_ids)).toEqual([dataSourceId,dataSourceId,dataSourceId,dataSourceId]);
++    const other=await db.dataSource.create({data:{orgId,storeId,sourceNamespace:"other",name:"other",adapterKind:"csv"}});const u=await prepare("orders",[oRow("other")],undefined,owner.cookie,other.id);const before=await facts();const c=await commit(u);log("R2-H05-zero",{settings,commit:c});expect(c.status).toBe(409);expect(await facts()).toEqual(before);
++  });
++  it("R2-H05 concurrent first source confirmations bind one group atomically",async()=>{
++    const other=await db.dataSource.create({data:{orgId,storeId,sourceNamespace:"other",name:"other",adapterKind:"csv"}});
++    const a=await prepare("orders",[oRow("a")]);const b=await prepare("orders",[oRow("b")],undefined,owner.cookie,other.id);
++    const results=await Promise.all([commit(a),commit(b)]);const settings=(await db.store.findUniqueOrThrow({where:{id:storeId}})).settings as any;log("R2-H05-concurrent",{results,settings});expect(results.map(r=>r.status).sort()).toEqual([202,409]);expect(new Set(Object.values(settings.authoritative_source_ids)).size).toBe(1);expect(await db.order.count({where:{storeId}})).toBe(1);
++  });
++  it("R2-H06 original same-source alias contract resolves canonical SKU",async()=>{
++    await good("products",[pRow("alias")]);const sku=await db.sKU.findFirstOrThrow({where:{storeId}});
++    const {POST}=await import("@/app/api/v1/sku-aliases/route");const res=await POST(req("/api/v1/sku-aliases",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({store_id:storeId,source_namespace:"ns-import",external_sku_id:"ALIAS",canonical_sku_id:sku.id})},owner.cookie));expect(res.status).toBe(201);
++    await good("orders",[oRow("alias")]);await good("order_items",[iRow("alias","L1","100",2,ts,"ALIAS")]);expect((await db.orderItem.findFirstOrThrow({where:{storeId}})).skuId).toBe(sku.id);
++  });
++  it("R2-H07 attribution model and window remain independent natural keys",async()=>{
++    const row=(model:string,window:number,spend:string,stamp=ts)=>`IMP-1,${stamp},AD,ad,2026-09-01,${model},${window},${spend},30.000000,CNY`;
++    await good("ads",[row("last_click",7,"10"),row("last_click",14,"20"),row("first_click",7,"30")]);await good("ads",[row("last_click",7,"11","2026-09-12T01:00:00Z")]);
++    const rows=await db.adMetric.findMany({where:{storeId},orderBy:[{attributionModel:"asc"},{attributionWindowDays:"asc"}]});log("R2-H07",rows.map(r=>({model:r.attributionModel,window:r.attributionWindowDays,spend:r.spend.toString()})));expect(rows.map(r=>r.spend.toString())).toEqual(["30","11","20"]);
++    const bad=await prepare("ads",[row("last_click",14,"21")]);expect(bad.status).toBe("failed");
++  });
++  it("R2-H08 preview has no raw record and full masked business body is preserved",async()=>{
++    const text="business ".repeat(30)+" tail issue phone 13800138000 email demo@example.com";const t=await prepare("customer_messages",[mRow("full",text)]);const p=await preview(t);const encoded=JSON.stringify(p.body);expect(p.status).toBe(200);expect(encoded).not.toContain("13800138000");expect(encoded).not.toContain("demo@example.com");expect(p.body.data.items[0]).not.toHaveProperty("record");
++    expect((await commit(t)).status).toBe(202);const m=await db.customerMessage.findFirstOrThrow({where:{storeId}});log("R2-H08-full",{preview:p.body,stored:m.redactedText});expect(m.redactedText).toContain("tail issue");expect(m.redactedText.length).toBeGreaterThan(200);expect(m.redactedText).not.toContain("13800138000");expect(m.redactedText).not.toContain("demo@example.com");
++  });
++  it("R2-H08 phone-only text must fail after redaction leaves no business content",async()=>{
++    const before=await facts();const t=await prepare("customer_messages",[mRow("phone","13800138000")]);const c=await commit(t);const rows=await db.customerMessage.findMany({where:{storeId},select:{redactedText:true}});log("R2-H08-empty-phone",{taskStatus:t.status,commit:c,rows});expect(t.status).toBe("failed");expect(await facts()).toEqual(before);
++  });
++  it("R2-H08 email-only empty content rejection remains valid",async()=>{const t=await prepare("customer_messages",[mRow("email","demo@example.com")]);expect(t.status).toBe("failed");});
++  it("R2-H08 address without province and building-room suffix must be fully masked",async()=>{
++    const addr="厦门市思明区测试路88号2栋301室";const t=await prepare("customer_messages",[mRow("address",`收货地址：${addr}；杯盖漏水`)]);const p=await preview(t);expect(p.status).toBe(200);expect((await commit(t)).status).toBe(202);const m=await db.customerMessage.findFirstOrThrow({where:{storeId}});log("R2-H08-address",{stored:m.redactedText,preview:p.body});expect(m.redactedText).not.toContain("测试路88号");expect(m.redactedText).not.toContain("2栋301室");expect(JSON.stringify(p.body)).not.toContain("测试路88号");expect(m.redactedText).toContain("杯盖漏水");
++  });
++  it("R2-H08 after-sales reason retains long business text and masks full address",async()=>{
++    await chain("reason");const reason="问题说明".repeat(60)+"杯盖漏水；收货地址：测试省测试市测试区测试路88号2栋301室";const row=rRow("reason","R1","20").replace(/漏水$/,reason);await good("after_sales",[row]);const r=await db.refundEvent.findFirstOrThrow({where:{storeId}});log("R2-H08-reason",{text:r.reasonText});expect(r.reasonText).toContain("杯盖漏水");expect(r.reasonText).not.toContain("2栋301室");
++  });
++  it("R2-M01 identical facts and declaration create no coverage version or outbox",async()=>{
++    const a=await prepare("orders",[oRow("noop")],coverage("orders"));expect((await commit(a)).status).toBe(202);const before=await facts();const b=await prepare("orders",[oRow("noop"),oRow("noop")],coverage("orders"));const c=await commit(b);log("R2-M01",{commit:c,before,after:await facts()});expect(c.status).toBe(202);expect(c.body.data.no_op).toBe(true);expect(await facts()).toEqual(before);
++  });
++  it("R2-H04 DST spring day cannot count the next local day's first hour",async()=>{
++    storeTimezone="America/New_York";await db.store.update({where:{id:storeId},data:{timezone:storeTimezone}});
++    const row=`IMP-1,${ts},O-spring,paid,2026-03-09T04:20:00Z,2026-03-09T04:30:00Z,CNY,1`;
++    const t=await prepare("orders",[row],coverage("orders","2026-03-08","2026-03-10","default",["2026-03-08"]));expect(t.status).toBe("preview_ready");const c=await commit(t);log("R2-H04-DST-spring",{taskStatus:t.status,commit:c});expect(c.status).toBe(202);
++    const rows=await db.dataCoverage.findMany({where:{importTaskId:t.id},orderBy:{coverageDate:"asc"}});expect(rows.map(r=>r.recordCount)).toEqual([0n,1n]);
++  });
++  it("R2-H04 DST fall day includes the last local hour",async()=>{
++    storeTimezone="America/New_York";await db.store.update({where:{id:storeId},data:{timezone:storeTimezone}});
++    const row=`IMP-1,2026-11-03T00:00:00Z,O-fall,paid,2026-11-02T04:20:00Z,2026-11-02T04:30:00Z,CNY,1`;
++    const t=await prepare("orders",[row],coverage("orders","2026-11-01","2026-11-02"));expect(t.status).toBe("preview_ready");expect((await commit(t)).status).toBe(202);
++    const cov=await db.dataCoverage.findFirstOrThrow({where:{importTaskId:t.id}});log("R2-H04-DST-fall",cov);expect(cov.recordCount).toBe(1n);expect(cov.status).toBe("complete");
++  });
++});
+diff --git a/ai-ecommerce-assistant/tests/integration/imports.test.ts b/ai-ecommerce-assistant/tests/integration/imports.test.ts
+index dc9768e..2ce484d 100644
+--- a/ai-ecommerce-assistant/tests/integration/imports.test.ts
++++ b/ai-ecommerce-assistant/tests/integration/imports.test.ts
+@@ -1571,27 +1571,30 @@ describe("TASK-010｜订单头与订单行导入", () => {
+   });
+ 
+   it("行遗漏：expected=2 只到 1 行 → 允许提交但该日期覆盖强制 partial；补齐后恢复声明状态", async () => {
++    // G3R2-H04：来源日行齐按该日全部最终订单判断（含历史/unchanged）。
++    // 本用例使用独立业务日，避免共享店铺中其他用例（如仅预览未导行的订单头）永久压低该日状态。
++    const day = "2026-09-06";
+     await commitChain(
+       PRODUCTS_R9("S10P", "杯S10P", "2026-09-01T00:00:00Z"),
+-      ORDERS_T10("T10-O2", paid0, 2),
+-      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O2,L1,S10P,1,40.000000,CNY`,
++      ORDERS_T10("T10-O2", day, 2),
++      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${day}T02:05:00Z,T10-O2,L1,S10P,1,40.000000,CNY`,
+     );
+     const order = await db.order.findFirstOrThrow({ where: { orgId, externalOrderId: "T10-O2" } });
+     expect(await db.orderItem.count({ where: { orgId, orderId: order.id } })).toBe(1);
+     // 订单行覆盖（声明 complete）当日被强制 partial
+     const cover = await db.dataCoverage.findFirstOrThrow({
+-      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${paid0}T00:00:00Z`) },
++      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${day}T00:00:00Z`) },
+       orderBy: { datasetVersion: "desc" },
+     });
+     expect(cover.status).toBe("partial");
+ 
+     // 补齐第二行 → 新版本覆盖恢复声明 complete
+     const fill = await makeTask(operator.cookie, "order_items",
+-      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${paid0}T02:05:00Z,T10-O2,L2,S10P,1,30.000000,CNY`);
++      `${FILE_HEADERS.order_items.join(",")}\nIMP-1,${day}T02:05:00Z,T10-O2,L2,S10P,1,30.000000,CNY`);
+     // 用户补齐后重新声明覆盖（覆盖始终来自用户声明，不由行数推断）
+     const fillDecl = await putMapping(fill.id, operator.cookie, {
+       timezone: "Asia/Shanghai",
+-      coverage_declaration: [{ source_kind: "order_items", channel: "default", from: paid0, to: "2026-09-11", status: "complete", explicit_zero_dates: [] }],
++      coverage_declaration: [{ source_kind: "order_items", channel: "default", from: day, to: "2026-09-07", status: "complete", explicit_zero_dates: [] }],
+       expected_preview_version: 0,
+     });
+     expect(fillDecl.status).toBe(202);
+@@ -1601,7 +1604,7 @@ describe("TASK-010｜订单头与订单行导入", () => {
+     console.log("FILL_RES", res.status, JSON.stringify((await res.json()).data ?? {}));
+     expect([202, 200]).toContain(res.status);
+     const cover2 = await db.dataCoverage.findFirstOrThrow({
+-      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${paid0}T00:00:00Z`) },
++      where: { orgId, sourceKind: "order_items", coverageDate: new Date(`${day}T00:00:00Z`) },
+       orderBy: { datasetVersion: "desc" },
+     });
+     expect(cover2.status).toBe("complete");

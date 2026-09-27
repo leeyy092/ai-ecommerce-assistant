@@ -1,0 +1,16 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "tests/integration/g3r4-independent.test.ts",
+    "--maxWorkers=1",
+    "--minWorkers=1",
+    "--reporter=verbose"
+  ],
+  "cwd": "/private/tmp/aiea-g3r4-20260927-2qkdz_5d/repo",
+  "exit_code": 0,
+  "seconds": 4.198,
+  "started_at": "2026-09-27T16:33:27+0800"
+}

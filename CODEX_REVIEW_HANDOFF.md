@@ -1,3 +1,41 @@
+# PH4-20260927-01 ACK verified / START pending
+
+已从最新Z02桌面核实18:17完整只读ACK及空闲：phase/03-import@ea1c15f、业务bc5e4b2、main85a93ec、143项管理/证据在途且业务diff为空；013依赖/合同/014–016范围与Gate04冻结点一致，无技术阻塞。PH4-20260927-01 ACK接受，待同编号START首次发送；发送后由Z02记录实际接管并更新原进度/交接/提示词/sync，Codex04转只读。
+
+# Current handoff / PH4-20260927-01 prepared
+
+Owner于2026-09-27在收到两批范围与风险说明后明确要求：“你把问题都给我解决，或者给我解决方案。围绕这个上线目标来做所有动作，你自己想办法。”按本次直接执行指令，恢复原完整P0范围的后续开发，立即放行Phase4 TASK013–016；同一冲刺内已定范围经Codex独立PASS后由Codex协调接续，不再为普通阶段接续重复等Owner。9/30先MVP、10/5功能冻结、10/8完整P0为目标；按PLAN-MVP-20260927-01分批组织，完整范围和验收不减。TASK031必须先补齐开户合同，尚未逐条批准的重要开户规则不能假称已批准；资源采购、部署发布、敏感权限及重大范围变化仍给Owner具体方案确认。技术PASS与Owner产品验收仍分开。
+
+原定用户功能是“老板一页看经营变化、最大问题、待验证机会、今天首要动作，并展开同版证据”，对应03_INFORMATION_ARCHITECTURE PART4、09_TASKS TASK021/022及FINAL_DECISIONS。MVP保留指标/问题/商品/VOC摘要/最多3行动和证据的老板核心路径，四张AI短句结论由019已授权Insight支持；自动定时日报/历史与完整配置在第二批补齐。若现有019响应不能支持四卡，先指出合同差额，不另造第二套模型服务、不伪造结论。老板页当前尚未实现。Phase4提供其正确、可读的同版指标与规则，不扩成无业务价值的基础设施。
+
+Gate03 REVIEW4 PASS (ea1c15f/business bc5e4b2). TASK013-016 are authorized, current task013 TODO pending actual START. P06 first block defines this handoff. Writer Codex04; Z02 idle/frozen verified by UI, no START yet. Gate04 requires independent review after freeze. No purchase/deployment/new test is claimed.
+
+## Historical handoff snapshots below
+
+# 当前交接 · GATE03 REVIEW4 PASS · Owner阶段放行待定
+
+唯一Z02于17:47完成PLAN-MVP-20260927-01只读核对，Codex本轮从桌面核实终答及空闲：确认013–019必要依赖、021片段读019 Insight且关闭日报区可行、031草案B-5必须纠正；补出新E2E/共享UI基元/真实私有存储上线依赖。执行者估计98–155小时仅工程判断；Codex补入遗漏的027约2–4小时后按100–160小时管理，MVP46–75小时；纠正执行者沿用旧MVP小计及“备案不可能赶上”的绝对判断（只可说不能保证）。9/30冲刺、必要时10/1–2MVP收口；10/5功能冻结、10/8完整终验仍为Owner目标。Z02未写文件/测试/sync/Git，Codex04持写入；未发START。
+
+Owner于2026-09-27最新要求先MVP、市场反馈后迭代，最晚2026-10-08完成所有开发；已知域名未备案，测试数据先用公开/合成样本。具体两批范围、任务片段前置、自动阶段接续、TASK031规则见docs/SEPT28_BETA_PROPOSAL.md顶部PLAN-MVP-20260927-01，方案待Owner确认；新目标不等于上述执行变更或部署采购已批准。完整P0仍须最终补齐，旧11月估计和旧A/B不是执行依据。
+
+Owner要求先MVP市场验证、最晚10/8完成所有开发，已确认有域名未备案、先找数据测试。已在原提案顶部写PLAN-MVP-20260927-01：9/30核心MVP、10/5功能冻结、10/6–8终验；82–124可执行小时仅时间盒待校准。向产品-开发/最新Z02首次实际发只读可行性请求，消息可见且输入框清空，未发START；Codex04持管理写入。完整P0不删，具体顺序/接续/031仍待确认。HEAD ea1c15f不变，无业务改动/测试/提交/合并/采购/部署。
+
+Owner工期/准备与消息恢复说明：`docs/OWNER_LAUNCH_BRIEF_2026-09-27.md`、`docs/OWNER_CONVERSATION_RECOVERY_2026-09-27.md`；原11月中旬/6–9周排期建议已撤回，旧有效日预算未按AI实绩校准，暂无确认的替代日期；仅说明材料，阶段放行仍待明确答复。
+
+GATE_03 REVIEW4独立PASS，冻结phase/03-import@ea1c15f（业务bc5e4b2），差异6539fcb..ea1c15f，main85a93ec。H03损坏staging恢复语义、H04父订单更正覆盖均关闭，H01–H08/M01/M02无剩余本Gate技术缺陷；Gate02 REVIEW5 PASS保持。原TASK008–012技术验收完成，达到约35功能节点（不是工时百分比）。
+
+本轮独立新/tmp+新PG17：12迁移/typecheck0/integration139/四套g3=18+4+21+4全绿聚合0/R4补充10全过；脚本任一套失败聚合1、全成功0。unit/build/E2E未重复无变更部分，引用R3独立72/build0/E2E8，Z02本候选自测另列。R1 42/R2 57/R3 61件哈希保持，本轮PG57034停止、临时根移除；Z02 55502资产未动。
+
+正式15节报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_4_2026-09-27.md；证据GATE_03_REVIEW_4_EVIDENCE_2026-09-27.json、gate-03-review-4-evidence/README/observations/原始日志。
+
+当前写入者Codex04，Z02于16:30管理更正后最终冻结空闲。通过通知G3R4-20260927-02已于16:55首次实际送达，Z02于16:55完成只读ACK（Codex本轮核验终答及空闲）：确认ea1c15f/业务bc5e4b2、R4 PASS与阶段边界，继续冻结。此前锁屏阻塞解除，历史记录保留；未发送START。当前下一责任人Owner/P09，Checkpoint=YES，等待Phase3验收及Phase4明确放行；未获答复不开发TASK013、不合并main。
+
+完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警AI日报本人行动/必要页面运维保持；自助独立注册仍是交付要求，TASK031合同待批准。Owner目前仅授权到Phase3；技术PASS不等于阶段放行。Phase4 TASK013–016、main合并、采购、正式部署未放行；不以工期问答、迁移、心跳或无人回复替代授权。
+
+双方执行CTX-RULE-20260927-01保留当前窗口：没有实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口，不按占用/长度/心跳/预计长任务提前换窗。压缩仍可靠则继续，未知不臆测；确需时才按STATE_PROTOCOL原交接流程，不fork、不建worktree/重复自动化。
+
+## 历史交接（2026-09-27T16:40:55+08:00前，非当前指令）
+
 # 当前交接 · GATE_03 REVIEW3 返修候选已冻结 · 待Codex04独立复审（R4）
 
 G3R3-20260927-02返修由最新Z02（sess_bc9ea3f4-180b-493b-81c0-8d91565029d4）完成并冻结单一候选，本地feat+chore提交于phase/03-import（基线6539fcb/业务ca5ad76），未推送未合并未部署。写入权已交回Codex04；复审范围6539fcb..新HEAD。

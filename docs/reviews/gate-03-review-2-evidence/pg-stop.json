@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/opt/homebrew/opt/postgresql@17/bin/pg_ctl",
+    "-D",
+    "/tmp/aiea-g3r2-20260927-nes78fkd/pgdata",
+    "stop",
+    "-m",
+    "fast"
+  ],
+  "cwd": "/tmp/aiea-g3r2-20260927-nes78fkd/repo",
+  "exit_code": 0,
+  "seconds": 0.119,
+  "started_at": "2026-09-27T14:20:52+0800"
+}

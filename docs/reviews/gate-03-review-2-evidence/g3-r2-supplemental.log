@@ -1,0 +1,188 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r2-20260927-nes78fkd/repo
+
+(node:39672) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H01 invalid mixed file is atomic across facts coverage version and outbox
+G3_EVIDENCE {"id":"R2-H01","result":{"taskStatus":"failed","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"fe079737-002f-439e-90bd-9ce6e6cc9783"}}},"before":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0},"after":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0}}}
+
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H01 invalid mixed file is atomic across facts coverage version and outbox 279ms
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 Decimal legal partial refunds and replacement retain exact totals
+G3_EVIDENCE {"id":"R2-H02-decimal","result":[{"id":"R1","amount":"0.05","qty":1},{"id":"R2","amount":"0.2","qty":1}]}
+
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 Decimal legal partial refunds and replacement retain exact totals 208ms
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 cumulative quantity chronology and same-time consistency reject atomically 127ms
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 stale refund must use retained newer fact in final ledger
+G3_EVIDENCE {"id":"R2-H02-stale","result":{"taskStatus":"failed","error":"REFUND_AMOUNT_EXCEEDS_PAID","commit":{"status":409,"body":{"error":{"code":"IMPORT_CONFLICT","message":"当前状态 failed 不能提交","retryable":false,"request_id":"299f9f38-e6bd-47c7-bc5e-621d8bb02e74"}}},"before":{"version":"4","products":1,"skus":1,"orders":1,"items":1,"refunds":2,"cases":0,"messages":0,"coverage":0,"pending":4},"after":{"version":"4","products":1,"skus":1,"orders":1,"items":1,"refunds":2,"cases":0,"messages":0,"coverage":0,"pending":4}}}
+
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 concurrent reference change rejects old refund preview without writes
+G3_EVIDENCE {"id":"R2-H02-race","result":{"commit":{"status":409,"body":{"error":{"code":"IMPORT_PREVIEW_STALE","message":"预览后数据已变化，重新校验未通过；请重新校验并确认预览","retryable":false,"request_id":"e2509763-9e63-4eef-9a23-528ba249f03d"}}},"before":{"version":"4","products":1,"skus":1,"orders":1,"items":1,"refunds":1,"cases":0,"messages":0,"coverage":0,"pending":4},"after":{"version":"4","products":1,"skus":1,"orders":1,"items":1,"refunds":1,"cases":0,"messages":0,"coverage":0,"pending":4}}}
+
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 stale refund must use retained newer fact in final ledger 105ms
+   → expected 'failed' to be 'preview_ready' // Object.is equality
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 concurrent reference change rejects old refund preview without writes 101ms
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H03 wrong task staging identity cannot commit another preview
+G3_EVIDENCE {"id":"R2-H03-identity","result":{"commit":{"status":202,"body":{"data":{"id":"d3877145-3915-4dfb-9add-ec01174e4208","status":"committed","committed_dataset_version":"1","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"e5bbbc48-e935-4637-b93b-9d29e88be409"}}},"before":{"version":"0","products":0,"skus":0,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":0},"after":{"version":"1","products":1,"skus":1,"orders":0,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":0,"pending":1},"saved":[{"externalSkuId":"S-unconfirmed"}]}}
+
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H03 same-time different content after preview must reject
+G3_EVIDENCE {"id":"R2-H03-conflict","result":{"status":409,"body":{"error":{"code":"IMPORT_PREVIEW_STALE","message":"预览后数据已变化，重新校验未通过；请重新校验并确认预览","retryable":false,"request_id":"2f160717-bb6f-4f44-873a-c5ad70934fb3"}}}}
+
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 another existing incomplete order keeps source day partial
+G3_EVIDENCE {"id":"R2-H04-history-missing","result":{"id":"b630b29b-626b-4e0f-88a3-64d79853ce51","orgId":"5261fe54-0075-41b6-90df-7c0088609f02","storeId":"56f9a03b-a018-4960-84c1-79b26ff79b90","dataSourceId":"385454c5-fa0c-4cc1-b47b-9a6759c44270","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"2","datasetVersion":"6","importTaskId":"4e0f2d21-2c53-46ad-8c1e-bd0a85a1071c","createdAt":"2026-09-27T06:12:26.168Z","updatedAt":"2026-09-27T06:12:26.168Z","rowVersion":1}}
+
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H03 wrong task staging identity cannot commit another preview 38ms
+   → expected 202 to be 409 // Object.is equality
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H03 same-time different content after preview must reject 45ms
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 unchanged partial order cannot become complete on duplicate-row upload
+G3_EVIDENCE {"id":"R2-H04-unchanged","result":{"commit":{"status":202,"body":{"data":{"id":"b781e7d9-dd49-4585-a158-3cb4af60b443","status":"committed","committed_dataset_version":"4","insert":0,"update":0,"unchanged":1,"no_op":true,"reused":false},"meta":{"request_id":"9eead220-8a53-4a35-b7b5-0023b6eea187"}}},"before":{"version":"3","products":1,"skus":1,"orders":1,"items":1,"refunds":0,"cases":0,"messages":0,"coverage":1,"pending":3},"after":{"version":"4","products":1,"skus":1,"orders":1,"items":1,"refunds":0,"cases":0,"messages":0,"coverage":2,"pending":4},"coverage":{"id":"6d5aa756-a8a9-4c28-9678-13c27ffd357d","orgId":"5261fe54-0075-41b6-90df-7c0088609f02","storeId":"9fab0813-bafe-486f-a6ef-d82f780e0ba5","dataSourceId":"d934680c-ce72-4ace-8aca-c70fc4537f21","sourceKind":"order_items","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"1","datasetVersion":"4","importTaskId":"b781e7d9-dd49-4585-a158-3cb4af60b443","createdAt":"2026-09-27T06:12:26.259Z","updatedAt":"2026-09-27T06:12:26.259Z","rowVersion":1}}}
+
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H05 zero confirmation binds the entire trading source group
+G3_EVIDENCE {"id":"R2-H05-zero","result":{"settings":{"authoritative_source_ids":{"orders/default":"689d29c4-ee80-4a6a-a3f4-7f2416bfed20","after_sales/case":"689d29c4-ee80-4a6a-a3f4-7f2416bfed20","after_sales/refund":"689d29c4-ee80-4a6a-a3f4-7f2416bfed20","order_items/default":"689d29c4-ee80-4a6a-a3f4-7f2416bfed20"}},"commit":{"status":409,"body":{"error":{"code":"SOURCE_MIGRATION_REQUIRED","message":"channel orders/default 已绑定权威来源 689d29c4-ee80-4a6a-a3f4-7f2416bfed20；本任务来源为 f88e3d2a-50db-4599-bc89-e37004717ee1，不能写入（来源迁移属后续单独任务）","retryable":false,"request_id":"464d3ed6-865f-477e-b02c-cc1e4c9835b1"}}}}}
+
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 another existing incomplete order keeps source day partial 139ms
+   → expected 'complete' to be 'partial' // Object.is equality
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 unchanged partial order cannot become complete on duplicate-row upload 90ms
+   → expected 'complete' to be 'partial' // Object.is equality
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H05 zero confirmation binds the entire trading source group 46ms
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H05 concurrent first source confirmations bind one group atomically
+G3_EVIDENCE {"id":"R2-H05-concurrent","result":{"results":[{"status":202,"body":{"data":{"id":"06e0460d-3ea9-463d-a20d-52258b0c47e4","status":"committed","committed_dataset_version":"1","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"bd334cc1-6dc7-4efd-9277-fb99a0bbaa40"}}},{"status":409,"body":{"error":{"code":"SOURCE_MIGRATION_REQUIRED","message":"channel orders/default 已绑定权威来源 29933822-e662-40b7-b749-620933f17cc0；本任务来源为 8b49d0a6-8f47-4add-a118-33067ed09490，不能写入（来源迁移属后续单独任务）","retryable":false,"request_id":"cf3edebb-c735-4d1f-8daf-7bd2e69243f2"}}}],"settings":{"authoritative_source_ids":{"orders/default":"29933822-e662-40b7-b749-620933f17cc0","after_sales/case":"29933822-e662-40b7-b749-620933f17cc0","after_sales/refund":"29933822-e662-40b7-b749-620933f17cc0","order_items/default":"29933822-e662-40b7-b749-620933f17cc0"}}}}
+
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H05 concurrent first source confirmations bind one group atomically 34ms
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H06 explicit alias across catalog and trading namespace resolves canonical SKU 36ms
+   → expected 404 to be 201 // Object.is equality
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H07 attribution model and window remain independent natural keys
+G3_EVIDENCE {"id":"R2-H07","result":[{"model":"first_click","window":7,"spend":"30"},{"model":"last_click","window":7,"spend":"11"},{"model":"last_click","window":14,"spend":"20"}]}
+
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 preview has no raw record and full masked business body is preserved
+G3_EVIDENCE {"id":"R2-H08-full","result":{"preview":{"data":{"id":"ae515f74-1648-49fb-bc82-88b014e65e04","status":"preview_ready","preview_version":1,"base_dataset_version":"0","file_sha256":"8865e014faf3acc25eff6c226fa1a9f7692827fcd4ff93f5e7c6b4fe285d2010","mapping_version":"e3b0c44298fc1c149afbf4c8996fb924","adapter_version":"adapter-v1","row_count":1,"counts":{"insert":1,"update":0,"unchanged":0,"rejected":0,"duplicates_folded":0,"superseded_in_file":0,"superseded_by_db":0},"coverage":{"declaration":[],"gaps":[],"coverage_only":false,"empty_file":false},"ignored_columns":[],"items":[{"row":2,"action":"insert","reason":null,"natural_key":{"external_message_id":"M-full"},"affected_dates":["2026-09-01"],"sample":{"kind":"customer_messages","sourceUpdatedAt":"2026-09-11T01:00:00.000Z","externalMessageId":"M-full","externalConversationId":"C-full","messageAt":"2026-09-01T03:00:00.000Z","externalSkuId":null,"isComplaint":null,"channel":"platform_chat","language":"zh-CN","message_text":"business business business business business business business business business business business business business business business business business business business business business business bu…"}}],"next_cursor":null},"meta":{"request_id":"723da47f-5289-45d7-85ee-560ee9d4bead"}},"stored":"business business business business business business business business business business business business business business business business business business business business business business business business business business business business business business  tail issue phone ***PHONE*** email ***@***"}}
+
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 phone-only text must fail after redaction leaves no business content
+G3_EVIDENCE {"id":"R2-H08-empty-phone","result":{"taskStatus":"preview_ready","commit":{"status":202,"body":{"data":{"id":"8a7a2b8f-0416-4b77-9bb6-5ad505c2a030","status":"committed","committed_dataset_version":"1","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"2b12ec45-cad4-47e7-aa25-69aba7b98f40"}}},"rows":[{"redactedText":"***PHONE***"}]}}
+
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 address without province and building-room suffix must be fully masked
+G3_EVIDENCE {"id":"R2-H08-address","result":{"stored":"收货地址：厦门市思明区测试路88号2栋301室；杯盖漏水","preview":{"error":{"code":"PREVIEW_NOT_READY","message":"当前状态 committed 尚无可确认预览","retryable":false,"request_id":"6a90102a-4d16-40de-b9a2-dfd16bb7a486"}}}}
+
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H07 attribution model and window remain independent natural keys 65ms
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 preview has no raw record and full masked business body is preserved 29ms
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 phone-only text must fail after redaction leaves no business content 22ms
+   → expected 'preview_ready' to be 'failed' // Object.is equality
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 email-only empty content rejection remains valid 11ms
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 after-sales reason retains long business text and masks full address
+G3_EVIDENCE {"id":"R2-H08-reason","result":{"text":"问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明杯盖漏水；收货地址：***ADDRESS***2栋301室"}}
+
+stdout | tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-M01 identical facts and declaration create no coverage version or outbox
+G3_EVIDENCE {"id":"R2-M01","result":{"commit":{"status":202,"body":{"data":{"id":"7b8e65a2-c474-4a0a-a548-86f798b488b9","status":"committed","committed_dataset_version":"1","insert":0,"update":0,"unchanged":1,"no_op":true,"reused":false},"meta":{"request_id":"2131aecb-dc4a-44a8-91f7-9f7ce6160aa1"}}},"before":{"version":"1","products":0,"skus":0,"orders":1,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":1,"pending":1},"after":{"version":"1","products":0,"skus":0,"orders":1,"items":0,"refunds":0,"cases":0,"messages":0,"coverage":1,"pending":1}}}
+
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 address without province and building-room suffix must be fully masked 21ms
+   → expected '收货地址：厦门市思明区测试路88号2栋301室；杯盖漏水' not to contain '测试路88号'
+ × tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 after-sales reason retains long business text and masks full address 76ms
+   → expected '问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问…' not to contain '2栋301室'
+ ✓ tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-M01 identical facts and declaration create no coverage version or outbox 58ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H02 stale refund must use retained newer fact in final ledger
+AssertionError: expected 'failed' to be 'preview_ready' // Object.is equality
+
+Expected: "preview_ready"
+Received: "failed"
+
+ ❯ tests/integration/g3-r2-independent.test.ts:216:22
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H03 wrong task staging identity cannot commit another preview
+AssertionError: expected 202 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 202
+
+ ❯ tests/integration/g3-r2-independent.test.ts:225:233
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 another existing incomplete order keeps source day partial
+AssertionError: expected 'complete' to be 'partial' // Object.is equality
+
+Expected: "partial"
+Received: "complete"
+
+ ❯ tests/integration/g3-r2-independent.test.ts:233:139
+    231|     await chain("missing",2);await good("products",[pRow("complete")])…
+    232|     const t=await prepare("order_items",[iRow("complete")],coverage("o…
+    233|     const cov=await latestCoverage("order_items");log("R2-H04-history-…
+       |                                                                                                                                           ^
+    234|   });
+    235|   it("R2-H04 unchanged partial order cannot become complete on duplica…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H04 unchanged partial order cannot become complete on duplicate-row upload
+AssertionError: expected 'complete' to be 'partial' // Object.is equality
+
+Expected: "partial"
+Received: "complete"
+
+ ❯ tests/integration/g3-r2-independent.test.ts:238:302
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H06 explicit alias across catalog and trading namespace resolves canonical SKU
+AssertionError: expected 404 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 404
+
+ ❯ tests/integration/g3-r2-independent.test.ts:253:319
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 phone-only text must fail after redaction leaves no business content
+AssertionError: expected 'preview_ready' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "preview_ready"
+
+ ❯ tests/integration/g3-r2-independent.test.ts:267:299
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 address without province and building-room suffix must be fully masked
+AssertionError: expected '收货地址：厦门市思明区测试路88号2栋301室；杯盖漏水' not to contain '测试路88号'
+
+Expected: "测试路88号"
+Received: "收货地址：厦门市思明区测试路88号2栋301室；杯盖漏水"
+
+ ❯ tests/integration/g3-r2-independent.test.ts:271:297
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  tests/integration/g3-r2-independent.test.ts > R2 original closure boundaries > R2-H08 after-sales reason retains long business text and masks full address
+AssertionError: expected '问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问…' not to contain '2栋301室'
+
+Expected: "2栋301室"
+Received: "问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明问题说明杯盖漏水；收货地址：***ADDRESS***2栋301室"
+
+ ❯ tests/integration/g3-r2-independent.test.ts:274:351
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 11 passed (19)
+   Start at  14:12:23
+   Duration  3.47s (transform 258ms, setup 401ms, collect 161ms, tests 2.71s, environment 0ms, prepare 55ms)
+

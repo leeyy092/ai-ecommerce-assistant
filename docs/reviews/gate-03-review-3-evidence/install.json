@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/tmp/aiea-node24/bin/pnpm",
+    "install",
+    "--frozen-lockfile",
+    "--offline"
+  ],
+  "cwd": "/private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo",
+  "exit_code": 0,
+  "seconds": 10.167,
+  "started_at": "2026-09-27T15:48:30+0800"
+}

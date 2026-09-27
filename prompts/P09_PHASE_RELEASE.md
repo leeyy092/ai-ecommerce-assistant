@@ -1,3 +1,15 @@
+# Gate03技术通过 · 等待Owner阶段放行
+
+```text
+已从最新Z02桌面核实18:17完整只读ACK及空闲：phase/03-import@ea1c15f、业务bc5e4b2、main85a93ec、143项管理/证据在途且业务diff为空；013依赖/合同/014–016范围与Gate04冻结点一致，无技术阻塞。PH4-20260927-01 ACK接受，待同编号START首次发送；发送后由Z02记录实际接管并更新原进度/交接/提示词/sync，Codex04转只读。
+
+Owner于2026-09-27在收到两批范围与风险说明后明确要求：“你把问题都给我解决，或者给我解决方案。围绕这个上线目标来做所有动作，你自己想办法。”按本次直接执行指令，恢复原完整P0范围的后续开发，立即放行Phase4 TASK013–016；同一冲刺内已定范围经Codex独立PASS后由Codex协调接续，不再为普通阶段接续重复等Owner。9/30先MVP、10/5功能冻结、10/8完整P0为目标；按PLAN-MVP-20260927-01分批组织，完整范围和验收不减。TASK031必须先补齐开户合同，尚未逐条批准的重要开户规则不能假称已批准；资源采购、部署发布、敏感权限及重大范围变化仍给Owner具体方案确认。技术PASS与Owner产品验收仍分开。
+原定用户功能是“老板一页看经营变化、最大问题、待验证机会、今天首要动作，并展开同版证据”，对应03_INFORMATION_ARCHITECTURE PART4、09_TASKS TASK021/022及FINAL_DECISIONS。MVP保留指标/问题/商品/VOC摘要/最多3行动和证据的老板核心路径，四张AI短句结论由019已授权Insight支持；自动定时日报/历史与完整配置在第二批补齐。若现有019响应不能支持四卡，先指出合同差额，不另造第二套模型服务、不伪造结论。老板页当前尚未实现。Phase4提供其正确、可读的同版指标与规则，不扩成无业务价值的基础设施。
+Read prompts/P06_BUILD.md first text block. Phase4 handoff PH4-20260927-01 is prepared; no START yet. Current writer Codex04; read latest 12_PROGRESS for actual ACK/START and writer. Z02 must not repeat a delivered START. Gate03 REVIEW4 PASS at ea1c15f; identity and window rules follow P06. Update this first block to actual state after receipt; historical text below is not current authorization.
+```
+
+## 历史阶段放行材料（非当前授权）
+
 # 当前阶段授权提示
 
 Phase2已由Owner最新“开始你的工作”指令放行，并授权Phase3 TASK-008–012；实际记录见12_PROGRESS的PH3-20260927-01与FINAL_DECISIONS第8节，开发入口P06首块。后续GATE_03独立审查后停下向Owner反馈，不将此条扩为所有未来阶段自动放行。
@@ -40,3 +52,16 @@ Owner尚未阶段放行。本提示词不授权合并main、部署或开始TASK-
 本轮Review管理文档尚未提交/推送，应保留，不reset/覆盖。收到Owner放行后再按原协议把下一责任人设置为ZCode，一次一个TASK推进Phase2，并保留迁移维护约定；具体Git动作以Owner实际授权为准。未获放行时保持TASK-004、待Owner验收、Checkpoint=YES，不自行推进。
 状态变化时更新原12_PROGRESS/CODEX_REVIEW_HANDOFF，再执行/usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync并读回首页/总控。线上部署与真实企业试用仍未验证，不得把Phase1通过当成完整产品可用。
 ```
+
+
+## Historical first block before PH4-20260927-01
+
+
+PLAN-MVP-20260927-01已完成只读核对：9/30冲刺MVP，必要时10/1–2收口；10/5功能冻结、10/8完整P0验收为目标。修订时间盒100–160可执行小时，尚非实测预测。线上试用前仍须真实私有OSS与恢复验证。读取最新提案及进度，具体执行变更仍待Owner确认。
+你正在处理Owner的最新分批交付决定，先读docs/SEPT28_BETA_PROPOSAL.md顶部PLAN-MVP-20260927-01及FINAL_DECISIONS最新节，再读唯一进度当前导航和最新协调记录。
+Owner于2026-09-27最新要求先MVP、市场反馈后迭代，最晚2026-10-08完成所有开发；已知域名未备案，测试数据先用公开/合成样本。具体两批范围、任务片段前置、自动阶段接续、TASK031规则见docs/SEPT28_BETA_PROPOSAL.md顶部PLAN-MVP-20260927-01，方案待Owner确认；新目标不等于上述执行变更或部署采购已批准。完整P0仍须最终补齐，旧11月估计和旧A/B不是执行依据。
+当前phase/03-import@ea1c15f（业务bc5e4b2），GATE03 REVIEW4独立PASS，TASK008–012技术DONE；无IN_PROGRESS。Codex04=01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE已激活；Z02=sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE，保持当前窗口。Z02冻结，只做本编号只读方案核对；Codex04持管理写入。
+方案：9/30受控注册→六CSV→商品问题/证据→真实AI建议→本人行动的MVP；10/5完整P0功能冻结，10/6–8终验修复。需允许021/022/025/026/028–030片段前置和031补合同；同库一个活动TASK、一个写入者，全合同通过才DONE。固定日报/完整客服告警工作台/设置等仍在10/8前补齐。必要质量底线不降级。
+待Owner一次性确认：接受Phase3，批准分批顺序与TASK检查点；批准本冲刺内技术PASS后自动接续已授权工作包，到MVP发布/完整功能冻结/终验反馈；031采用测试码、显式建店、首批不验证邮箱并提供经核验运维重置。重复邮箱登录后可创建首个自建组织，已有自建组织不能再建，原草案B-5歧义须补正。确认后Codex将变更落实原合同/任务/Phase规则，再给Z02唯一开发START；只读ACK不是批准。
+域名未备案已知；云账号/模型额度未知。公开合成样本只能验证软件，真实用户反馈单列。购买/部署/敏感权限按具体方案另批。日期是冲刺目标，不虚报保证。
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发。重读AGENTS/.product-os.json/STATE_PROTOCOL/12_PROGRESS和Git，核对最新身份再通信；约35/50/70/100是功能节点。保持当前窗口，确有压缩后可靠性问题或可举证污染才按原流程迁移。无新状态不改更新时间、不重复派发或催问。实际交接后sync读回首页md/html与总控。

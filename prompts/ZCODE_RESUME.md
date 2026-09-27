@@ -1,3 +1,33 @@
+# ZCode当前恢复入口 · GATE03通过后冻结
+
+```text
+当前不需要新窗口；若在现窗口恢复，只读核对，不把本入口当迁移或START。
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant，总控/Users/yuyuyu/Documents/AI-Workspace。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE/12_PROGRESS当前导航与最新记录/CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN/DEVELOPMENT_HANDOFF，核对Git和写入权。
+唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已实际激活，原codex-zcode ACTIVE每10分钟目标04，旧03/02/01退出。唯一最新Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE，旧Z01退出。身份/迁移/写入权以后续12_PROGRESS最新记录为准，不拿旧COMPLETE或心跳接管。
+GATE_03 REVIEW4独立PASS，冻结phase/03-import@ea1c15f（业务bc5e4b2），差异6539fcb..ea1c15f，main85a93ec。H03损坏staging恢复语义、H04父订单更正覆盖均关闭，H01–H08/M01/M02无剩余本Gate技术缺陷；Gate02 REVIEW5 PASS保持。原TASK008–012技术验收完成，达到约35功能节点（不是工时百分比）。
+本轮独立新/tmp+新PG17：12迁移/typecheck0/integration139/四套g3=18+4+21+4全绿聚合0/R4补充10全过；脚本任一套失败聚合1、全成功0。unit/build/E2E未重复无变更部分，引用R3独立72/build0/E2E8，Z02本候选自测另列。R1 42/R2 57/R3 61件哈希保持，本轮PG57034停止、临时根移除；Z02 55502资产未动。
+正式15节报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_4_2026-09-27.md；证据GATE_03_REVIEW_4_EVIDENCE_2026-09-27.json、gate-03-review-4-evidence/README/observations/原始日志。
+当前写入者Codex04，Z02于16:30管理更正后最终冻结空闲。通过通知G3R4-20260927-02已于16:55首次实际送达，Z02于16:55完成只读ACK（Codex本轮核验终答及空闲）：确认ea1c15f/业务bc5e4b2、R4 PASS与阶段边界，继续冻结。此前锁屏阻塞解除，历史记录保留；未发送START。当前下一责任人Owner/P09，Checkpoint=YES，等待Phase3验收及Phase4明确放行；未获答复不开发TASK013、不合并main。
+完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警AI日报本人行动/必要页面运维保持；自助独立注册仍是交付要求，TASK031合同待批准。Owner目前仅授权到Phase3；技术PASS不等于阶段放行。Phase4 TASK013–016、main合并、采购、正式部署未放行；不以工期问答、迁移、心跳或无人回复替代授权。
+双方执行CTX-RULE-20260927-01保留当前窗口：没有实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口，不按占用/长度/心跳/预计长任务提前换窗。压缩仍可靠则继续，未知不臆测；确需时才按STATE_PROTOCOL原交接流程，不fork、不建worktree/重复自动化。
+Z02保持当前会话冻结；通过通知仅只读ACK。若出现尚未完成的历史排队消息先核对它是否已被R4 PASS覆盖，不重复开发或改旧证据。
+```
+
+## 历史首块（2026-09-27T16:40:55+08:00前，非当前指令）
+
+```text
+你是当前唯一ZCode执行者；本入口仅供恢复原会话或确需迁移时只读ACK，不自行开新窗口或取得写入权。
+唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已实际激活，原codex-zcode ACTIVE每10分钟目标04，旧03/02/01退出。唯一最新Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE，旧Z01退出。身份/迁移/写入权以后续12_PROGRESS最新记录为准，不拿旧COMPLETE或心跳接管。
+最新独立GATE03 REVIEW3 FAIL，1HIGH H04父订单更正覆盖、1MEDIUM H03损坏staging错误语义。H02/H08/M02已关闭；H03错任务提交风险关闭、H04历史缺行/unchanged/DST通过；H01/H05/H06/H07和Gate02 REVIEW5保持。冻结phase/03-import@6539fcb（业务ca5ad76），本轮dd975cd..6539fcb，main85a93ec；后续复审6539fcb..新冻结HEAD。正式报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_3_2026-09-27.md（15节）、同轮EVIDENCE索引与gate-03-review-3-evidence/README/observations/g3r3-independent。
+先完整读取prompts/P08_FIX.md首块及AGENTS/STATE_PROTOCOL/12_PROGRESS最新当前状态和回执。新G3R3-20260927-02必须真实ACK与同编号START；旧返修已结束，不复用旧START。保留管理/证据差异，实际写入权只依唯一进度。
+完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警/AI日报本人行动/必要页面运维、技术栈与依赖不变。Owner仅授权Phase3 TASK008–012；Gate03独立PASS约35节点停Owner，Phase4/TASK013、TASK031开户合同、main合并、购买、正式部署未放行。重大范围疑义立即停问Owner，普通原合同返修直接协作；已关闭问题无新改动/有效反例不重开。
+Owner最新CTX-RULE-20260927-01：Codex和ZCode默认保留当前窗口，无实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口；不按75%/85%、长度、心跳次数或预计长任务换窗。实际压缩仍可靠就继续，未知不臆测。确需时才按STATE_PROTOCOL原冻结/只读ACK/COMPLETE/激活流程，不fork、不建worktree或自动化。
+```
+
+---
+
+## 历史入口（以下仅追溯）
+
 # ZCode 当前会话接手提示词
 
 唯一状态以12_PROGRESS为准；本文件仅为可复制接手入口。
@@ -26,4 +56,14 @@
 长期主动换窗：遵守STATE_PROTOCOL对应条款；约75%准备、85%或长任务可能接近上限时安全迁移，用户要求或可靠性问题可提前，未知占用不猜。旧会话先安全冻结/完整交接，整理本ZCODE_RESUME首块和原唯一进度；能力允许实际创建同项目新普通会话，否则明确交Codex桌面创建。新会话先只读ACK，Codex核验身份/COMPLETE/RESUME后才能开发。旧会话标历史退出；Codex只联系最新，会话编号写原进度，不建第二条自动化。
 
 本轮只读ACK完成判据：真实路径/分支/HEAD、完整在途diff及以上3文件的实际差别、回归哈希、已测与未测、原范围/停止点、下一步、你可核实的会话标题/ID（未知不编造）、当前写入者Codex及等待RESUME。不要运行测试或修代码。ACK后结束本轮等待激活。
+```
+
+
+## 历史首块（2026-09-27T15:59:26+08:00替换，非当前指令）
+
+```text
+Owner最新换窗要求（CTX-RULE-20260927-01，适用于Codex与ZCode）：默认保留当前窗口；没有实际上下文压缩或明确污染依据不新开窗口。不按75%/85%占用、对话长度、心跳次数或预计长任务提前换窗。压缩本身也不自动迁移，仍能可靠继续就留原窗口；仅实际压缩后影响可靠接续或有可举证的污染、确需换窗时才按STATE_PROTOCOL原流程交接，情况未知不臆测。此要求替代较早的提前换窗触发条件。
+本入口仅恢复上下文，唯一状态以docs/ai-ecommerce-assistant/12_PROGRESS.md当前导航及最新ACK/START回执为准。根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发。
+唯一最新Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01已COMPLETE；协调者Codex04/01a0e16d-be56-7741-bced-49133cdcafeb。R1返修候选dd975cd/业务6b408cb已经冻结并独立Review2 FAIL，当前新返修G3R2-20260927-02，完整范围/关闭标准/只读ACK和START要求都读prompts/P08_FIX.md首块、R2正式报告/索引/README。旧12:07迁移RESUME或旧START不构成当前开工授权。
+新窗口首次只读核对真实Git/全部未提交管理与证据/唯一写入权，不能复用本块作为自动开工。严格按STATE_PROTOCOL执行双窗口迁移、原进度最新COMPLETE和同编号RESUME，旧窗口退出。完整P0和Phase3授权不变，Gate02 R5保持，独立Gate03 PASS后约35节点停Owner；不开始013/Phase4/TASK031/部署。
 ```

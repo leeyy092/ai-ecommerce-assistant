@@ -1,0 +1,48 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r3-20260927-lr9ar3ai/repo
+
+(node:47859) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ❯ tests/integration/g3-contract.test.ts (18 tests | 1 failed | 17 skipped) 3580ms
+   ↓ G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement
+   ↓ G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset
+   ↓ G3 independent contract > H02a refund total includes successful events from earlier files
+   ↓ G3 independent contract > H02b refund bounds include all rows of the current file
+   ↓ G3 independent contract > H02c order-item correction must respect existing successful refund bounds
+   ↓ G3 independent contract > H03a preview race cannot overwrite a newer customer message
+   ↓ G3 independent contract > H03b preview older than 24h must reject confirmation
+   ↓ G3 independent contract > H03c committing another user's preview must recheck the uploader permission
+   ↓ G3 independent contract > H04a absent undeclared-zero date cannot become complete
+   ↓ G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op
+   ↓ G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation
+   ↓ G3 independent contract > H06 same campaign on a different report date has a distinct natural key
+   ↓ G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt
+   ↓ G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps
+   ↓ G3 independent contract > H04c first confirmed source is authoritative for the channel
+   × H04d final complete order-item batch must not retain transient partial state 397ms
+     → expected [ 200, 201 ] to include 400
+   ↓ H01b business currency must equal the selected store currency
+   ↓ M01b synthetic street address is redacted before the customer-message fact is stored
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3-contract.test.ts > H04d final complete order-item batch must not retain transient partial state
+AssertionError: expected [ 200, 201 ] to include 400
+ ❯ prepare tests/integration/g3-contract.test.ts:153:21
+    151| async function prepare(kind:keyof typeof FILE_HEADERS, rows:string[], …
+    152|   const response=await upload(cookie,{kind,content:csv(kind,rows),data…
+    153|   expect([200,201]).toContain(response.status);
+       |                     ^
+    154|   const id=(await response.json()).data.id as string;
+    155|   if (coverage) {
+ ❯ good tests/integration/g3-contract.test.ts:168:76
+ ❯ tests/integration/g3-contract.test.ts:235:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  15:50:03
+   Duration  5.04s (transform 682ms, setup 914ms, collect 229ms, tests 3.58s, environment 0ms, prepare 92ms)
+
