@@ -1,0 +1,29 @@
+{
+  "review_handoff": "G3R1-20260927-01",
+  "zcode_identity": "产品-开发 / 接手AI电商助手P0交接计划",
+  "freeze_ack_time": "2026-09-27T02:14:00+08:00",
+  "freeze_ack": "ZCode确认8f3f28d、85a93ec基线、Codex独占审查；不写文件/sync/Git，不开始013、不合并部署",
+  "repair_handoff": "G3R1-20260927-02",
+  "repair_delivery": "sent_readonly_acknowledged_start_sent",
+  "writer": "ZCode owns business/progress/Git from verified START delivery until new candidate freeze; Codex read-only after these control receipts",
+  "repair_blocked_at": "2026-09-27T02:35:53+08:00",
+  "repair_blocker": "cua_repl returned: The Mac is locked and automatic unlock could not unlock it. No message was typed or sent; no bypass attempted.",
+  "repair_delivery_verified_at": "2026-09-27T10:56:31+08:00",
+  "repair_delivery_evidence": "cua_repl: correct project/chat idle; first handoff message visible, composer empty and ZCode working",
+  "repair_blocker_resolved_at": "2026-09-27T10:56:31+08:00",
+  "repair_start": "sent",
+  "repair_ack_time": "2026-09-27T10:56:00+08:00",
+  "repair_ack_verified_at": "2026-09-27T10:58:47+08:00",
+  "repair_ack": "phase/03-import@8f3f28d/业务277109d；7项管理差异及原始证据保留、无业务在途；逐项确认8 HIGH/相邻M01、F05交易四通道同源、008至012依赖及停止点；无合同冲突/范围疑义，等待START",
+  "repair_sync": {
+    "command": "/usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync",
+    "exit_code": 0,
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-27T10:58:55+08:00"
+  },
+  "repair_readback_verified_at": "2026-09-27T11:00:14+08:00",
+  "repair_start_verified_at": "2026-09-27T11:01:21+08:00",
+  "repair_start_evidence": "cua_repl: START G3R1-20260927-02 visible in the correct conversation; composer cleared; ZCode working"
+}

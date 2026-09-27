@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/opt/homebrew/opt/postgresql@17/bin/pg_ctl",
+    "-D",
+    "/tmp/aiea-g3r1-20260927-sxfw4c8z/pgdata",
+    "-l",
+    "/tmp/aiea-g3r1-20260927-sxfw4c8z/evidence/postgres.log",
+    "-o",
+    "-p 55483 -h 127.0.0.1 -k /tmp/aiea-g3r1-20260927-sxfw4c8z/pgsock",
+    "start"
+  ],
+  "exit_code": 0,
+  "seconds": 0.124
+}

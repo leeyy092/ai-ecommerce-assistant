@@ -1,0 +1,9 @@
+{
+  "plain_archive": "/tmp/aiea-g3r1-20260927-sxfw4c8z",
+  "pg_stop_exit": 0,
+  "owned_synthetic_storage_dirs_matched_to_probe_UUIDs": [
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-AodX9j",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-pukWmu",
+    "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-g7nVR6"
+  ]
+}

@@ -1,3 +1,19 @@
+# 当前交接 · GATE_03 REVIEW1 FAIL · G3R1-20260927-02
+
+Phase3 TASK008–012 独立审查FAIL，8 HIGH/1 MEDIUM；P08已于2026-09-27桌面恢复后首次送达，ZCode10:56只读ACK全部范围且无合同冲突；下一工具ZCode/P08，Codex sync读回后发START转交写入；Checkpoint=YES。只读ACK后待Codex START才接管写入。最新事实以12_PROGRESS为准。
+
+冻结8f3f28d（业务277109d），已放行main85a93ec；本轮审查范围85a93ec..8f3f28d。常规12迁移/typecheck/unit72/integration139/build/E2E8通过；18个独立业务场景有效1PASS/17FAIL。正式报告 [GATE03 REVIEW1](docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_1_2026-09-27.md)，[索引](docs/reviews/GATE_03_REVIEW_1_EVIDENCE_2026-09-27.json)，[复现](docs/reviews/gate-03-review-1-evidence/README.md)。
+
+原定功能→六类CSV可确认导入并支撑经营/商品/广告/售后/VOC事实；原合同→09_TASKS 008–012及04/08/10/11；本轮范围→报告8组HIGH及相邻no-op修复；关闭标准→各节有效反例转绿、正常路径与触发回归保持，再交Codex独立复审。不得扩基础设施或修改业务口径；重要范围疑义停问Owner。
+
+ZCode02:14确认G3R1-20260927-01冻结，Codex管理收尾；G3R1-20260927-02实际送达/ACK/START见证据receipt与唯一进度。下一轮范围8f3f28d..新冻结HEAD；Gate02 R5 PASS和已关项不变。Phase3尚未到约35可验收功能节点，PASS后Owner决定下一Phase；不开始013、不合并main、不部署，TASK031未获批准。
+
+本轮审查报告/证据及管理修改尚未提交推送；保留历史管理差异，不reset/clean。sync只更新视图。旧交接全部在下，旧“当前”标题均为历史原文，不能覆盖本节。
+
+---
+
+## 历史交接原文（只作追溯）
+
 # 当前交接 · Phase 3 接续准备（PH3-20260927-01）
 
 Owner在新对话明确要求开始后续开发（原话见进度PH3-20260927-01）。在REVIEW5 PASS基础上，授权落实为放行Phase2并按原Git生命周期接续Phase3 TASK-008–012，一次一项；到GATE_03/六类导入功能节点停开发，Codex独立审查后向Owner反馈，再决定后续阶段。此处不扩大为所有未来Phase自动放行，不审批TASK-031草案、资源购买或正式部署。

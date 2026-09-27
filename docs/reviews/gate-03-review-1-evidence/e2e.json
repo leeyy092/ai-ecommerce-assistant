@@ -1,0 +1,1 @@
+{"command": ["pnpm", "exec", "playwright", "test", "--config", "playwright.review.config.ts"], "exit_code": 0}

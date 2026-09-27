@@ -1,0 +1,1 @@
+{"command": ["pnpm", "exec", "vitest", "run", "tests/integration/g3-independent.test.ts", "-t", "H01b|M01b", "--maxWorkers=1", "--minWorkers=1", "--reporter=verbose", "--reporter=json", "--outputFile.json=/tmp/aiea-g3r1-20260927-sxfw4c8z/evidence/probes-fields-results.json"], "exit_code": 1}

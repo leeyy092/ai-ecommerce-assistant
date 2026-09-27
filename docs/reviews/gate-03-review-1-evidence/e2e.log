@@ -1,0 +1,30 @@
+[WebServer] (node:2577) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:2578) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+(node:2594) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:2598) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/auth.spec.ts:6:5 › 登录页可打开且不暴露内部信息 (235ms)
+  ✓  2 tests/e2e/auth.spec.ts:12:5 › 错误密码显示明确错误且不进入系统 (171ms)
+[WebServer] (node:2578) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+[WebServer] 2026-09-26T18:21:29.889Z ERROR [Better Auth]: Error Error: aborted
+[WebServer]     at ignore-listed frames {
+[WebServer]   code: 'ECONNRESET'
+[WebServer] }
+[WebServer] # SERVER_ERROR:  Error: aborted
+[WebServer]     at ignore-listed frames {
+[WebServer]   code: 'ECONNRESET'
+[WebServer] }
+  ✓  3 tests/e2e/auth.spec.ts:21:5 › 正确密码登录成功并携带会话访问 /api/v1/me (429ms)
+  ✓  4 tests/e2e/auth.spec.ts:41:5 › 未登录访问 /api/v1/me 返回 401 (18ms)
+  ✓  5 tests/e2e/auth.spec.ts:46:5 › Gate-01 H05｜邀请全流程：Owner 创建 → 新浏览器接受 → 真实会话 (499ms)
+  ✓  6 tests/e2e/auth.spec.ts:90:5 › Gate-01 H04｜公开注册 URL 在浏览器路径下同样拒绝 (6ms)
+  ✓  7 tests/e2e/smoke.spec.ts:3:5 › GET /api/health 返回 200 且 body 为 {status:'ok'}（数据库在线） (6ms)
+  ✓  8 tests/e2e/smoke.spec.ts:10:5 › 基础页可打开且无业务假数据 (72ms)
+
+  8 passed (4.0s)

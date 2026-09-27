@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/tmp/aiea-node24/bin/pnpm",
+    "install",
+    "--frozen-lockfile",
+    "--offline"
+  ],
+  "exit_code": 0,
+  "seconds": 3.898
+}

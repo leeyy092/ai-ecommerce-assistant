@@ -5,6 +5,8 @@
 这是恢复指令，不是第二份状态真源。版本变化时读取最新12_PROGRESS及迁移记录；历史正文保留在后。
 
 ```text
+2026-09-27最新快照覆盖下方全部旧快照：GATE03 REVIEW1已对85a93ec..8f3f28d（业务277109d）独立FAIL，8 HIGH/1 MEDIUM；TASK008–012 BLOCKED，常规检查通过不等于阶段验收。返修G3R1-20260927-02，P08已在Mac解锁后首次实际送达，ZCode10:56只读ACK全部范围且无疑义，Codex sync后发START；实际START/写入权以最新回执为准，不重复发送或重建编号；写入权和实际ACK/START必须读12_PROGRESS最新记录/本轮coordination-receipt。没有新候选不重复审查旧8f3f28d。Gate02 R5 PASS与Phase2已放行保持；Phase4和TASK031/部署未放行。
+
 最新授权覆盖下方迁移时旧快照：MIGRATE-20260926-01已COMPLETE，本对话01a0de69-d398-74d1-ba7d-0013bd10edbd为唯一Codex入口。Owner随后明确“开始你的工作”，已授权放行Phase2并接续Phase3 TASK-008–012；GATE03/约35功能节点停下审查反馈。执行前以12_PROGRESS当前导航/PH3-20260927-01和P06首块核验实际START/写入权；没有START不抢写。下方尚待Phase2放行的描述仅是迁移时旧快照，不能覆盖本次新授权。独立开户草案/正式部署仍不在本次授权内。
 
 请接手“AI 电商运营助手”完整 P0 的技术协调与独立审查。不要依赖旧聊天记忆；先读下列磁盘原件，再执行。本提示词是恢复入口，实际当前状态只以唯一进度、真实 Git 和最新 Owner 明确授权为准。

@@ -1,0 +1,126 @@
+{
+  "sync": {
+    "command": "/usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync",
+    "exit_code": 0,
+    "registered": 1,
+    "updated": 1,
+    "errors": [],
+    "generated_at": "2026-09-27T02:36:04+08:00"
+  },
+  "readback": [
+    {
+      "path": "/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.md",
+      "sha256": "4d0cf73c5356d1570b3d4329ee2a62206637b4c70aaeb40d88ba8e5cd92101de",
+      "matched": [
+        "GATE_03 REVIEW1 FAIL",
+        "G3R1-20260927-02",
+        "Mac解锁后"
+      ],
+      "read_at": "2026-09-27T02:37:49.544462+08:00"
+    },
+    {
+      "path": "/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.html",
+      "sha256": "d9606a8a5932227d5c62e68e56be9df2a7a5728675dd58ae6176a2a76d4de15d",
+      "matched": [
+        "GATE_03 REVIEW1 FAIL",
+        "G3R1-20260927-02",
+        "Mac解锁后"
+      ],
+      "read_at": "2026-09-27T02:37:49.544531+08:00"
+    },
+    {
+      "path": "/Users/yuyuyu/Documents/AI-Workspace/00_CONTROL_CENTER/PROJECTS.md",
+      "sha256": "cbd4dcaf13a61b8958e4151b28a98bea045bde5c0eca3098952cbc6690b12ca1",
+      "matched": [
+        "GATE_03 REVIEW1 FAIL",
+        "G3R1-20260927-02",
+        "Mac解锁后"
+      ],
+      "read_at": "2026-09-27T02:37:49.544581+08:00"
+    }
+  ],
+  "cleanup": {
+    "pg_stop_exit": 0,
+    "removed": [
+      "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-AodX9j",
+      "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-pukWmu",
+      "/var/folders/97/qcrpjlq567dghr53z360_d240000gn/T/aiea-storage-g7nVR6",
+      "/tmp/aiea-g3r1-20260927-sxfw4c8z"
+    ],
+    "ports": {
+      "55483": {
+        "exit": 1,
+        "output": ""
+      },
+      "33183": {
+        "exit": 1,
+        "output": ""
+      }
+    }
+  },
+  "business_diff_exit": 0,
+  "management_diff_check_exit": 0,
+  "unique_state_blocks": 1,
+  "head": "8f3f28d20c3f562df90420f36ec271ff0fe41e19",
+  "repair_sent": true,
+  "reason": "Mac available; first handoff and readonly ACK completed; sync/readback verified; same-id START visible and ZCode working",
+  "updated_at": "2026-09-27T11:01:21+08:00",
+  "repair_handoff_verification": {
+    "sync": {
+      "command": "/usr/bin/python3 /Users/yuyuyu/Documents/AI-Workspace/tools/product_os.py sync",
+      "exit_code": 0,
+      "registered": 1,
+      "updated": 1,
+      "errors": [],
+      "generated_at": "2026-09-27T10:58:55+08:00"
+    },
+    "readback": [
+      {
+        "path": "/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.md",
+        "sha256": "7b3539ced73dd91c6f6cb1fb8e6e67d301f693879b6d3ae0a08b68422c450c06",
+        "matched": [
+          "TASK-008",
+          "ZCode",
+          "G3R1-20260927-02",
+          "GATE_03 REVIEW1 FAIL",
+          "10:56只读ACK无阻塞"
+        ],
+        "read_at": "2026-09-27T11:00:14+08:00"
+      },
+      {
+        "path": "/Users/yuyuyu/Documents/ChatGPT/产品-开发/00_START_HERE.html",
+        "sha256": "efab30e7449009a1cae4bba5bf1fc3ab8be2090ae4b7f3bff55bec8ad96e972c",
+        "matched": [
+          "TASK-008",
+          "ZCode",
+          "G3R1-20260927-02",
+          "GATE_03 REVIEW1 FAIL",
+          "10:56只读ACK无阻塞"
+        ],
+        "read_at": "2026-09-27T11:00:14+08:00"
+      },
+      {
+        "path": "/Users/yuyuyu/Documents/AI-Workspace/00_CONTROL_CENTER/PROJECTS.md",
+        "sha256": "d3128241e57a7f0272ff864ebd1ee1064062ada4b3ddfaf750484555c9c250c6",
+        "matched": [
+          "TASK-008",
+          "ZCode",
+          "G3R1-20260927-02",
+          "GATE_03 REVIEW1 FAIL",
+          "10:56只读ACK无阻塞"
+        ],
+        "read_at": "2026-09-27T11:00:14+08:00"
+      }
+    ],
+    "checks": "diff-check0, unique-state1, task-rows30, business-diff-empty; immutable42+report verified",
+    "readback_note": "Initial literal P08 filename assertion rejected: generated view expands prompt instead of showing filename; corrected to compare complete actual P08 first block in md/html. No generated content changed.",
+    "start": "sent_verified",
+    "verified_at": "2026-09-27T11:00:14+08:00",
+    "start_verified_at": "2026-09-27T11:01:21+08:00"
+  },
+  "initial_delivery_snapshot": {
+    "repair_sent": false,
+    "reason": "Mac locked; cua_repl stopped before any input; no bypass",
+    "updated_at": "2026-09-27T02:37:49.597304+08:00"
+  }
+}

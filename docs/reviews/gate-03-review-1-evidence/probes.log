@@ -1,0 +1,251 @@
+
+ RUN  v3.2.7 /private/tmp/aiea-g3r1-20260927-sxfw4c8z/repo/ai-ecommerce-assistant
+
+(node:2684) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement
+G3_EVIDENCE {"id":"C01","result":{"replayVersion":"6","refundCount":1,"refundAmount":"20"}}
+
+ ✓ tests/integration/g3-independent.test.ts > G3 independent contract > C01 positive control: valid six-file chain, exact replay and same-ID replacement 261ms
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset
+G3_EVIDENCE {"id":"H01","result":{"status":"preview_ready","errorCount":1,"commit":{"status":202,"body":{"data":{"id":"fd7acc2d-a358-44e4-ae3f-ee56ae19e051","status":"committed","committed_dataset_version":"8","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"50f47488-e51d-4630-b830-68206ca2c181"}}},"inserted":1}}
+
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H02a refund total includes successful events from earlier files
+G3_EVIDENCE {"id":"H02a","result":{"status":"preview_ready","commit":{"status":202,"body":{"data":{"id":"5fdf45d6-cfcd-4938-a79a-5a3763c15fe0","status":"committed","committed_dataset_version":"13","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"e4f28d1f-bb40-4538-8a18-83e0b243f366"}}},"total":120,"paid":100}}
+
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H02b refund bounds include all rows of the current file
+G3_EVIDENCE {"id":"H02b","result":{"status":"preview_ready","commit":{"status":202,"body":{"data":{"id":"66327402-52c9-483b-a3f1-5ca7bc652977","status":"committed","committed_dataset_version":"17","insert":2,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"431d6374-57a4-4c50-ae63-015bc341d5e2"}}}}}
+
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset 22ms
+   → expected 'preview_ready' to be 'failed' // Object.is equality
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H02a refund total includes successful events from earlier files 67ms
+   → expected 'preview_ready' to be 'failed' // Object.is equality
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H02c order-item correction must respect existing successful refund bounds
+G3_EVIDENCE {"id":"H02c","result":{"status":"preview_ready","commit":{"status":202,"body":{"data":{"id":"f8f88e35-2bb9-4468-a037-bbfabf4da14c","status":"committed","committed_dataset_version":"22","insert":0,"update":1,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"a5718373-5aa9-4758-b716-52b44ba8d24b"}}},"amount":"10","quantity":1}}
+
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H03a preview race cannot overwrite a newer customer message
+G3_EVIDENCE {"id":"H03a","result":{"commit":{"status":202,"body":{"data":{"id":"acce734d-6e4e-4bfe-a21a-ce260d6a8ac1","status":"committed","committed_dataset_version":"24","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"f1676aeb-4f15-4983-a8e1-4a26fb69709f"}}},"text":"旧问题","sourceUpdatedAt":"2026-09-11T01:00:00.000Z"}}
+
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H03b preview older than 24h must reject confirmation
+G3_EVIDENCE {"id":"H03b","result":{"generatedAt":"2026-09-25T17:23:44.776Z","commit":{"status":202,"body":{"data":{"id":"e4bc541e-797c-42cf-99fa-baed90c9b673","status":"committed","committed_dataset_version":"25","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"c41d26c5-ee8c-4a11-a20b-4a0895ccfd10"}}}}}
+
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H03c committing another user's preview must recheck the uploader permission
+G3_EVIDENCE {"id":"H03c","result":{"status":202,"body":{"data":{"id":"bc3a2e76-d851-49ad-a821-f39c096974b2","status":"committed","committed_dataset_version":"26","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"9eb42491-4007-4a91-92b0-c4c2cdfb09ff"}}}}
+
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H02b refund bounds include all rows of the current file 49ms
+   → expected 'preview_ready' to be 'failed' // Object.is equality
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H02c order-item correction must respect existing successful refund bounds 61ms
+   → expected 'preview_ready' to be 'failed' // Object.is equality
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H03a preview race cannot overwrite a newer customer message 23ms
+   → expected '旧问题' to be '新问题' // Object.is equality
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H03b preview older than 24h must reject confirmation 12ms
+   → expected 202 to be 409 // Object.is equality
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete
+G3_EVIDENCE {"id":"H04a","result":{"status":"preview_ready","commit":{"status":202,"body":{"data":{"id":"461466fc-4a44-4b99-be0d-d53c2e287d8f","status":"committed","committed_dataset_version":"27","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"3872a736-a667-4d2c-bc3c-1d698cc14886"}}},"rows":[{"id":"38124105-9527-4fb3-be5d-4541293196a1","orgId":"23d3def5-3401-4bab-82d4-0491fe3595db","storeId":"b9fca84a-175f-43d2-b46d-177407414185","dataSourceId":"9c54b603-2cda-4e35-90a5-bd9f49cba2c9","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-09-01T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"1","datasetVersion":"27","importTaskId":"461466fc-4a44-4b99-be0d-d53c2e287d8f","createdAt":"2026-09-26T18:23:44.812Z","updatedAt":"2026-09-26T18:23:44.812Z","rowVersion":1},{"id":"274ce6ab-10f5-460f-9781-1433d5261d5f","orgId":"23d3def5-3401-4bab-82d4-0491fe3595db","storeId":"b9fca84a-175f-43d2-b46d-177407414185","dataSourceId":"9c54b603-2cda-4e35-90a5-bd9f49cba2c9","sourceKind":"orders","channel":"default_channel","coverageDate":"2026-09-02T00:00:00.000Z","status":"complete","explicitZero":false,"recordCount":"0","datasetVersion":"27","importTaskId":"461466fc-4a44-4b99-be0d-d53c2e287d8f","createdAt":"2026-09-26T18:23:44.813Z","updatedAt":"2026-09-26T18:23:44.813Z","rowVersion":1}]}}
+
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op
+G3_EVIDENCE {"id":"H04b","result":{"before":"28","after":"29","commit":{"status":202,"body":{"data":{"id":"cb15a7fb-41e3-455a-a432-da66a0f2c10d","status":"committed","committed_dataset_version":"29","insert":0,"update":0,"unchanged":1,"no_op":true,"reused":false},"meta":{"request_id":"bfc96bc7-15f1-4795-b3f6-53905449dc8f"}}}}}
+
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation
+G3_EVIDENCE {"id":"H05","result":{"aliasStatus":201,"status":"failed","errorCode":"SKU_NOT_FOUND"}}
+
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H06 same campaign on a different report date has a distinct natural key
+G3_EVIDENCE {"id":"H06","result":{"status":"failed","errorCode":"VERSION_CONFLICT"}}
+
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H03c committing another user's preview must recheck the uploader permission 12ms
+   → expected 202 not to be 202 // Object.is equality
+ ✓ tests/integration/g3-independent.test.ts > G3 independent contract > H04a absent undeclared-zero date cannot become complete 22ms
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op 29ms
+   → expected 29n to be 28n // Object.is equality
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation 38ms
+   → expected 'failed' to be 'preview_ready' // Object.is equality
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt
+G3_EVIDENCE {"id":"M01","result":{"inputLength":252,"storedLength":201,"hasIssue":false}}
+
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps
+G3_EVIDENCE {"id":"H07","result":{"status":"preview_ready","errorCode":null}}
+
+stdout | tests/integration/g3-independent.test.ts > G3 independent contract > H04c first confirmed source is authoritative for the channel
+G3_EVIDENCE {"id":"H04c","result":{"commit":{"status":202,"body":{"data":{"id":"0ee28a45-b8aa-49cd-85dc-1f5548a29dc4","status":"committed","committed_dataset_version":"35","insert":1,"update":0,"unchanged":0,"no_op":false,"reused":false},"meta":{"request_id":"fb7c3d92-b846-410a-81bc-dcd949c657d3"}}},"duplicateOrders":2,"settings":{}}}
+
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H06 same campaign on a different report date has a distinct natural key 21ms
+   → expected 'failed' to be 'preview_ready' // Object.is equality
+ × tests/integration/g3-independent.test.ts > G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt 12ms
+   → expected '包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包…' to be '包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包…' // Object.is equality
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps 8ms
+   → expected 'preview_ready' to be 'failed' // Object.is equality
+ × tests/integration/g3-independent.test.ts > G3 independent contract > H04c first confirmed source is authoritative for the channel 25ms
+   → expected 202 to be 409 // Object.is equality
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H01 invalid row rejects whole file instead of committing the valid subset
+AssertionError: expected 'preview_ready' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "preview_ready"
+
+ ❯ tests/integration/g3-independent.test.ts:184:21
+    182|    const t=await prepare("products",[pRow("bad-good"),pRow("bad-invali…
+    183|    const c=await commit(t);const n=await db.sKU.count({where:{storeId,…
+    184|    expect(t.status).toBe("failed");expect(n).toBe(0);
+       |                     ^
+    185|  });
+    186|  it("H02a refund total includes successful events from earlier files",…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H02a refund total includes successful events from earlier files
+AssertionError: expected 'preview_ready' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "preview_ready"
+
+ ❯ tests/integration/g3-independent.test.ts:188:218
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H02b refund bounds include all rows of the current file
+AssertionError: expected 'preview_ready' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "preview_ready"
+
+ ❯ tests/integration/g3-independent.test.ts:191:224
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H02c order-item correction must respect existing successful refund bounds
+AssertionError: expected 'preview_ready' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "preview_ready"
+
+ ❯ tests/integration/g3-independent.test.ts:195:378
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H03a preview race cannot overwrite a newer customer message
+AssertionError: expected '旧问题' to be '新问题' // Object.is equality
+
+Expected: "新问题"
+Received: "旧问题"
+
+ ❯ tests/integration/g3-independent.test.ts:199:200
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H03b preview older than 24h must reject confirmation
+AssertionError: expected 202 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 202
+
+ ❯ tests/integration/g3-independent.test.ts:203:102
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H03c committing another user's preview must recheck the uploader permission
+AssertionError: expected 202 not to be 202 // Object.is equality
+ ❯ tests/integration/g3-independent.test.ts:207:81
+    205|  it("H03c committing another user's preview must recheck the uploader …
+    206|    const t=await prepare("products",[pRow("revoked")],undefined,operat…
+    207|    try {const c=await commit(t,owner.cookie);log("H03c",c);expect(c.st…
+       |                                                                                 ^
+    208|  });
+    209|  it("H04a absent undeclared-zero date cannot become complete",async()=…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H04b same facts and declarations from different CSV bytes are a version no-op
+AssertionError: expected 29n to be 28n // Object.is equality
+
+- Expected
++ Received
+
+- 28n
++ 29n
+
+ ❯ tests/integration/g3-independent.test.ts:214:223
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H05 explicit SKU mapping is consumed by a subsequent order-item validation
+AssertionError: expected 'failed' to be 'preview_ready' // Object.is equality
+
+Expected: "preview_ready"
+Received: "failed"
+
+ ❯ tests/integration/g3-independent.test.ts:218:188
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H06 same campaign on a different report date has a distinct natural key
+AssertionError: expected 'failed' to be 'preview_ready' // Object.is equality
+
+Expected: "preview_ready"
+Received: "failed"
+
+ ❯ tests/integration/g3-independent.test.ts:221:267
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > M01 full non-PII complaint is retained beyond the preview excerpt
+AssertionError: expected '包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包…' to be '包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包…' // Object.is equality
+
+Expected: "包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好但连续使用后杯盖严重漏水"
+Received: "包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好包装完好…"
+
+ ❯ tests/integration/g3-independent.test.ts:224:332
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H07 different content with same natural key inside a file is rejected even at different timestamps
+AssertionError: expected 'preview_ready' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "preview_ready"
+
+ ❯ tests/integration/g3-independent.test.ts:227:181
+    225|  });
+    226|  it("H07 different content with same natural key inside a file is reje…
+    227|    const t=await prepare("orders",[oRow("duplicate",1),oRow("duplicate…
+       |                                                                                                                                                                                     ^
+    228|  });
+    229|  it("H04c first confirmed source is authoritative for the channel",asy…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  tests/integration/g3-independent.test.ts > G3 independent contract > H04c first confirmed source is authoritative for the channel
+AssertionError: expected 202 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 202
+
+ ❯ tests/integration/g3-independent.test.ts:230:508
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed | 2 passed (15)
+   Start at  02:23:43
+   Duration  1.80s (transform 131ms, setup 217ms, collect 85ms, tests 1.35s, environment 0ms, prepare 29ms)
+
+JSON report written to /tmp/aiea-g3r1-20260927-sxfw4c8z/evidence/probes-results.json

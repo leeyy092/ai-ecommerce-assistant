@@ -1,3 +1,16 @@
+# P07 · GATE_03 REVIEW1 返修后的独立复审入口
+
+```text
+你是Codex独立Reviewer。根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发。先读AGENTS、.product-os.json、STATE_PROTOCOL、00_START_HERE、12_PROGRESS当前导航/最新回执、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN及P13。核验唯一协调对话/自动化迁移COMPLETE和写入权。
+当前已完成GATE03 REVIEW1=FAIL，冻结8f3f28d（业务277109d），原审查正确范围85a93ec..8f3f28d。下一轮必须等待G3R1-20260927-02的新业务候选冻结交回；ZCode执行时只读，不重复派发或在原候选重跑全套。
+完整读取docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_1_2026-09-27.md、GATE_03_REVIEW_1_EVIDENCE_2026-09-27.json及gate-03-review-1-evidence/README.md。按报告8组HIGH/1组MEDIUM逐项核对关闭标准，范围8f3f28d..新冻结HEAD及必要触发回归。原业务合同09_TASKS008–012、04/08/10/11为准。Gate02 Review5 PASS、原关闭项无新改动/反例不重开。
+新/tmp归档与新PG17独立验证；保留修前/修后和真实退出码，不能采信自测全绿。报告15节并生成新证据索引，更新唯一进度/交接/下一提示词，sync并读回首页md/html及总控PROJECTS。FAIL直接按合同交ZCode；PASS后停下向Owner反馈约35功能节点并等待后续Phase明确放行。不得改业务、开始013、合并main或部署；TASK031仍待批准，完整P0不缩减。
+```
+
+---
+
+## 历史审查提示词（不得覆盖当前）
+
 # P07 · GATE_03 独立复审入口（当前）
 
 更新：2026-09-27T01:52:00+08:00。ZCode 已完成 Phase 3 全部 TASK（008–012），候选冻结 277109d；本首个 text 块为 GATE_03 独立复审完整提示词。
