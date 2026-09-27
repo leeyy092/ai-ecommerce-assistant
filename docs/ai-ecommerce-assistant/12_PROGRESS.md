@@ -21,19 +21,20 @@ GATE03 REVIEW4 PASS ea1c15f/business bc5e4b2, main85a93ec; TASK008-012 DONE. Pha
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
   "stage": "06 分任务开发 · Phase 4 计算与规则引擎",
-  "current_task": "TASK-013",
-  "status": "进行中",
+  "current_task": "GATE_04",
+  "status": "待审查",
   "last_completed": "Phase3 TASK008–012技术完成，GATE03 REVIEW4独立PASS，约35功能节点达成",
-  "next_action": "Z02已18:19:09接收PH4-20260927-01 START并接管唯一写入：先落回执并统一进度，随后按P06执行原Git生命周期（提交管理/证据在途→合并Phase3至main→建phase/04-metrics-alerts），再013→014→015→016单TASK推进至Gate04冻结交Codex；PASS前不实施017/031",
-"next_owner": "ZCode",
-  "next_prompt": "prompts/P06_BUILD.md",
+  "next_action": "Codex04按P07对GATE_04独立复审6539fcb(Phase3收尾)与Phase4新增（7808923/cde2798/2bf6634/+016提交）——013-016验收+触发回归；PASS后按Owner第11节授权继续冲刺（9/30 MVP→10/5冻结→10/8完整P0）",
+"next_owner": "Codex",
+  "next_prompt": "prompts/P07_CODE_REVIEW.md",
   "acceptance": "按原013–016合同验证持久任务恢复、金额/时区/覆盖、成熟退款队列、确定性规则与完整快照发布；支撑老板三分钟主路径，不扩范围。",
-  "blockers": "当前无已知Phase4技术阻塞。域名/注册商、云账号、备案主体待补；具体采购与发布另行确认。031先补齐合同，重要未决开户规则不得假称已批准。",
-  "checkpoint": "NO",
-  "review": "GATE03 REVIEW4 PASS；Owner本轮直接要求自主推进，Phase4已授权；Gate04尚未审查。",
-  "updated_at": "2026-09-27T18:19:09+08:00",
-  "updated_by": "ZCode · 最新Z02 PH4 START接收，TASK-013开工",
-  "evidence": [
+  "blockers": "GATE_04待独立复审；Phase4后续017-031按Owner第11节冲刺授权接续，采购/部署仍单独审批",
+"checkpoint": "NO",
+  "review": "GATE_03 REVIEW4 PASS保持；GATE_04待审（Phase4 013-016候选）",
+"updated_at": "2026-09-27T18:56:44+08:00",
+  "updated_by": "ZCode · 最新Z02 Phase4 013-016完成，GATE_04冻结交Codex",
+"evidence": [
+    "2026-09-27T18:56:44+08:00：Phase4 TASK013-016全部完成（013@7808923/014@cde2798/015@2bf6634/016本轮）。验证（/tmp/aiea-ph4-20260927-z02/repo=git archive phase/04-metrics-alerts+在途、新PG17 aiea-pg-ph4z02仅127.0.0.1:55503）：tsc0；unit72/72；integration157/157（新增snapshot8+metrics5+cohort2+rules3）；g3四套独立进程聚合exit0；build0；E2E8/8。Git生命周期：main=2d7ceaf（Phase3已合并推送）、phase/04-metrics-alerts推进至本轮提交",
     "2026-09-27T18:19:09+08:00：PH4-20260927-01 START实际送达（Owner第11节直接执行授权），Z02记回执接管唯一业务/进度/sync/Git写入权（完整回执见文末）；接收时实测phase/03-import@ea1c15f（业务bc5e4b2）、143项管理/证据在途且业务diff为空；Codex04转只读。保持Z02窗口/CTX-RULE-20260927-01",
     "2026-09-27T18:18:37+08:00: 已从最新Z02桌面核实18:17完整只读ACK及空闲：phase/03-import@ea1c15f、业务bc5e4b2、main85a93ec、143项管理/证据在途且业务diff为空；013依赖/合同/014–016范围与Gate04冻结点一致，无技术阻塞。PH4-20260927-01 ACK接受，待同编号START首次发送；发送后由Z02记录实际接管并更新原进度/交接/提示词/sync，Codex04转只读。",
     "2026-09-27T18:18:00+08:00: PH4-20260927-01只读核验请求已首次实际送达最新Z02：桌面出现第15条用户消息、输入框清空，Z02明确回复收到并读取P06及Git。当前仍为Codex04唯一写入，尚无START；不是业务开工。",
@@ -397,10 +398,10 @@ GATE03 REVIEW4 PASS ea1c15f/business bc5e4b2, main85a93ec; TASK008-012 DONE. Pha
 | TASK-010 | 订单头与订单行导入 | DONE | TASK-009 | R4技术PASS；父头更正partial、补齐恢复、日期迁移及派生覆盖原子性通过；Owner阶段放行另记 |
 | TASK-011 | 广告日数据导入 | DONE | TASK-009 | R4保持技术PASS；广告合同回归通过，无新增广告改动；Owner阶段放行另记 |
 | TASK-012 | 客服、售后与退款事件导入 | DONE | TASK-009、TASK-010 | R4保持技术PASS；退款择新/脱敏/权限回归通过；Owner阶段放行另记 |
-| TASK-013 | 持久任务与快照发布骨架 | IN_PROGRESS | TASK-010、TASK-011、TASK-012 | PH4-20260927-01 START已18:19:09送达，Z02开工：阶段状态机/数据版本/发布锁/完成标记接口 |
-| TASK-014 | 基础经营与广告指标 | TODO | TASK-013 | 未执行 |
-| TASK-015 | 退款与售后队列指标 | TODO | TASK-014 | 未执行 |
-| TASK-016 | 确定性异常规则与快照发布 | TODO | TASK-015 | 未执行 |
+| TASK-013 | 持久任务与快照发布骨架 | DONE | TASK-010、TASK-011、TASK-012 | PH4-20260927-01 Z02完成：services/snapshot（按目标复用对齐uq_job_run_recompute_target、构建单事务+发布短事务CAS、完成标记metrics/cohort/rules注册表、F01每日08:00评估tick规范瞬间）+dispatcher/worker/commit接线；骨架集成测试8/8、全套147/147、g3四套聚合0 |
+| TASK-014 | 基础经营与广告指标 | DONE | TASK-013 | PH4 Z02完成：services/metrics/basic（gmv/订单数/销量/客单价/ad_spend/ad_sales/roas，Decimal、缺行partial、归因组独立、零分母unavailable、同版本upsert幂等）+metrics API（发布身份读取/503未就绪/P1占位）；metrics-basic 5/5、全套152/152 |
+| TASK-015 | 退款与售后队列指标 | DONE | TASK-014 | PH4 Z02完成：cohort.ts（事件日refund_amount+refund_event_amount_ratio、D+7队列order/sku_refund_rate/after_sale_rate，窗外不倒灌、退件取窗内max累计不超销量、mature/provisional、窗内逐日覆盖完整才complete、零分母unavailable）；metrics-cohort 2/2（黄金fixture显式零修正）、全套154/154 |
+| TASK-016 | 确定性异常规则与快照发布 | DONE | TASK-015 | PH4 Z02完成：alerts/engine（R01-R12种子+enabled控制、同星期/7日中位数基准、partial排除、suppressed=insufficient_history/disabled、告警同键upsert去重、R04/R06恒停用、R05/R12缺金额/目标停用、R11数据质量分类）；真实三构建器端到端发布首个完整快照；alerts-rules 3/3、全套157/157、unit72、g3四套聚合0、build0、E2E8 |
 | TASK-017 | 模型网关与结构化输出门禁 | TODO | TASK-004、TASK-016 | 未执行 |
 | TASK-018 | VOC分类、人工标签优先与聚合 | TODO | TASK-017、TASK-012 | 未执行 |
 | TASK-019 | 有证据的运营建议 | TODO | TASK-018 | 未执行 |
@@ -816,7 +817,7 @@ GATE_02 收尾实际核验（2026-09-15T13:22:00+08:00）：Product OS sync 返�
 ```text
 ## 当前导航（唯一进度的一部分）
 
-**Phase4 / TASK-013 进行中 / PH4-20260927-01 START已于2026-09-27T18:19:09+08:00实际送达 / 当前写入者ZCode（最新Z02），Codex04只读 / 目标：013→014→015→016单TASK推进至GATE_04冻结交Codex；9/30 MVP、10/5冻结、10/8完整P0按PLAN-MVP分批。**
+**Phase4 / TASK-013–016全部DONE，GATE_04候选已冻结 / 当前写入者Codex04（Z02已交回）/ 下一动作：Codex04独立复审GATE_04（Phase4 013-016），PASS后按Owner第11节冲刺授权接续（9/30 MVP→10/5冻结→10/8完整P0）。**
 
 **Phase 2 / TASK-005–007 全部完成 / CODEX_REVIEW_GATE_02 / 待 Codex 独立复审 / Checkpoint=YES / 下一工具 Codex。**
 
