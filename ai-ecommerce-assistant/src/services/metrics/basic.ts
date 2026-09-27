@@ -12,6 +12,7 @@
  */
 import { Prisma } from "@/generated/prisma/client";
 import { registerSnapshotBuilder, localDateOf, localInstantOf } from "@/services/snapshot";
+import { upsertDailyMetric } from "./basic_out";
 
 type Tx = Prisma.TransactionClient;
 
@@ -194,38 +195,14 @@ async function buildBasicMetrics(input: {
     });
   }
 
-  // ---- 写入：按复合唯一键 upsert（同版本重跑幂等；历史版本行不可变、不受影响） ----
-  // Postgres 事务内唯一冲突会中止整个事务（25P02），不能用逐行 catch 吞冲突，
-  // 因此同 (org,store,metric,entity,period,datasetVersion,ruleset,metricVersion) upsert。
+  // ---- 写入：共享版本化 upsert（同版本幂等；历史版本不可变） ----
   for (const r of rows) {
-    const periodDate = new Date(`${r.periodStart}T00:00:00Z`);
-    const data = {
-      orgId, storeId,
-      metricId: r.metricId, entityKey: r.entityKey,
-      periodStart: periodDate, periodEnd: periodDate,
-      valueNumeric: r.valueNumeric?.toString() ?? null,
-      numerator: r.numerator?.toString() ?? null,
-      denominator: r.denominator?.toString() ?? null,
-      sampleSize: r.sampleSize,
-      status: r.status, coverageStatus: r.coverageStatus, maturity: "not_applicable" as const,
+    await upsertDailyMetric(tx, {
+      orgId, storeId, datasetVersion, rulesetVersion, evaluationAt, metricVersion: METRIC_VERSION,
+      metricId: r.metricId, entityKey: r.entityKey, periodStart: r.periodStart,
+      valueNumeric: r.valueNumeric, numerator: r.numerator, denominator: r.denominator,
+      sampleSize: r.sampleSize, status: r.status, coverageStatus: r.coverageStatus,
       unavailableReason: r.unavailableReason, currency: r.currency,
-      datasetVersion, evaluationAt, rulesetVersion, metricVersion: METRIC_VERSION,
-    };
-    await tx.dailyMetric.upsert({
-      where: {
-        orgId_storeId_metricId_entityKey_periodStart_periodEnd_datasetVersion_rulesetVersion_metricVersion: {
-          orgId, storeId, metricId: r.metricId, entityKey: r.entityKey,
-          periodStart: periodDate, periodEnd: periodDate,
-          datasetVersion, rulesetVersion, metricVersion: METRIC_VERSION,
-        },
-      },
-      create: data,
-      update: {
-        valueNumeric: data.valueNumeric, numerator: data.numerator, denominator: data.denominator,
-        sampleSize: data.sampleSize, status: data.status, coverageStatus: data.coverageStatus,
-        maturity: data.maturity, unavailableReason: data.unavailableReason, currency: data.currency,
-        evaluationAt,
-      },
     });
   }
 }

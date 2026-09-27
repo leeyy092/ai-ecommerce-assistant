@@ -4,9 +4,11 @@
 import { getPrismaClient } from "@/database/prisma";
 import { runRebuildJob, type RebuildOutcome } from "@/services/snapshot";
 import { registerBasicMetricsBuilder } from "@/services/metrics/basic";
+import { registerCohortMetricsBuilder } from "@/services/metrics/cohort";
 
-// TASK-014 起注册真实构建器（幂等；cohort=015/rules=016 完成后追加，注册表不齐不发布）
+// TASK-014/015 起注册真实构建器（幂等；rules=016 完成后追加，注册表不齐不发布）
 registerBasicMetricsBuilder();
+registerCohortMetricsBuilder();
 
 export async function handleRebuildJob(data: { jobRunId: string }): Promise<RebuildOutcome> {
   const db = getPrismaClient();
