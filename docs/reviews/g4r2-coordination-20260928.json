@@ -1,0 +1,49 @@
+{
+  "recorded_at": "2026-09-28T00:42:02+08:00",
+  "review": "G4R2-20260928-01",
+  "handoff": "G4R2-20260928-02",
+  "start_sent": true,
+  "start_sent_note": "Codex04于管理sync读回通过(07:49:51)后首次发送，非重复G4R1 START",
+  "start_received_at": "2026-09-28T07:53:23+08:00",
+  "writer": "Z02",
+  "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
+  "writer_since": "2026-09-28T07:53:23+08:00",
+  "repair_scope": ["H01/C13", "M01/C15", "M02/C12", "H03/S03", "H05/C10", "H06/S01-S02-static-R05-R08-R09-R12", "H07/C11-alert-rules-API"],
+  "repair_order": ["TASK-013", "TASK-014", "TASK-015", "TASK-016"],
+  "base_candidate": "c629145abe42ae4e621e83d4019c882007d44743",
+  "business_head": "91f2690",
+  "compression": {
+    "verified": true,
+    "before": 719449,
+    "after": 20795,
+    "continuity_ack": "00:31"
+  },
+  "b01": {
+    "frozen_at": "00:32:56",
+    "file_hashes_verified": 14,
+    "independent_tests": 28,
+    "task027_complete": false,
+    "typecheck_exit": 0,
+    "settings_slice_review": "PASS limited scope",
+    "next_handoff": "B01-DATASOURCE-20260928-01",
+    "next_start_sent": true,
+    "next_ack": true,
+    "next_status": "inProgress, original data-source whitelist, no repeated START",
+    "preview_independent_review": {
+      "at": "2026-09-28T01:19:00+08:00",
+      "tests": 51,
+      "tsc_exit": 0,
+      "hashes": 11,
+      "task026_complete": false
+    },
+    "next_turn": "01a0e541-7527-7272-b555-0aaafc402f25",
+    "next_started_at": "2026-09-28T01:19:50+08:00",
+    "next_ack_at": "2026-09-28T01:22:27+08:00",
+    "resumed_verified_at": "2026-09-28T07:49:50+08:00"
+  },
+  "blocked_at": "2026-09-28T00:45:43+08:00",
+  "desktop_error": "Mac locked and automatic unlock could not unlock it",
+  "owner_unlock_requested": true,
+  "desktop_recovered_at": "2026-09-28T07:49:50+08:00",
+  "desktop_current_blocked": false
+}
