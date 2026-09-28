@@ -35,6 +35,7 @@ Owner已批MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
   "updated_at": "2026-09-28T13:06:34+08:00",
   "updated_by": "Z02 · T017R1-20260928-02 返修完成与候选冻结",
   "evidence": [
+    "2026-09-28T13:12:40+08:00：T017R1-COORD-20260928-03管理一致性更正回执（非START，不重启返修）——04按df1477a时点指出TASK017表BLOCKED/待实际START与唯一状态待修复残留。磁盘核验：状态块与首页/总控在f4f4be4冻结提交+后续修正后已为待审查/交给Codex04（04所读为返修中时点，其要求的进行中/执行中值已被13:06:34完成冻结超越，按最新磁盘事实处理不回退）；真实残留仅任务表TASK-017行，已更正为IN_REVIEW并写明返修完成待REVIEW2与真实contract待配置限制。本条为管理性写入，业务零改动；Z02维持冻结只读。",
     "2026-09-28T13:06:34+08:00：T017R1冻结验证（新/tmp=/tmp/aiea-t017r1-20260928-z02，git archive HEAD+新原生PG17.11仅127.0.0.1:55510，socket在repo外）：修复前红基线28探针=26FAIL+2PASS（C01合法insight同上下文缓存/C02合法VOC span）与REVIEW1独立结论一致（含probe-correction纠正后有效版本：H2改合法未声明H2、B06 end99合法Schema越界、VOC合法字母UUID、E05合法日月额度、H01子进程async main包装）；修复后28/28全绿、原网关13+contract skip保持合计41、unit72、integration215+1skip（187+28）、g3聚合0、build0、tsc0。实现要点：H01派生键sha256(调用键×org/store/scope/dataset/ruleset/model/prompt/schema/inputHash)；H02语义闭包强制（缺失=SEMANTIC_CONTEXT_FAILED不调用）+三层引用闭合+dailyConclusion白名单文本安全+VOC end≤cps.length与无span必unknown；H03 attempt_count列持久claim共享总3次+同键在途waitForTerminal+组织xact锁跨进程并发1；H04逐attempt预留/COALESCE累加（修复NULL increment bug）/超时保留/被拒不释放已持/付费失败计入；H05 localInstantOf本地日月UTC边界；H06失败不缓存原文+修复不含原始输出+HTML属性正则+UUID掩码占位符非尖括号；M01逐请求预算；M02 date-time分量校验。测试对齐三处为等价安全终态（超额建行后skipped、INPUT_TOO_LARGE failed不发送、复用需原调用键）。未重跑E2E（无页面变化）。候选=业务f308b47+管理冻结chore；B01五路径未触碰。",
     "2026-09-28T12:53:16+08:00：T017R1-20260928-02 START首次实际送达Z02（04独立T017R1-20260928-01 FAIL已归档：6HIGH/2MEDIUM、有效28=26红+2绿、原网关Schema13绿+缺配置断言1绿、真实contract1SKIP、tsc0、56件证据SHA核实）并接管唯一主线写入权，04转只读。接收实测：phase/05-ai@563a320（业务82856bc）/main=d536f27。返修方案八组：H01上下文派生缓存键；H02全kind强制语义fail-closed+全引用闭合+VOC code point边界与unknown强制；H03 AIRun持久attempt计数claim（迁移加attemptCount列）总≤3跨Worker+同key等待复用+组织级pg_advisory_lock跨进程并发1；H04逐attempt预留（reservedCost累计）/有usage结算actual/超时保留/released-with-actual计入/usage累计；H05 localInstantOf本地日月UTC边界；H06失败只存安全错误码、修复不含原始输出、HTML属性正则、UUID掩码后文本扫描；M01逐请求12k/16k预算（含修复请求）；M02 date-time分量级校验。B01五路径禁触；不标DONE不进018；Owner草稿“啊”非任务。",
     "2026-09-28T12:50:25+08:00：T017R1-20260928-01独立FAIL，冻结563a320/业务82856bc，范围f8f6a99..563a320。新archive/PG61370：有效28=26FAIL+2PASS，原网关13PASS+缺配置断言1PASS+真实contract1SKIP，非增量tsc0。6HIGH缓存租户隔离/语义闭合/执行幂等与总尝试并发/逐次计费/自然窗/安全文本，2MEDIUM输入上限/date-time。初次无效夹具已纠正不计FAIL。56正式证据SHA核实，PG已停/tmp清理，R1–R6及B0145SHA保持。04持管理权，T017R1-20260928-02待首次实际START，旧PH5/G4编号不重发。",
@@ -453,7 +454,7 @@ Owner已批MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
 | TASK-014 | 基础经营与广告指标 | DONE | TASK-013 | R6累计独立PASS；metrics金额数量/基准/广告及非法日期合同关闭。 |
 | TASK-015 | 退款与售后队列指标 | DONE | TASK-014 | R6累计独立PASS；退款/售后分渠道、成熟边界保持。 |
 | TASK-016 | 确定性异常规则与快照发布 | DONE | TASK-015 | R6独立PASS，77e1334；H07 V01/V02关闭，原48+W01/W02共50通过。 |
-| TASK-017 | 模型网关与结构化输出门禁 | BLOCKED | TASK-004、TASK-016 | 563a320独立REVIEW1 FAIL：6HIGH/2MEDIUM，原合同返修T017R1-20260928-02待实际START；真实contract另待本地配置，不标DONE、不进018。 |
+| TASK-017 | 模型网关与结构化输出门禁 | IN_REVIEW | TASK-004、TASK-016 | T017R1-20260928-02已于12:53:16实际START并于13:06:34完成返修冻结：26红2绿→28/28全绿、原网关13保持，业务f308b47+管理冻结chore，待Codex04独立REVIEW2（563a320..新HEAD）；真实contract另待Owner本地三配置，不标DONE、不进018。 |
 | TASK-018 | VOC分类、人工标签优先与聚合 | TODO | TASK-017、TASK-012 | 未执行 |
 | TASK-019 | 有证据的运营建议 | TODO | TASK-018 | 未执行 |
 | TASK-020 | 固定日报调度与规则降级 | TODO | TASK-019 | 未执行 |
