@@ -1163,6 +1163,7 @@ model AIRun {
   billingCurrency String          @default("CNY") @map("billing_currency") @db.Char(3)
   billingStatus   BillingStatus   @default(reserved) @map("billing_status")
   attempts        Json            @default("[]")
+  attemptCount    Int             @default(0) @map("attempt_count")
   requestContext  Json            @map("request_context")
   errorCode       String?         @map("error_code") @db.VarChar(64)
   startedAt       DateTime?       @map("started_at") @db.Timestamptz(6)

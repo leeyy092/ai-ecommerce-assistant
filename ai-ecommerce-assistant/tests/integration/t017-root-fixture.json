@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "insight_id": "10000000-0000-4000-8000-000000000001",
+  "org_id": "20000000-0000-4000-8000-000000000001",
+  "store_id": "30000000-0000-4000-8000-000000000001",
+  "dataset_version": 7,
+  "metric_version": "v1",
+  "period": {
+    "from": "2026-09-10",
+    "to": "2026-09-11",
+    "timezone": "Asia/Shanghai"
+  },
+  "stale": false,
+  "updating": false,
+  "visibility_scope": "customer_service",
+  "status": "active",
+  "generation_status": "succeeded",
+  "generated_at": "2026-09-11T00:15:00Z",
+  "evidence": [
+    {
+      "evidence_id": "E-VOC-1",
+      "kind": "voc",
+      "date": "2026-09-10",
+      "period": {
+        "from": "2026-09-10",
+        "to": "2026-09-11",
+        "timezone": "Asia/Shanghai"
+      },
+      "dataset_version": 7,
+      "metric_version": "v1",
+      "source_refs": [
+        {
+          "source_kind": "voc_insight",
+          "record_id": "40000000-0000-4000-8000-000000000001",
+          "import_task_id": "50000000-0000-4000-8000-000000000001"
+        }
+      ],
+      "metric": null,
+      "voc": {
+        "topic": "refund_process",
+        "message_count": 2,
+        "classified_count": 20,
+        "imported_count": 30,
+        "count_scope": "classified_primary_label",
+        "sample_message_ids": [
+          "60000000-0000-4000-8000-000000000001",
+          "60000000-0000-4000-8000-000000000002"
+        ],
+        "redacted_samples": [
+          "提交申请后，在哪里查看处理进度？",
+          "退回商品后，下一步需要做什么？"
+        ]
+      },
+      "alert": null,
+      "coverage_status": "partial"
+    }
+  ],
+  "confidence": {
+    "meaning": "evidence_completeness_not_probability",
+    "level": "limited",
+    "met_checks": 2,
+    "total_checks": 4,
+    "basis_codes": [
+      "direct_source",
+      "closed_references"
+    ],
+    "limitations": [
+      "仅完成 20/30 条消息分类，不能代表全部导入消息。",
+      "样本不足以判断该问题是否正在上升。"
+    ]
+  },
+  "payload": {
+    "title": "核对售后流程说明是否清楚",
+    "category": "customer_service",
+    "severity": "info",
+    "summary": "已分类消息中出现售后进度与下一步操作的询问；现有样本不足以判断是否增加，建议先核对说明。",
+    "evidence_ids": [
+      "E-VOC-1"
+    ],
+    "possible_causes": [
+      {
+        "hypothesis_id": "H1",
+        "kind": "hypothesis",
+        "description": "客户可能不容易找到售后进度入口或下一步操作说明。",
+        "evidence_ids": [
+          "E-VOC-1"
+        ],
+        "verification_step": "人工查看两条完整会话及当前售后说明，确认入口是否已清楚告知。"
+      }
+    ],
+    "recommended_actions": [
+      {
+        "action_id": "A1",
+        "title": "核对售后说明和进度入口",
+        "description": "客服负责人查看引用会话及现有说明，记录缺失信息；确认后由人工决定是否修改说明。",
+        "evidence_ids": [
+          "E-VOC-1"
+        ],
+        "hypothesis_ids": [
+          "H1"
+        ],
+        "priority": "P2",
+        "expected_impact": {
+          "qualitative": "让客户更容易找到售后进度和下一步操作；是否减少询问需后续观察。",
+          "metric_id": "voc_refund_process_message_count",
+          "observation_days": 7
+        }
+      }
+    ],
+    "priority": "P2",
+    "related_skus": [],
+    "related_metrics": [
+      "voc_refund_process_message_count"
+    ]
+  },
+  "action_states": [
+    {
+      "action_id": "A1",
+      "status": "pending",
+      "updated_at": null,
+      "version": 0,
+      "estimated_impact": null,
+      "user_id": "70000000-0000-4000-8000-000000000001"
+    }
+  ],
+  "error": null,
+  "ruleset_version": "rules-v1-default"
+}

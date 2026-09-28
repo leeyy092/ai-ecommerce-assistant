@@ -37,11 +37,28 @@ export const PROMPT_VERSIONS = {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const DATE_TIME_RE = /^\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}:\d{2}(\.\d+)?([Zz]|[+-]\d{2}:\d{2})$/;
+const DATE_TIME_RE = /^(\d{4})-(\d{2})-(\d{2})[Tt ](\d{2}):(\d{2}):(\d{2})(\.\d+)?([Zz]|[+-]\d{2}:\d{2})$/;
 const isValidDate = (s: string): boolean => {
   if (!DATE_RE.test(s)) return false;
   const t = Date.parse(`${s}T00:00:00Z`);
   return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === s;
+};
+const daysInMonth = (y: number, m: number): number => new Date(Date.UTC(y, m, 0)).getUTCDate();
+/** M02/G01：date-time 分量级真实校验——日期（含闰年）、时分秒、时区偏移 ≤±14:00 */
+const isValidDateTime = (s: string): boolean => {
+  const m = DATE_TIME_RE.exec(s);
+  if (!m) return false;
+  const [, ys, ms, ds, hh, mm, ss, , zone] = m;
+  const y = Number(ys), mo = Number(ms), d = Number(ds);
+  if (mo < 1 || mo > 12) return false;
+  if (d < 1 || d > daysInMonth(y, mo)) return false;
+  if (Number(hh) > 23 || Number(mm) > 59 || Number(ss) > 59) return false;
+  if (zone.toUpperCase() !== "Z") {
+    const oh = Number(zone.slice(1, 3)), om = Number(zone.slice(4, 6));
+    if (oh > 14 || om > 59) return false;
+    if (oh === 14 && om > 0) return false;
+  }
+  return true;
 };
 
 function buildAjv(): InstanceType<typeof Ajv2020> {
@@ -49,7 +66,7 @@ function buildAjv(): InstanceType<typeof Ajv2020> {
   // format 真实验证（06 §9.1：UUID、date、date-time 不能只当注释）
   ajv.addFormat("uuid", (d) => typeof d !== "string" || UUID_RE.test(d));
   ajv.addFormat("date", (d) => typeof d !== "string" || isValidDate(d));
-  ajv.addFormat("date-time", (d) => typeof d !== "string" || DATE_TIME_RE.test(d));
+  ajv.addFormat("date-time", (d) => typeof d !== "string" || isValidDateTime(d));
   return ajv;
 }
 

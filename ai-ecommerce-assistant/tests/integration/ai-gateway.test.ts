@@ -112,7 +112,8 @@ describe("TASK-017 Schema 金样（Ajv 唯一真源）", () => {
 describe("TASK-017 网关（stub 故障注入 + 真实预算表）", () => {
   it("happy path：预留→usage结算 settled→幂等复用；固定模型/版本登记", async () => {
     const s = await newOrgStore();
-    const r1 = await runAiTask(baseArgs(s, `happy-${randomUUID().slice(0, 8)}`, stubTransport([() => ok(validLlmPayload())])));
+    const happyKey = `happy-${randomUUID().slice(0, 8)}`;
+    const r1 = await runAiTask(baseArgs(s, happyKey, stubTransport([() => ok(validLlmPayload())])));
     expect(r1.status).toBe("succeeded");
     const row = await db.aIRun.findUniqueOrThrow({ where: { id: r1.runId } });
     expect(row.status).toBe("succeeded");
@@ -123,18 +124,22 @@ describe("TASK-017 网关（stub 故障注入 + 真实预算表）", () => {
     expect(row.actualCost?.toFixed(6)).toBe(((100 / 1_000_000) * 0.15 + (50 / 1_000_000) * 1.5).toFixed(6));
     expect(row.inputTokens).toBe(100n);
     // 相同幂等键：直接复用，不再调用模型
-    const r2 = await runAiTask(baseArgs(s, row.idempotencyKey, stubTransport([() => { throw new Error("不应再调用"); }])));
+    // 复用必须携带与首次相同的调用键（缓存键=调用键×可信上下文派生，H01）
+    const r2 = await runAiTask(baseArgs(s, happyKey, stubTransport([() => { throw new Error("不应再调用"); }])));
     expect(r2.status).toBe("reused");
     expect(r2.runId).toBe(r1.runId);
     expect((await db.aIRun.count({ where: { storeId: s.storeId } }))).toBe(1);
   });
 
-  it("日预算耗尽：跳过并给明确错误码，不建行", async () => {
+  it("日预算耗尽：跳过并给明确错误码（建行后安全终态skipped，不调用模型不缓存payload）", async () => {
     const s = await newOrgStore({ daily: "0.000001", monthly: "100" });
-    const r = await runAiTask(baseArgs(s, `bud-${randomUUID().slice(0, 8)}`, stubTransport([() => ok(validLlmPayload())])));
+    const r = await runAiTask(baseArgs(s, `bud-${randomUUID().slice(0, 8)}`, stubTransport([() => { throw new Error("不应调用模型"); }])));
     expect(r.status).toBe("skipped");
     expect(r.errorCode).toBe("AI_DAILY_BUDGET_EXCEEDED");
-    expect(await db.aIRun.count({ where: { storeId: s.storeId } })).toBe(0);
+    const rows = await db.aIRun.findMany({ where: { storeId: s.storeId } });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].status).toBe("skipped");
+    expect(JSON.stringify(rows[0].requestContext)).not.toContain("cached_payload");
   });
 
   it("月预算耗尽同样跳过", async () => {
@@ -221,8 +226,11 @@ describe("TASK-017 网关（stub 故障注入 + 真实预算表）", () => {
     const s = await newOrgStore();
     const args = baseArgs(s, `big-${randomUUID().slice(0, 8)}`, stubTransport([() => ok(validLlmPayload())]));
     const r = await runAiTask({ ...args, userPrompt: "字".repeat(20000) });
-    expect(r.status).toBe("skipped");
+    expect(r.status).toBe("failed");
     expect(r.errorCode).toBe("INPUT_TOO_LARGE");
-    expect(await db.aIRun.count({ where: { storeId: s.storeId } })).toBe(0);
+    const rows = await db.aIRun.findMany({ where: { storeId: s.storeId } });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].errorCode).toBe("INPUT_TOO_LARGE");
+    expect(JSON.stringify(rows[0].requestContext)).not.toContain("cached_payload");
   });
 });

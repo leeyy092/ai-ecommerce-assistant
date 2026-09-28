@@ -1,13 +1,15 @@
 /**
- * TASK-017｜组织 AI 预算原子预留/结算（06 §24.2）。
+ * TASK-017｜组织 AI 预算原子预留/结算（06 §24.2；T017R1 H03/H04/H05 修复版）。
  *
- * 合同：预算以组织 budget_timezone 自然日/月窗口计量（跨店共享），任一日/月额度耗尽
- * 即暂停新 LLM 调用；检查必须原子预留（预计输入费用+最大允许输出费用），完成后按
- * usage 结算；超时且 usage 未知的 attempt 保留预留不立即释放。不能只在请求前查余额
- * 被并发绕过——本实现用组织级 advisory lock 串行化预留。
+ * 合同：预算以组织 budget_timezone 自然日/月窗口计量（本地边界换算 UTC 瞬间，不近似）；
+ * 每次真实 attempt 独立原子预留（预计输入+最大允许输出费用），有 usage 即按实际结算并
+ * 释放差额；超时且 usage 未知保留该次预留；已释放但有实际消耗（付费失败）仍计入预算；
+ * 超额不得继续调用。预留/结算统计 = Σ(actual_cost) + Σ(未结算 reserved_cost)。
+ * 尝试计数持久化于 ai_run.attempt_count，跨 Worker 共享总上限。
  */
 import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import { PRICE_INPUT_PER_MTOK, PRICE_OUTPUT_PER_MTOK, MAX_OUTPUT_TOKENS } from "@/ai/schemas/validators";
+import { localInstantOf } from "@/services/snapshot";
 
 type Tx = Prisma.TransactionClient;
 
@@ -22,19 +24,41 @@ export class BudgetExceededError extends Error {
 function localDateOf(tz: string, at: Date): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(at);
 }
-function localMonthOf(tz: string, at: Date): string {
-  return localDateOf(tz, at).slice(0, 7);
+
+/** H05：按组织时区求本地日/月起始的 UTC 瞬间（两遍逼近消除 DST 偏差，复用快照口径） */
+export function localDayStartUtc(tz: string, at: Date): Date {
+  return localInstantOf(tz, localDateOf(tz, at), 0, 0);
+}
+export function localMonthStartUtc(tz: string, at: Date): Date {
+  return localInstantOf(tz, `${localDateOf(tz, at).slice(0, 7)}-01`, 0, 0);
 }
 
-/** 组织级预算锁键（与快照发布锁不同命名空间） */
+/** 组织级预算锁键 */
 export function budgetLockKey(orgId: string): string {
   return `ai-budget:${orgId}`;
 }
+/** 组织级执行锁键（H03：跨进程单组织并发 1） */
+export function orgExecutionLockKey(orgId: string): string {
+  return `ai-org-exec:${orgId}`;
+}
 
-/**
- * 原子预留：advisory lock 内统计当日/当月 已结算+在途预留 总额，
- * 不足即抛 BudgetExceededError（窗口明确），充足则由调用方在同一事务写入 AIRun.reservedCost。
- */
+async function spentSince(tx: Tx, orgId: string, since: Date): Promise<Prisma.Decimal> {
+  // spent = 已结算/已释放按 actual 计 + 未结算（reserved/unknown）按未决预留计（H04）
+  const rows = await tx.$queryRaw<Array<{ spent: Prisma.Decimal | string | null }>>`
+    SELECT COALESCE(SUM(
+      CASE
+        WHEN billing_status IN ('settled') THEN actual_cost
+        WHEN billing_status = 'released' THEN COALESCE(actual_cost, 0)
+        ELSE reserved_cost
+      END
+    ), 0) AS spent
+    FROM ai_run
+    WHERE org_id = ${orgId} AND created_at >= ${since}`;
+  const v = rows[0]?.spent;
+  return v == null ? new Prisma.Decimal(0) : new Prisma.Decimal(v.toString());
+}
+
+/** 原子预留检查：advisory lock 内统计当日/当月已耗（实际+未决），不足抛 BudgetExceededError */
 export async function assertBudgetAvailable(
   tx: Tx,
   args: { orgId: string; reserveCost: Prisma.Decimal; now?: Date },
@@ -45,44 +69,84 @@ export async function assertBudgetAvailable(
     select: { aiDailyBudget: true, aiMonthlyBudget: true, budgetTimezone: true, aiEnabled: true },
   });
   if (!org.aiEnabled) throw new BudgetExceededError("daily");
-  const dayStartUtc = new Date(`${localDateOf(org.budgetTimezone, now)}T00:00:00Z`);
-  // 当月窗口近似：以当月1日00:00Z 起（自然月窗口按本地月聚合，UTC 边界误差仅影响窗口首日瞬时统计）
-  const monthStartUtc = new Date(`${localMonthOf(org.budgetTimezone, now)}-01T00:00:00Z`);
-  const where = {
-    orgId: args.orgId,
-    billingStatus: { in: ["reserved", "settled", "unknown"] as Array<"reserved" | "settled" | "unknown"> },
-    createdAt: { gte: dayStartUtc },
-  };
-  const monthWhere = { ...where, createdAt: { gte: monthStartUtc } };
-  const aggDay = await tx.aIRun.aggregate({ _sum: { reservedCost: true, actualCost: true }, where });
-  const aggMonth = await tx.aIRun.aggregate({ _sum: { reservedCost: true, actualCost: true }, where: monthWhere });
-  const spent = (a: { _sum: { reservedCost: Prisma.Decimal | null; actualCost: Prisma.Decimal | null } }): Prisma.Decimal => {
-    const reserved = a._sum.reservedCost ?? new Prisma.Decimal(0);
-    const settled = a._sum.actualCost ?? new Prisma.Decimal(0);
-    // 已结算部分按实际成本计，未结算按预留计
-    return reserved.add(settled).sub(settled);
-  };
-  const dailyUsed = spent(aggDay);
-  const monthlyUsed = spent(aggMonth);
+  const dayStart = localDayStartUtc(org.budgetTimezone, now);
+  const monthStart = localMonthStartUtc(org.budgetTimezone, now);
+  const dailyUsed = await spentSince(tx, args.orgId, dayStart);
+  const monthlyUsed = await spentSince(tx, args.orgId, monthStart);
   if (dailyUsed.add(args.reserveCost).gt(org.aiDailyBudget)) throw new BudgetExceededError("daily");
   if (monthlyUsed.add(args.reserveCost).gt(org.aiMonthlyBudget)) throw new BudgetExceededError("monthly");
   return { dailyUsed, monthlyUsed };
 }
 
-/** 预估预留成本：预计输入 tokens + 最大允许输出 tokens 按合同单价（06 §24 核价） */
+/** 预估单次 attempt 成本：预计输入 tokens + 最大允许输出 tokens（06 §24 核价） */
 export function estimateReserveCost(inputTokens: number, maxOutputTokens = MAX_OUTPUT_TOKENS): Prisma.Decimal {
   const cost = (inputTokens / 1_000_000) * PRICE_INPUT_PER_MTOK + (maxOutputTokens / 1_000_000) * PRICE_OUTPUT_PER_MTOK;
   return new Prisma.Decimal(cost.toFixed(6));
 }
 
-/** 按 usage 结算（06 §24.2：完成后按实际 usage 结算） */
-export function settleCost(usage: { input_tokens: number; output_tokens: number } | null, reserve: Prisma.Decimal): { actualCost: Prisma.Decimal; billingStatus: "settled" | "unknown" } {
-  if (!usage) return { actualCost: reserve, billingStatus: "unknown" };
+/** 单次 usage 实际成本 */
+export function usageCost(usage: { input_tokens: number; output_tokens: number }): Prisma.Decimal {
   const cost = (usage.input_tokens / 1_000_000) * PRICE_INPUT_PER_MTOK + (usage.output_tokens / 1_000_000) * PRICE_OUTPUT_PER_MTOK;
-  return { actualCost: new Prisma.Decimal(cost.toFixed(6)), billingStatus: "settled" };
+  return new Prisma.Decimal(cost.toFixed(6));
 }
 
-/** 预算预留+建行入口：在单事务内锁组织→核额度→建 AIRun（status=queued, billing=reserved） */
+/** H03：持久化尝试 claim——原子递增 attempt_count，超上限拒绝；同时做本 attempt 的独立预算预留。
+ *  预算口径：reserved_cost 列 = 未决预留总额（claim 加、settle/释放减）。 */
+export interface AttemptClaim {
+  attemptNo: number;
+  reserveCost: Prisma.Decimal;
+}
+
+export async function claimAttempt(
+  tx: Tx,
+  args: { runId: string; orgId: string; inputTokens: number; now?: Date },
+): Promise<{ status: "claimed"; claim: AttemptClaim } | { status: "attempts-exhausted" } | { status: "budget-exceeded"; window: "daily" | "monthly" }> {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${budgetLockKey(args.orgId)}))`;
+  const run = await tx.aIRun.findUniqueOrThrow({ where: { id: args.runId }, select: { attemptCount: true, status: true } });
+  if (run.status === "succeeded" || run.status === "skipped" || run.status === "superseded") return { status: "attempts-exhausted" };
+  if (run.attemptCount >= 3) return { status: "attempts-exhausted" };
+  const reserveCost = estimateReserveCost(args.inputTokens);
+  try {
+    await assertBudgetAvailable(tx, { orgId: args.orgId, reserveCost, now: args.now });
+  } catch (error) {
+    if (error instanceof BudgetExceededError) return { status: "budget-exceeded", window: error.window };
+    throw error;
+  }
+  const updated = await tx.aIRun.update({
+    where: { id: args.runId },
+    data: { attemptCount: { increment: 1 }, status: "running", reservedCost: { increment: reserveCost } },
+    select: { attemptCount: true },
+  });
+  return { status: "claimed", claim: { attemptNo: updated.attemptCount, reserveCost } };
+}
+
+/** H04：单次 attempt 结算——有 usage 即按实际计（reserved 减、actual 加、token 累计）；
+ *  usage 未知（超时）保留未决预留。返回该次累计后快照。 */
+export async function settleAttempt(
+  tx: Tx,
+  args: { runId: string; usage: { input_tokens: number; output_tokens: number } | null; reserveCost: Prisma.Decimal },
+): Promise<void> {
+  if (!args.usage) return; // 未知 usage：保留预留（06 §24.2）
+  const cost = usageCost(args.usage);
+  // 可空列初始为 NULL：Prisma increment 对 NULL 得 NULL，用 COALESCE 原生累加
+  await tx.$executeRaw`
+    UPDATE ai_run SET
+      input_tokens = COALESCE(input_tokens, 0) + ${args.usage.input_tokens},
+      output_tokens = COALESCE(output_tokens, 0) + ${args.usage.output_tokens},
+      actual_cost = COALESCE(actual_cost, 0) + ${cost.toString()},
+      reserved_cost = reserved_cost - ${args.reserveCost.toString()}
+    WHERE id = ${args.runId}`;
+}
+
+/** H04：放弃未决预留（无消耗的终态失败，如鉴权前错误） */
+export async function releaseOutstanding(tx: Tx, args: { runId: string; reserveCost: Prisma.Decimal }): Promise<void> {
+  await tx.aIRun.update({
+    where: { id: args.runId },
+    data: { reservedCost: { decrement: args.reserveCost } },
+  });
+}
+
+/** 预算预留+建行入口：组织锁内复用（同派生键）或新建 AIRun（status=queued） */
 export async function createReservedRun(
   db: PrismaClient | Tx,
   args: {
@@ -90,7 +154,7 @@ export async function createReservedRun(
     idempotencyKey: string; datasetVersion: bigint; rulesetVersion: string;
     visibilityScope: "business" | "customer_service";
     modelId: string; promptVersion: string; schemaVersion: string;
-    inputHash: string; reserveCost: Prisma.Decimal; requestContext: Record<string, unknown>;
+    inputHash: string; requestContext: Record<string, unknown>;
     now?: Date;
   },
 ): Promise<{ id: string; reused: boolean }> {
@@ -98,14 +162,13 @@ export async function createReservedRun(
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${budgetLockKey(args.orgId)}))`;
     const existing = await tx.aIRun.findUnique({ where: { idempotencyKey: args.idempotencyKey } });
     if (existing) return { id: existing.id, reused: true };
-    await assertBudgetAvailable(tx, { orgId: args.orgId, reserveCost: args.reserveCost, now: args.now });
     const run = await tx.aIRun.create({
       data: {
         orgId: args.orgId, storeId: args.storeId, kind: args.kind,
         idempotencyKey: args.idempotencyKey, datasetVersion: args.datasetVersion,
         rulesetVersion: args.rulesetVersion, visibilityScope: args.visibilityScope,
         modelId: args.modelId, promptVersion: args.promptVersion, schemaVersion: args.schemaVersion,
-        inputHash: args.inputHash, reservedCost: args.reserveCost,
+        inputHash: args.inputHash, reservedCost: new Prisma.Decimal(0),
         requestContext: args.requestContext as Prisma.InputJsonValue,
       },
     });
