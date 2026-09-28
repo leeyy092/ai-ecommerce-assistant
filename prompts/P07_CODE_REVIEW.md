@@ -1,16 +1,15 @@
-# P07 · GATE03 REVIEW4已经PASS
+# P07 - GATE04 REVIEW1 FAIL; wait for new candidate
 
 ```text
-本轮独立复审已经结束，禁止把历史FAIL当成当前待修复。
-根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant，总控/Users/yuyuyu/Documents/AI-Workspace。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE/12_PROGRESS当前导航与最新记录/CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN/DEVELOPMENT_HANDOFF，核对Git和写入权。
-唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已实际激活，原codex-zcode ACTIVE每10分钟目标04，旧03/02/01退出。唯一最新Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE，旧Z01退出。身份/迁移/写入权以后续12_PROGRESS最新记录为准，不拿旧COMPLETE或心跳接管。
-GATE_03 REVIEW4独立PASS，冻结phase/03-import@ea1c15f（业务bc5e4b2），差异6539fcb..ea1c15f，main85a93ec。H03损坏staging恢复语义、H04父订单更正覆盖均关闭，H01–H08/M01/M02无剩余本Gate技术缺陷；Gate02 REVIEW5 PASS保持。原TASK008–012技术验收完成，达到约35功能节点（不是工时百分比）。
-本轮独立新/tmp+新PG17：12迁移/typecheck0/integration139/四套g3=18+4+21+4全绿聚合0/R4补充10全过；脚本任一套失败聚合1、全成功0。unit/build/E2E未重复无变更部分，引用R3独立72/build0/E2E8，Z02本候选自测另列。R1 42/R2 57/R3 61件哈希保持，本轮PG57034停止、临时根移除；Z02 55502资产未动。
-正式15节报告docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_4_2026-09-27.md；证据GATE_03_REVIEW_4_EVIDENCE_2026-09-27.json、gate-03-review-4-evidence/README/observations/原始日志。
-当前写入者Codex04，Z02于16:30管理更正后最终冻结空闲。通过通知G3R4-20260927-02已于16:55首次实际送达，Z02于16:55完成只读ACK（Codex本轮核验终答及空闲）：确认ea1c15f/业务bc5e4b2、R4 PASS与阶段边界，继续冻结。此前锁屏阻塞解除，历史记录保留；未发送START。当前下一责任人Owner/P09，Checkpoint=YES，等待Phase3验收及Phase4明确放行；未获答复不开发TASK013、不合并main。
-完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警AI日报本人行动/必要页面运维保持；自助独立注册仍是交付要求，TASK031合同待批准。Owner目前仅授权到Phase3；技术PASS不等于阶段放行。Phase4 TASK013–016、main合并、采购、正式部署未放行；不以工期问答、迁移、心跳或无人回复替代授权。
-双方执行CTX-RULE-20260927-01保留当前窗口：没有实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口，不按占用/长度/心跳/预计长任务提前换窗。压缩仍可靠则继续，未知不臆测；确需时才按STATE_PROTOCOL原交接流程，不fork、不建worktree/重复自动化。
-没有新业务变更不重复复审；当前下一步Owner/P09。新业务候选须另界定基线与差异，保持既有通过结论身份。
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调迁移、CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN及原MVP计划顶部；以磁盘实际Git、最新Owner授权及写入者为准。
+唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已激活，原codex-zcode ACTIVE每10分钟仍目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
+G4R2-20260928-02 START已07:53:23实际送达并由Z02在08:31:01完成冻结、交回写入权。候选phase/04-metrics-alerts@6cfa36d（业务899bf43），main2d7ceaf。Codex04独立G4R3-20260928-01 FAIL，3HIGH H01/H06/H07、1MEDIUM M02；原19及候选5场景全绿，新增有效T01–T11失败、K01/K02通过。原R1 60/R2 40证据SHA保持。报告docs/reviews/CODEX_REVIEW_GATE_04_REVIEW_3_2026-09-28.md及GATE_04_REVIEW_3_EVIDENCE_2026-09-28.json、gate-04-review-3-evidence/。
+2026-09-28T10:30:28+08:00 G4R3-20260928-02返修已由Z02完成并冻结单一候选（业务ee72fe0+管理冻结chore，复审范围6cfa36d..新HEAD），主线写入权现为Codex04，Z02冻结只读待下一编号；桌面锁屏早已解除，G4R3 START已于10:05:28实际送达并完成，无待发送草稿。
+B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec三切片均冻结。设置28/28、预览51/51、数据源47/47及各自tsc0限定组件PASS，35源/测试SHA保持；第三批与只读接线方案已正式归档docs/reviews/B01_DATASOURCE_REVIEW_1_2026-09-28.md、B01_INTEGRATION_READONLY_2026-09-28.md及b01-datasource-review-1-evidence/。2026-09-28T10:33:40+08:00 OWNER-COORD-20260928-01回执：B01-SETTINGS-INTEGRATION-20260928-01接入合同已由Z02确认并归档docs/reviews/B01_SETTINGS_INTEGRATION_20260928-01.md（SHA256与/tmp原件一致=6cd310b347e2fdfe19dbd8c4e45239568bc4db384a85172f111d808708f4f670）；回执后04向B01实际发送同编号START。Z02禁触清单扩展：原四目录＋src/app/settings/**与tests/unit/settings/integration/**；不暂存提交B01在途文件；B01遇API缺口由04协调Z02处理。026/027整体仍未完成。A01保持分析协调，无写入权/自动化转接。
+Owner已批准MVP-CORE-20260928-01首批与余项并行：老板三分钟四卡、同版证据、本人行动、019–020日报服务必须首批，历史阅读等页面后置。原完整P0与质量不减，9/30受控MVP、10/5冻结、10/8完整开发验收为目标非保证。原合同普通返修及同一冲刺独立PASS后普通接续无需重复Owner批准；一次一TASK按依赖。031先补合同并确认重要新规则；采购部署/敏感权限/新重大范围变化仍单独批准。技术PASS不等于Owner产品验收。
+双方70%实际压缩规则保持：Codex180880阈值配置/加载已核实，258400窗口变化须重算；本轮实际系统压缩后可靠同窗接续，阈值因果未核实。Z02之前官方/compact 719449→20795/1000000并ACK可靠；原生自动阈值未配置。实际达到70%先保现场、在安全点用已验证入口；执行中先协调冻结，不盲点Stop。锁屏时新占用未知，不猜测。压缩可靠留同窗，确有接续损坏/污染才按STATE_PROTOCOL迁移；不按占比自动换窗，不fork/建worktree/重复自动化。
+
+本轮R3已完成FAIL；下轮新候选冻结才独立复审6cfa36d..新HEAD，不重跑无变化全套。
 ```
 
 ## 历史首块（2026-09-27T16:40:55+08:00前，非当前指令）
@@ -204,4 +203,32 @@ M/L 核定：M01 entity_type+响应字段；M02 org+name 唯一+409；M03 .csv 4
 先读P13首块与12_PROGRESS当前导航/最新交接。R2已经独立FAIL，冻结dd975cd/业务6b408cb，结论及证据见docs/reviews/CODEX_REVIEW_GATE_03_REVIEW_2_2026-09-27.md和同轮索引。
 当前下一步是G3R2-20260927-02/P08返修，不重复审查同一候选。H03/H04/H08、H02残余/M02未关闭；H01/H05/H06/H07保持关闭，TASK011技术通过不重开。Z02写入时Codex只读；取得新冻结/写入权后，先核对新HEAD与dd975cd..新HEAD差异、管理/业务分开，再在新/tmp归档和本次新PG17按R2报告§4/5/13复审。实际新基线与测试计划由该次交接更新，不能把旧P07下方历史当待执行。
 新复审保留原原件/日志，H04按来源日全部最终事实与IANA边界，测试隔离修正不改合同。FAIL直接反馈最新ZCode，PASS约35节点停Owner；完整P0、Phase3授权、TASK031/Phase4/部署未放行边界不变。
+```
+
+
+## Historical first block before 2026-09-27T19:26:19+08:00
+
+```text
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发。先读AGENTS/.product-os.json/STATE_PROTOCOL/12_PROGRESS当前导航与最新记录/FINAL_DECISIONS/PHASE_PLAN和TASK013–016合同。
+G4R1-20260927-01：GATE04首次独立审查进行中。冻结候选phase/04-metrics-alerts@98efeba11c17734c14d99e91fff508f07c162bcd，业务8cd4f88，正确范围2d7ceaf..98efeba（包含013）。main=2d7ceaf。Z02于18:57/18:59终答冻结，Codex04已从桌面核实唯一Z02/空输入框/Send禁用/无Stop，写入权归Codex04。013–016为候选完成待独立审查；Z02自测157集成/72单元/8E2E/构建仅为执行者结果。Checkpoint=YES，下一工具Codex/P07，不进入017。GATE03 REVIEW4和GATE02 REVIEW5 PASS保持。独立/tmp/aiea-g4r1-o4j4w4iu、新PG17@127.0.0.1:57044，保留Z02的55503资产。
+唯一Codex04=01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE已激活；原codex-zcode目标04。唯一Z02=【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01 COMPLETE。当前窗口保持。
+Owner第11节授权原完整P0同冲刺独立PASS后接续；9/30MVP、10/5冻结、10/8完整P0为目标。老板三分钟路径保留，不减规则/数据/页面/运维验收。TASK031先补合同，重要新规则待批准；采购部署敏感权限重大范围单独批准。测试/独立PASS/Owner产品验收/GitHub/部署/试用分别记录。
+基于冻结git archive和本次新PG17验证，FAIL给有效反例与明确关闭标准直接反馈最新Z02，唯一编号去重；发现产品跑偏立即停相关开发和后续派发问Owner。无新候选不重测旧全套。收尾更新原进度/交接/下一提示词，sync读回首页md/html和总控PROJECTS。
+
+```
+
+
+## 2026-09-28T09:06:17+08:00替换前首块（历史，非当前派发）
+
+```text
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant；先读AGENTS/.product-os.json/STATE_PROTOCOL/12_PROGRESS当前导航、唯一状态块及最新协调/CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN和原MVP计划顶部，核实Git/Owner授权/写入者。
+GATE04 REVIEW2独立FAIL（G4R2-20260928-01），原问题剩5HIGH/2MEDIUM。候选phase/04-metrics-alerts@c629145（业务91f2690），差异98efeba..c629145；main=2d7ceaf。本轮新/tmp+新PG17：12迁移/typecheck0，原16反例11PASS/5FAIL，新增3有效反例均FAIL。原R1 60件哈希保持，PG57064已停止且本轮副本清理。报告docs/reviews/CODEX_REVIEW_GATE_04_REVIEW_2_2026-09-28.md。GATE03 REVIEW4/GATE02 REVIEW5 PASS保持；约50节点未达成。
+Owner在A01于2026-09-28已明确批准MVP-CORE-20260928-01开工及余项并行；老板四卡/同版证据/本人行动与019–020日报服务首批，历史阅读等页面后置，完整P0不减。原G4R1-20260927-02 START已00:10:54实际送达并完成候选冻结；不再按旧范围待批停止。同一冲刺普通原合同返修/技术PASS后接续已授权；TASK031重要新开户规则、采购/部署/敏感权限及新的重大范围变化另行批准。9/30受控MVP、10/5冻结、10/8完整开发验收为目标，非保证。
+唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE已14:05:51激活，原codex-zcode ACTIVE每10分钟目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。
+当前主线写入者Codex04；Z02业务冻结c629145，00:31只读ACK（无文件/测试/Git/sync）已核实。新返修编号G4R2-20260928-02，P08已准备；管理sync读回后首次实际START才转Z02写入。不得重复G4R1 START。
+CTX70-20260928-02：本轮实际经桌面内置/compact将Z02上下文719449/1000000降至20795/1000000，UI显示已压缩；00:31只读ACK核对候选/写入边界并确认同窗接续可靠。人工入口已证实，原生自动70%阈值未配置/未核实；后续实际观察≥70%时先保存安全现场，再用此真实入口。Codex180880阈值配置与加载已验证，本会话本轮实际系统压缩，但阈值触发因果未核实。保持原窗口，不以70%迁移、不改模型账户权限。
+B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec实际已激活，并于00:32:56冻结首个设置切片候选：14源/测试文件，执行者报告28测试/tsc0，仅固定98efeba+切片与HTTP fixtures，尚未独立集成审查、不等于TASK027完成。独占ai-ecommerce-assistant/src/features/settings/**及ai-ecommerce-assistant/tests/unit/settings/**；Z02禁止修改/暂存/提交这两目录。主线仍一次一TASK。余项窗口待04核验与下一明确切片；路由/真实API联调、店铺版本读取、邀请列表服务端角色范围问题留对应集成，不扩大当前G4。A01只读分析/协调，不转自动化。
+
+当前R2已完成FAIL，不重跑该不变候选；等Z02下一冻结候选后仅审c629145..新HEAD及原关闭标准，在本轮新/tmp和新PG17验证，已关闭反例无新改动不重开。
+
 ```

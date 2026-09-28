@@ -37,5 +37,17 @@
     "E2E not rerun (no page changes)",
     "SIGKILL/perf/deploy not rerun"
   ],
-  "repair_env": "/tmp/aiea-g4r3-20260928-z02 + fresh PG17.11 127.0.0.1:55506 (socket outside repo)"
+  "repair_env": "/tmp/aiea-g4r3-20260928-z02 + fresh PG17.11 127.0.0.1:55506 (socket outside repo)",
+  "owner_coord_20260928_01": {
+    "received_at": "2026-09-28T10:33:40+08:00",
+    "action": "confirm+archive B01 settings-integration path isolation",
+    "contract": "B01-SETTINGS-INTEGRATION-20260928-01",
+    "archive": "docs/reviews/B01_SETTINGS_INTEGRATION_20260928-01.md",
+    "sha256": "6cd310b347e2fdfe19dbd8c4e45239568bc4db384a85172f111d808708f4f670",
+    "z02_exclusions_extended": [
+      "src/app/settings/**",
+      "tests/unit/settings/integration/**"
+    ],
+    "next": "04 sends START after this receipt"
+  }
 }
