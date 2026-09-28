@@ -11,7 +11,7 @@
 | 当前状态 | 受阻 |
 | 上一个完成项 | G4R6独立PASS+Phase4并入main(d536f27)+phase/05-ai开启；TASK017网关实现+stub验证全绿（业务82856bc），真实contract待配置 |
 | 下一步 | Owner提供DASHSCOPE三配置（AI_MODEL_ID=qwen-flash-2025-07-28）后受控执行ai-real-contract脱敏contract；通过才标017 DONE并按已授权Phase5接续018。Codex04可先独审stub验证与Schema/预算/超时实现。 |
-| 交给谁 | ZCode |
+| 交给谁 | Codex04 |
 | 做到什么算完成 | 原017网关/Schema与语义权限/预算/超时/缓存测试通过；脱敏真实模型contract单独通过；未配置Key可先实现，不以stub替代真实验收。 |
 | 卡点 | 真实模型contract待Owner本地配置（已请求一次，不重复催问）；其余无阻塞。B01五路径禁触保持。 |
 | 检查点 | NO |
@@ -20,7 +20,7 @@
 
 项目绝对路径：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
 
-## 复制这一段，交给 ZCode
+## 复制这一段，交给 Codex04
 
 ```text
 当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
@@ -46,11 +46,11 @@ B01五路径继续禁改/暂存/提交；本轮无B01集成授权，19文件导�
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；存在未提交或未跟踪内容。
-- 分支：phase/05-ai；版本：82856bc0a863b472ef6ace3e85cc55c20716788c。
+- 分支：phase/05-ai；版本：b205cfdc3bb69b862bd5d0101c81eeaeb7aba988。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
 - GitHub：已核验origin phase/04-metrics-alerts=77e1334；main=2d7ceaf，尚未合并Phase4；最后核验：2026-09-28T11:44:58+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：docs/reviews/gate-04-review-6-evidence/remote.txt。
 - 部署：未部署，未真实商家试用；后续AI/页面/注册/运维未完成；最后核验：从未核验；地址：未记录；证据：本轮仅独立Gate04 PASS与下一任务准备，未执行部署/真实试用。。
 
-刷新前本地快照时间：2026-09-28T12:23:31+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-28T12:23:48+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)

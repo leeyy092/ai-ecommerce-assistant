@@ -25,7 +25,7 @@ Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
   "status": "受阻",
   "last_completed": "G4R6独立PASS+Phase4并入main(d536f27)+phase/05-ai开启；TASK017网关实现+stub验证全绿（业务82856bc），真实contract待配置",
   "next_action": "Owner提供DASHSCOPE三配置（AI_MODEL_ID=qwen-flash-2025-07-28）后受控执行ai-real-contract脱敏contract；通过才标017 DONE并按已授权Phase5接续018。Codex04可先独审stub验证与Schema/预算/超时实现。",
-  "next_owner": "ZCode",
+  "next_owner": "Codex04",
   "next_prompt": "prompts/P06_BUILD.md",
   "acceptance": "原017网关/Schema与语义权限/预算/超时/缓存测试通过；脱敏真实模型contract单独通过；未配置Key可先实现，不以stub替代真实验收。",
   "blockers": "真实模型contract待Owner本地配置（已请求一次，不重复催问）；其余无阻塞。B01五路径禁触保持。",
