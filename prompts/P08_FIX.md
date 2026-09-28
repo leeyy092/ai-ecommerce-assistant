@@ -1,29 +1,24 @@
-# P08 · G4R2-20260928-02 repair frozen / handed to Codex04
+# P08 · G4R3-20260928-02 START received / Z02 repairing
 
 ```text
-协调状态（2026-09-28T08:31:01+08:00）：G4R2-20260928-02返修已完成并冻结单一候选（业务899bf43+管理冻结chore），写入权交回Codex04独立复审c629145..新HEAD；Z02转只读待下一编号。修复前红基线（新/tmp+新PG17）19探针8FAIL/11PASS与REVIEW2一致，修复后tsc0/探针19/19/场景5/5/unit72/integration181/g3四套聚合0/build0；剩余缺口如实（E2E未重跑、R05正向场景与角色负例未单列）。B01四目录全程未触碰。本块以下为返修合同原文，仅作历史依据，不需重新ACK/START。
+协调状态（2026-09-28T10:05:28+08:00）：G4R3-20260928-02 START已首次实际送达最新Z02并接管唯一主线写入权（业务/管理/Git/sync），Codex04转只读至下一次显式冻结；返修按本合同013→014→015→016一次一项，先新/tmp+新PG17复现T01–T11红基线（K01/K02保持）再修复，B01四目录不动；完成后冻结单一候选6cfa36d..新HEAD交回Codex04独审。以下为返修合同原文。
 
-根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant；先读AGENTS/.product-os.json/STATE_PROTOCOL/12_PROGRESS当前导航/状态块及最新协调、CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN及原MVP计划顶部，核实Git/Owner授权/写入者。
-B01设置首切片已独立28/28、tsc0，导入预览切片于01:06:34冻结并经04独立51/51（12单元+39Chromium HTTP fixtures）、tsc0及本轮390/1280截图核对；两者限定组件切片PASS，原14+11源/测试文件SHA保持。报告docs/reviews/B01_SETTINGS_REVIEW_1_2026-09-28.md及docs/reviews/B01_IMPORT_PREVIEW_REVIEW_1_2026-09-28.md。没有真实API/路由/存储联调，026/027未完成。
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调迁移、CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN及原MVP计划顶部；以磁盘实际Git、最新Owner授权及写入者为准。
+唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已激活，原codex-zcode ACTIVE每10分钟仍目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
+G4R2-20260928-02 START已07:53:23实际送达并由Z02在08:31:01完成冻结、交回写入权。候选phase/04-metrics-alerts@6cfa36d（业务899bf43），main2d7ceaf。Codex04独立G4R3-20260928-01 FAIL，3HIGH H01/H06/H07、1MEDIUM M02；原19及候选5场景全绿，新增有效T01–T11失败、K01/K02通过。原R1 60/R2 40证据SHA保持。报告docs/reviews/CODEX_REVIEW_GATE_04_REVIEW_3_2026-09-28.md及GATE_04_REVIEW_3_EVIDENCE_2026-09-28.json、gate-04-review-3-evidence/。
+主线写入权已按顶部2026-09-28T10:05:28+08:00协调状态转Z02（业务/管理/Git/sync）；Codex04只读，待Z02显式冻结6cfa36d..新HEAD后回收写入权并独立复审。
+B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec三切片均冻结。设置28/28、预览51/51、数据源47/47及各自tsc0限定组件PASS，35源/测试SHA保持；第三批与只读接线方案已正式归档docs/reviews/B01_DATASOURCE_REVIEW_1_2026-09-28.md、B01_INTEGRATION_READONLY_2026-09-28.md及b01-datasource-review-1-evidence/。未真实API/路由/存储联调，026/027未完成，无集成START。Z02不得修改/暂存/提交src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**（均在应用下）。A01保持分析协调，无写入权/自动化转接。
+Owner已批准MVP-CORE-20260928-01首批与余项并行：老板三分钟四卡、同版证据、本人行动、019–020日报服务必须首批，历史阅读等页面后置。原完整P0与质量不减，9/30受控MVP、10/5冻结、10/8完整开发验收为目标非保证。原合同普通返修及同一冲刺独立PASS后普通接续无需重复Owner批准；一次一TASK按依赖。031先补合同并确认重要新规则；采购部署/敏感权限/新重大范围变化仍单独批准。技术PASS不等于Owner产品验收。
+双方70%实际压缩规则保持：Codex180880阈值配置/加载已核实，258400窗口变化须重算；本轮实际系统压缩后可靠同窗接续，阈值因果未核实。Z02之前官方/compact 719449→20795/1000000并ACK可靠；原生自动阈值未配置。实际达到70%先保现场、在安全点用已验证入口；执行中先协调冻结，不盲点Stop。锁屏时新占用未知，不猜测。压缩可靠留同窗，确有接续损坏/污染才按STATE_PROTOCOL迁移；不按占比自动换窗，不fork/建worktree/重复自动化。
 
-B01专属四目录（均在ai-ecommerce-assistant下）：src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**。Z02不得修改/暂存/提交。原设置14件及导入预览11件冻结；下一数据源切片仅允许settings/data-sources及对应tests子目录内prompts/B01_DATASOURCE.md逐文件白名单新建，其他文件不改。04持管理和集成权；Z02下一G4R2 START必须先显式读此边界。
-
-B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec；B01-DATASOURCE-20260928-01 START于01:19:50首次实际送达、01:21 ACK；本次已核实A01协调恢复后的turn 01a0e541-7527-7272-b555-0aaafc402f25为inProgress，B01已重新核对c629145与冻结文件，正在实现数据源子目录白名单。此前中断期间没有持续执行证据，不重复START。原TASK027内数据源查看/创建服务首次导入前配置，不改共享路由/API、原冻结文件或管理真源。A01保持分析协调，不转自动化。
-
-2026-09-28T07:49:50+08:00恢复核验：桌面已可访问，已在产品-开发/最新Z02确认00:31冻结回执后无新指令、输入框为空且空闲，上下文49865/1000000。锁屏阻塞已解除；G4R2-20260928-02 START尚未发送，管理同步读回后首次发送，再由Z02记录真实接收时间及接管。
-
-GATE04 REVIEW2独立FAIL（G4R2-20260928-01），原问题剩5HIGH/2MEDIUM。候选phase/04-metrics-alerts@c629145（业务91f2690），差异98efeba..c629145；main=2d7ceaf。本轮新/tmp+新PG17：12迁移/typecheck0，原16反例11PASS/5FAIL，新增3有效反例均FAIL。原R1 60件哈希保持，PG57064已停止且本轮副本清理。报告docs/reviews/CODEX_REVIEW_GATE_04_REVIEW_2_2026-09-28.md。GATE03 REVIEW4/GATE02 REVIEW5 PASS保持；约50节点未达成。
-
-Owner在A01于2026-09-28已明确批准MVP-CORE-20260928-01开工及余项并行；老板四卡/同版证据/本人行动与019–020日报服务首批，历史阅读等页面后置，完整P0不减。原G4R1-20260927-02 START已00:10:54实际送达并完成候选冻结；不再按旧范围待批停止。同一冲刺普通原合同返修/技术PASS后接续已授权；TASK031重要新开户规则、采购/部署/敏感权限及新的重大范围变化另行批准。9/30受控MVP、10/5冻结、10/8完整开发验收为目标，非保证。
-
-唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE已14:05:51激活，原codex-zcode ACTIVE每10分钟目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。
-
-主线写入权已于2026-09-28T08:31:01+08:00随候选冻结交回Codex04；Z02只读，待REVIEW3结论后新编号接续。
-
-CTX70-20260928-02：本轮实际经桌面内置/compact将Z02上下文719449/1000000降至20795/1000000，UI显示已压缩；00:31只读ACK核对候选/写入边界并确认同窗接续可靠。人工入口已证实，原生自动70%阈值未配置/未核实；后续实际观察≥70%时先保存安全现场，再用此真实入口。Codex180880阈值配置与加载已验证，本会话本轮实际系统压缩，但阈值触发因果未核实。保持原窗口，不以70%迁移、不改模型账户权限。
-G4R2-20260928-02返修合同：实际收到本编号START后接管主线；按013→014→015→016一次一项，先读R1与R2完整报告及07/08原合同。H01实际保留旧发布行（不是加注释）；H03每个指标只依赖相关渠道；H05不足样本suppressed和R10门槛；H06修SKU覆盖/时区及R10维度、同campaign归因组广告、投诉100%标记与VOC分类版本/历史门槛；H07完成GET/PATCH规则API及CAS；M01把游标接进实际dispatcher；M02完成422/metrics/series/baseline/汇总。不得再把接口延后到页面。
-原C01–C16维护探针与R2有效S探针在docs/reviews/gate-04-review-2-evidence/，复制到本轮独立/tmp测试；docs冻结原件不改，不降低断言。先记录有效红基线，再按原业务合同修复并验证每条规则三态及相邻回归。返回时逐项列实测结果与日志，未完成就如实保留未完成，禁止用旧157全绿称全部关闭。冻结c629145..新HEAD，Codex独立PASS之前不017/031/main合并/部署。实际START接收后先把导航/状态/交接/P13更新到进行中并sync读回；进度JSON必须可解析，不能只更新一个状态字段。B01四目录禁止动；包括新数据源子目录白名单。
-
+G4R3-20260928-02返修合同（实际收到本编号START后执行）：
+1. 完整读R3报告、原R1/R2关闭标准与07_ALERT_RULES、08_API_SPEC、04_DATA_MODEL/F08/F09及013–016验收；按013→014→015→016一次一项。
+2. H01：保留待CAS/失败时旧发布指标、规则、告警；所有构建读取限定本次evaluationAt，避免E1/E2历史样本混计。T01旧32/11/2变32/0/0、T06真实60被计120均需关闭。
+3. H06：R07基准排除partial并用店铺自然日，R08/R09数据源覆盖与标记/分类覆盖都满足，投诉critical等级，R05/R12按campaign+归因组防抵消。按原规则逐条验证三态、归因窗与零基准，不后移范围。
+4. H07：真实config_version修改后必须变化，过期/并发写409；F09同证据同参数同等级同期间acknowledged/ignored保守延续并留来源审计，证据/日期变或resolved不延续。权限矩阵有效负例补齐。
+5. M02：显式非法from/to返回422，未传才默认；保留白名单/双结构/基线/Σ分子Σ分母与实体分离。
+6. 在本轮新/tmp+新PG17复现红基线，冻结原探针不改。原19+候选5保持，R3 T01–T11转绿、K01/K02保持；根据修复差异补有效对照，禁止只修旧断言或把执行者自测称独立PASS。
+7. B01四目录全冻且禁止修改/暂存/提交。接收START先记录真实时间、接管主线业务/管理/Git/sync并更新原进度/交接/首块、sync读回；完成新feat+管理冻结单一候选，交回04独审6cfa36d..新HEAD。Gate04独立PASS前不017/031/main合并/部署。若未实际收到START继续冻结。
 ```
 
 ## 历史首块（2026-09-27T16:40:55+08:00前，非当前指令）
@@ -447,5 +442,34 @@ GATE_03 REVIEW4独立PASS，冻结phase/03-import@ea1c15f（业务bc5e4b2），�
 完整P0/F01–F23/原30TASK/六CSV/经营商品广告售后VOC/告警AI日报本人行动/必要页面运维保持；自助独立注册仍是交付要求，TASK031合同待批准。Owner目前仅授权到Phase3；技术PASS不等于阶段放行。Phase4 TASK013–016、main合并、采购、正式部署未放行；不以工期问答、迁移、心跳或无人回复替代授权。
 双方执行CTX-RULE-20260927-01保留当前窗口：没有实际压缩影响可靠接续或可举证污染且确需交接，不新开窗口，不按占用/长度/心跳/预计长任务提前换窗。压缩仍可靠则继续，未知不臆测；确需时才按STATE_PROTOCOL原交接流程，不fork、不建worktree/重复自动化。
 Z02已就G3R4-20260927-02完成只读ACK：确认版本/已读PASS/继续冻结，不重复ACK，不写业务/进度/sync/Git；Owner阶段授权以之后明确落盘记录为准。
+
+```
+
+
+## 2026-09-28T09:06:17+08:00替换前首块（历史，非当前派发）
+
+```text
+协调状态（2026-09-28T08:31:01+08:00）：G4R2-20260928-02返修已完成并冻结单一候选（业务899bf43+管理冻结chore），写入权交回Codex04独立复审c629145..新HEAD；Z02转只读待下一编号。修复前红基线（新/tmp+新PG17）19探针8FAIL/11PASS与REVIEW2一致，修复后tsc0/探针19/19/场景5/5/unit72/integration181/g3四套聚合0/build0；剩余缺口如实（E2E未重跑、R05正向场景与角色负例未单列）。B01四目录全程未触碰。本块以下为返修合同原文，仅作历史依据，不需重新ACK/START。
+
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant；先读AGENTS/.product-os.json/STATE_PROTOCOL/12_PROGRESS当前导航/状态块及最新协调、CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN及原MVP计划顶部，核实Git/Owner授权/写入者。
+B01设置首切片已独立28/28、tsc0，导入预览切片于01:06:34冻结并经04独立51/51（12单元+39Chromium HTTP fixtures）、tsc0及本轮390/1280截图核对；两者限定组件切片PASS，原14+11源/测试文件SHA保持。报告docs/reviews/B01_SETTINGS_REVIEW_1_2026-09-28.md及docs/reviews/B01_IMPORT_PREVIEW_REVIEW_1_2026-09-28.md。没有真实API/路由/存储联调，026/027未完成。
+
+B01专属四目录（均在ai-ecommerce-assistant下）：src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**。Z02不得修改/暂存/提交。原设置14件及导入预览11件冻结；下一数据源切片仅允许settings/data-sources及对应tests子目录内prompts/B01_DATASOURCE.md逐文件白名单新建，其他文件不改。04持管理和集成权；Z02下一G4R2 START必须先显式读此边界。
+
+B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec；B01-DATASOURCE-20260928-01 START于01:19:50首次实际送达、01:21 ACK；本次已核实A01协调恢复后的turn 01a0e541-7527-7272-b555-0aaafc402f25为inProgress，B01已重新核对c629145与冻结文件，正在实现数据源子目录白名单。此前中断期间没有持续执行证据，不重复START。原TASK027内数据源查看/创建服务首次导入前配置，不改共享路由/API、原冻结文件或管理真源。A01保持分析协调，不转自动化。
+
+2026-09-28T07:49:50+08:00恢复核验：桌面已可访问，已在产品-开发/最新Z02确认00:31冻结回执后无新指令、输入框为空且空闲，上下文49865/1000000。锁屏阻塞已解除；G4R2-20260928-02 START尚未发送，管理同步读回后首次发送，再由Z02记录真实接收时间及接管。
+
+GATE04 REVIEW2独立FAIL（G4R2-20260928-01），原问题剩5HIGH/2MEDIUM。候选phase/04-metrics-alerts@c629145（业务91f2690），差异98efeba..c629145；main=2d7ceaf。本轮新/tmp+新PG17：12迁移/typecheck0，原16反例11PASS/5FAIL，新增3有效反例均FAIL。原R1 60件哈希保持，PG57064已停止且本轮副本清理。报告docs/reviews/CODEX_REVIEW_GATE_04_REVIEW_2_2026-09-28.md。GATE03 REVIEW4/GATE02 REVIEW5 PASS保持；约50节点未达成。
+
+Owner在A01于2026-09-28已明确批准MVP-CORE-20260928-01开工及余项并行；老板四卡/同版证据/本人行动与019–020日报服务首批，历史阅读等页面后置，完整P0不减。原G4R1-20260927-02 START已00:10:54实际送达并完成候选冻结；不再按旧范围待批停止。同一冲刺普通原合同返修/技术PASS后接续已授权；TASK031重要新开户规则、采购/部署/敏感权限及新的重大范围变化另行批准。9/30受控MVP、10/5冻结、10/8完整开发验收为目标，非保证。
+
+唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE已14:05:51激活，原codex-zcode ACTIVE每10分钟目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。
+
+主线写入权已于2026-09-28T08:31:01+08:00随候选冻结交回Codex04；Z02只读，待REVIEW3结论后新编号接续。
+
+CTX70-20260928-02：本轮实际经桌面内置/compact将Z02上下文719449/1000000降至20795/1000000，UI显示已压缩；00:31只读ACK核对候选/写入边界并确认同窗接续可靠。人工入口已证实，原生自动70%阈值未配置/未核实；后续实际观察≥70%时先保存安全现场，再用此真实入口。Codex180880阈值配置与加载已验证，本会话本轮实际系统压缩，但阈值触发因果未核实。保持原窗口，不以70%迁移、不改模型账户权限。
+G4R2-20260928-02返修合同：实际收到本编号START后接管主线；按013→014→015→016一次一项，先读R1与R2完整报告及07/08原合同。H01实际保留旧发布行（不是加注释）；H03每个指标只依赖相关渠道；H05不足样本suppressed和R10门槛；H06修SKU覆盖/时区及R10维度、同campaign归因组广告、投诉100%标记与VOC分类版本/历史门槛；H07完成GET/PATCH规则API及CAS；M01把游标接进实际dispatcher；M02完成422/metrics/series/baseline/汇总。不得再把接口延后到页面。
+原C01–C16维护探针与R2有效S探针在docs/reviews/gate-04-review-2-evidence/，复制到本轮独立/tmp测试；docs冻结原件不改，不降低断言。先记录有效红基线，再按原业务合同修复并验证每条规则三态及相邻回归。返回时逐项列实测结果与日志，未完成就如实保留未完成，禁止用旧157全绿称全部关闭。冻结c629145..新HEAD，Codex独立PASS之前不017/031/main合并/部署。实际START接收后先把导航/状态/交接/P13更新到进行中并sync读回；进度JSON必须可解析，不能只更新一个状态字段。B01四目录禁止动；包括新数据源子目录白名单。
 
 ```

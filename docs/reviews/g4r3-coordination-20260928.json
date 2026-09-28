@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-09-28T10:05:28+08:00",
+  "review": "G4R3-20260928-01",
+  "handoff": "G4R3-20260928-02",
+  "start_sent": true,
+  "start_received_at": "2026-09-28T10:05:28+08:00",
+  "writer": "Z02",
+  "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
+  "writer_since": "2026-09-28T10:05:28+08:00",
+  "base_candidate": "6cfa36d468cd28b47da2b9f6a188eabdad060cb0",
+  "business_head": "899bf43",
+  "repair_scope": ["H01/T01-rule-alert-eval-identity+T06-eval-scoped-reads", "H06/T03-T04-R07/T07-T09-R08-R09/T10-campaign-dimension", "H07/T02-config-version+T11-F09-carry+permission-negatives", "M02/T05-invalid-date-422"],
+  "repair_order": ["TASK-013", "TASK-014", "TASK-015", "TASK-016"],
+  "probes": "docs/reviews/gate-04-review-3-evidence/ frozen originals: g4r3-independent T01-T10, g4r3-controls T11/K01/K02",
+  "b01_boundary": ["src/features/settings/**", "tests/unit/settings/**", "src/features/imports/preview/**", "tests/unit/imports/preview/**"]
+}
