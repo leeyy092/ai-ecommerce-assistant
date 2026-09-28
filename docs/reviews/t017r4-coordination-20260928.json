@@ -32,5 +32,12 @@
     "M01 BLOCKED (tokenizer leads unverified)",
     "E2E not rerun"
   ],
-  "safe_point_note": "freeze reached at reviewer-read context ~69.8%; candidate frozen and writer returned — safe point for Codex04 compact coordination if needed"
+  "safe_point_note": "freeze reached at reviewer-read context ~69.8%; candidate frozen and writer returned — safe point for Codex04 compact coordination if needed",
+  "ctx_safe_20260928_04": {
+    "received_at": "2026-09-28T14:36:40+08:00",
+    "ui_context": "704059/1000000 = 70.4% verified",
+    "state": "safe point: R4 repair frozen at 293f571 (pushed), Z02 read-only, no running processes/PG/tmp, no in-flight files",
+    "continuation": "R4 repair complete — awaiting REVIEW5; any remaining findings continue under a NEW numbered START after compact, per 12_PROGRESS latest",
+    "no_migration": true
+  }
 }
