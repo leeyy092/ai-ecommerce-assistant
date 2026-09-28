@@ -932,7 +932,7 @@ model DailyMetric {
   product Product? @relation(fields: [orgId, storeId, productIdAtSnapshot], references: [orgId, storeId, id])
 
   @@unique([orgId, id])
-  @@unique([orgId, storeId, metricId, entityKey, periodStart, periodEnd, datasetVersion, rulesetVersion, metricVersion])
+  @@unique([orgId, storeId, metricId, entityKey, periodStart, periodEnd, datasetVersion, rulesetVersion, metricVersion, evaluationAt])
   @@index([orgId, storeId])
   @@index([orgId, storeId, datasetVersion, rulesetVersion, productIdAtSnapshot])
   @@map("daily_metric")

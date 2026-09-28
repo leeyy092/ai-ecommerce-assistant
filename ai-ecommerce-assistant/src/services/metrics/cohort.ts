@@ -83,7 +83,7 @@ export async function buildCohortMetrics(input: {
     where: { orgId, storeId },
     select: {
       id: true, paidAt: true,
-      orderItems: { select: { id: true, quantity: true } },
+      orderItems: { select: { id: true, skuId: true, quantity: true } },
     },
   });
   const paidOrders = orders.filter((o) => o.paidAt);
@@ -170,13 +170,15 @@ export async function buildCohortMetrics(input: {
     // 成熟：队列最晚一笔的观察窗在评估时点前已结束（不依赖覆盖；覆盖只影响 complete/partial）
     const latestPaid = cohort.reduce((m, o) => (o.paidAt! > m ? o.paidAt! : m), cohort[0].paidAt!);
     const windowEnd = addDays(latestPaid, WINDOW_DAYS);
-    // H03：覆盖完整才mature——订单+行覆盖 AND 窗内refund覆盖完整（不只是窗结束）
+    // H03/S03：分渠道成熟——退款类指标只依赖订单/行+refund覆盖；售后率只依赖订单/行+case覆盖；
+    // 无关渠道（如缺case）不得阻断已完整退款队列成熟。时间窗结束仍是共同前提。
     const windowTo = new Date(Date.parse(`${day}T00:00:00Z`) + (WINDOW_DAYS + 1) * 86400000).toISOString().slice(0, 10);
     const refundCov = await channelCoveredEveryDay(tx, { orgId, storeId, kind: "after_sales", channelKey: "refund_channel", from: day, to: windowTo });
     const caseCov = await channelCoveredEveryDay(tx, { orgId, storeId, kind: "after_sales", channelKey: "case_channel", from: day, to: windowTo });
     const ordersCovEarly = await ordersCoverage(tx, { orgId, storeId, dataSourceIds, date: day });
     const timeMature = evaluationAt >= windowEnd;
-    const maturity = (timeMature && refundCov === "complete" && caseCov === "complete" && ordersCovEarly === "complete") ? "mature" : "provisional";
+    const refundMaturity = (timeMature && refundCov === "complete" && ordersCovEarly === "complete") ? "mature" : "provisional";
+    const caseMaturity = (timeMature && caseCov === "complete" && ordersCovEarly === "complete") ? "mature" : "provisional";
     const rateCoverage = (c: "complete" | "partial" | "missing") =>
       ordersCov === "complete" && c === "complete" ? "complete" : (ordersCov === "missing" && c !== "complete" ? "missing" : "partial");
 
@@ -199,12 +201,13 @@ export async function buildCohortMetrics(input: {
       status: zeroOrders ? "unavailable" : "available",
       coverageStatus: rateCoverage(refundCov),
       unavailableReason: zeroOrders ? "zero_denominator" : null, currency: null,
-      maturity,
+      maturity: refundMaturity,
     });
 
     // SKU 退件率（店铺级=分子分母重新汇总）：Σ行窗内 max(累计退件) / Σ行销量
     let qtyNumerator = 0;
     let qtyDenominator = 0;
+    const skuAgg = new Map<string, { numerator: number; denominator: number }>();
     for (const o of cohort) {
       const end = addDays(o.paidAt!, WINDOW_DAYS);
       for (const item of o.orderItems) {
@@ -214,7 +217,12 @@ export async function buildCohortMetrics(input: {
           if (r.orderItemId !== item.id || !r.completedAt || r.completedAt < o.paidAt! || r.completedAt >= end) continue;
           maxCum = Math.max(maxCum, r.refundedQuantityCumulative ?? 0);
         }
-        qtyNumerator += Math.min(maxCum, item.quantity); // 每行最多销售 quantity
+        const refundedUnits = Math.min(maxCum, item.quantity); // 每行最多销售 quantity
+        qtyNumerator += refundedUnits;
+        const g = skuAgg.get(item.skuId) ?? { numerator: 0, denominator: 0 };
+        g.denominator += item.quantity;
+        g.numerator += refundedUnits;
+        skuAgg.set(item.skuId, g);
       }
     }
     const zeroQty = qtyDenominator === 0;
@@ -228,8 +236,31 @@ export async function buildCohortMetrics(input: {
       status: zeroQty ? "unavailable" : "available",
       coverageStatus: rateCoverage(refundCov),
       unavailableReason: zeroQty ? "zero_denominator" : null, currency: null,
-      maturity,
+      maturity: refundMaturity,
     });
+    // H06/S02：逐 SKU 退件率行（07 R10 需要 SKU 维度成熟序列；sku: 实体须带 product_id_at_snapshot）
+    if (skuAgg.size > 0) {
+      const skus = await tx.sKU.findMany({ where: { orgId, storeId }, select: { id: true, externalSkuId: true, productId: true } });
+      const skuById = new Map(skus.map((s) => [s.id, s]));
+      for (const [skuId, agg] of skuAgg) {
+        const sku = skuById.get(skuId);
+        if (!sku) continue;
+        const skuZero = agg.denominator === 0;
+        await upsertDailyMetric(tx, {
+          orgId, storeId, datasetVersion, rulesetVersion, evaluationAt, metricVersion: METRIC_VERSION,
+          metricId: "sku_refund_rate_d7", entityKey: `sku:${sku.externalSkuId}`, productIdAtSnapshot: sku.productId,
+          periodStart: day,
+          valueNumeric: skuZero ? null : new Prisma.Decimal(agg.numerator).div(new Prisma.Decimal(agg.denominator)),
+          numerator: skuZero ? null : new Prisma.Decimal(agg.numerator),
+          denominator: skuZero ? null : new Prisma.Decimal(agg.denominator),
+          sampleSize: BigInt(agg.denominator),
+          status: skuZero ? "unavailable" : "available",
+          coverageStatus: rateCoverage(refundCov),
+          unavailableReason: skuZero ? "zero_denominator" : null, currency: null,
+          maturity: refundMaturity,
+        });
+      }
+    }
 
     // 售后率：窗内至少一条 case 的去重订单数 / 队列付款订单数
     let caseOrders = 0;
@@ -248,7 +279,7 @@ export async function buildCohortMetrics(input: {
       status: zeroOrders ? "unavailable" : "available",
       coverageStatus: rateCoverage(caseCov),
       unavailableReason: zeroOrders ? "zero_denominator" : null, currency: null,
-      maturity,
+      maturity: caseMaturity,
     });
   }
 }

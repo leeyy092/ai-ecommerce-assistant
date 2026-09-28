@@ -120,13 +120,14 @@ const cRow = (sid: string, id: string, event: string, occDay: string) => `${sid}
 const cov = (kind: string, from = "2026-09-01", to = "2026-09-11", channel = "default") => [{ source_kind: kind, channel, from, to, status: "complete", explicit_zero_dates: [] }];
 
 async function row(storeId: string, metricId: string, day: string) {
-  const store = await db.store.findUniqueOrThrow({ where: { id: storeId }, select: { currentSnapshotVersion: true, currentSnapshotRulesetVersion: true } });
+  const store = await db.store.findUniqueOrThrow({ where: { id: storeId }, select: { currentSnapshotVersion: true, currentSnapshotRulesetVersion: true, currentSnapshotEvaluationAt: true } });
   return db.dailyMetric.findUniqueOrThrow({
     where: {
-      orgId_storeId_metricId_entityKey_periodStart_periodEnd_datasetVersion_rulesetVersion_metricVersion: {
+      orgId_storeId_metricId_entityKey_periodStart_periodEnd_datasetVersion_rulesetVersion_metricVersion_evaluationAt: {
         orgId, storeId, metricId, entityKey: "store",
         periodStart: new Date(`${day}T00:00:00Z`), periodEnd: new Date(`${day}T00:00:00Z`),
         datasetVersion: store.currentSnapshotVersion!, rulesetVersion: store.currentSnapshotRulesetVersion!, metricVersion: "v1",
+        evaluationAt: store.currentSnapshotEvaluationAt!,
       },
     },
   });

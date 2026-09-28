@@ -257,6 +257,13 @@ describe("TASK-013 持久任务与快照发布骨架", () => {
     expect(empty.inputEvaluationAt?.toISOString()).toBe("2026-09-27T00:00:00.000Z");
     expect(await db.jobRun.count({ where: { storeId: emptyStore } })).toBe(before); // datasetVersion=0 不调度
 
+    // 时点稳定化（G4R2）：真实提交链的 canonical 评估随运行时刻推进（越过本地08:00后为次日），
+    // 把该店既有 run 评估身份与发布指针固定回 2026-09-27 08:00，使固定断言与运行时刻无关。
+    const pin = new Date("2026-09-27T00:00:00Z");
+    for (const r of await db.jobRun.findMany({ where: { storeId, jobKind: "recompute_snapshot" } })) {
+      await db.jobRun.update({ where: { id: r.id }, data: { context: { ...((r.context ?? {}) as Record<string, unknown>), evaluation_at: pin.toISOString() } } });
+    }
+    await db.store.update({ where: { id: storeId }, data: { currentSnapshotEvaluationAt: pin } });
     // 有事实的店：同目标复用（uq_job_run_recompute_target），不新增行；
     // 评估身份为规范08:00（提交时间无关），当前最新 run 即承载该评估
     const runsBefore = await db.jobRun.count({ where: { storeId, jobKind: "recompute_snapshot" } });

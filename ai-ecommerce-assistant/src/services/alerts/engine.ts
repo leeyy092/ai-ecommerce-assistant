@@ -25,6 +25,14 @@ export const DEFAULT_RULE_PARAMS: Record<string, Prisma.InputJsonValue> = {
   R12: {},
 };
 export const ALWAYS_DISABLED = new Set(["R04", "R06"]);
+/**
+ * H07：R05/R12 默认参数必须为空（未配置 → suppressed），但金额/目标是可配置项；
+ * 配置接口允许的阈值键 = DEFAULT_RULE_PARAMS 键 ∪ 本表（按币种 default_<ccc> 与绝对金额）。
+ */
+export const RULE_EXTRA_THRESHOLD_KEYS: Record<string, string[]> = {
+  R05: ["abs_amount", "default_cny", "default_usd"],
+  R12: ["roas_target", "abs_amount", "default_cny", "default_usd"],
+};
 
 function fp(ev: unknown): string { return createHash("sha256").update(JSON.stringify(ev)).digest("hex"); }
 function addDay(d: string, n: number): string { return new Date(Date.parse(`${d}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10); }
@@ -66,9 +74,9 @@ async function writeEval(tx: Tx, a: { orgId: string; storeId: string; datasetVer
   }
 }
 
-async function mSeries(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string }, metricId: string, entityKey = "store"): Promise<Array<{ date: string; value: Prisma.Decimal; sampleSize: bigint; coverage: string; maturity: string; numerator: Prisma.Decimal | null }>> {
+async function mSeries(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string }, metricId: string, entityKey = "store"): Promise<Array<{ date: string; value: Prisma.Decimal; sampleSize: bigint; coverage: string; maturity: string; status: string; numerator: Prisma.Decimal | null }>> {
   const rows = await tx.dailyMetric.findMany({ where: { orgId: a.orgId, storeId: a.storeId, metricId, entityKey, datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion }, orderBy: { periodStart: "asc" } });
-  return rows.map((r) => ({ date: r.periodStart.toISOString().slice(0, 10), value: r.valueNumeric ?? new Prisma.Decimal(0), sampleSize: r.sampleSize, coverage: r.coverageStatus, maturity: r.maturity, numerator: r.numerator }));
+  return rows.map((r) => ({ date: r.periodStart.toISOString().slice(0, 10), value: r.valueNumeric ?? new Prisma.Decimal(0), sampleSize: r.sampleSize, coverage: r.coverageStatus, maturity: r.maturity, status: r.status, numerator: r.numerator }));
 }
 
 async function getConfigs(tx: Tx, orgId: string, storeId: string, rsv: string): Promise<Map<string, { enabled: boolean; parameters: Record<string, unknown>; ruleVersion: number }>> {
@@ -105,65 +113,143 @@ async function evalUnits(tx: Tx, a: { orgId: string; storeId: string; datasetVer
   }
 }
 
-// H06：R07 SKU级
+// H06/S01：R07 SKU级——店铺时区分日、目标日orders+order_items覆盖完整、完整自然日，否则suppressed
 async function evalSku(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date }, cfgs: Map<string, { enabled: boolean; parameters: Record<string, unknown>; ruleVersion: number }>): Promise<void> {
-  const cfg = cfgs.get("R07"); if (!cfg?.enabled) return; const p = cfg.parameters;
+  const cfg = cfgs.get("R07");
+  if (!cfg) return;
+  const p = cfg.parameters;
+  if (!cfg.enabled) {
+    await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "default", periodStart: await fallbackPeriod(tx, a), status: "suppressed", reasonCode: "disabled_by_config", sampleSize: 0n, threshold: p, evidence: { note: "规则被配置禁用" } });
+    return;
+  }
+  const st = await tx.store.findUniqueOrThrow({ where: { id: a.storeId }, select: { timezone: true } });
   const skus = await tx.sKU.findMany({ where: { orgId: a.orgId, storeId: a.storeId }, select: { id: true, externalSkuId: true } });
   const orders = await tx.order.findMany({ where: { orgId: a.orgId, storeId: a.storeId, paidAt: { not: null } }, select: { id: true, paidAt: true } });
   const od = new Map(orders.map((o) => [o.id, o.paidAt!]));
   for (const sku of skus) {
     const items = await tx.orderItem.findMany({ where: { orgId: a.orgId, storeId: a.storeId, skuId: sku.id, order: { paidAt: { not: null } } }, select: { quantity: true, itemPaidAmount: true, orderId: true } });
+    // S01：按店铺时区分日（此前硬编码UTC）
     const byDay = new Map<string, { units: bigint; amount: Prisma.Decimal }>();
-    for (const it of items) { const d = localDateOf("UTC", od.get(it.orderId)!); const g = byDay.get(d) ?? { units: 0n, amount: new Prisma.Decimal(0) }; g.units += BigInt(it.quantity); g.amount = g.amount.add(new Prisma.Decimal(it.itemPaidAmount.toString())); byDay.set(d, g); }
+    for (const it of items) { const d = localDateOf(st.timezone, od.get(it.orderId)!); const g = byDay.get(d) ?? { units: 0n, amount: new Prisma.Decimal(0) }; g.units += BigInt(it.quantity); g.amount = g.amount.add(new Prisma.Decimal(it.itemPaidAmount.toString())); byDay.set(d, g); }
     const days = [...byDay.entries()].sort(([x], [y]) => x.localeCompare(y)); const latest = days.at(-1); if (!latest) continue;
     const [ld, la] = latest;
+    const entityKey = `sku:${sku.externalSkuId}`;
+    // S01：目标日 orders+order_items 覆盖必须complete（任一partial/missing → suppressed，不触发）
+    let sawPartial = false;
+    let sawMissing = false;
+    for (const kind of ["orders", "order_items"] as const) {
+      const c = await tx.dataCoverage.findFirst({ where: { orgId: a.orgId, storeId: a.storeId, sourceKind: kind, channel: "default_channel", coverageDate: new Date(`${ld}T00:00:00Z`) }, orderBy: { datasetVersion: "desc" }, select: { status: true } });
+      if (c?.status === "complete") continue;
+      if (c?.status === "partial") sawPartial = true; else sawMissing = true;
+    }
+    const currentCoverage: "complete" | "partial" | "missing" = sawMissing ? "missing" : sawPartial ? "partial" : "complete";
+    if (currentCoverage !== "complete") { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "current_coverage_incomplete", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId, coverage: currentCoverage, day: ld } }); continue; }
+    // S01：目标日须为已结束的完整自然日（店铺时区次日零点 ≤ 评估时点）
+    const dayEnd = new Date(Date.parse(`${ld}T00:00:00Z`) + 86400000);
+    if (a.evaluationAt.getTime() < dayEnd.getTime()) { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "natural_day_incomplete", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId, day: ld } }); continue; }
     const uS = days.map(([d, v]) => ({ date: d, value: new Prisma.Decimal(v.units.toString()) }));
     const aS = days.map(([d, v]) => ({ date: d, value: v.amount }));
     const { baseline: ub } = medianBaseline(uS, ld); const { baseline: ab } = medianBaseline(aS, ld);
-    if (ub === null || ab === null) { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey: `sku:${sku.externalSkuId}`, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "insufficient_history", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId } }); continue; }
-    if (ub.lt(new Prisma.Decimal(num(p, "min_baseline_units", 10)))) { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey: `sku:${sku.externalSkuId}`, subchannel: "default", periodStart: ld, status: "not_triggered", reasonCode: "baseline_below_min", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId, baseline_units: ub.toString() } }); continue; }
+    if (ub === null || ab === null) { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "insufficient_history", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId } }); continue; }
+    if (ub.lt(new Prisma.Decimal(num(p, "min_baseline_units", 10)))) { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "not_triggered", reasonCode: "baseline_below_min", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId, baseline_units: ub.toString() } }); continue; }
     const ud = ub.sub(new Prisma.Decimal(la.units.toString())); const ad = ab.sub(la.amount);
     const udr = ud.div(ub).toNumber(); const adr = ab.isZero() ? 0 : ad.div(ab).toNumber();
     const trig = udr >= num(p, "units_drop_ratio", 0.40) && ud.gte(new Prisma.Decimal(num(p, "units_drop_abs", 5))) && adr >= num(p, "amount_drop_ratio", 0.30);
     const crit = udr >= num(p, "critical_units_ratio", 0.70) && ud.gte(new Prisma.Decimal(num(p, "critical_units_abs", 20)));
-    await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey: `sku:${sku.externalSkuId}`, subchannel: "default", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId, baseline_units: ub.toString(), current_units: la.units.toString(), baseline_amount: ab.toString(), current_amount: la.amount.toString() }, alert: trig ? { severity: crit ? "critical" : "warning", title: `SKU ${sku.externalSkuId} 销量销售额双降`, category: "sku" } : null });
+    await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId, baseline_units: ub.toString(), current_units: la.units.toString(), baseline_amount: ab.toString(), current_amount: la.amount.toString() }, alert: trig ? { severity: crit ? "critical" : "warning", title: `SKU ${sku.externalSkuId} 销量销售额双降`, category: "sku" } : null });
   }
 }
 
-// H05：R03/R10全部门槛
+// H05：R03/R10全部门槛；H06/S02：R10逐SKU实体；H07/C11：禁用也保留suppressed理由行
 async function evalRefund(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date }, cfgs: Map<string, { enabled: boolean; parameters: Record<string, unknown>; ruleVersion: number }>): Promise<void> {
   const c3 = cfgs.get("R03");
-  const mr = (await mSeries(tx, a, "order_refund_rate_d7")).filter((s) => s.maturity === "mature" && s.coverage === "complete");
-  const lr = mr.at(-1);
-  if (c3?.enabled && lr) {
+  const allR = await mSeries(tx, a, "order_refund_rate_d7");
+  if (c3) {
     const p = c3.parameters;
-    const { baseline, samples } = medianBaseline(mr.map((s) => ({ date: s.date, value: s.value })), lr.date);
-    const co = Number(lr.sampleSize); const ro = Number(lr.numerator ?? 0);
-    if (baseline === null || samples.length < 3) { await writeEval(tx, { ...a, ruleId: "R03", ruleVersion: c3.ruleVersion, entityKey: "store", subchannel: "default", periodStart: lr.date, status: "suppressed", reasonCode: "insufficient_history", sampleSize: lr.sampleSize, threshold: p, evidence: { current: lr.value.toString() } }); return; }
-    const histDenom = mr.slice(0, -1).reduce((s, x) => s + Number(x.sampleSize), 0);
-    const rate = lr.value.toNumber(); const dp = lr.value.sub(baseline).mul(100).toNumber();
-    const trig = co >= num(p, "min_orders", 30) && ro >= num(p, "min_refund_orders", 5) && rate >= num(p, "rate_min", 0.10) && dp >= num(p, "diff_pp", 5) && histDenom >= num(p, "min_history_denom", 100);
-    const crit = rate >= num(p, "critical_rate", 0.20) && ro >= num(p, "critical_orders", 10);
-    await writeEval(tx, { ...a, ruleId: "R03", ruleVersion: c3.ruleVersion, entityKey: "store", subchannel: "default", periodStart: lr.date, status: trig ? "triggered" : "not_triggered", sampleSize: lr.sampleSize, threshold: p, evidence: { current_rate: lr.value.toString(), baseline: baseline.toString(), diff_pp: dp.toFixed(2), orders: co, refund_orders: ro, history_total_denom: histDenom }, alert: trig ? { severity: crit ? "critical" : "warning", title: `订单退款率${(rate * 100).toFixed(1)}%（基准${(baseline.toNumber() * 100).toFixed(1)}%）`, category: "after_sales" } : null });
+    if (!c3.enabled) {
+      const lr = allR.at(-1);
+      await writeEval(tx, { ...a, ruleId: "R03", ruleVersion: c3.ruleVersion, entityKey: "store", subchannel: "default", periodStart: lr?.date ?? await fallbackPeriod(tx, a), status: "suppressed", reasonCode: "disabled_by_config", sampleSize: BigInt(lr?.sampleSize ?? 0n), threshold: p, evidence: { note: "规则被配置禁用" } });
+    } else {
+      const mr = allR.filter((s) => s.maturity === "mature" && s.coverage === "complete");
+      const lr = mr.at(-1);
+      if (!lr) {
+        await writeEval(tx, { ...a, ruleId: "R03", ruleVersion: c3.ruleVersion, entityKey: "store", subchannel: "default", periodStart: await fallbackPeriod(tx, a), status: "suppressed", reasonCode: "insufficient_history", sampleSize: 0n, threshold: p, evidence: { note: "无成熟且覆盖完整的退款队列序列" } });
+      } else {
+        const { baseline, samples } = medianBaseline(mr.map((s) => ({ date: s.date, value: s.value })), lr.date);
+        const co = new Prisma.Decimal(lr.sampleSize.toString());
+        const ro = lr.numerator ?? new Prisma.Decimal(0);
+        const histDenom = mr.slice(0, -1).reduce((s, x) => s.add(new Prisma.Decimal(x.sampleSize.toString())), new Prisma.Decimal(0));
+        if (baseline === null || samples.length < 3) {
+          await writeEval(tx, { ...a, ruleId: "R03", ruleVersion: c3.ruleVersion, entityKey: "store", subchannel: "default", periodStart: lr.date, status: "suppressed", reasonCode: "insufficient_history", sampleSize: lr.sampleSize, threshold: p, evidence: { current: lr.value.toString(), samples: samples.length } });
+        } else {
+          // H05/C10：样本门槛不足 → suppressed（不能向老板表达“已判断正常”），与阈值未到区分
+          const minOrders = new Prisma.Decimal(num(p, "min_orders", 30));
+          const minRefunds = new Prisma.Decimal(num(p, "min_refund_orders", 5));
+          const minHist = new Prisma.Decimal(num(p, "min_history_denom", 100));
+          if (co.lt(minOrders) || ro.lt(minRefunds) || histDenom.lt(minHist)) {
+            await writeEval(tx, { ...a, ruleId: "R03", ruleVersion: c3.ruleVersion, entityKey: "store", subchannel: "default", periodStart: lr.date, status: "suppressed", reasonCode: "insufficient_sample", sampleSize: lr.sampleSize, threshold: p, evidence: { orders: co.toString(), refund_orders: ro.toString(), history_total_denom: histDenom.toString(), requires: { orders: minOrders.toString(), refund_orders: minRefunds.toString(), history_total_denom: minHist.toString() } } });
+          } else {
+            // 未舍入 Decimal 比较（H05）
+            const rateOk = lr.value.gte(new Prisma.Decimal(num(p, "rate_min", 0.10)));
+            const dpOk = lr.value.sub(baseline).mul(100).gte(new Prisma.Decimal(num(p, "diff_pp", 5)));
+            const trig = rateOk && dpOk;
+            const crit = lr.value.gte(new Prisma.Decimal(num(p, "critical_rate", 0.20))) && ro.gte(new Prisma.Decimal(num(p, "critical_orders", 10)));
+            await writeEval(tx, { ...a, ruleId: "R03", ruleVersion: c3.ruleVersion, entityKey: "store", subchannel: "default", periodStart: lr.date, status: trig ? "triggered" : "not_triggered", sampleSize: lr.sampleSize, threshold: p, evidence: { current_rate: lr.value.toString(), baseline: baseline.toString(), diff_pp: lr.value.sub(baseline).mul(100).toString(), orders: co.toString(), refund_orders: ro.toString(), history_total_denom: histDenom.toString() }, alert: trig ? { severity: crit ? "critical" : "warning", title: `订单退款率${lr.value.mul(100).toFixed(1)}%（基准${baseline.mul(100).toFixed(1)}%）`, category: "after_sales" } : null });
+          }
+        }
+      }
+    }
   }
   const c10 = cfgs.get("R10");
-  const ms = (await mSeries(tx, a, "sku_refund_rate_d7")).filter((s) => s.maturity === "mature" && s.coverage === "complete");
-  const ls = ms.at(-1);
-  if (c10?.enabled && ls) {
+  if (c10) {
     const p = c10.parameters;
-    const { baseline } = medianBaseline(ms.map((s) => ({ date: s.date, value: s.value })), ls.date);
-    const sold = Number(ls.sampleSize); const ref = Number(ls.numerator ?? 0);
-    if (baseline === null) { await writeEval(tx, { ...a, ruleId: "R10", ruleVersion: c10.ruleVersion, entityKey: "store", subchannel: "default", periodStart: ls.date, status: "suppressed", reasonCode: "insufficient_history", sampleSize: ls.sampleSize, threshold: p, evidence: {} }); return; }
-    const rate = ls.value.toNumber(); const dp = ls.value.sub(baseline).mul(100).toNumber();
-    const trig = sold >= num(p, "min_sold", 20) && ref >= num(p, "min_refunded", 5) && rate >= num(p, "rate_min", 0.15) && dp >= num(p, "diff_pp", 8);
-    const crit = rate >= num(p, "critical_rate", 0.30) && ref >= num(p, "critical_refunded", 10);
-    await writeEval(tx, { ...a, ruleId: "R10", ruleVersion: c10.ruleVersion, entityKey: "store", subchannel: "default", periodStart: ls.date, status: trig ? "triggered" : "not_triggered", sampleSize: ls.sampleSize, threshold: p, evidence: { current_rate: ls.value.toString(), baseline: baseline.toString(), sold, refunded: ref }, alert: trig ? { severity: crit ? "critical" : "warning", title: `SKU退件率${(rate * 100).toFixed(1)}%`, category: "sku" } : null });
+    if (!c10.enabled) {
+      await writeEval(tx, { ...a, ruleId: "R10", ruleVersion: c10.ruleVersion, entityKey: "store", subchannel: "default", periodStart: await fallbackPeriod(tx, a), status: "suppressed", reasonCode: "disabled_by_config", sampleSize: 0n, threshold: p, evidence: { note: "规则被配置禁用" } });
+    } else {
+      // H06/S02：逐实体评估（sku:* 逐SKU + store 聚合），不再只读店铺聚合
+      const entityRows = await tx.dailyMetric.findMany({ where: { orgId: a.orgId, storeId: a.storeId, metricId: "sku_refund_rate_d7", datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion }, select: { entityKey: true }, distinct: ["entityKey"] });
+      for (const e of entityRows) {
+        const ms = (await mSeries(tx, a, "sku_refund_rate_d7", e.entityKey)).filter((s) => s.maturity === "mature" && s.coverage === "complete");
+        const ls = ms.at(-1);
+        if (!ls) { await writeEval(tx, { ...a, ruleId: "R10", ruleVersion: c10.ruleVersion, entityKey: e.entityKey, subchannel: "default", periodStart: await fallbackPeriod(tx, a), status: "suppressed", reasonCode: "insufficient_history", sampleSize: 0n, threshold: p, evidence: { entity: e.entityKey, note: "无成熟且覆盖完整的退件队列序列" } }); continue; }
+        const { baseline } = medianBaseline(ms.map((s) => ({ date: s.date, value: s.value })), ls.date);
+        const sold = new Prisma.Decimal(ls.sampleSize.toString());
+        const ref = ls.numerator ?? new Prisma.Decimal(0);
+        const histUnits = ms.slice(0, -1).reduce((s, x) => s.add(new Prisma.Decimal(x.sampleSize.toString())), new Prisma.Decimal(0));
+        if (baseline === null) { await writeEval(tx, { ...a, ruleId: "R10", ruleVersion: c10.ruleVersion, entityKey: e.entityKey, subchannel: "default", periodStart: ls.date, status: "suppressed", reasonCode: "insufficient_history", sampleSize: ls.sampleSize, threshold: p, evidence: { entity: e.entityKey } }); continue; }
+        const minSold = new Prisma.Decimal(num(p, "min_sold", 20));
+        const minRef = new Prisma.Decimal(num(p, "min_refunded", 5));
+        const minHistUnits = new Prisma.Decimal(num(p, "min_history_units", 50));
+        if (sold.lt(minSold) || ref.lt(minRef) || histUnits.lt(minHistUnits)) {
+          await writeEval(tx, { ...a, ruleId: "R10", ruleVersion: c10.ruleVersion, entityKey: e.entityKey, subchannel: "default", periodStart: ls.date, status: "suppressed", reasonCode: "insufficient_sample", sampleSize: ls.sampleSize, threshold: p, evidence: { entity: e.entityKey, sold: sold.toString(), refunded: ref.toString(), history_total_units: histUnits.toString(), requires: { sold: minSold.toString(), refunded: minRef.toString(), history_total_units: minHistUnits.toString() } } });
+          continue;
+        }
+        const rateOk = ls.value.gte(new Prisma.Decimal(num(p, "rate_min", 0.15)));
+        const dpOk = ls.value.sub(baseline).mul(100).gte(new Prisma.Decimal(num(p, "diff_pp", 8)));
+        const trig = rateOk && dpOk;
+        const crit = ls.value.gte(new Prisma.Decimal(num(p, "critical_rate", 0.30))) && ref.gte(new Prisma.Decimal(num(p, "critical_refunded", 10)));
+        await writeEval(tx, { ...a, ruleId: "R10", ruleVersion: c10.ruleVersion, entityKey: e.entityKey, subchannel: "default", periodStart: ls.date, status: trig ? "triggered" : "not_triggered", sampleSize: ls.sampleSize, threshold: p, evidence: { entity: e.entityKey, current_rate: ls.value.toString(), baseline: baseline.toString(), sold: sold.toString(), refunded: ref.toString(), history_total_units: histUnits.toString() }, alert: trig ? { severity: crit ? "critical" : "warning", title: `${e.entityKey === "store" ? "店铺" : `SKU ${e.entityKey.slice(4)}`}退件率${ls.value.mul(100).toFixed(1)}%`, category: "sku" } : null });
+      }
+    }
   }
 }
 
-// H06：R08 case+投诉双通道
+/** 无可用业务序列时给suppressed行一个稳定的期间（最近units_sold日，否则评估日前一日） */
+async function fallbackPeriod(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date }): Promise<string> {
+  const ls = await tx.dailyMetric.findFirst({ where: { orgId: a.orgId, storeId: a.storeId, metricId: "units_sold", datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion }, orderBy: { periodStart: "desc" }, select: { periodStart: true } });
+  if (ls) return ls.periodStart.toISOString().slice(0, 10);
+  return addDay(localDateOf("UTC", a.evaluationAt), -1);
+}
+
+// H06：R08 case+投诉双通道；投诉子通道当前及基准期is_complaint标记覆盖须100%
 async function evalAfterSales(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date }, cfgs: Map<string, { enabled: boolean; parameters: Record<string, unknown>; ruleVersion: number }>): Promise<void> {
-  const cfg = cfgs.get("R08"); if (!cfg?.enabled) return; const p = cfg.parameters;
+  const cfg = cfgs.get("R08");
+  if (!cfg) return;
+  const p = cfg.parameters;
+  if (!cfg.enabled) {
+    await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "default", periodStart: await fallbackPeriod(tx, a), status: "suppressed", reasonCode: "disabled_by_config", sampleSize: 0n, threshold: p, evidence: { note: "规则被配置禁用" } });
+    return;
+  }
   const st = await tx.store.findUniqueOrThrow({ where: { id: a.storeId }, select: { timezone: true } });
   const cases = await tx.afterSaleRecord.findMany({ where: { orgId: a.orgId, storeId: a.storeId }, select: { occurredAt: true } });
   const cm = new Map<string, number>(); for (const c of cases) { const d = localDateOf(st.timezone, c.occurredAt); cm.set(d, (cm.get(d) ?? 0) + 1); }
@@ -171,75 +257,169 @@ async function evalAfterSales(tx: Tx, a: { orgId: string; storeId: string; datas
   if (lc) {
     const [ld, cnt] = lc; const series = cd.map(([d, v]) => ({ date: d, value: new Prisma.Decimal(v) }));
     const { baseline } = medianBaseline(series, ld);
-    if (baseline !== null) {
+    if (baseline === null) { await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "case", periodStart: ld, status: "suppressed", reasonCode: "insufficient_history", sampleSize: BigInt(cnt), threshold: p, evidence: { subchannel: "case" } }); }
+    else {
       const trig = cnt >= num(p, "min_count", 10) && new Prisma.Decimal(cnt).sub(baseline).gte(new Prisma.Decimal(num(p, "rise_abs", 5))) && (baseline.isZero() ? cnt >= num(p, "min_count", 10) : cnt / baseline.toNumber() >= 1 + num(p, "rise_ratio", 1.0));
       const crit = cnt >= num(p, "critical_count", 30) && (baseline.isZero() || cnt / baseline.toNumber() >= 1 + num(p, "critical_ratio", 2.0));
       await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "case", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: BigInt(cnt), threshold: p, evidence: { current: cnt, baseline: baseline.toString(), subchannel: "case" }, alert: trig ? { severity: crit ? "critical" : "warning", title: `售后case增加：${cnt}条`, category: "after_sales" } : null });
     }
   }
-  const complaints = await tx.customerMessage.findMany({ where: { orgId: a.orgId, storeId: a.storeId, isComplaint: true }, select: { messageAt: true } });
-  const pm = new Map<string, number>(); for (const c of complaints) { const d = localDateOf(st.timezone, c.messageAt); pm.set(d, (pm.get(d) ?? 0) + 1); }
-  const pd = [...pm.entries()].sort(([x], [y]) => x.localeCompare(y)); const lp = pd.at(-1);
-  if (lp) {
-    const [ld, cnt] = lp; const series = pd.map(([d, v]) => ({ date: d, value: new Prisma.Decimal(v) }));
-    const { baseline } = medianBaseline(series, ld);
-    if (baseline !== null) {
-      const trig = cnt >= num(p, "min_count", 10) && new Prisma.Decimal(cnt).sub(baseline).gte(new Prisma.Decimal(num(p, "rise_abs", 5))) && (baseline.isZero() ? cnt >= num(p, "min_count", 10) : cnt / baseline.toNumber() >= 1 + num(p, "rise_ratio", 1.0));
-      await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "complaint_message", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: BigInt(cnt), threshold: p, evidence: { current: cnt, baseline: baseline.toString(), subchannel: "complaint_message" }, alert: trig ? { severity: "warning", title: `投诉消息增加：${cnt}条`, category: "customer_service" } : null });
-    }
+  // 投诉子通道：显式 is_complaint=true 的消息计数；参与当前/基准的每一天 is_complaint 标记覆盖均须 100%
+  const msgs = await tx.customerMessage.findMany({ where: { orgId: a.orgId, storeId: a.storeId }, select: { messageAt: true, isComplaint: true } });
+  const byDay = new Map<string, { complaints: number; total: number; unmarked: number }>();
+  for (const m of msgs) {
+    const d = localDateOf(st.timezone, m.messageAt);
+    const g = byDay.get(d) ?? { complaints: 0, total: 0, unmarked: 0 };
+    g.total += 1;
+    if (m.isComplaint === null || m.isComplaint === undefined) g.unmarked += 1;
+    else if (m.isComplaint) g.complaints += 1;
+    byDay.set(d, g);
   }
-}
-
-// H06：R09 用已存在有效分类
-async function evalVoc(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date }, cfgs: Map<string, { enabled: boolean; parameters: Record<string, unknown>; ruleVersion: number }>): Promise<void> {
-  const cfg = cfgs.get("R09"); if (!cfg?.enabled) return; const p = cfg.parameters;
-  const st = await tx.store.findUniqueOrThrow({ where: { id: a.storeId }, select: { timezone: true } });
-  const msgs = await tx.customerMessage.findMany({ where: { orgId: a.orgId, storeId: a.storeId }, select: { messageAt: true, sentiment: true } });
-  const byDay = new Map<string, { known: number; neg: number; total: number }>();
-  for (const m of msgs) { const d = localDateOf(st.timezone, m.messageAt); const g = byDay.get(d) ?? { known: 0, neg: 0, total: 0 }; g.total++; if (m.sentiment && ["positive", "neutral", "negative"].includes(m.sentiment)) { g.known++; if (m.sentiment === "negative") g.neg++; } byDay.set(d, g); }
-  const days = [...byDay.entries()].sort(([x], [y]) => x.localeCompare(y)); const latest = days.at(-1); if (!latest) return;
-  const [ld, agg] = latest;
-  const cov = agg.total > 0 ? agg.known / agg.total : 0;
-  if (cov < num(p, "min_coverage", 0.80) || agg.known < num(p, "min_known", 30)) { await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "insufficient_sentiment_coverage", sampleSize: BigInt(agg.total), threshold: p, evidence: { known: agg.known, total: agg.total, coverage: cov } }); return; }
-  const nr = agg.neg / agg.known;
-  const series = days.map(([d, v]) => ({ date: d, value: new Prisma.Decimal(v.known > 0 ? v.neg / v.known : 0) }));
-  const { baseline } = medianBaseline(series.slice(0, -1), ld);
-  if (baseline === null) { await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "insufficient_history", sampleSize: BigInt(agg.total), threshold: p, evidence: {} }); return; }
-  const dp = (nr - baseline.toNumber()) * 100;
-  const trig = agg.neg >= num(p, "min_negative", 10) && dp >= num(p, "rate_up_pp", 15);
-  const crit = dp >= num(p, "critical_pp", 30) && agg.neg >= num(p, "critical_negative", 30);
-  await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "default", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: BigInt(agg.total), threshold: p, evidence: { negative_rate: nr.toFixed(4), baseline: baseline.toString(), diff_pp: dp.toFixed(2), negative_count: agg.neg }, alert: trig ? { severity: crit ? "critical" : "warning", title: `负面VOC增加：${agg.neg}条`, category: "customer_service" } : null });
-}
-
-// H06：R05/R12有配置才评估
-async function evalAds(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date }, cfgs: Map<string, { enabled: boolean; parameters: Record<string, unknown>; ruleVersion: number }>): Promise<void> {
-  const st = await tx.store.findUniqueOrThrow({ where: { id: a.storeId }, select: { currency: true } });
-  const us = await mSeries(tx, a, "units_sold");
-  const as_ = await mSeries(tx, a, "ad_spend");
-  const ld = as_.at(-1)?.date ?? us.at(-1)?.date; if (!ld) return;
-  const c5 = cfgs.get("R05");
-  if (c5?.enabled) {
-    const p = c5.parameters; const abs = typeof p.abs_amount === "number" ? p.abs_amount : (typeof p.default_cny === "number" ? p.default_cny : null);
-    if (abs === null) { await writeEval(tx, { ...a, ruleId: "R05", ruleVersion: c5.ruleVersion, entityKey: "store", subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "absolute_amount_not_configured", sampleSize: 0n, threshold: p, evidence: { note: "须按币种配置绝对金额后启用" } }); }
+  const pd = [...byDay.entries()].sort(([x], [y]) => x.localeCompare(y)); const lp = pd.at(-1);
+  if (lp) {
+    const [ld, agg] = lp;
+    const series = pd.map(([d, v]) => ({ date: d, value: new Prisma.Decimal(v.complaints) }));
+    const { baseline, samples } = medianBaseline(series, ld);
+    if (baseline === null) { await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "complaint_message", periodStart: ld, status: "suppressed", reasonCode: "insufficient_history", sampleSize: BigInt(agg.total), threshold: p, evidence: { subchannel: "complaint_message" } }); }
     else {
-      const rs = await mSeries(tx, a, "roas");
-      const lsp = as_.at(-1); const lro = rs.at(-1);
-      if (lsp && lro) {
-        const { baseline: sb } = medianBaseline(as_.slice(0, -1).map((s) => ({ date: s.date, value: s.value })), ld);
-        const { baseline: rb } = medianBaseline(rs.slice(0, -1).map((s) => ({ date: s.date, value: s.value })), ld);
-        if (sb !== null && rb !== null && !sb.isZero()) {
-          const sr = lsp.value.sub(sb).div(sb).toNumber(); const rd = rb.sub(lro.value).div(rb.isZero() ? new Prisma.Decimal(1) : rb).toNumber();
-          const trig = sr >= 0.30 && lsp.value.sub(sb).gte(new Prisma.Decimal(abs)) && rd >= 0.20;
-          await writeEval(tx, { ...a, ruleId: "R05", ruleVersion: c5.ruleVersion, entityKey: "store", subchannel: "default", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: 0n, threshold: p, evidence: { spend_current: lsp.value.toString(), spend_baseline: sb.toString(), spend_rise: sr.toFixed(4), roas_current: lro.value.toString(), roas_baseline: rb.toString(), roas_drop: rd.toFixed(4), currency: st.currency }, alert: trig ? { severity: sr >= 1.0 && rd >= 0.5 ? "critical" : "warning", title: `广告花费上升${(sr * 100).toFixed(0)}%且ROAS下降`, category: "advertising" } : null });
-        }
+      // 当前日与基准样本日的 is_complaint 标记覆盖必须 100%，否则该子通道 suppressed（07 R08）
+      const sampleDates = new Set([ld, ...samples.map((s) => s.date)]);
+      const unmarkedDays: Array<{ day: string; unmarked: number; total: number }> = [];
+      for (const [d, g] of byDay) if (sampleDates.has(d) && g.unmarked > 0) unmarkedDays.push({ day: d, unmarked: g.unmarked, total: g.total });
+      if (unmarkedDays.length > 0) {
+        await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "complaint_message", periodStart: ld, status: "suppressed", reasonCode: "complaint_marking_incomplete", sampleSize: BigInt(agg.total), threshold: p, evidence: { subchannel: "complaint_message", unmarked_days: unmarkedDays } });
+      } else {
+        const cnt = agg.complaints;
+        const trig = cnt >= num(p, "min_count", 10) && new Prisma.Decimal(cnt).sub(baseline).gte(new Prisma.Decimal(num(p, "rise_abs", 5))) && (baseline.isZero() ? cnt >= num(p, "min_count", 10) : cnt / baseline.toNumber() >= 1 + num(p, "rise_ratio", 1.0));
+        await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "complaint_message", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: BigInt(cnt), threshold: p, evidence: { current: cnt, baseline: baseline.toString(), subchannel: "complaint_message", marking_coverage: 1 }, alert: trig ? { severity: "warning", title: `投诉消息增加：${cnt}条`, category: "customer_service" } : null });
       }
     }
   }
+}
+
+// H06：R09 同渠道/分类版本隔离；基准样本日也须满足情感已知样本与覆盖率门槛
+async function evalVoc(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date }, cfgs: Map<string, { enabled: boolean; parameters: Record<string, unknown>; ruleVersion: number }>): Promise<void> {
+  const cfg = cfgs.get("R09");
+  if (!cfg) return;
+  const p = cfg.parameters;
+  if (!cfg.enabled) {
+    await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "default", periodStart: await fallbackPeriod(tx, a), status: "suppressed", reasonCode: "disabled_by_config", sampleSize: 0n, threshold: p, evidence: { note: "规则被配置禁用" } });
+    return;
+  }
+  const st = await tx.store.findUniqueOrThrow({ where: { id: a.storeId }, select: { timezone: true } });
+  const msgs = await tx.customerMessage.findMany({ where: { orgId: a.orgId, storeId: a.storeId }, select: { messageAt: true, sentiment: true, channel: true, classificationVersion: true } });
+  const KNOWN = ["positive", "neutral", "negative"];
+  // 按 (channel, classificationVersion) 分组隔离；版本变化不共用基准（07 R09）
+  const groups = new Map<string, Map<string, { known: number; neg: number; total: number }>>();
+  for (const m of msgs) {
+    const key = `${m.channel}|${m.classificationVersion ?? ""}`;
+    const d = localDateOf(st.timezone, m.messageAt);
+    const days = groups.get(key) ?? new Map<string, { known: number; neg: number; total: number }>();
+    const g = days.get(d) ?? { known: 0, neg: 0, total: 0 };
+    g.total += 1;
+    if (m.sentiment && KNOWN.includes(m.sentiment)) { g.known += 1; if (m.sentiment === "negative") g.neg += 1; }
+    days.set(d, g);
+    groups.set(key, days);
+  }
+  const minKnown = num(p, "min_known", 30);
+  const minCoverage = num(p, "min_coverage", 0.80);
+  for (const [key, dayMap] of groups) {
+    const days = [...dayMap.entries()].sort(([x], [y]) => x.localeCompare(y));
+    const latest = days.at(-1); if (!latest) continue;
+    const [ld, agg] = latest;
+    const channel = key.split("|")[0];
+    const version = key.split("|")[1] || null;
+    // 子通道编码 渠道+分类版本：不同版本是独立评估行（唯一键隔离），版本变化不共用行
+    const sub = (version ? `${channel}|${version}` : channel).slice(0, 32);
+    const cov = agg.total > 0 ? agg.known / agg.total : 0;
+    if (agg.known < minKnown || cov < minCoverage) {
+      await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: sub, periodStart: ld, status: "suppressed", reasonCode: "insufficient_sentiment_coverage", sampleSize: BigInt(agg.total), threshold: p, evidence: { channel, classification_version: version, known: agg.known, total: agg.total, coverage: cov } });
+      continue;
+    }
+    // 基准样本日也须情感已知≥min_known且覆盖率≥min_coverage，不满足不进基准
+    const eligible = days.filter(([d, g]) => d < ld && g.known >= minKnown && (g.total > 0 ? g.known / g.total : 0) >= minCoverage);
+    const series = eligible.map(([d, g]) => ({ date: d, value: new Prisma.Decimal(g.known > 0 ? g.neg / g.known : 0) }));
+    const { baseline } = medianBaseline(series, ld);
+    if (baseline === null) {
+      await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: sub, periodStart: ld, status: "suppressed", reasonCode: "insufficient_history", sampleSize: BigInt(agg.total), threshold: p, evidence: { channel, classification_version: version, eligible_history_days: series.length } });
+      continue;
+    }
+    const nr = agg.neg / agg.known;
+    const dp = (nr - baseline.toNumber()) * 100;
+    const trig = agg.neg >= num(p, "min_negative", 10) && dp >= num(p, "rate_up_pp", 15);
+    const crit = dp >= num(p, "critical_pp", 30) && agg.neg >= num(p, "critical_negative", 30);
+    await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: sub, periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: BigInt(agg.total), threshold: p, evidence: { channel, classification_version: version, negative_rate: nr.toFixed(4), baseline: baseline.toString(), diff_pp: dp.toFixed(2), negative_count: agg.neg }, alert: trig ? { severity: crit ? "critical" : "warning", title: `负面VOC增加：${agg.neg}条`, category: "customer_service" } : null });
+  }
+}
+
+// H06：R05/R12 逐广告归因组实体（ads:{model}:{window}）计算，不跨组合并；
+// 归因窗未结束/覆盖不完整 → suppressed；绝对金额/目标未按币种配置 → suppressed
+async function evalAds(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date }, cfgs: Map<string, { enabled: boolean; parameters: Record<string, unknown>; ruleVersion: number }>): Promise<void> {
+  const st = await tx.store.findUniqueOrThrow({ where: { id: a.storeId }, select: { currency: true } });
+  const c5 = cfgs.get("R05");
   const c12 = cfgs.get("R12");
-  if (c12?.enabled) {
-    const p = c12.parameters; const target = p.roas_target;
-    if (typeof target !== "number") { await writeEval(tx, { ...a, ruleId: "R12", ruleVersion: c12.ruleVersion, entityKey: "store", subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "roas_target_not_configured", sampleSize: 0n, threshold: p, evidence: { note: "须配置ROAS目标后启用" } }); }
-    else { const lr = (await mSeries(tx, a, "roas")).at(-1); if (lr) { const trig = lr.value.toNumber() < target; await writeEval(tx, { ...a, ruleId: "R12", ruleVersion: c12.ruleVersion, entityKey: "store", subchannel: "default", periodStart: lr.date, status: trig ? "triggered" : "not_triggered", sampleSize: 0n, threshold: p, evidence: { roas: lr.value.toString(), target }, alert: trig ? { severity: "warning", title: `广告ROAS ${lr.value.toFixed(2)} 低于目标 ${target}`, category: "advertising" } : null }); } }
+  const adEntities = await tx.dailyMetric.findMany({ where: { orgId: a.orgId, storeId: a.storeId, metricId: "ad_spend", datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion }, select: { entityKey: true }, distinct: ["entityKey"] });
+  const fallbackDate = await fallbackPeriod(tx, a);
+  const absOf = (p: Record<string, unknown>): number | null => {
+    if (typeof p.abs_amount === "number") return p.abs_amount;
+    const byCur = p[`default_${String(st.currency).toLowerCase()}`];
+    return typeof byCur === "number" ? byCur : null;
+  };
+  const writeNoEntity = async (ruleId: "R05" | "R12", cfg: { enabled: boolean; parameters: Record<string, unknown>; ruleVersion: number } | undefined): Promise<void> => {
+    if (!cfg) return;
+    const p = cfg.parameters;
+    if (!cfg.enabled) { await writeEval(tx, { ...a, ruleId, ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "default", periodStart: fallbackDate, status: "suppressed", reasonCode: "disabled_by_config", sampleSize: 0n, threshold: p, evidence: { note: "规则被配置禁用" } }); return; }
+    if (ruleId === "R12" && typeof p.roas_target !== "number") { await writeEval(tx, { ...a, ruleId, ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "default", periodStart: fallbackDate, status: "suppressed", reasonCode: "roas_target_not_configured", sampleSize: 0n, threshold: p, evidence: { note: "须配置ROAS目标后启用" } }); return; }
+    if (absOf(p) === null) { await writeEval(tx, { ...a, ruleId, ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "default", periodStart: fallbackDate, status: "suppressed", reasonCode: "absolute_amount_not_configured", sampleSize: 0n, threshold: p, evidence: { note: "须按币种配置绝对金额后启用", currency: st.currency } }); return; }
+    await writeEval(tx, { ...a, ruleId, ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "default", periodStart: fallbackDate, status: "suppressed", reasonCode: "insufficient_history", sampleSize: 0n, threshold: p, evidence: { note: "无广告归因组数据" } });
+  };
+  if (adEntities.length === 0) {
+    await writeNoEntity("R05", c5);
+    await writeNoEntity("R12", c12);
+    return;
+  }
+  for (const e of adEntities) {
+    const entityKey = e.entityKey;
+    // 归因组窗口：entityKey = ads:{model}:{window}；报告日+window 未到评估时点 → 归因窗未结束
+    const windowDays = Number.parseInt(entityKey.split(":")[2] ?? "7", 10);
+    const as_ = await mSeries(tx, a, "ad_spend", entityKey);
+    const ld = as_.at(-1)?.date;
+    const windowOpen = ld ? Date.parse(`${ld}T00:00:00Z`) + (Number.isNaN(windowDays) ? 7 : windowDays) * 86400000 > a.evaluationAt.getTime() : false;
+    const latestCoverage = as_.at(-1)?.coverage ?? "missing";
+    for (const [ruleId, cfg] of [["R05", c5], ["R12", c12]] as const) {
+      if (!cfg) continue;
+      const p = cfg.parameters;
+      if (!cfg.enabled) { await writeEval(tx, { ...a, ruleId, ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld ?? fallbackDate, status: "suppressed", reasonCode: "disabled_by_config", sampleSize: 0n, threshold: p, evidence: { note: "规则被配置禁用" } }); continue; }
+      if (ruleId === "R12" && typeof p.roas_target !== "number") { await writeEval(tx, { ...a, ruleId, ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld ?? fallbackDate, status: "suppressed", reasonCode: "roas_target_not_configured", sampleSize: 0n, threshold: p, evidence: { note: "须配置ROAS目标后启用" } }); continue; }
+      const abs = absOf(p);
+      if (abs === null) {
+        await writeEval(tx, { ...a, ruleId, ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld ?? fallbackDate, status: "suppressed", reasonCode: "absolute_amount_not_configured", sampleSize: 0n, threshold: p, evidence: { note: "须按币种配置绝对金额后启用", currency: st.currency } });
+        continue;
+      }
+      if (!ld) { await writeEval(tx, { ...a, ruleId, ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: fallbackDate, status: "suppressed", reasonCode: "insufficient_history", sampleSize: 0n, threshold: p, evidence: { entity: entityKey } }); continue; }
+      if (windowOpen) { await writeEval(tx, { ...a, ruleId, ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "attribution_window_open", sampleSize: 0n, threshold: p, evidence: { entity: entityKey, day: ld, window_days: Number.isNaN(windowDays) ? 7 : windowDays } }); continue; }
+      if (latestCoverage !== "complete") { await writeEval(tx, { ...a, ruleId, ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "current_coverage_incomplete", sampleSize: 0n, threshold: p, evidence: { entity: entityKey, day: ld, coverage: latestCoverage } }); continue; }
+      if (ruleId === "R05") {
+        const rs = await mSeries(tx, a, "roas", entityKey);
+        const lsp = as_.at(-1)!; const lro = rs.at(-1);
+        const salesRow = (await mSeries(tx, a, "ad_sales", entityKey)).at(-1);
+        if (!lro || !salesRow || salesRow.status !== "available") { await writeEval(tx, { ...a, ruleId: "R05", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "no_valid_attribution", sampleSize: 0n, threshold: p, evidence: { entity: entityKey, note: "当前无有效销售归因" } }); continue; }
+        const { baseline: sb } = medianBaseline(as_.slice(0, -1).map((s) => ({ date: s.date, value: s.value })), ld);
+        const { baseline: rb } = medianBaseline(rs.slice(0, -1).map((s) => ({ date: s.date, value: s.value })), ld);
+        if (sb === null || rb === null || sb.isZero()) { await writeEval(tx, { ...a, ruleId: "R05", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: sb === null || rb === null ? "insufficient_history" : "zero_baseline", sampleSize: 0n, threshold: p, evidence: { entity: entityKey } }); continue; }
+        const sr = lsp.value.sub(sb).div(sb).toNumber(); const rd = rb.sub(lro.value).div(rb.isZero() ? new Prisma.Decimal(1) : rb).toNumber();
+        const trig = sr >= 0.30 && lsp.value.sub(sb).gte(new Prisma.Decimal(abs)) && rd >= 0.20;
+        await writeEval(tx, { ...a, ruleId: "R05", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: 0n, threshold: p, evidence: { entity: entityKey, spend_current: lsp.value.toString(), spend_baseline: sb.toString(), spend_rise: sr.toFixed(4), roas_current: lro.value.toString(), roas_baseline: rb.toString(), roas_drop: rd.toFixed(4), currency: st.currency, abs_amount: abs }, alert: trig ? { severity: sr >= 1.0 && rd >= 0.5 ? "critical" : "warning", title: `广告花费上升${(sr * 100).toFixed(0)}%且ROAS下降（${entityKey}）`, category: "advertising" } : null });
+      } else {
+        const target = p.roas_target;
+        if (typeof target !== "number") { await writeEval(tx, { ...a, ruleId: "R12", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "roas_target_not_configured", sampleSize: 0n, threshold: p, evidence: { note: "须配置ROAS目标后启用" } }); continue; }
+        const lsp = as_.at(-1)!;
+        const lr = (await mSeries(tx, a, "roas", entityKey)).at(-1);
+        if (!lr || lsp.value.lt(new Prisma.Decimal(abs))) { await writeEval(tx, { ...a, ruleId: "R12", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "insufficient_sample", sampleSize: 0n, threshold: p, evidence: { entity: entityKey, spend: lsp.value.toString(), requires: abs, currency: st.currency } }); continue; }
+        const trig = lr.value.toNumber() < target;
+        await writeEval(tx, { ...a, ruleId: "R12", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: lr.date, status: trig ? "triggered" : "not_triggered", sampleSize: 0n, threshold: p, evidence: { entity: entityKey, roas: lr.value.toString(), target, spend: lsp.value.toString() }, alert: trig ? { severity: "warning", title: `广告ROAS ${lr.value.toFixed(2)} 低于目标 ${target}（${entityKey}）`, category: "advertising" } : null });
+      }
+    }
   }
 }
 

@@ -321,7 +321,14 @@ async function publishSnapshot(db: PrismaClient, args: {
     const alreadyAtVersion = store.currentSnapshotVersion === args.datasetVersion
       && store.currentSnapshotRulesetVersion === args.rulesetVersion;
     if (alreadyAtVersion && store.currentSnapshotEvaluationAt && store.currentSnapshotEvaluationAt >= args.evaluationAt) {
-      // 同版本重评估已发布过：幂等收口
+      // 同版本重评估已发布过：幂等收口；构建事务若写了更旧评估身份的行，清掉保持单一发布身份
+      await tx.dailyMetric.deleteMany({
+        where: {
+          orgId: args.orgId, storeId: args.storeId,
+          datasetVersion: args.datasetVersion, rulesetVersion: args.rulesetVersion,
+          evaluationAt: { not: store.currentSnapshotEvaluationAt },
+        },
+      });
       await tx.jobRun.update({
         where: { id: args.runId },
         data: { status: "succeeded", finishedAt: new Date(), updatedAt: new Date() },
@@ -348,6 +355,15 @@ async function publishSnapshot(db: PrismaClient, args: {
         },
       });
     }
+    // H01/C13：CAS 指针翻转成功后才清理同版本元组下非当前评估身份的行集；
+    // 清理放在发布短事务内，构建中/失败/待CAS期间旧发布行始终完整可读。
+    await tx.dailyMetric.deleteMany({
+      where: {
+        orgId: args.orgId, storeId: args.storeId,
+        datasetVersion: args.datasetVersion, rulesetVersion: args.rulesetVersion,
+        evaluationAt: { not: args.evaluationAt },
+      },
+    });
     await tx.jobRun.update({
       where: { id: args.runId },
       data: {
@@ -374,56 +390,63 @@ export interface EvaluationTickResult {
 }
 
 export async function evaluationTick(db: PrismaClient, now: Date, limit = 50, cursor?: { orgId: string; id: string } | null): Promise<EvaluationTickResult & { nextCursor: { orgId: string; id: string } | null }> {
-  // M01-C15：游标分批（按orgId+id排序、排除本轮已推进店），不全量固定前50
-  const stores = await db.store.findMany({
-    where: { status: "active" },
-    select: { orgId: true, id: true, timezone: true, datasetVersion: true, rulesetVersion: true, lastEvaluationDate: true },
-    take: limit,
-    orderBy: [{ orgId: "asc" }, { id: "asc" }],
-    ...(cursor ? { cursor: { orgId_id: { orgId: cursor.orgId, id: cursor.id } }, skip: 1 } : {}),
-  });
+  // M01-C15：单次 tick 内连续消费游标遍历全部到期店。此前固定取前 limit 家时，
+  // 已推进但未到期的店会占满批次窗口，后续店永远轮不到（65 家连续 5 tick 仍剩 15 家）。
+  // 游标在批次间推进跨过已处理窗口；dispatcher 直接调用即获得全量遍历。
   let advanced = 0;
   let scheduled = 0;
-  for (const store of stores) {
-    const lastLocal = store.lastEvaluationDate
-      ? store.lastEvaluationDate.toISOString().slice(0, 10)
-      : null;
-    const due = latestDueEvaluation(store.timezone, now, lastLocal);
-    if (!due) continue;
-    try {
-      const result = await db.$transaction(async (tx) => {
-        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`snapshot:${store.orgId}:${store.id}`}))`;
-        const fresh = await tx.store.findUniqueOrThrow({
-          where: { id: store.id },
-          select: { lastEvaluationDate: true, datasetVersion: true, rulesetVersion: true },
-        });
-        const freshLast = fresh.lastEvaluationDate ? fresh.lastEvaluationDate.toISOString().slice(0, 10) : null;
-        if (freshLast && due.date <= freshLast) return false;
-        await tx.store.update({
-          where: { id: store.id },
-          data: {
-            lastEvaluationDate: new Date(`${due.date}T00:00:00Z`),
-            inputEvaluationAt: due.at,
-          },
-        });
-        if (fresh.datasetVersion > 0n) {
-          await requestRebuild({
-            db: tx, orgId: store.orgId, storeId: store.id,
-            datasetVersion: fresh.datasetVersion, rulesetVersion: fresh.rulesetVersion,
-            evaluationAt: due.at, sourceTaskId: null,
+  let cur: { orgId: string; id: string } | null = cursor ?? null;
+  const MAX_BATCHES = 1000; // 防御性上限（50×1000 家/次）；正常规模一次 tick 即遍历完
+  for (let batch = 0; batch < MAX_BATCHES; batch++) {
+    const stores = await db.store.findMany({
+      where: { status: "active" },
+      select: { orgId: true, id: true, timezone: true, datasetVersion: true, rulesetVersion: true, lastEvaluationDate: true },
+      take: limit,
+      orderBy: [{ orgId: "asc" }, { id: "asc" }],
+      ...(cur ? { cursor: { orgId_id: { orgId: cur.orgId, id: cur.id } }, skip: 1 } : {}),
+    });
+    for (const store of stores) {
+      const lastLocal = store.lastEvaluationDate
+        ? store.lastEvaluationDate.toISOString().slice(0, 10)
+        : null;
+      const due = latestDueEvaluation(store.timezone, now, lastLocal);
+      if (!due) continue;
+      try {
+        const result = await db.$transaction(async (tx) => {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`snapshot:${store.orgId}:${store.id}`}))`;
+          const fresh = await tx.store.findUniqueOrThrow({
+            where: { id: store.id },
+            select: { lastEvaluationDate: true, datasetVersion: true, rulesetVersion: true },
           });
+          const freshLast = fresh.lastEvaluationDate ? fresh.lastEvaluationDate.toISOString().slice(0, 10) : null;
+          if (freshLast && due.date <= freshLast) return false;
+          await tx.store.update({
+            where: { id: store.id },
+            data: {
+              lastEvaluationDate: new Date(`${due.date}T00:00:00Z`),
+              inputEvaluationAt: due.at,
+            },
+          });
+          if (fresh.datasetVersion > 0n) {
+            await requestRebuild({
+              db: tx, orgId: store.orgId, storeId: store.id,
+              datasetVersion: fresh.datasetVersion, rulesetVersion: fresh.rulesetVersion,
+              evaluationAt: due.at, sourceTaskId: null,
+            });
+          }
+          return true;
+        });
+        if (result) {
+          advanced += 1;
+          scheduled += 1;
         }
-        return true;
-      });
-      if (result) {
-        advanced += 1;
-        scheduled += 1;
+      } catch {
+        // 单店失败不阻断其余店铺；下一轮 tick 重试
       }
-    } catch {
-      // 单店失败不阻断其余店铺；下一轮 tick 重试
     }
+    if (stores.length < limit) { cur = null; break; }
+    const lastStore = stores[stores.length - 1];
+    cur = { orgId: lastStore.orgId, id: lastStore.id };
   }
-  const lastStore = stores[stores.length - 1];
-  const nextCursor = stores.length === limit && lastStore ? { orgId: lastStore.orgId, id: lastStore.id } : null;
-  return { advanced, scheduled, nextCursor };
+  return { advanced, scheduled, nextCursor: cur };
 }

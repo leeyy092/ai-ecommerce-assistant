@@ -158,12 +158,13 @@ async function metricRow(storeId: string, metricId: string, day: string, entityK
   const store = await db.store.findUniqueOrThrow({ where: { id: storeId }, select: { currentSnapshotVersion: true, currentSnapshotRulesetVersion: true, currentSnapshotEvaluationAt: true } });
   return db.dailyMetric.findUniqueOrThrow({
     where: {
-      orgId_storeId_metricId_entityKey_periodStart_periodEnd_datasetVersion_rulesetVersion_metricVersion: {
+      orgId_storeId_metricId_entityKey_periodStart_periodEnd_datasetVersion_rulesetVersion_metricVersion_evaluationAt: {
         orgId, storeId, metricId, entityKey,
         periodStart: new Date(`${day}T00:00:00Z`), periodEnd: new Date(`${day}T00:00:00Z`),
         datasetVersion: store.currentSnapshotVersion!,
         rulesetVersion: store.currentSnapshotRulesetVersion!,
         metricVersion: "v1",
+        evaluationAt: store.currentSnapshotEvaluationAt!,
       },
     },
   });
@@ -257,16 +258,17 @@ describe("TASK-014 基础经营与广告指标", () => {
       req(`/api/v1/metrics?store_id=${s.storeId}&from=2026-09-01&to=2026-09-11&metric_ids=gmv,paid_order_count,units_sold,average_order_value,roas,ad_spend,operating_roi`, {}, owner.cookie),
     );
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { data: { items: Array<{ metric_id: string; value: string | number | null; period_start: string; unavailable_reason?: string | null }> }; meta: { dataset_version: string; snapshot_status: string } };
+    // G4R2 M02：响应为 metrics（范围汇总）+series（日序列）双结构
+    const body = (await res.json()) as { data: { metrics: Array<{ metric_id: string; value: string | number | null; unavailable_reason?: string | null }>; series: Array<{ metric_id: string; value: string | number | null; period_start: string }> }; meta: { dataset_version: string; snapshot_status: string } };
     expect(body.meta.snapshot_status).toBe("ready");
-    const find = (mid: string, day: string) => body.data.items.find((i) => i.metric_id === mid && i.period_start === day);
+    const find = (mid: string, day: string) => body.data.series.find((i) => i.metric_id === mid && i.period_start === day);
     expect(find("gmv", "2026-09-01")?.value).toBe("230");
     expect(find("paid_order_count", "2026-09-01")?.value).toBe(2);
     expect(find("units_sold", "2026-09-01")?.value).toBe(4);
     expect(find("average_order_value", "2026-09-01")?.value).toBe("115");
     expect(find("roas", "2026-09-01")?.value).toBe(2.5);
     expect(find("ad_spend", "2026-09-01")?.value).toBe("40");
-    const roi = body.data.items.find((i) => i.metric_id === "operating_roi");
+    const roi = body.data.metrics.find((i) => i.metric_id === "operating_roi");
     expect(roi?.value).toBeNull();
     expect(roi?.unavailable_reason).toBe("cost_data_unavailable");
   });
