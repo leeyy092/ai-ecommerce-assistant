@@ -1,0 +1,26 @@
+{
+  "recorded_at": "2026-09-28T14:26:33+08:00",
+  "review": "T017R4-20260928-01",
+  "handoff": "T017R4-20260928-02",
+  "start_sent": true,
+  "start_received_at": "2026-09-28T14:26:33+08:00",
+  "head_at_start": "928304f",
+  "branch": "phase/05-ai",
+  "writer": "Z02",
+  "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
+  "writer_since": "2026-09-28T14:26:33+08:00",
+  "repair_scope": [
+    "H04/N01-N02-unknown-reserve-window-by-claim-time",
+    "H04/N03-legacy-delta-compat",
+    "fixture/L03-maintained-copy-both-timestamps-per-review4-permission"
+  ],
+  "probes": "docs/reviews/task-017-review-4-evidence: t017r4-independent.test.ts (N01-N03 red, K03/K04 green); keep 53",
+  "b01_boundary": [
+    "src/features/settings/**",
+    "tests/unit/settings/**",
+    "src/features/imports/preview/**",
+    "tests/unit/imports/preview/**",
+    "src/app/settings/**"
+  ],
+  "context_note": "reviewer read 69.8445%; freeze of this round = safe point for Codex04 compact coordination"
+}

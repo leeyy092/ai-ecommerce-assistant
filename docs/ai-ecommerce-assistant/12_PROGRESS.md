@@ -4,20 +4,18 @@
 
 ## 当前导航
 
-根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调迁移、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN及MVP计划顶部；按TASK017读原06/09合同。磁盘最新Owner答复、实际Git和唯一写入者优先。
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调迁移、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN和MVP计划顶部；按TASK017读原06/09合同。磁盘最新Owner答复、实际Git和唯一写入者优先。
 唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE且2026-09-27 14:05:51已激活，沿用原codex-zcode。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
-2026-09-28T14:12:19+08:00 T017R3-20260928-02 返修完成并冻结单一候选：业务2a152e5（gateway终态/恢复审计+budget逐attempt账本+迁移20260928140000+R3探针三件维护副本+迁移计数16），管理冻结提交为本chore，写入权交回Codex04按340dedb..新HEAD独审。红基线（新/tmp=/tmp/aiea-t017r3-20260928-z02+新PG17@127.0.0.1:55512）修复前L01/L02/L03=3红+K02=1绿与REVIEW3独立结论一致；修复后L01-L03+K02=4/4全绿、原49（R1 28+网关13+R2 8）保持、unit72/72、integration227通过+1如实skip、g3四套聚合0、生产build0、非增量tsc0。M01维持BLOCKED（TOKENIZER-03线索已归档：官方SDK两路径均待验证）。真实contract仍待Owner三配置不标017 DONE不进018。Z02转只读；B01五路径未触碰。
-2026-09-28T14:02:15+08:00管理更正（T017R3-TOKENIZER-20260928-03）：T017R3-20260928-02 START已实际送达并由Z02接管返修中（回执13:46:10为本机date实测处理起始时刻，早于R3审查证据落盘13:51:39约5分29秒——同机时钟下二者先后无法独立核实，权威时序标记为包含回执的提交7d0c56e@13:54:51；不猜造精确到秒的送达时刻）。当前主线业务/管理/Git/sync唯一写入权Z02，04只读。旧R2/R1/PH5/G4/COORD均已完成，不重发。Owner草稿“啊”保留未提交。
-04完成T017R3-20260928-01独立FAIL，候选phase/05-ai@340dedb（业务3516e81），范围e280bc6..340dedb；剩H03/H04两组HIGH，M01一MEDIUM仍BLOCKED。原49产品场景PASS、缺配置断言1PASS、真实contract1SKIP；新增L01/L02/L03有效3FAIL，K02三真实进程并发max2 PASS；非增量tsc0。H06引用摘要具体缺陷关闭，R1 H01/H02/H05/M02保持，无新反例不重开。36件正式证据SHA核实，新PG17@50576停止、/tmp/aiea-t017r3-7ajqep2y清理；原Gate04六轮及TASK017 R1/R2、B01 45SHA保持。
-本轮唯一返修依据docs/reviews/CODEX_REVIEW_TASK_017_REVIEW_3_2026-09-28.md、TASK_017_REVIEW_3_EVIDENCE_2026-09-28.json、task-017-review-3-evidence/README.md、t017r3-independent.test.ts、t017r3-crash.ts、r3-observations.json及boundaries.log。新2026-09-28T13:46:10+08:00 T017R3-20260928-02 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，04自ACK起只读。接收实测phase/05-ai@340dedb（业务3516e81，1063ce6冻结+COORD-03管理）、main=d536f27；已完整读P08首块、REVIEW3报告/索引/探针（L01-L03/K02+t017r3-crash.ts）。返修仅H03/H04余项+M01澄清：H03（L01普通失败终态同键重投不得再调用；L02恢复保留历史attempts审计与已消费format_repair计数，不覆盖不重置）；H04（L03跨自然日恢复的每次attempt费用/预留按发生时刻归属预算窗口，新增ai_attempt_ledger逐attempt账本+无账本行回退ai_run，不把历史actual搬到新日重复计入）；M01维持BLOCKED并澄清来源（官方资料未取得匹配计数器来源/版本，最小后续=供应商计数接口或可验证匹配分词器）。先新archive+新PG复现L01-L03红/K02绿+原49保持再修；H06及已关闭项不重开；B01五路径禁触；真实contract待Owner三配置不标DONE不进018；Owner草稿“啊”非任务。
-H03 L01：相同生成键两次非法JSON已SCHEMA_INVALID终态，普通重投仍多调用第3次并覆盖错误；所有终态保持幂等，显式retry/new revision另记。L02：真实子进程修复调用中崩溃，恢复把原attempt1审计覆盖、formatRepairs清零；持久保存总尝试/修复消耗、追加式安全审计与正确终态，不能只把attemptCount持久化。保留J02跨崩溃总≤3、J06 AUTH、原组织1与K02全局2。未证明实际发送第4次或第二次修复请求，不扩大结论。
-H04 L03：昨日创建的任务今日恢复产生actual0.007515，但spentSince按整条createdAt排除今日费用，日额度0.012下错误接受下一约0.009004预留。按每次attempt实际预算窗口持久归属，跨日/月恢复不漏新费用，不把历史actual整体挪新日重复计；未知usage保持预留核对。保留J03–J05与原上海窗口/组织原子预算。既有数据库内最小修复，不加Agent/队列框架。
-M01 char-approx-v1如实BLOCKED：实际tokenizer仍缺匹配固定模型来源/版本；usage事后校准不能独自替代实际预检。继续查供应商支持此快照的计数接口或匹配词表/分词器与请求模板，取得可复验证据后落实初次/修复12k字符/16k先到者。找不到如实记录，不悄悄降合同或换供应商模型。真实百炼北京qwen-flash-2025-07-28 contract待Owner本地DASHSCOPE_API_KEY/BASE_URL/AI_MODEL_ID配置，已请求一次、不重复催问，不打印Key。017独审/实际tokenizer/真实contract未过不标DONE、不推018；可做返修继续。
-实际START后先新archive/新PG复现L01–L03红/K02绿与原49保持，再修原H03/H04和M01可做部分，按差异验证冻结新候选340dedb..新HEAD。执行中04只读，冻结再新环境独审；无新候选不重复全套。接管回执直接同时对齐导航/任务表IN_PROGRESS/唯一状态进行中/next_action/writer、交接与全部首块，sync读回首页md/html和总控PROJECTS/index；冻结时全部改待审查/IN_REVIEW/Codex04，不留下旧待START段。
-Phase4 G4R6技术PASS保持，Owner产品验收另记；本轮实际ls-remote main=d536f27、phase/05-ai=340dedb、phase/04=77e1334，后续实时核验。测试、独审、Owner产品验收、GitHub、部署、真实试用分开。
-B01设置接入45件冻结、限定PASS（此前78回归/18真实浏览器/build0/tsc0），未Git集成、021/026/027整体未完成。Z02严禁修改/暂存/提交应用下src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**、src/app/settings/**。B01导入只读方案19文件仅建议，DTO依赖未锁定、无新START，不打断017塞未编号后端。04协调独审/Z02后端/B01隔离前端/A01分析；既有B01日报id21每日21:00不重复创建修改。
-Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行动/019–020服务首批，历史阅读页面后置；原完整P0与质量不减，9/30受控MVP、10/5冻结、10/8完整验收为目标非保证。普通返修及同冲刺独立PASS接续已授权，一次一TASK；031重要开户规则/采购部署/敏感权限/新重大范围变化仍具体批准。新范围偏差停相关工作说明事实/日期影响/方案/决定；不抢P1/P2。
-双方70%：Codex180880/258400配置加载已核实，系统压缩后可靠同窗，触发因果未核实。Z02本轮实际644600/1000000=64.46%，未到70%，无新压缩；原生自动阈值未配置。≥70%先保现场、安全空闲点经真实入口，执行中先协调冻结不盲点Stop。压缩可靠同窗，确需迁移按STATE_PROTOCOL普通同项目新聊天只读ACK/原自动化/COMPLETE及sync/激活，不fork/worktree/重复自动化、不改模型账户权限。无新状态不刷时间；普通返修/无变化/已问待答安静。
+04已完成T017R4-20260928-01独立FAIL：冻结928304f（业务2a152e5），范围340dedb..928304f。原53产品场景+缺配置断言1PASS、真实contract1SKIP，新增N01/N02/N03有效3FAIL，K03/K04两PASS，非增量tsc0。剩原H04一HIGH、M01一MEDIUM BLOCKED；H03 L01/L02具体缺陷关闭，H06和更早关闭项保持，无新差异/反例不重开。正式52件SHA核对，新PG17@54320已停、本轮/tmp清理；Gate04六轮/T017前三轮及B01 45SHA保持。
+2026-09-28T14:26:33+08:00 T017R4-20260928-02 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，04自ACK起只读。接收实测phase/05-ai@928304f（业务2a152e5）、main=d536f27；已完整读P08首块与REVIEW4报告/索引/探针（N01-N03/K03/K04）。返修仅H04余项（M01维持BLOCKED）：N01/N02账本全部行（含usage未知reserved）一律按各自claim时刻l.created_at归属（不再挂run.created_at——恢复的新增预留留在当前窗口）；N03旧数据共存改为按运行差值兼容（run总额-该run账本已计spent，不再“有任何账本即排除整行”）；按报告授权纠正R3 L03维护夹具为run与旧attempt同时置前日（docs原件冻结保留，生产口径不变）。先新archive+新PG复现N01-N03红/K03K04绿+原53保持再修；H03已关闭不重开；B01五路径禁触；真实contract待Owner三配置不标DONE不进018；Owner草稿“啊”非任务。上下文近70%：本轮完成冻结即安全点，供04 compact协调。
+返修依据docs/reviews/CODEX_REVIEW_TASK_017_REVIEW_4_2026-09-28.md、TASK_017_REVIEW_4_EVIDENCE_2026-09-28.json、task-017-review-4-evidence/README.md、t017r4-independent.test.ts及boundaries-valid.log/r4-observations.json。初次N02 daily100违反原max20属无效夹具，不计产品FAIL；修正daily20后有效，原件/probe-correction已留。
+仅TASK017原H04余项：N01/N02旧运行今日/本月恢复的usage=null预留0.009004，必须按本次claim窗口计入，再申请0.009004在额度.012下拒绝；不能所有reserved都按run.created_at挂旧日。N03旧AIRun已有actual=.000029、reserve=.009012、attemptCount=2，无账本行，首次恢复写入第3笔ledger后旧费用不得从统计消失；新actual=.007515后下一.009004预留在日限.022应拒绝。账本上线兼容完整且不重复计，保留原窗口，不增加业务规则或新框架。先新archive/新PG复现N01-N03红/K03K04绿，再最小修复并保持原53与非增量tsc0。R3 L03夹具可纠正为run和旧attempt同时设前日，保留原件说明差异，不为部分改时戳夹具牺牲真实口径。
+M01实际tokenizer保持BLOCKED；固定百炼北京qwen-flash-2025-07-28。官方SDK固定2cd356a499e7d70dc28035b34fd9ee1ad2d12572线索及3原源码正式归档docs/reviews/t017-tokenizer-official-source-20260928/并SHA读回，临时线索目录已清理。get_tokenizer前缀分派/Tokenization.call均待固定快照与完整请求实证；不把usage小样本校准当准确预检，不宣称供应商绝不提供。未安装/执行SDK或调用真实服务。真实contract待Owner本地DASHSCOPE_API_KEY/BASE_URL/AI_MODEL_ID（已问一次，不重复催问/不打印Key），实现独审/实际tokenizer/真实contract未过不标017 DONE、不进018。不换供应商模型/Agent框架/前端直连/采购部署。
+实际START后接管回执同时对齐12_PROGRESS导航/任务表IN_PROGRESS/唯一状态进行中/next_action/writer、交接和全部当前首块，Product OS sync后读回首页md/html与总控PROJECTS/index。只维护当前状态，旧章节明确历史；冻结时同样改待审查/IN_REVIEW/Codex04。04执行中只读，显式新冻结才新环境按差异独审；无新候选不重跑不变全套。
+B01设置接入45件冻结、限定PASS（此前78回归/18真实浏览器/build0/tsc0），未Git集成、021/026/027整体未完成。应用下src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**、src/app/settings/**禁止Z02修改/暂存/提交。B01导入只读方案19文件仅建议，DTO依赖未锁定、无业务START，不打断017插入未编号后端。04协调独审/Z02后端/B01隔离前端/A01分析；B01原id21每日21:00不重复创建修改。
+Owner已批MVP-CORE-20260928-01首批及余项并行：老板三分钟四卡/同版证据/本人行动/019–020服务首批，历史阅读页面后置；原完整P0和质量不减，9/30受控MVP、10/5冻结、10/8完整验收为目标非保证。普通原合同返修及同冲刺独立PASS接续已授权，一次一TASK；031重要开户规则/采购部署/敏感权限/新重大范围仍具体批准。新范围偏差停相关工作，一次说明事实/日期影响/方案/决定；不抢P1/P2。
+Git本轮ls-remote main=d536f27、phase/05-ai=928304f、phase/04=77e1334，后续实时核验。Phase4 G4R6技术PASS保持，Owner产品验收另记；技术测试/独审/Owner验收/GitHub/部署/真实试用分别记录。
+双方70%：Codex180880/258400配置加载已核实，系统压缩可靠同窗，触发因果未核实。Z02本轮CUA698445/1000000=69.8445%，尚未70%，无新压缩；原生阈值未配置。实际≥70%先保现场、安全空闲点用真实入口，执行中先协调冻结，不盲点Stop；可靠则同窗，确需迁移按STATE_PROTOCOL普通同项目新聊天只读ACK/原自动化/COMPLETE与sync/激活，不fork/worktree/重复自动化。不改模型账户权限。Owner草稿“啊”保留未发送。普通返修/无变化/已问待答安静，无新状态不刷时间。
 
 <!-- PRODUCT_OS_STATE_BEGIN -->
 ```json
@@ -27,18 +25,22 @@ Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
   "stage": "06 分任务开发 · Phase5 AI网关返修",
   "current_task": "TASK-017",
-  "status": "待审查",
-  "last_completed": "T017R3返修完成：L01-L03转绿4/4+K02、原49保持，业务提交2a152e5；M01维持BLOCKED",
-  "next_action": "Codex04独立复审340dedb..新HEAD（业务2a152e5+管理冻结chore）：按R3关闭标准复验L01-L03/K02与原49；M01维持BLOCKED（TOKENIZER线索归档）；真实contract待Owner三配置。",
-  "next_owner": "Codex04",
-  "next_prompt": "prompts/P07_CODE_REVIEW.md",
-  "acceptance": "L01/L02终态与恢复审计、L03跨日预算关闭，原49/K02保持、非增量tsc0；实际token计数与真实固定模型contract独立通过后才可017 DONE。",
-  "blockers": "原H03/H04有有效反例可继续返修；M01匹配计数器来源未取得、真实contract待Owner三配置（已问一次）。B01五路径保护。",
+  "status": "进行中",
+  "last_completed": "T017R4独立FAIL：H03关闭；原53 PASS；H04未知预留跨窗与旧账本兼容仍FAIL，M01 BLOCKED",
+  "next_action": "Z02按T017R4-20260928-02返修H04（M01维持BLOCKED）：新archive+新PG复现N01-N03红/K03K4绿+原53保持再修，冻结候选交回04；真实contract待Owner三配置。",
+  "next_owner": "ZCode",
+  "next_prompt": "prompts/P08_FIX.md",
+  "acceptance": "N01-N03关闭，K03/K04与原53保持、tsc0；实际tokenizer和真实固定模型contract独立通过才可017 DONE。",
+  "blockers": "H04有效反例需普通授权返修；M01固定tokenizer与真实contract待实证/Owner本地配置（已问一次）。",
   "checkpoint": "NO",
-  "review": "TASK017 REVIEW3 FAIL（2H+1M）→ 返修候选待REVIEW4；Gate04 REVIEW6保持",
-  "updated_at": "2026-09-28T14:12:19+08:00",
-  "updated_by": "Z02 · T017R3-20260928-02 返修完成与候选冻结",
+  "review": "TASK017 REVIEW4 FAIL（H04一HIGH/M01一MEDIUM BLOCKED）；Gate04 REVIEW6保持",
+  "updated_at": "2026-09-28T14:26:33+08:00",
+  "updated_by": "Z02 · T017R4-20260928-02 START接管与回执",
   "evidence": [
+    "2026-09-28T14:26:33+08:00：T017R4-20260928-02 START首次实际送达Z02（04独立T017R4-20260928-01 FAIL：原53产品场景全PASS保持、H03关闭、N01/N02/N03有效3FAIL、K03/K04 PASS、tsc0、SHA保持、PG54320已停）并接管唯一主线写入权，04转只读。接收实测：928304f（业务2a152e5）/phase/05-ai/main=d536f27。返修方案：ledger全行按l.created_at归属+N03按运行差值（run总额-ledger已计）兼容旧行+L03维护夹具按报告授权补ledger同时置前日。B01五路径禁触；上下文近70%，本轮冻结即安全点。",
+    "2026-09-28T14:25:27+08:00：T017R4-20260928-01独立FAIL，928304f/2a152e5，范围340dedb..928304f。原53产品场景+缺配置1PASS/真实contract1SKIP；新N01-N03有效3FAIL/K03K04两PASS，tsc0。H03具体缺陷关闭，剩H04一HIGH/M01一MEDIUM BLOCKED。52件SHA正式核对，PG54320已停及本轮tmp清理；旧Gate04/T017R1R2R3/B01 SHA保持。三官方原始tokenizer源码归档SHA核对后旧临时目录清理，未执行。writer04，新T017R4-20260928-02仅准备待首次实际START。",
+    "docs/reviews/CODEX_REVIEW_TASK_017_REVIEW_4_2026-09-28.md",
+    "docs/reviews/TASK_017_REVIEW_4_EVIDENCE_2026-09-28.json",
     "2026-09-28T14:12:19+08:00：T017R3冻结验证（新/tmp=/tmp/aiea-t017r3-20260928-z02，git archive HEAD+新原生PG17.11仅127.0.0.1:55512，socket在repo外）：修复前红基线L01/L02/L03=3FAIL+K02=1PASS与REVIEW3独立结论一致；修复后4/4全绿（L01 failed终态同键重投不调用calls=2；L02崩溃后attempt1 format_repair审计保留且恢复不重置已消费修复状态；L03昨日未决预留不入今日窗口、今日actual+新预留0.0165>0.012正确拒绝next=skipped；K02三真实进程全局并发max2）、原49保持、unit72、integration227+1skip、g3聚合0、build0、tsc0。实现：isTerminal将failed一律终态；恢复初始化attemptsLog/formatRepairs自持久行、appendAttempt改重读追加式；新增ai_attempt_ledger（text键对齐领域约定，claim/settle/release同步，参数显式cast）；预算归属=settled/released按l.created_at+unknown预留按run.created_at+无账本行回退ai_run（E05兼容；期间发现并修复uuid/text列型不匹配：领域表org_id为text，ledger初版UUID列已改text）。M01维持BLOCKED（T017R3_TOKENIZER_LEAD归档，SDK commit 2cd356a4两路径均待验证）。E2E未重跑（无页面变化）。候选=业务2a152e5+管理冻结chore；B01五路径未触碰。",
     "2026-09-28T14:02:15+08:00：T017R3-TOKENIZER-20260928-03只读线索消费回执（非START）——Z02已读取并归档/var/folders/.../aiea-tokenizer-lead-k9p5rh1s的TOKENIZER_LEAD.md与sources.json至docs/reviews/T017R3_TOKENIZER_LEAD_2026-09-28_*（官方DashScope SDK commit 2cd356a4，三文件SHA=ddec2e06/bdcdcd0d/a0ee3d94前缀核对）。两条路径均待验证：get_tokenizer对qwen前缀共用resources/qwen.tiktoken（仅证明分派不证明快照词表一致）；Tokenization.call的Models枚举无qwen-flash且需真实配置验证；QwenTokenizer为NFC文本计数不含chat模板framing。M01维持BLOCKED不冒称PASS，不加Python服务/新框架；H03/H04返修继续。同时修正P08等首块残留writer04段为实际（Z02返修中、04只读），回执时间13:46:10为本机date实测处理起始、早于审查证据落盘13:51:39（先后不可独立核实，权威标记=回执提交7d0c56e@13:54:51，不猜造秒数）。Owner草稿“啊”非任务。",
     "2026-09-28T13:46:10+08:00：T017R3-20260928-02 START首次实际送达Z02（04独立T017R3-20260928-01 FAIL：原49全PASS保持、H06关闭、L01/L02/L03有效3FAIL、K02全局并发2 PASS、tsc0、SHA保持、PG50576已停）并接管唯一主线写入权，04转只读。接收实测：340dedb（业务3516e81）/phase/05-ai/main=d536f27。返修方案：H03 isTerminal把failed一律视为终态（L01同键重投SCHEMA_INVALID不再调用）+恢复时从row.attempts初始化attemptsLog与已消费format_repair计数（L02审计追加不覆盖）；H04新增ai_attempt_ledger逐attempt账本按claim时刻归属预算窗口、claim/settle/release同步写账本、无账本旧行回退ai_run口径（L03今日恢复actual+新预留正确拒绝，E05合成行回退兼容）。B01五路径禁触。",
@@ -192,10 +194,10 @@ Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
     "历史记录（本轮接手前）：prompts/ZCODE_FULL_P0_HANDOFF.md：完整P0准备交付、真实Gate分支判断和放行后接续；指令已写入，未自动发送，ZCode执行待核实"
   ],
   "github": {
-    "status": "本轮ls-remote核实main=d536f27、phase/05-ai=340dedb、phase/04-metrics-alerts=77e1334；04未提交推送合并",
+    "status": "本轮ls-remote确认main=d536f27、phase/05-ai=928304f、phase/04-metrics-alerts=77e1334；04未提交推送合并",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
-    "verified_at": "2026-09-28T13:51:39+08:00",
-    "evidence": "docs/reviews/task-017-review-3-evidence/remote.txt"
+    "verified_at": "2026-09-28T14:25:27+08:00",
+    "evidence": "docs/reviews/task-017-review-4-evidence/remote.txt"
   },
   "deployment": {
     "status": "未部署，未真实商家试用；后续AI/页面/注册/运维未完成",
@@ -470,7 +472,7 @@ Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
 | TASK-014 | 基础经营与广告指标 | DONE | TASK-013 | R6累计独立PASS；metrics金额数量/基准/广告及非法日期合同关闭。 |
 | TASK-015 | 退款与售后队列指标 | DONE | TASK-014 | R6累计独立PASS；退款/售后分渠道、成熟边界保持。 |
 | TASK-016 | 确定性异常规则与快照发布 | DONE | TASK-015 | R6独立PASS，77e1334；H07 V01/V02关闭，原48+W01/W02共50通过。 |
-| TASK-017 | 模型网关与结构化输出门禁 | IN_REVIEW | TASK-004、TASK-016 | T017R3-20260928-02已13:46:10实际START（回执时序标注见协调JSON）并于14:12:19完成返修冻结：L01-L03转绿4/4+K02、原49保持，业务2a152e5+管理冻结chore，待Codex04独立REVIEW4（340dedb..新HEAD）；M01维持BLOCKED（TOKENIZER线索归档两路径待验证）；真实contract待Owner本地配置，不标DONE不进018。 |
+| TASK-017 | 模型网关与结构化输出门禁 | IN_PROGRESS | TASK-004、TASK-016 | T017R4-20260928-02已2026-09-28T14:26:33实际START接管（H03关闭保持）：剩H04（N01/N02未知预留窗口归属、N03旧数据差值兼容）返修中，M01维持BLOCKED；真实contract待Owner本地配置，不标DONE不进018。 |
 | TASK-018 | VOC分类、人工标签优先与聚合 | TODO | TASK-017、TASK-012 | 未执行 |
 | TASK-019 | 有证据的运营建议 | TODO | TASK-018 | 未执行 |
 | TASK-020 | 固定日报调度与规则降级 | TODO | TASK-019 | 未执行 |
@@ -1657,3 +1659,28 @@ Phase4 G4R6独立PASS/TASK013–016技术通过保持；Gate04 R1–R6=60/40/54/
 B01设置接入45件冻结且限定PASS：此前04独立78回归/18真实浏览器/build0/tsc0，未Git集成，021/026/027整体未完成。应用下src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**、src/app/settings/**禁止Z02改动/暂存/提交。B01导入只读方案19文件仅建议，DTO等依赖未锁定，无业务START；不打断017塞入未编号后端任务。04协调独审/Z02后端主线/B01隔离前端/A01分析；B01原id21每天21:00日报不重复。
 Owner已批MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行动/019–020服务首批，历史阅读页面后置；原完整P0与质量不减，9/30受控MVP、10/5冻结、10/8完整验收为目标非保证。普通原合同返修及同冲刺独立PASS接续已授权，一次一TASK；031重要开户规则、采购部署/敏感权限/新重大范围变化仍具体批准。新范围偏差立即停相关工作说明事实/日期影响/方案/决定，不抢P1/P2。
 双方70%：Codex180880/258400配置加载已核实，系统压缩后可靠同窗，触发因果未核实；Z02本轮实际602980/1000000约60.3%，无新压缩。实际≥70%先保现场、安全空闲点用真实入口，执行中先协调冻结，不盲点Stop；压缩可靠留同窗，确需迁移按STATE_PROTOCOL，不fork/worktree/重复自动化，不改模型账户权限。Owner草稿“啊”保留未提交。无新候选不重测、无新状态不刷时间，普通返修/已问未答安静。
+
+## 2026-09-28T14:25:27+08:00 · T017R4独立复审
+
+2026-09-28T14:25:27+08:00：T017R4-20260928-01独立FAIL，928304f/2a152e5，范围340dedb..928304f。原53产品场景+缺配置1PASS/真实contract1SKIP；新N01-N03有效3FAIL/K03K04两PASS，tsc0。H03具体缺陷关闭，剩H04一HIGH/M01一MEDIUM BLOCKED。52件SHA正式核对，PG54320已停及本轮tmp清理；旧Gate04/T017R1R2R3/B01 SHA保持。三官方原始tokenizer源码归档SHA核对后旧临时目录清理，未执行。writer04，新T017R4-20260928-02仅准备待首次实际START。
+
+### 历史导航（R4审查写回前，非当前指令）
+
+
+
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调迁移、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN及MVP计划顶部；按TASK017读原06/09合同。磁盘最新Owner答复、实际Git和唯一写入者优先。
+唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE且2026-09-27 14:05:51已激活，沿用原codex-zcode。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
+2026-09-28T14:12:19+08:00 T017R3-20260928-02 返修完成并冻结单一候选：业务2a152e5（gateway终态/恢复审计+budget逐attempt账本+迁移20260928140000+R3探针三件维护副本+迁移计数16），管理冻结提交为本chore，写入权交回Codex04按340dedb..新HEAD独审。红基线（新/tmp=/tmp/aiea-t017r3-20260928-z02+新PG17@127.0.0.1:55512）修复前L01/L02/L03=3红+K02=1绿与REVIEW3独立结论一致；修复后L01-L03+K02=4/4全绿、原49（R1 28+网关13+R2 8）保持、unit72/72、integration227通过+1如实skip、g3四套聚合0、生产build0、非增量tsc0。M01维持BLOCKED（TOKENIZER-03线索已归档：官方SDK两路径均待验证）。真实contract仍待Owner三配置不标017 DONE不进018。Z02转只读；B01五路径未触碰。
+2026-09-28T14:02:15+08:00管理更正（T017R3-TOKENIZER-20260928-03）：T017R3-20260928-02 START已实际送达并由Z02接管返修中（回执13:46:10为本机date实测处理起始时刻，早于R3审查证据落盘13:51:39约5分29秒——同机时钟下二者先后无法独立核实，权威时序标记为包含回执的提交7d0c56e@13:54:51；不猜造精确到秒的送达时刻）。当前主线业务/管理/Git/sync唯一写入权Z02，04只读。旧R2/R1/PH5/G4/COORD均已完成，不重发。Owner草稿“啊”保留未提交。
+04完成T017R3-20260928-01独立FAIL，候选phase/05-ai@340dedb（业务3516e81），范围e280bc6..340dedb；剩H03/H04两组HIGH，M01一MEDIUM仍BLOCKED。原49产品场景PASS、缺配置断言1PASS、真实contract1SKIP；新增L01/L02/L03有效3FAIL，K02三真实进程并发max2 PASS；非增量tsc0。H06引用摘要具体缺陷关闭，R1 H01/H02/H05/M02保持，无新反例不重开。36件正式证据SHA核实，新PG17@50576停止、/tmp/aiea-t017r3-7ajqep2y清理；原Gate04六轮及TASK017 R1/R2、B01 45SHA保持。
+本轮唯一返修依据docs/reviews/CODEX_REVIEW_TASK_017_REVIEW_3_2026-09-28.md、TASK_017_REVIEW_3_EVIDENCE_2026-09-28.json、task-017-review-3-evidence/README.md、t017r3-independent.test.ts、t017r3-crash.ts、r3-observations.json及boundaries.log。新2026-09-28T13:46:10+08:00 T017R3-20260928-02 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，04自ACK起只读。接收实测phase/05-ai@340dedb（业务3516e81，1063ce6冻结+COORD-03管理）、main=d536f27；已完整读P08首块、REVIEW3报告/索引/探针（L01-L03/K02+t017r3-crash.ts）。返修仅H03/H04余项+M01澄清：H03（L01普通失败终态同键重投不得再调用；L02恢复保留历史attempts审计与已消费format_repair计数，不覆盖不重置）；H04（L03跨自然日恢复的每次attempt费用/预留按发生时刻归属预算窗口，新增ai_attempt_ledger逐attempt账本+无账本行回退ai_run，不把历史actual搬到新日重复计入）；M01维持BLOCKED并澄清来源（官方资料未取得匹配计数器来源/版本，最小后续=供应商计数接口或可验证匹配分词器）。先新archive+新PG复现L01-L03红/K02绿+原49保持再修；H06及已关闭项不重开；B01五路径禁触；真实contract待Owner三配置不标DONE不进018；Owner草稿“啊”非任务。
+H03 L01：相同生成键两次非法JSON已SCHEMA_INVALID终态，普通重投仍多调用第3次并覆盖错误；所有终态保持幂等，显式retry/new revision另记。L02：真实子进程修复调用中崩溃，恢复把原attempt1审计覆盖、formatRepairs清零；持久保存总尝试/修复消耗、追加式安全审计与正确终态，不能只把attemptCount持久化。保留J02跨崩溃总≤3、J06 AUTH、原组织1与K02全局2。未证明实际发送第4次或第二次修复请求，不扩大结论。
+H04 L03：昨日创建的任务今日恢复产生actual0.007515，但spentSince按整条createdAt排除今日费用，日额度0.012下错误接受下一约0.009004预留。按每次attempt实际预算窗口持久归属，跨日/月恢复不漏新费用，不把历史actual整体挪新日重复计；未知usage保持预留核对。保留J03–J05与原上海窗口/组织原子预算。既有数据库内最小修复，不加Agent/队列框架。
+M01 char-approx-v1如实BLOCKED：实际tokenizer仍缺匹配固定模型来源/版本；usage事后校准不能独自替代实际预检。继续查供应商支持此快照的计数接口或匹配词表/分词器与请求模板，取得可复验证据后落实初次/修复12k字符/16k先到者。找不到如实记录，不悄悄降合同或换供应商模型。真实百炼北京qwen-flash-2025-07-28 contract待Owner本地DASHSCOPE_API_KEY/BASE_URL/AI_MODEL_ID配置，已请求一次、不重复催问，不打印Key。017独审/实际tokenizer/真实contract未过不标DONE、不推018；可做返修继续。
+实际START后先新archive/新PG复现L01–L03红/K02绿与原49保持，再修原H03/H04和M01可做部分，按差异验证冻结新候选340dedb..新HEAD。执行中04只读，冻结再新环境独审；无新候选不重复全套。接管回执直接同时对齐导航/任务表IN_PROGRESS/唯一状态进行中/next_action/writer、交接与全部首块，sync读回首页md/html和总控PROJECTS/index；冻结时全部改待审查/IN_REVIEW/Codex04，不留下旧待START段。
+Phase4 G4R6技术PASS保持，Owner产品验收另记；本轮实际ls-remote main=d536f27、phase/05-ai=340dedb、phase/04=77e1334，后续实时核验。测试、独审、Owner产品验收、GitHub、部署、真实试用分开。
+B01设置接入45件冻结、限定PASS（此前78回归/18真实浏览器/build0/tsc0），未Git集成、021/026/027整体未完成。Z02严禁修改/暂存/提交应用下src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**、src/app/settings/**。B01导入只读方案19文件仅建议，DTO依赖未锁定、无新START，不打断017塞未编号后端。04协调独审/Z02后端/B01隔离前端/A01分析；既有B01日报id21每日21:00不重复创建修改。
+Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行动/019–020服务首批，历史阅读页面后置；原完整P0与质量不减，9/30受控MVP、10/5冻结、10/8完整验收为目标非保证。普通返修及同冲刺独立PASS接续已授权，一次一TASK；031重要开户规则/采购部署/敏感权限/新重大范围变化仍具体批准。新范围偏差停相关工作说明事实/日期影响/方案/决定；不抢P1/P2。
+双方70%：Codex180880/258400配置加载已核实，系统压缩后可靠同窗，触发因果未核实。Z02本轮实际644600/1000000=64.46%，未到70%，无新压缩；原生自动阈值未配置。≥70%先保现场、安全空闲点经真实入口，执行中先协调冻结不盲点Stop。压缩可靠同窗，确需迁移按STATE_PROTOCOL普通同项目新聊天只读ACK/原自动化/COMPLETE及sync/激活，不fork/worktree/重复自动化、不改模型账户权限。无新状态不刷时间；普通返修/无变化/已问待答安静。
+
+
