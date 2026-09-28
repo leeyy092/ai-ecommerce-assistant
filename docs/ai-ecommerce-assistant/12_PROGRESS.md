@@ -18,7 +18,7 @@ Owner在A01于2026-09-28已明确批准MVP-CORE-20260928-01开工及余项并行
 
 唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE已14:05:51激活，原codex-zcode ACTIVE每10分钟目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。
 
-2026-09-28T07:53:23+08:00 G4R2-20260928-02 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，Codex04转只读至下一显式冻结。接收实测phase/04-metrics-alerts@c629145（业务91f2690）、main=2d7ceaf、管理在途修改+R1/R2报告证据+B01四目录文件（settings两目录+imports/preview两目录，严禁修改/暂存/提交）+编号副本均在且保留。返修按REVIEW2报告及原关闭标准：013（H01/C13同版发布隔离+M01/C15调度游标）→014（M02/C12 metrics合同）→015（H03/S03分渠道成熟）→016（H05/C10样本门槛、H06/S01/S02与R05/R08/R09/R12静态项、H07/C11禁用行+alert-rules配置API），一次一TASK；先新/tmp档案+新PG17复现红基线再修复，已通过反例（C01–C09/C14/C16等）与Gate02/03 PASS不回退；不把规则/metrics API推迟到UI。完成后冻结单一候选c629145..新HEAD交回Codex04独立复审；无TASK017/031/main合并/部署。
+2026-09-28T08:31:01+08:00 G4R2-20260928-02 返修完成并冻结单一候选：业务提交899bf43（14文件：迁移20260928080000+schema+snapshot/metrics/cohort/engine+metrics路由+新增alert-rules GET/PATCH两路由+5个测试适配+1个新场景套件），管理冻结提交为本chore。修复内容按013→014→015→016顺序一次一项落实：H01/C13 daily_metric唯一键纳入evaluation_at（新评估写新行集，发布CAS成功后才清理同元组陈旧行——待CAS期间旧发布完整可读）；M01/C15 evaluationTick单次tick内部游标循环遍历全部到期店（dispatcher同一调用点直接生效，65店5tick零剩余）；H03/S03 订单退款率/SKU退件率只依赖orders+refund覆盖、售后率只依赖orders+case覆盖（无关渠道不再互阻），cohort新增逐SKU退件率行（sku:实体带productIdAtSnapshot）；M02/C12 metrics API白名单未知422+metrics/series/baseline双结构+范围汇总（比例与客单价按Σ分子/Σ分母重算，不平均日比率）+ads归因组实体不合并+grain=day校验；H05/C10 样本门槛不足→suppressed(insufficient_sample)+R03/R10全程未舍入Decimal比较+R10逐SKU/store实体+min_history_units；H06/S01 R07按店铺时区分日+目标日orders/order_items覆盖complete+完整自然日否则suppressed，R08投诉子通道当前及基准日is_complaint标记覆盖须100%否则suppressed(complaint_marking_incomplete)，R09按渠道+分类版本分组隔离评估且基准样本日同施min_known/min_coverage门槛（subchannel编码channel|version唯一行），R05/R12逐ads:{model}:{window}归因组+归因窗未结束/覆盖不完整/无有效归因/金额或目标未配置→suppressed；H07/C11 所有规则禁用时保留suppressed理由行(disabled_by_config)+新增GET /api/v1/alert-rules(O/A/P读阈值/版本/样本门槛/最近评估)与PATCH(O/A写、expected_version对配置行CAS、ruleset_version与rule_version递增、其余规则配置保守延续、R04/R06不可启用422、返回rebuild_job_id；旧重建任务因ruleset前进判superseded不覆盖新配置)。写入权交回Codex04独立复审c629145..新HEAD；B01四目录全程未触碰，Codex04在途管理与证据文件及编号副本原样保留。
 
 CTX70-20260928-02：本轮实际经桌面内置/compact将Z02上下文719449/1000000降至20795/1000000，UI显示已压缩；00:31只读ACK核对候选/写入边界并确认同窗接续可靠。人工入口已证实，原生自动70%阈值未配置/未核实；后续实际观察≥70%时先保存安全现场，再用此真实入口。Codex180880阈值配置与加载已验证，本会话本轮实际系统压缩，但阈值触发因果未核实。保持原窗口，不以70%迁移、不改模型账户权限。
 
@@ -29,19 +29,20 @@ CTX70-20260928-02：本轮实际经桌面内置/compact将Z02上下文719449/100
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
   "stage": "08 原合同返修 · Phase4",
-  "current_task": "TASK-013",
-  "status": "进行中",
-  "last_completed": "Phase3 TASK008–012 / GATE03 REVIEW4独立PASS；G4R1返修候选c629145冻结（REVIEW2：原16反例11转绿，剩5HIGH/2MEDIUM）",
-  "next_action": "Z02按G4R2-20260928-02返修：新/tmp+新PG17复现C10/C11/C12/C13/C15与S01/S02/S03红基线，按013→014→015→016一次一项修复并冻结候选交回Codex04；B01数据源切片并行不受影响。",
-  "next_owner": "ZCode",
-  "next_prompt": "prompts/P08_FIX.md",
-  "acceptance": "原C10/C11/C12/C13/C15及有效S01/S02/S03转绿；按R1/R2原关闭标准补齐规则/配置API/同版发布/调度/metrics合同；冻结候选独立PASS才进入017；B01目录不动。",
-  "blockers": "无新阻塞；GATE04剩5HIGH/2MEDIUM按原合同返修中。无新的范围批准要求。",
+  "current_task": "GATE_04_R3",
+  "status": "待审查",
+  "last_completed": "G4R2-20260928-02返修完成：原8反例C10/C11/C12/C13/C15+S01/S02/S03全部转绿，业务提交899bf43",
+  "next_action": "Codex04独立复审c629145..新HEAD（业务899bf43+管理冻结chore）：按R2原关闭标准与探针复验，须先复现本轮回执红基线记录再验证转绿；通过后沿MVP-CORE-20260928-01已授权首批接续。",
+  "next_owner": "Codex04",
+  "next_prompt": "prompts/P07_CODE_REVIEW.md",
+  "acceptance": "复审范围c629145..新HEAD：C10/C11/C12/C13/C15及S01/S02/S03保持转绿；已通过C01–C09/C14/C16与Gate02/03不回退；场景套件（alert-rules API链、metrics结构/汇总/实体分离、R08标记覆盖、R09版本隔离、R05/R12归因组）随套运行；剩余缺口如实（E2E未重跑、R05正向业务场景未单列、角色负例未单列）不以旧全绿冒充。",
+  "blockers": "无新阻塞；写入权已交回Codex04，Z02冻结只读待下一编号。",
   "checkpoint": "YES",
-  "review": "GATE04 REVIEW2 FAIL：剩5HIGH/2MEDIUM；GATE03 REVIEW4/GATE02 REVIEW5 PASS",
-  "updated_at": "2026-09-28T07:53:23+08:00",
-  "updated_by": "Z02 · G4R2-20260928-02 START接管与回执",
+  "review": "GATE04 REVIEW2 FAIL（G4R2-20260928-01）→ 本轮返修候选待REVIEW3；GATE03 REVIEW4/GATE02 REVIEW5 PASS",
+  "updated_at": "2026-09-28T08:31:01+08:00",
+  "updated_by": "Z02 · G4R2-20260928-02 返修完成与候选冻结",
   "evidence": [
+    "2026-09-28T08:31:01+08:00：G4R2-20260928-02冻结验证（新/tmp=/tmp/aiea-g4r2-20260928-z02，git archive HEAD业务代码+新原生PG17.11仅127.0.0.1:55505，socket在repo外，不复用Z02旧库或Codex04的57064）：修复前红基线19探针=8FAIL（C10/C11/C12/C13/C15+S01/S02/S03）/11PASS，与REVIEW2独立结论一致；修复后非增量tsc0、探针19/19、新增场景套件g4r2-repair-scenarios 5/5（alert-rules读取/CAS/白名单/P1不可启用/保守延续/版本递增/禁用保留理由全链；metrics结构+基线+Σ分子Σ分母+归因组不合并+grain 422；R08标记覆盖suppressed；R09 v1触发/v2隔离suppressed；R05/R12逐归因组R12正向触发R05无基准suppressed）、unit72/72、integration181/181（原157+探针19+场景5）、g3四套18+4+21+4分项0聚合0、生产build exit0（前两轮失败为/tmp内PG unix socket被Turbopack扫描的环境问题，socket移出repo目录后通过，非代码缺陷，如实记录）。未重跑：E2E（无页面变化）、SIGKILL重启、性能、部署。剩余缺口如实：alert-rules角色负例（Operator/CustomerService 403）未单列（沿用requirePermission共享矩阵）；R05业务正向触发（历史基准齐备的花费升+ROAS降）未单独构造。候选=业务899bf43+管理冻结chore，复审范围c629145..新HEAD；B01四目录未触碰，Codex04在途管理/证据与编号副本保留。",
     "2026-09-28T07:53:23+08:00：G4R2-20260928-02 START首次实际送达Z02并接管唯一主线写入权（Codex04会前核实本会话空闲/c629145冻结/无先前G4R2 START，管理sync读回07:49:51通过），Codex04转只读。接收实测：phase/04-metrics-alerts@c629145abe4（业务91f2690）、main=2d7ceaf；已完整读P08首块、REVIEW1/REVIEW2两份报告与g4-independent/g4r2-independent两份有效探针。返修范围H01/H03/H05/H06/H07/M01/M02，顺序013→014→015→016一次一项；新/tmp+新PG17先复现红基线，保持已通过与Gate02/03不回退；不推迟规则/metrics API到UI；B01四目录不动；完成后冻结单一候选（业务+管理、命令/结果/剩余缺口如实）交回Codex04，无TASK017/031/main合并/部署。",
     "2026-09-28T07:49:50+08:00：桌面实际恢复，最新Z02空闲且无重复G4R2 START；HEAD仍c629145。B01恢复turn已实际inProgress；本轮尚无新候选，不重跑不变全套。",
     "2026-09-28T01:22:27+08:00：B01-DATASOURCE-20260928-01完整ACK已收到，c629145/branch/16件新建白名单/原冻结文件/04管理与集成权全部核对；B01仅在指定数据源子目录执行。",

@@ -1,7 +1,7 @@
-# P08 · G4R2-20260928-02 START received / Z02 repairing
+# P08 · G4R2-20260928-02 repair frozen / handed to Codex04
 
 ```text
-协调状态（2026-09-28T07:53:23+08:00）：G4R2-20260928-02 START已首次实际送达最新Z02并接管唯一主线写入权（业务/管理/Git/sync），Codex04转只读至下一显式冻结；返修按本合同013→014→015→016一次一项，先新/tmp+新PG17复现C10/C11/C12/C13/C15与S01/S02/S03红基线再修复，B01四目录不动；完成后冻结单一候选c629145..新HEAD交回Codex04独立复审。以下为返修合同原文。
+协调状态（2026-09-28T08:31:01+08:00）：G4R2-20260928-02返修已完成并冻结单一候选（业务899bf43+管理冻结chore），写入权交回Codex04独立复审c629145..新HEAD；Z02转只读待下一编号。修复前红基线（新/tmp+新PG17）19探针8FAIL/11PASS与REVIEW2一致，修复后tsc0/探针19/19/场景5/5/unit72/integration181/g3四套聚合0/build0；剩余缺口如实（E2E未重跑、R05正向场景与角色负例未单列）。B01四目录全程未触碰。本块以下为返修合同原文，仅作历史依据，不需重新ACK/START。
 
 根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant；先读AGENTS/.product-os.json/STATE_PROTOCOL/12_PROGRESS当前导航/状态块及最新协调、CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN及原MVP计划顶部，核实Git/Owner授权/写入者。
 B01设置首切片已独立28/28、tsc0，导入预览切片于01:06:34冻结并经04独立51/51（12单元+39Chromium HTTP fixtures）、tsc0及本轮390/1280截图核对；两者限定组件切片PASS，原14+11源/测试文件SHA保持。报告docs/reviews/B01_SETTINGS_REVIEW_1_2026-09-28.md及docs/reviews/B01_IMPORT_PREVIEW_REVIEW_1_2026-09-28.md。没有真实API/路由/存储联调，026/027未完成。
@@ -18,7 +18,7 @@ Owner在A01于2026-09-28已明确批准MVP-CORE-20260928-01开工及余项并行
 
 唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE已14:05:51激活，原codex-zcode ACTIVE每10分钟目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。
 
-主线写入者已按顶部2026-09-28T07:53:23+08:00协调状态转Z02（业务/管理/Git/sync）；Codex04只读，待Z02显式冻结c629145..新HEAD后回收写入权并独立复审。
+主线写入权已于2026-09-28T08:31:01+08:00随候选冻结交回Codex04；Z02只读，待REVIEW3结论后新编号接续。
 
 CTX70-20260928-02：本轮实际经桌面内置/compact将Z02上下文719449/1000000降至20795/1000000，UI显示已压缩；00:31只读ACK核对候选/写入边界并确认同窗接续可靠。人工入口已证实，原生自动70%阈值未配置/未核实；后续实际观察≥70%时先保存安全现场，再用此真实入口。Codex180880阈值配置与加载已验证，本会话本轮实际系统压缩，但阈值触发因果未核实。保持原窗口，不以70%迁移、不改模型账户权限。
 G4R2-20260928-02返修合同：实际收到本编号START后接管主线；按013→014→015→016一次一项，先读R1与R2完整报告及07/08原合同。H01实际保留旧发布行（不是加注释）；H03每个指标只依赖相关渠道；H05不足样本suppressed和R10门槛；H06修SKU覆盖/时区及R10维度、同campaign归因组广告、投诉100%标记与VOC分类版本/历史门槛；H07完成GET/PATCH规则API及CAS；M01把游标接进实际dispatcher；M02完成422/metrics/series/baseline/汇总。不得再把接口延后到页面。
