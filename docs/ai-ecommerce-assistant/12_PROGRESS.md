@@ -21,7 +21,7 @@ Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
   "stage": "09 Phase5开发 · AI网关",
   "current_task": "TASK-017",
-  "status": "未开始",
+  "status": "进行中",
   "last_completed": "GATE04 REVIEW6独立PASS：77e1334/f5af2f4，原48+W01/W02共50通过，TASK013–016技术关闭",
   "next_action": "Z02按PH5-T017-20260928-01：先按原Git生命周期收尾Phase4（合并main+建phase/05-ai），再仅做TASK017模型网关与结构化输出门禁（stub故障验证先行，真实contract待配置）；一次一TASK，Gate05停给04独审。",
   "next_owner": "ZCode",
