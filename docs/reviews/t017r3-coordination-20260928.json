@@ -1,0 +1,26 @@
+{
+  "recorded_at": "2026-09-28T13:46:10+08:00",
+  "review": "T017R3-20260928-01",
+  "handoff": "T017R3-20260928-02",
+  "start_sent": true,
+  "start_received_at": "2026-09-28T13:46:10+08:00",
+  "head_at_start": "340dedb",
+  "branch": "phase/05-ai",
+  "writer": "Z02",
+  "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
+  "writer_since": "2026-09-28T13:46:10+08:00",
+  "repair_scope": [
+    "H03/L01-failed-terminal-redelivery",
+    "H03/L02-recovery-preserves-audit-and-repair-state",
+    "H04/L03-per-attempt-budget-window-ledger",
+    "M01/keep-BLOCKED-clarify-source"
+  ],
+  "probes": "docs/reviews/task-017-review-3-evidence: t017r3-independent.test.ts + t017r3-crash.ts; red L01-L03 / green K02; keep 49",
+  "b01_boundary": [
+    "src/features/settings/**",
+    "tests/unit/settings/**",
+    "src/features/imports/preview/**",
+    "tests/unit/imports/preview/**",
+    "src/app/settings/**"
+  ]
+}
