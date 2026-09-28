@@ -94,12 +94,13 @@ export async function PATCH(
         throw Object.assign(new Error("规则集已更新，请刷新后重试"), { status: 409, code: "VERSION_CONFLICT" });
       }
       const nextRuleset = nextRulesetVersion(fresh.rulesetVersion);
-      // 其余规则配置保守延续到新 ruleset（F09：无变化重建不重置用户的调参/停用）
+      // 其余规则配置保守延续到新 ruleset（F09：无变化重建不重置用户的调参/停用）；
+      // U01：复制时保留源行 rowVersion（config_version 跨修改单调，不随新行默认回1）
       for (const otherId of RULE_IDS) {
         if (otherId === ruleId) continue;
         const latest = await tx.ruleConfig.findFirst({ where: { orgId: ctx.orgId, storeId: store.id, rulesetVersion: fresh.rulesetVersion, ruleId: otherId }, orderBy: { ruleVersion: "desc" } });
         if (!latest) continue;
-        await tx.ruleConfig.create({ data: { orgId: ctx.orgId, storeId: store.id, rulesetVersion: nextRuleset, ruleId: otherId, ruleVersion: latest.ruleVersion, enabled: latest.enabled, parameters: latest.parameters as Prisma.InputJsonValue } });
+        await tx.ruleConfig.create({ data: { orgId: ctx.orgId, storeId: store.id, rulesetVersion: nextRuleset, ruleId: otherId, ruleVersion: latest.ruleVersion, enabled: latest.enabled, parameters: latest.parameters as Prisma.InputJsonValue, rowVersion: latest.rowVersion } });
       }
       const created = await tx.ruleConfig.create({
         // T02：config_version（rowVersion）跨修改单调递增——新行继承旧行版本+1，
@@ -123,6 +124,12 @@ export async function PATCH(
 
     return ok({ rule_id: ruleId, ...result });
   } catch (error) {
+    // K04：同一真实 config_version 的并发竞争——后到者在复制/新建配置行时撞唯一键（P2002）
+    // 或序列化冲突。竞争输家返回 409，不产生半套配置，也不把正常竞争呈现为 500/503。
+    const code = (error as { code?: string; cause?: { code?: string } })?.code ?? (error as { cause?: { code?: string } })?.cause?.code;
+    if (code === "P2002" || code === "P2034") {
+      return fail(409, "规则配置已被并发修改，请刷新后重试", { code: "VERSION_CONFLICT" });
+    }
     if (error instanceof z.ZodError) {
       return fail(422, "请求字段类型或取值不合法", {
         code: "VALIDATION_ERROR",

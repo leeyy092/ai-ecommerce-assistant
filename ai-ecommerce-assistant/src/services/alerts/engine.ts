@@ -68,20 +68,20 @@ async function writeEval(tx: Tx, a: { orgId: string; storeId: string; datasetVer
     update: { status: a.status, reasonCode: a.reasonCode ?? null, sampleSize: a.sampleSize, threshold: th, evidence: ev },
   });
   if (a.status === "triggered" && a.alert) {
-    // G4R3 H07/T11 F09保守延续：同规则/对象/子通道/期间 + 同参数 + 同等级 + 规范化业务证据（指纹）
-    // 完全相同时延续既有 acknowledged/ignored 并记来源审计；证据/参数/等级/期间变化或 resolved 不延续。
+    // G4R3 H07/T11+G4R4 U02 F09保守延续：先取同对象（规则/实体/子通道/期间+同等级+同指纹+同规则版本）
+    // 的【最近一条】告警作为合法前驱，再判断其状态是否 acknowledged/ignored——
+    // 最新为 resolved（或 open）时不向更早的 ack/ignored 回溯；参数变化（K05）同样不延续。
     const priorEval = await tx.ruleEvaluation.findFirst({
       where: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, ruleVersion: a.ruleVersion, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, evaluationAt: { lt: a.evaluationAt } },
       orderBy: { evaluationAt: "desc" },
       select: { threshold: true },
     });
     const paramsUnchanged = !priorEval || JSON.stringify(priorEval.threshold) === JSON.stringify(th);
-    const prior = paramsUnchanged
-      ? await tx.alert.findFirst({
-          where: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, severity: a.alert.severity, evidenceFingerprint: fp(a.evidence), ruleVersion: a.ruleVersion, status: { in: ["acknowledged", "ignored"] } },
-          orderBy: { evaluationAt: "desc" },
-        })
-      : null;
+    const latestSameAlert = await tx.alert.findFirst({
+      where: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, severity: a.alert.severity, evidenceFingerprint: fp(a.evidence), ruleVersion: a.ruleVersion },
+      orderBy: { evaluationAt: "desc" },
+    });
+    const prior = paramsUnchanged && (latestSameAlert?.status === "acknowledged" || latestSameAlert?.status === "ignored") ? latestSameAlert : null;
     await tx.alert.upsert({
       where: { orgId_storeId_ruleId_entityKey_subchannel_periodStart_periodEnd_ruleVersion_datasetVersion_rulesetVersion_evaluationAt: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, ruleVersion: a.ruleVersion, datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion, evaluationAt: a.evaluationAt } },
       create: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, ruleVersion: a.ruleVersion, rulesetVersion: a.rulesetVersion, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, severity: a.alert.severity, title: a.alert.title, category: a.alert.category, status: prior?.status ?? ("open" as const), carriedFromAlertId: prior?.id ?? null, evidence: ev, evidenceFingerprint: fp(a.evidence), datasetVersion: a.datasetVersion, evaluationAt: a.evaluationAt },
@@ -376,15 +376,27 @@ async function evalVoc(tx: Tx, a: { orgId: string; storeId: string; datasetVersi
     const version = key.split("|")[1] || null;
     // 子通道编码 渠道+分类版本：不同版本是独立评估行（唯一键隔离），版本变化不共用行
     const sub = (version ? `${channel}|${version}` : channel).slice(0, 32);
-    // T09：数据源覆盖（customer_messages/default）完整是分类覆盖之外的前置门槛——
-    // 标记/分类覆盖率再高，源 partial 也不得评估业务规则
-    const uncoveredDays: string[] = [];
-    for (const [d] of days) {
-      const c = await tx.dataCoverage.findFirst({ where: { orgId: a.orgId, storeId: a.storeId, sourceKind: "customer_messages", channel: "default_channel", coverageDate: new Date(`${d}T00:00:00Z`) }, orderBy: { datasetVersion: "desc" }, select: { status: true } });
-      if (c?.status !== "complete") uncoveredDays.push(d);
+    // G4R4 U03：源覆盖门槛限定当前期 + 原合同有效基准候选窗口（前28日同星期最多4个 + 前7日回退）。
+    // 无关远古日期（窗口外）不参与覆盖判定，不得禁用当前判断；当前期 partial 仍 suppressed；
+    // 候选样本日不完整则从基准剔除并按历史不足处理（07 §9/§21，REVIEW4 H06关闭标准）。
+    const sameDowCandidates: string[] = [];
+    const targetDow = new Date(`${ld}T00:00:00Z`).getUTCDay();
+    for (let i = 1; i <= 28 && sameDowCandidates.length < 4; i++) {
+      const d = addDay(ld, -i);
+      if (new Date(`${d}T00:00:00Z`).getUTCDay() === targetDow) sameDowCandidates.push(d);
     }
-    if (uncoveredDays.length > 0) {
-      await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: sub, periodStart: ld, status: "suppressed", reasonCode: "source_coverage_incomplete", sampleSize: BigInt(agg.total), threshold: p, evidence: { channel, classification_version: version, uncovered_days: uncoveredDays } });
+    const fallbackCandidates: string[] = [];
+    for (let i = 1; i <= 7; i++) fallbackCandidates.push(addDay(ld, -i));
+    const candidateWindow = new Set([...sameDowCandidates, ...fallbackCandidates]);
+    const dayMapDates = new Set(days.map(([d]) => d));
+    const coverageOk = new Map<string, boolean>();
+    for (const d of [ld, ...candidateWindow]) {
+      if (d !== ld && !dayMapDates.has(d)) continue; // 无消息的候选日无需覆盖判定
+      const c = await tx.dataCoverage.findFirst({ where: { orgId: a.orgId, storeId: a.storeId, sourceKind: "customer_messages", channel: "default_channel", coverageDate: new Date(`${d}T00:00:00Z`) }, orderBy: { datasetVersion: "desc" }, select: { status: true } });
+      coverageOk.set(d, c?.status === "complete");
+    }
+    if (coverageOk.get(ld) === false) {
+      await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: sub, periodStart: ld, status: "suppressed", reasonCode: "source_coverage_incomplete", sampleSize: BigInt(agg.total), threshold: p, evidence: { channel, classification_version: version, uncovered_current: ld } });
       continue;
     }
     const cov = agg.total > 0 ? agg.known / agg.total : 0;
@@ -392,8 +404,8 @@ async function evalVoc(tx: Tx, a: { orgId: string; storeId: string; datasetVersi
       await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: sub, periodStart: ld, status: "suppressed", reasonCode: "insufficient_sentiment_coverage", sampleSize: BigInt(agg.total), threshold: p, evidence: { channel, classification_version: version, known: agg.known, total: agg.total, coverage: cov } });
       continue;
     }
-    // 基准样本日也须情感已知≥min_known且覆盖率≥min_coverage，不满足不进基准
-    const eligible = days.filter(([d, g]) => d < ld && g.known >= minKnown && (g.total > 0 ? g.known / g.total : 0) >= minCoverage);
+    // 基准样本日也须情感已知≥min_known且覆盖率≥min_coverage，且位于有效候选窗口、源覆盖完整
+    const eligible = days.filter(([d, g]) => d < ld && candidateWindow.has(d) && coverageOk.get(d) !== false && g.known >= minKnown && (g.total > 0 ? g.known / g.total : 0) >= minCoverage);
     const series = eligible.map(([d, g]) => ({ date: d, value: new Prisma.Decimal(g.known > 0 ? g.neg / g.known : 0) }));
     const { baseline } = medianBaseline(series, ld);
     if (baseline === null) {
