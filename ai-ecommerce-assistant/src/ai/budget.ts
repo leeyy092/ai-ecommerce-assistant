@@ -43,15 +43,28 @@ export function orgExecutionLockKey(orgId: string): string {
 }
 
 async function spentSince(tx: Tx, orgId: string, since: Date): Promise<Prisma.Decimal> {
-  // spent = 已结算/已释放按 actual 计 + 未结算（reserved/unknown）按未决预留计（H04）
-  // H04/R2：任何状态均原子统计 已发生actual + 仍未决reserve（加法口径，不二选一）；
-  // released 已在放弃时扣减 reserved、actual（若有付费消耗）保留，不重复计算。
-  const rows = await tx.$queryRaw<Array<{ spent: Prisma.Decimal | string | null }>>`
-    SELECT COALESCE(SUM(COALESCE(actual_cost, 0) + reserved_cost), 0) AS spent
-    FROM ai_run
-    WHERE org_id = ${orgId} AND created_at >= ${since}`;
-  const v = rows[0]?.spent;
-  return v == null ? new Prisma.Decimal(0) : new Prisma.Decimal(v.toString());
+  // H04/R3-L03：费用/预留按每次 attempt 的 claim 时刻归属预算窗口（逐attempt账本为主）；
+  // 无账本行的历史/合成 ai_run 行回退整行口径（按 run.created_at），不双重计算。
+  // 归属口径（L03）：已结算/已释放按 attempt 发生时刻（l.created_at）归属；
+  // usage 未知的未决预留（超时/崩溃）挂任务原始预算日（run.created_at），
+  // 跨日恢复不把昨日未决预留搬入今日，也不把今日实际费用挂到昨日。
+  const ledgerRows = await tx.$queryRaw<Array<{ spent: Prisma.Decimal | string | null }>>`
+    SELECT COALESCE(SUM(
+      CASE WHEN l.status = 'released' THEN COALESCE(l.actual_cost, 0)
+           ELSE COALESCE(l.actual_cost, l.reserve_cost) END
+    ), 0) AS spent
+    FROM ai_attempt_ledger l
+    JOIN ai_run r ON r.id = l.run_id
+    WHERE l.org_id = ${orgId}
+      AND (CASE WHEN l.status = 'reserved' THEN r.created_at ELSE l.created_at END) >= ${since}::timestamptz`;
+  const legacyRows = await tx.$queryRaw<Array<{ spent: Prisma.Decimal | string | null }>>`
+    SELECT COALESCE(SUM(COALESCE(r.actual_cost, 0) + r.reserved_cost), 0) AS spent
+    FROM ai_run r
+    WHERE r.org_id = ${orgId} AND r.created_at >= ${since}::timestamptz
+      AND NOT EXISTS (SELECT 1 FROM ai_attempt_ledger l WHERE l.run_id = r.id)`;
+  const a = ledgerRows[0]?.spent;
+  const b = legacyRows[0]?.spent;
+  return new Prisma.Decimal((a ?? 0).toString()).add(new Prisma.Decimal((b ?? 0).toString()));
 }
 
 /** 原子预留检查：advisory lock 内统计当日/当月已耗（实际+未决），不足抛 BudgetExceededError */
@@ -113,6 +126,10 @@ export async function claimAttempt(
     data: { attemptCount: { increment: 1 }, status: "running", reservedCost: { increment: reserveCost } },
     select: { attemptCount: true },
   });
+  // L03：账本行按本次 claim 时刻归属预算窗口
+  await tx.aiAttemptLedger.create({
+    data: { orgId: args.orgId, runId: args.runId, attemptNo: updated.attemptCount, reserveCost, createdAt: args.now ?? new Date() },
+  });
   return { status: "claimed", claim: { attemptNo: updated.attemptCount, reserveCost } };
 }
 
@@ -120,25 +137,34 @@ export async function claimAttempt(
  *  usage 未知（超时）保留未决预留。返回该次累计后快照。 */
 export async function settleAttempt(
   tx: Tx,
-  args: { runId: string; usage: { input_tokens: number; output_tokens: number } | null; reserveCost: Prisma.Decimal },
+  args: { runId: string; usage: { input_tokens: number; output_tokens: number } | null; reserveCost: Prisma.Decimal; attemptNo: number },
 ): Promise<void> {
   if (!args.usage) return; // 未知 usage：保留预留（06 §24.2）
   const cost = usageCost(args.usage);
   // 可空列初始为 NULL：Prisma increment 对 NULL 得 NULL，用 COALESCE 原生累加
   await tx.$executeRaw`
     UPDATE ai_run SET
-      input_tokens = COALESCE(input_tokens, 0) + ${args.usage.input_tokens},
-      output_tokens = COALESCE(output_tokens, 0) + ${args.usage.output_tokens},
-      actual_cost = COALESCE(actual_cost, 0) + ${cost.toString()},
-      reserved_cost = reserved_cost - ${args.reserveCost.toString()}
+      input_tokens = COALESCE(input_tokens, 0) + ${args.usage.input_tokens}::bigint,
+      output_tokens = COALESCE(output_tokens, 0) + ${args.usage.output_tokens}::bigint,
+      actual_cost = COALESCE(actual_cost, 0) + ${cost.toString()}::numeric,
+      reserved_cost = reserved_cost - ${args.reserveCost.toString()}::numeric
     WHERE id = ${args.runId}`;
+  // L03：账本行同步结算（该 attempt 归属其 claim 时刻的窗口）
+  await tx.aiAttemptLedger.updateMany({
+    where: { runId: args.runId, attemptNo: args.attemptNo },
+    data: { actualCost: cost, status: "settled" },
+  });
 }
 
 /** H04：放弃未决预留（无消耗的终态失败，如鉴权前错误） */
-export async function releaseOutstanding(tx: Tx, args: { runId: string; reserveCost: Prisma.Decimal }): Promise<void> {
+export async function releaseOutstanding(tx: Tx, args: { runId: string; reserveCost: Prisma.Decimal; attemptNo: number }): Promise<void> {
   await tx.aIRun.update({
     where: { id: args.runId },
     data: { reservedCost: { decrement: args.reserveCost } },
+  });
+  await tx.aiAttemptLedger.updateMany({
+    where: { runId: args.runId, attemptNo: args.attemptNo },
+    data: { status: "released" },
   });
 }
 

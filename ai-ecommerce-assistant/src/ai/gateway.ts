@@ -112,12 +112,14 @@ function jitter(base: number): number {
 interface RunRow {
   id: string; status: string; attemptCount: number; errorCode: string | null;
   requestContext: Prisma.JsonValue; reservedCost: Prisma.Decimal; actualCost: Prisma.Decimal | null;
+  attempts?: Prisma.JsonValue;
 }
 
 function isTerminal(row: RunRow): boolean {
   if (row.status === "succeeded" || row.status === "skipped" || row.status === "superseded") return true;
-  if (row.status !== "failed") return false;
-  return row.attemptCount >= 3 || (row.errorCode != null && TERMINAL_TRANSPORT_CODES.has(row.errorCode));
+  // L01：failed 一律终态——已提交的失败结论（含SCHEMA_INVALID等普通失败）同键重投不得再调用；
+  // 只有未终态的 running 行才可恢复（崩溃恢复走claim，不重置计数）
+  return row.status === "failed";
 }
 
 export async function runAiTask(args: RunGatewayArgs): Promise<GatewayResult> {
@@ -180,14 +182,21 @@ export async function runAiTask(args: RunGatewayArgs): Promise<GatewayResult> {
     }
 
     const validate = validatorForKind(args.kind);
-    const attemptsLog: Array<Record<string, unknown>> = [];
+    // L02：恢复不得覆盖历史审计或重置已消费修复状态——从持久行初始化追加式审计
+    const persisted = (locked && Array.isArray(locked.attempts) ? locked.attempts : []) as unknown as Array<Record<string, unknown>>;
+    const attemptsLog: Array<Record<string, unknown>> = [...persisted];
+    let formatRepairs = persisted.filter((e) => e.type === "format_repair" || e.type === "semantic_repair").length;
     let request: ModelRequest = { systemPrompt: args.systemPrompt, userPrompt: args.userPrompt };
-    let formatRepairs = 0;
-    let lastErrorCode: string | null = null;
+    let lastErrorCode: string | null = locked?.errorCode ?? null;
 
     const appendAttempt = async (entry: Record<string, unknown>): Promise<void> => {
-      attemptsLog.push(entry);
-      await args.db.aIRun.update({ where: { id: runId }, data: { attempts: attemptsLog as unknown as Prisma.InputJsonValue } });
+      // 追加式：重读持久数组再追加，跨进程/恢复不覆盖历史
+      const rowNow = await readRow();
+      const current = (rowNow && Array.isArray(rowNow.attempts) ? rowNow.attempts : []) as unknown as Array<Record<string, unknown>>;
+      current.push(entry);
+      attemptsLog.length = 0;
+      attemptsLog.push(...current);
+      await args.db.aIRun.update({ where: { id: runId }, data: { attempts: current as unknown as Prisma.InputJsonValue } });
     };
     /** 独立提交的终态写（H03/J02：崩溃安全） */
     const finalize = async (status: "succeeded" | "failed" | "skipped", errorCode: string | null, payload?: unknown): Promise<void> => {
@@ -235,7 +244,7 @@ export async function runAiTask(args: RunGatewayArgs): Promise<GatewayResult> {
       try {
         const response = await transport.call(request, controller.signal);
         // H04：有 usage 即结算实际（独立提交）
-        await args.db.$transaction((tx) => settleAttempt(tx, { runId, usage: response.usage, reserveCost: reserve }));
+        await args.db.$transaction((tx) => settleAttempt(tx, { runId, usage: response.usage, reserveCost: reserve, attemptNo: claim.claim.attemptNo }));
         let parsed: unknown = null;
         try { parsed = JSON.parse(response.content); } catch { parsed = null; }
         const schemaOk = parsed !== null && validate(parsed);
@@ -273,12 +282,12 @@ export async function runAiTask(args: RunGatewayArgs): Promise<GatewayResult> {
           await appendAttempt({ attempt: claim.claim.attemptNo, type: "transport", code: error.code, retryable: error.retryable });
           if (!error.retryable) {
             // J06：不可重试错误同任务终态——放弃本 attempt 未决预留（无消耗），已付费消耗保留
-            await args.db.$transaction((tx) => releaseOutstanding(tx, { runId, reserveCost: reserve }));
+            await args.db.$transaction((tx) => releaseOutstanding(tx, { runId, reserveCost: reserve, attemptNo: claim.claim.attemptNo }));
             await finalize("failed", error.code);
             return { runId, status: "failed", payload: null, errorCode: error.code, attempts: claim.claim.attemptNo };
           }
           if (error.code !== "TIMEOUT") {
-            await args.db.$transaction((tx) => releaseOutstanding(tx, { runId, reserveCost: reserve }));
+            await args.db.$transaction((tx) => releaseOutstanding(tx, { runId, reserveCost: reserve, attemptNo: claim.claim.attemptNo }));
           } // TIMEOUT：usage 未知保留未决预留（H04）
           lastErrorCode = error.code;
           await sleep(jitter(backoff[Math.min(claim.claim.attemptNo - 1, backoff.length - 1)]));

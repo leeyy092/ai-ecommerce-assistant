@@ -1184,6 +1184,23 @@ model AIRun {
   @@map("ai_run")
 }
 
+/// T017R3 H04：逐 attempt 预算账本（按 claim 时刻归属预算窗口）
+model AiAttemptLedger {
+  id          String          @id @default(uuid())
+  orgId       String          @map("org_id")
+  runId       String          @map("run_id")
+  attemptNo   Int             @map("attempt_no")
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  reserveCost Decimal         @map("reserve_cost") @db.Decimal(20, 6)
+  actualCost  Decimal?        @map("actual_cost") @db.Decimal(20, 6)
+  status      String          @default("reserved")
+
+  @@unique([orgId, runId, attemptNo])
+  @@index([orgId, createdAt])
+  @@index([runId])
+  @@map("ai_attempt_ledger")
+}
+
 model ImportTask {
   id                      String           @id @default(uuid())
   orgId                   String           @map("org_id")

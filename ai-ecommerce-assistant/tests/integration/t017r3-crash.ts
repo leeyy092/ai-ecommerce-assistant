@@ -1,0 +1,4 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {getPrismaClient} from '@/database/prisma';
+import {runAiTask} from '@/ai/gateway';
+async function main(){const c=JSON.parse(readFileSync(process.argv[2],'utf8'));const db=getPrismaClient();let calls=0;await runAiTask({db,...c.s,kind:'insight',idempotencyKey:c.key,datasetVersion:1n,rulesetVersion:'rules-v1-init',visibilityScope:'business',systemPrompt:'你是电商运营分析师，只输出JSON。',userPrompt:'基于证据生成洞察。',semantic:{whitelist:{evidenceIds:new Set(['EV-1']),skuIds:new Set(),metricIds:new Set(['units_sold','gmv'])}},transport:{call:async()=>{calls++;if(c.mode==='repair'&&calls===1)return {content:'{badJSON',usage:{input_tokens:90,output_tokens:10}};writeFileSync(c.dir+'/called','provider invoked');await new Promise(()=>{});return {content:'{}',usage:null}}},timeoutMs:20000});await db.$disconnect()};main().catch(e=>{console.error(e);process.exitCode=1});
