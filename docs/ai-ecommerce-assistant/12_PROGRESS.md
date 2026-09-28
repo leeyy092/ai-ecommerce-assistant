@@ -4,15 +4,15 @@
 
 ## 当前导航
 
-根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN及MVP计划顶部。磁盘最新Owner答复、Git、实际写入权优先。
-唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且2026-09-27 14:05:51已激活，原codex-zcode目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
-G4R5-20260928-02已11:26:13实际START，Z02于11:32:21冻结77e1334（业务f5af2f4），CUA11:33最终回执确认只读并交回04。04独立G4R6-20260928-01结论PASS：新archive/PG17@55593，原48场景+W01/W02共50PASS，非增量tsc0；H07 V01/V02关闭，先前H01–H07/M01–M02无未关闭余项，不重开已过缺陷。49件正式证据SHA核对，PG已停、临时副本已清理；报告docs/reviews/CODEX_REVIEW_GATE_04_REVIEW_6_2026-09-28.md。TASK013–016技术PASS，Owner产品验收与上线另记。
-2026-09-28T12:22:54+08:00 PH5-T017-20260928-01 TASK017实现冻结（不标DONE）：业务82856bc（src/ai五文件+Schema原文+两测试+ajv@8.20.0锁定直依赖），管理冻结提交为本chore，写入权交回Codex04。验证（新/tmp=/tmp/aiea-ph5-20260928-z02+新PG17@127.0.0.1:55509，socket在repo外）：非增量tsc0、unit72/72、integration 187通过+1如实skip（真实contract，三配置为空）、g3四套聚合0、生产build0。真实contract未执行——Owner本地配置请求已提出一次不重复催问，配置就绪后按原固定模型受控执行并通过前不推进018。Z02转只读待下一编号；B01五路径全程未触碰，在途管理与编号副本保留。
-2026-09-28T11:47:03+08:00 PH5-T017-20260928-01 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，04自本次ACK起只读主线。接收实测phase/04-metrics-alerts@77e1334（业务f5af2f4）、main=2d7ceaf；G4R6-20260928-01独立PASS（原48+W01/W02共50PASS、tsc0、49件证据归档）。已完整读P06首块、R6报告、TASK017合同。本轮：①按P06原Git生命周期精确收尾Phase4（合并phase/04-metrics-alerts→main并推送、创建phase/05-ai，保留全部在途管理与编号副本，不force/reset/clean，不扫入B01冻结45件五路径）；②仅做TASK017原模型网关与结构化输出门禁（唯一服务端provider、完整Schema/Ajv/语义证据权限校验、预算预占结算/超时缓存/脱敏真实contract；固定百炼北京qwen-flash-2025-07-28非思考json_object，不换模型/供应商、不加Agent框架、不前端直连）。.env三配置为空已核对（未输出密钥）、Owner配置请求一次不重复催问；先实现+stub故障验证，真实contract未过不标017 DONE不推018；绝不打印Key、不购买部署。Owner草稿“啊”非任务。
-TASK017仅原模型网关与结构化输出门禁：唯一服务端provider、原完整Schema/Ajv/语义与证据权限校验、超时错误/预算预占结算/缓存/脱敏真实contract。固定百炼北京qwen-flash-2025-07-28、非思考json_object，不私换模型/供应商，不提前018。当前.env三个模型配置为空（只核对非空状态，未输出密钥），已向Owner请求本地配置一次；可先实现与stub故障验证，真实模型未测不得称017完成/AI可用。
-B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec设置接入45件11:05:53冻结，04此前同3c241cd快照78回归/18浏览器/build0/tsc0限定PASS，本轮45SHA保持，未Git集成。五路径src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**、src/app/settings/**（应用下）禁止Z02修改/暂存/提交。B01导入只读方案已归档docs/reviews/B01_IMPORT_PLAN_20260928-01.md并ACK，19新文件仅建议白名单；恢复DTO/列表/模板/重试/Job状态/SKU依赖未锁定，无导入业务START，026/027/021及MVP未完成。既有日报id21每日21:00不重复。
-Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行动/019–020服务首批、历史阅读页面后置，原完整P0和质量不减。9/30受控MVP、10/5冻结、10/8完整开发验收是目标非保证。031重要开户规则、采购部署/敏感权限/新重大范围变化仍具体批准；普通原合同返修/同冲刺接续已授权。Git阶段收尾可按原生命周期，保留全部在途管理/编号副本与B01，不force/reset/clean；仅明确任务文件提交，不将未跟踪目录扫入。
-双方70%：Codex180880/258400配置加载已核实，系统实际压缩后可靠，触发因果未核实；Z02本轮CUA462194/1000000约46.2%，未新压缩。此前官方/compact已可靠；≥70%先保现场在安全空闲点使用真实入口，执行中先协调冻结，不盲点Stop。压缩可靠同窗，不迁移/fork/worktree/重复自动化，不改模型账户权限。Owner草稿“啊”保留未提交。无新候选不重测、无新状态不刷时间、不例行催问。
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN及MVP计划顶部；按当前TASK读原合同。磁盘最新Owner答复、Git、实际写入权优先。
+唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且2026-09-27 14:05:51已激活，沿用原codex-zcode。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
+当前TASK017：Z02于12:22:54冻结563a320（业务82856bc），12:24 CUA终答确认只读并交回04。04已完成T017R1-20260928-01独立FAIL：6HIGH/2MEDIUM，28有效场景=26FAIL+2PASS，原网关/Schema13PASS+缺配置断言1PASS、真实contract1SKIP，非增量tsc0。范围f8f6a99..563a320；56件正式证据SHA核实，新PG17@61370已停止、/tmp/aiea-t017r1-6u14au3f已清理。报告docs/reviews/CODEX_REVIEW_TASK_017_REVIEW_1_2026-09-28.md，索引TASK_017_REVIEW_1_EVIDENCE_2026-09-28.json，task-017-review-1-evidence/。无效初次夹具已纠正并保留，不计产品FAIL。
+2026-09-28T12:53:16+08:00 T017R1-20260928-02 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，04自ACK起只读。接收实测phase/05-ai@563a320（业务82856bc）、main=d536f27；已完整读P08首块（T017R1版）、REVIEW1报告、证据索引/README/probe-correction与最终探针三文件（t017r1-independent/t017r1-process/t017-root-fixture金样）。返修仅TASK017原合同八组：H01缓存键由可信上下文派生并核验（org/store/scope/dataset/inputHash不匹配不复用）；H02全kind强制语义+引用闭合（evidence/action/hypothesis唯一且闭合、dailyConclusion同样校验、VOC span限code point边界且无证据必unknown、semantic缺失fail-closed）；H03持久化attempt claim总≤3跨Worker、同key在途等待/终态直接返回、跨进程组织级advisory lock并发1；H04逐attempt独立原子预留、有usage即结算实际、未知超时保留该次预留、released-with-actual计入预算、累计usage；H05预算窗口按budget_timezone本地日/月换算UTC边界（localInstantOf）；H06失败不存原文不回传原始输出（修复仅错误码+原脱敏证据包）、HTML带属性识别、UUID先掩码再扫描；M01每次请求（含修复）12k字/16k token先到者；M02 date-time真实日期时间+时区范围校验。先新archive+新PG复现26红2绿+原13绿再修；保留原网关13绿与C01/C02；冻结候选交回04。B01五路径禁触；真实contract仍待Owner三配置（不重复催问）不标DONE不进018；Owner草稿“啊”非任务。
+先新archive+新PG复现有效26红/2绿（探针三文件及夹具纠正说明已归档），再修；保留原网关13绿。仅等价安全终态允许调整断言，不能放宽原合同。完成后冻结明确候选、完整记录并交回04独审。未通过独审和固定百炼北京qwen-flash-2025-07-28脱敏真实contract不得标017 DONE/进入018。Owner本地三配置请求已提出一次，不重复催问；不把stub当真实AI可用，不打印Key，不采购部署/换供应商模型/加框架。
+Phase4 G4R6独立PASS保持，TASK013–016技术通过；R1–R6证据60/40/54/47/70/49 SHA保持，无新差异或有效反例不重开。Git本轮ls-remote已核实main=d536f27、phase/05-ai=563a320、phase/04=77e1334，本轮04无Git写操作；后续以实时Git为准。技术PASS、Owner验收、GitHub、部署、真实试用分别记。
+B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec设置接入45件冻结且SHA保持，此前04独立78回归/18真实浏览器/build0/tsc0限定PASS，未Git集成，021/026/027整体未完成。应用下src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**、src/app/settings/**均禁止Z02改动/暂存/提交。B01导入只读方案正式归档，19新文件只建议白名单；DTO/列表/模板/重试/Job/SKU依赖未锁定，无导入业务START。B01原id21每天21:00日报不重复；04协调独审/Z02后端主线/B01隔离前端/A01分析。
+Owner已批MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行动/019–020服务首批，历史阅读页面后置；原完整P0和质量不减，9/30受控MVP/10/5冻结/10/8完整验收为目标非保证。普通原合同返修及同冲刺独立PASS接续已授权，一次一TASK；031重要开户规则、采购部署/敏感权限/新重大范围变化仍具体批准。新范围偏差立即停相关工作说明事实/日期影响/方案/决定。不抢P1/P2。
+双方70%：Codex180880/258400配置加载已核实，系统压缩可靠同窗，触发因果未核实；Z02最新12:24 CUA537023/1000000约53.7%，无新压缩。此前官方/compact已可靠；实际≥70%保现场、安全空闲点用真实入口，执行中先协调冻结，不盲点Stop。压缩可靠同窗；确需迁移才按STATE_PROTOCOL，不fork/worktree/重复自动化，不改模型账户权限。Owner草稿“啊”保留未提交。无新候选不重测、无新状态不刷时间，普通返修/已问未答安静。
 
 <!-- PRODUCT_OS_STATE_BEGIN -->
 ```json
@@ -20,20 +20,24 @@ Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
   "schema_version": 1,
   "project_name": "电商中台 · AI 电商运营助手",
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
-  "stage": "09 Phase5开发 · AI网关",
+  "stage": "06 分任务开发 · Phase5 AI网关返修",
   "current_task": "TASK-017",
-  "status": "受阻",
-  "last_completed": "G4R6独立PASS+Phase4并入main(d536f27)+phase/05-ai开启；TASK017网关实现+stub验证全绿（业务82856bc），真实contract待配置",
-  "next_action": "Owner提供DASHSCOPE三配置（AI_MODEL_ID=qwen-flash-2025-07-28）后受控执行ai-real-contract脱敏contract；通过才标017 DONE并按已授权Phase5接续018。Codex04可先独审stub验证与Schema/预算/超时实现。",
-  "next_owner": "Codex04",
-  "next_prompt": "prompts/P06_BUILD.md",
-  "acceptance": "原017网关/Schema与语义权限/预算/超时/缓存测试通过；脱敏真实模型contract单独通过；未配置Key可先实现，不以stub替代真实验收。",
-  "blockers": "真实模型contract待Owner本地配置（已请求一次，不重复催问）；其余无阻塞。B01五路径禁触保持。",
+  "status": "待修复",
+  "last_completed": "Phase4 REVIEW6独立PASS及Git收尾；TASK017冻结563a320独审完成FAIL（6HIGH/2MEDIUM）",
+  "next_action": "Z02按T017R1-20260928-02返修TASK017八组（H01-H06/M01-M02）：新archive+新PG复现26红2绿+原13绿再修，冻结候选交回04；真实contract仍待Owner三配置。",
+  "next_owner": "ZCode",
+  "next_prompt": "prompts/P08_FIX.md",
+  "acceptance": "关闭TASK017 REVIEW1六HIGH/两MEDIUM，有效26反例与2对照及原网关13场景通过、非增量tsc0；固定真实模型contract独立通过。测试/独审/Owner验收分开。",
+  "blockers": "独审FAIL已给可复现原合同返修；原授权内可立即接续。真实模型contract待Owner本地配置（已请求一次）；不能以缺配置暂停可做的修复。B01五路径禁触。",
   "checkpoint": "NO",
-  "review": "GATE04 REVIEW6 PASS；Owner产品验收另记；按PH4/MVP既有授权接续017，GATE05尚未开始",
-  "updated_at": "2026-09-28T12:22:54+08:00",
-  "updated_by": "Z02 · PH5-T017-20260928-01 TASK017实现冻结（真实contract待配置）",
+  "review": "TASK017 REVIEW1 FAIL 6HIGH/2MEDIUM（非GATE05）；GATE04 REVIEW6 PASS保持；Owner产品验收另记",
+  "updated_at": "2026-09-28T12:53:16+08:00",
+  "updated_by": "Z02 · T017R1-20260928-02 START接管与回执",
   "evidence": [
+    "2026-09-28T12:53:16+08:00：T017R1-20260928-02 START首次实际送达Z02（04独立T017R1-20260928-01 FAIL已归档：6HIGH/2MEDIUM、有效28=26红+2绿、原网关Schema13绿+缺配置断言1绿、真实contract1SKIP、tsc0、56件证据SHA核实）并接管唯一主线写入权，04转只读。接收实测：phase/05-ai@563a320（业务82856bc）/main=d536f27。返修方案八组：H01上下文派生缓存键；H02全kind强制语义fail-closed+全引用闭合+VOC code point边界与unknown强制；H03 AIRun持久attempt计数claim（迁移加attemptCount列）总≤3跨Worker+同key等待复用+组织级pg_advisory_lock跨进程并发1；H04逐attempt预留（reservedCost累计）/有usage结算actual/超时保留/released-with-actual计入/usage累计；H05 localInstantOf本地日月UTC边界；H06失败只存安全错误码、修复不含原始输出、HTML属性正则、UUID掩码后文本扫描；M01逐请求12k/16k预算（含修复请求）；M02 date-time分量级校验。B01五路径禁触；不标DONE不进018；Owner草稿“啊”非任务。",
+    "2026-09-28T12:50:25+08:00：T017R1-20260928-01独立FAIL，冻结563a320/业务82856bc，范围f8f6a99..563a320。新archive/PG61370：有效28=26FAIL+2PASS，原网关13PASS+缺配置断言1PASS+真实contract1SKIP，非增量tsc0。6HIGH缓存租户隔离/语义闭合/执行幂等与总尝试并发/逐次计费/自然窗/安全文本，2MEDIUM输入上限/date-time。初次无效夹具已纠正不计FAIL。56正式证据SHA核实，PG已停/tmp清理，R1–R6及B0145SHA保持。04持管理权，T017R1-20260928-02待首次实际START，旧PH5/G4编号不重发。",
+    "docs/reviews/CODEX_REVIEW_TASK_017_REVIEW_1_2026-09-28.md",
+    "docs/reviews/TASK_017_REVIEW_1_EVIDENCE_2026-09-28.json",
     "2026-09-28T12:22:54+08:00：PH5-T017实现冻结验证（新/tmp=/tmp/aiea-ph5-20260928-z02，git archive HEAD+新原生PG17.11仅127.0.0.1:55509）：非增量tsc0、unit72/72、integration 187通过+1 skip（ai-real-contract如实跳过：DASHSCOPE_API_KEY/BASE_URL/AI_MODEL_ID三配置为空，只核对非空状态未输出任何值）、g3四套18+4+21+4聚合0、生产build exit0。实现：①06§9.1完整Schema逐字节提取为src/ai/schemas/ai-insight-v1.schema.json唯一真源（$defs含llmPayload/vocBatch/dailyConclusion），Ajv2020编译四入口+uuid/date/date-time真实format校验（不引第二格式库）；②唯一服务端provider（compatible-mode+固定qwen-flash-2025-07-28+enable_thinking:false+json_object，Key仅请求头不进日志，transport可注入stub）；③gateway编排：幂等键复用、组织advisory lock原子预算预留（预计输入+6k输出上限按§24核价0.15/1.5元每百万Token）、按usage结算settled、超时usage未知保留unknown、鉴权等已知失败释放released、12k字+16k token输入预检INPUT_TOO_LARGE、JSON解析+Ajv+语义三层门禁、格式/语义错误各最多一次修复计入总尝试3、仅超时/限流/5xx退避5s/20s+jitter、全局2单组织1并发闸、attempts只记错误码/token无秘密正文；④语义校验：引用白名单闭合、hypothesis必带verification_step、P0 estimated_impact必null、因果措辞禁令、文本安全（邮箱/电话/HTML/密钥形态）、vocBatch taxonomy版本比对+批次ID一一对应+Unicode code point子串核验。stub故障13场景（happy结算/幂等复用/日月预算跳过/并发预留串行/超时终态unknown/5xx重试成功/鉴权终止released/格式修复成功与SCHEMA_INVALID/语义UNKNOWN_REFERENCE终态/超大输入跳过）+Schema金样全绿。真实contract未执行不标017 DONE不推018；E2E未重跑（无页面变化）。候选=业务82856bc+管理冻结chore；B01五路径未触碰。",
     "2026-09-28T11:48:30+08:00：Phase4 Git精确收尾（PH5-T017合同）：git push origin phase/04-metrics-alerts:main（FF 2d7ceaf→d536f27，非force）+git fetch origin main:main 更新本地main（纯ref操作，工作区在途管理/B01/编号副本零触碰）+git checkout -b phase/05-ai（=d536f27）并推送；ls-remote确认 main=phase/05-ai=d536f27bce2e2f4da4ec7569e76aad70c572f518。Gate04 REVIEW6 PASS的Phase4（TASK013-016+四轮返修）正式并入main；后续开发在phase/05-ai一次只做TASK017。",
     "2026-09-28T11:47:03+08:00：PH5-T017-20260928-01 START首次实际送达Z02（04独立G4R6-20260928-01 PASS已归档：77e1334/f5af2f4，原48+W01/W02共50PASS、非增量tsc0、49件证据SHA核对、新PG与临时副本已清理）并接管唯一主线写入权，04转只读。接收实测：phase/04-metrics-alerts@77e1334、main=2d7ceaf；已完整读P06首块/R6报告/TASK017合同。本轮：①Phase4 Git精确收尾（merge→main→push→建phase/05-ai，保留在途管理与编号副本，不force/reset/clean，B01五路径不扫入）；②仅TASK017原网关合同（唯一服务端provider/完整Schema/Ajv/语义证据权限/预算预占结算/超时错误/缓存/脱敏真实contract；固定百炼北京qwen-flash-2025-07-28非思考json_object）；.env三配置为空已核对未输出密钥，Owner请求一次；先stub故障验证，真实contract未过不标DONE不推018；不打印Key不购买部署。Owner草稿“啊”非任务。",
@@ -169,16 +173,16 @@ Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
     "历史记录（本轮接手前）：prompts/ZCODE_FULL_P0_HANDOFF.md：完整P0准备交付、真实Gate分支判断和放行后接续；指令已写入，未自动发送，ZCode执行待核实"
   ],
   "github": {
-    "status": "已核验origin phase/04-metrics-alerts=77e1334；main=2d7ceaf，尚未合并Phase4",
+    "status": "已独立核验origin main=d536f27、phase/05-ai=563a320、phase/04-metrics-alerts=77e1334；本轮04未提交/推送/合并",
     "url": "https://github.com/leeyy092/ai-ecommerce-assistant",
-    "verified_at": "2026-09-28T11:44:58+08:00",
-    "evidence": "docs/reviews/gate-04-review-6-evidence/remote.txt"
+    "verified_at": "2026-09-28T12:44:48+08:00",
+    "evidence": "docs/reviews/task-017-review-1-evidence/remote.txt"
   },
   "deployment": {
     "status": "未部署，未真实商家试用；后续AI/页面/注册/运维未完成",
     "url": "",
     "verified_at": "",
-    "evidence": "本轮仅独立Gate04 PASS与下一任务准备，未执行部署/真实试用。"
+    "evidence": "本轮仅TASK017独立实现审查与原合同返修准备，无部署或真实试用。"
   }
 }
 ```
@@ -447,7 +451,7 @@ Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
 | TASK-014 | 基础经营与广告指标 | DONE | TASK-013 | R6累计独立PASS；metrics金额数量/基准/广告及非法日期合同关闭。 |
 | TASK-015 | 退款与售后队列指标 | DONE | TASK-014 | R6累计独立PASS；退款/售后分渠道、成熟边界保持。 |
 | TASK-016 | 确定性异常规则与快照发布 | DONE | TASK-015 | R6独立PASS，77e1334；H07 V01/V02关闭，原48+W01/W02共50通过。 |
-| TASK-017 | 模型网关与结构化输出门禁 | TODO | TASK-004、TASK-016 | PH5-T017-20260928-01准备待首次实际START；百炼配置为空已请求，本任务未开工。 |
+| TASK-017 | 模型网关与结构化输出门禁 | BLOCKED | TASK-004、TASK-016 | 563a320独立REVIEW1 FAIL：6HIGH/2MEDIUM，原合同返修T017R1-20260928-02待实际START；真实contract另待本地配置，不标DONE、不进018。 |
 | TASK-018 | VOC分类、人工标签优先与聚合 | TODO | TASK-017、TASK-012 | 未执行 |
 | TASK-019 | 有证据的运营建议 | TODO | TASK-018 | 未执行 |
 | TASK-020 | 固定日报调度与规则降级 | TODO | TASK-019 | 未执行 |
@@ -1557,6 +1561,25 @@ Owner批准MVP-CORE-20260928-01首批及余项并行：老板三分钟四卡/同
 根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN及MVP计划顶部。磁盘最新Owner答复、Git、实际写入权优先。
 唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且2026-09-27 14:05:51已激活，原codex-zcode目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
 G4R5-20260928-02已11:26:13实际START，Z02于11:32:21冻结77e1334（业务f5af2f4），CUA11:33最终回执确认只读并交回04。04独立G4R6-20260928-01结论PASS：新archive/PG17@55593，原48场景+W01/W02共50PASS，非增量tsc0；H07 V01/V02关闭，先前H01–H07/M01–M02无未关闭余项，不重开已过缺陷。49件正式证据SHA核对，PG已停、临时副本已清理；报告docs/reviews/CODEX_REVIEW_GATE_04_REVIEW_6_2026-09-28.md。TASK013–016技术PASS，Owner产品验收与上线另记。
+2026-09-28T11:47:03+08:00 PH5-T017-20260928-01 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，04自本次ACK起只读主线。接收实测phase/04-metrics-alerts@77e1334（业务f5af2f4）、main=2d7ceaf；G4R6-20260928-01独立PASS（原48+W01/W02共50PASS、tsc0、49件证据归档）。已完整读P06首块、R6报告、TASK017合同。本轮：①按P06原Git生命周期精确收尾Phase4（合并phase/04-metrics-alerts→main并推送、创建phase/05-ai，保留全部在途管理与编号副本，不force/reset/clean，不扫入B01冻结45件五路径）；②仅做TASK017原模型网关与结构化输出门禁（唯一服务端provider、完整Schema/Ajv/语义证据权限校验、预算预占结算/超时缓存/脱敏真实contract；固定百炼北京qwen-flash-2025-07-28非思考json_object，不换模型/供应商、不加Agent框架、不前端直连）。.env三配置为空已核对（未输出密钥）、Owner配置请求一次不重复催问；先实现+stub故障验证，真实contract未过不标017 DONE不推018；绝不打印Key、不购买部署。Owner草稿“啊”非任务。
+TASK017仅原模型网关与结构化输出门禁：唯一服务端provider、原完整Schema/Ajv/语义与证据权限校验、超时错误/预算预占结算/缓存/脱敏真实contract。固定百炼北京qwen-flash-2025-07-28、非思考json_object，不私换模型/供应商，不提前018。当前.env三个模型配置为空（只核对非空状态，未输出密钥），已向Owner请求本地配置一次；可先实现与stub故障验证，真实模型未测不得称017完成/AI可用。
+B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec设置接入45件11:05:53冻结，04此前同3c241cd快照78回归/18浏览器/build0/tsc0限定PASS，本轮45SHA保持，未Git集成。五路径src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**、src/app/settings/**（应用下）禁止Z02修改/暂存/提交。B01导入只读方案已归档docs/reviews/B01_IMPORT_PLAN_20260928-01.md并ACK，19新文件仅建议白名单；恢复DTO/列表/模板/重试/Job状态/SKU依赖未锁定，无导入业务START，026/027/021及MVP未完成。既有日报id21每日21:00不重复。
+Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行动/019–020服务首批、历史阅读页面后置，原完整P0和质量不减。9/30受控MVP、10/5冻结、10/8完整开发验收是目标非保证。031重要开户规则、采购部署/敏感权限/新重大范围变化仍具体批准；普通原合同返修/同冲刺接续已授权。Git阶段收尾可按原生命周期，保留全部在途管理/编号副本与B01，不force/reset/clean；仅明确任务文件提交，不将未跟踪目录扫入。
+双方70%：Codex180880/258400配置加载已核实，系统实际压缩后可靠，触发因果未核实；Z02本轮CUA462194/1000000约46.2%，未新压缩。此前官方/compact已可靠；≥70%先保现场在安全空闲点使用真实入口，执行中先协调冻结，不盲点Stop。压缩可靠同窗，不迁移/fork/worktree/重复自动化，不改模型账户权限。Owner草稿“啊”保留未提交。无新候选不重测、无新状态不刷时间、不例行催问。
+
+
+## 2026-09-28T12:50:25+08:00 · TASK017 REVIEW1独立审查
+
+2026-09-28T12:50:25+08:00：T017R1-20260928-01独立FAIL，冻结563a320/业务82856bc，范围f8f6a99..563a320。新archive/PG61370：有效28=26FAIL+2PASS，原网关13PASS+缺配置断言1PASS+真实contract1SKIP，非增量tsc0。6HIGH缓存租户隔离/语义闭合/执行幂等与总尝试并发/逐次计费/自然窗/安全文本，2MEDIUM输入上限/date-time。初次无效夹具已纠正不计FAIL。56正式证据SHA核实，PG已停/tmp清理，R1–R6及B0145SHA保持。04持管理权，T017R1-20260928-02待首次实际START，旧PH5/G4编号不重发。
+
+### 本轮替换前导航（历史，以上方当前导航为准）
+
+
+
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN及MVP计划顶部。磁盘最新Owner答复、Git、实际写入权优先。
+唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且2026-09-27 14:05:51已激活，原codex-zcode目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
+G4R5-20260928-02已11:26:13实际START，Z02于11:32:21冻结77e1334（业务f5af2f4），CUA11:33最终回执确认只读并交回04。04独立G4R6-20260928-01结论PASS：新archive/PG17@55593，原48场景+W01/W02共50PASS，非增量tsc0；H07 V01/V02关闭，先前H01–H07/M01–M02无未关闭余项，不重开已过缺陷。49件正式证据SHA核对，PG已停、临时副本已清理；报告docs/reviews/CODEX_REVIEW_GATE_04_REVIEW_6_2026-09-28.md。TASK013–016技术PASS，Owner产品验收与上线另记。
+2026-09-28T12:22:54+08:00 PH5-T017-20260928-01 TASK017实现冻结（不标DONE）：业务82856bc（src/ai五文件+Schema原文+两测试+ajv@8.20.0锁定直依赖），管理冻结提交为本chore，写入权交回Codex04。验证（新/tmp=/tmp/aiea-ph5-20260928-z02+新PG17@127.0.0.1:55509，socket在repo外）：非增量tsc0、unit72/72、integration 187通过+1如实skip（真实contract，三配置为空）、g3四套聚合0、生产build0。真实contract未执行——Owner本地配置请求已提出一次不重复催问，配置就绪后按原固定模型受控执行并通过前不推进018。Z02转只读待下一编号；B01五路径全程未触碰，在途管理与编号副本保留。
 2026-09-28T11:47:03+08:00 PH5-T017-20260928-01 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，04自本次ACK起只读主线。接收实测phase/04-metrics-alerts@77e1334（业务f5af2f4）、main=2d7ceaf；G4R6-20260928-01独立PASS（原48+W01/W02共50PASS、tsc0、49件证据归档）。已完整读P06首块、R6报告、TASK017合同。本轮：①按P06原Git生命周期精确收尾Phase4（合并phase/04-metrics-alerts→main并推送、创建phase/05-ai，保留全部在途管理与编号副本，不force/reset/clean，不扫入B01冻结45件五路径）；②仅做TASK017原模型网关与结构化输出门禁（唯一服务端provider、完整Schema/Ajv/语义证据权限校验、预算预占结算/超时缓存/脱敏真实contract；固定百炼北京qwen-flash-2025-07-28非思考json_object，不换模型/供应商、不加Agent框架、不前端直连）。.env三配置为空已核对（未输出密钥）、Owner配置请求一次不重复催问；先实现+stub故障验证，真实contract未过不标017 DONE不推018；绝不打印Key、不购买部署。Owner草稿“啊”非任务。
 TASK017仅原模型网关与结构化输出门禁：唯一服务端provider、原完整Schema/Ajv/语义与证据权限校验、超时错误/预算预占结算/缓存/脱敏真实contract。固定百炼北京qwen-flash-2025-07-28、非思考json_object，不私换模型/供应商，不提前018。当前.env三个模型配置为空（只核对非空状态，未输出密钥），已向Owner请求本地配置一次；可先实现与stub故障验证，真实模型未测不得称017完成/AI可用。
 B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec设置接入45件11:05:53冻结，04此前同3c241cd快照78回归/18浏览器/build0/tsc0限定PASS，本轮45SHA保持，未Git集成。五路径src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**、src/app/settings/**（应用下）禁止Z02修改/暂存/提交。B01导入只读方案已归档docs/reviews/B01_IMPORT_PLAN_20260928-01.md并ACK，19新文件仅建议白名单；恢复DTO/列表/模板/重试/Job状态/SKU依赖未锁定，无导入业务START，026/027/021及MVP未完成。既有日报id21每日21:00不重复。

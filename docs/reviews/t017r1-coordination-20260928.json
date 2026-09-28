@@ -1,0 +1,32 @@
+{
+  "recorded_at": "2026-09-28T12:53:16+08:00",
+  "review": "T017R1-20260928-01",
+  "handoff": "T017R1-20260928-02",
+  "start_sent": true,
+  "start_received_at": "2026-09-28T12:53:16+08:00",
+  "head_at_start": "563a320",
+  "branch": "phase/05-ai",
+  "writer": "Z02",
+  "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
+  "writer_since": "2026-09-28T12:53:16+08:00",
+  "review_range": "f8f6a99..563a320",
+  "repair_scope": [
+    "H01-cache-context-isolation",
+    "H02-mandatory-semantics-all-kinds",
+    "H03-persisted-attempt-claim-cross-worker",
+    "H04-per-attempt-billing",
+    "H05-local-day-month-boundaries",
+    "H06-no-persist-no-resend-unsafe-text+uuid-mask",
+    "M01-per-request-input-budget",
+    "M02-real-date-time"
+  ],
+  "probes": "docs/reviews/task-017-review-1-evidence: t017r1-independent.test.ts + t017r1-process.ts + t017-root-fixture.json; red 26 / green 2 (C01/C02); keep original 13",
+  "b01_boundary": [
+    "src/features/settings/**",
+    "tests/unit/settings/**",
+    "src/features/imports/preview/**",
+    "tests/unit/imports/preview/**",
+    "src/app/settings/**"
+  ],
+  "real_contract": "still pending Owner configs; asked once; not DONE until independent PASS + real contract"
+}
