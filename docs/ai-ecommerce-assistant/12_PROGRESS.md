@@ -7,6 +7,7 @@
 根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调迁移、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN和MVP计划顶部；按TASK017读原06/09合同。磁盘最新Owner答复、实际Git和唯一写入者优先。
 唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE且2026-09-27 14:05:51已激活，沿用原codex-zcode。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
 04已完成T017R4-20260928-01独立FAIL：冻结928304f（业务2a152e5），范围340dedb..928304f。原53产品场景+缺配置断言1PASS、真实contract1SKIP，新增N01/N02/N03有效3FAIL，K03/K04两PASS，非增量tsc0。剩原H04一HIGH、M01一MEDIUM BLOCKED；H03 L01/L02具体缺陷关闭，H06和更早关闭项保持，无新差异/反例不重开。正式52件SHA核对，新PG17@54320已停、本轮/tmp清理；Gate04六轮/T017前三轮及B01 45SHA保持。
+2026-09-28T14:33:05+08:00 T017R4-20260928-02 返修完成并冻结单一候选：业务340f8dc（budget归属口径修复+L03维护夹具授权纠正+R4探针三件维护副本），管理冻结提交为本chore，写入权交回Codex04按928304f..新HEAD独审。验证（新/tmp=/tmp/aiea-t017r4-20260928-z02+新PG17@127.0.0.1:55513，socket在repo外）：非增量tsc0、R4探针N01-N03+K03/K04=5/5全绿、R3探针4/4（L03维护夹具含授权补正）、原53产品场景保持（合计R4+R3+R2+R1+网关探针全绿）、unit72/72、integration232通过+1如实skip、g3四套聚合0、生产build0。M01维持BLOCKED（TOKENIZER线索两路径均待验证+三份官方源码已归档）。真实contract仍待Owner三配置不标017 DONE不进018。Z02转只读——本轮冻结即上下文安全点（审查读数69.8445%），供04在需要时执行compact协调；B01五路径未触碰。
 2026-09-28T14:26:33+08:00 T017R4-20260928-02 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，04自ACK起只读。接收实测phase/05-ai@928304f（业务2a152e5）、main=d536f27；已完整读P08首块与REVIEW4报告/索引/探针（N01-N03/K03/K04）。返修仅H04余项（M01维持BLOCKED）：N01/N02账本全部行（含usage未知reserved）一律按各自claim时刻l.created_at归属（不再挂run.created_at——恢复的新增预留留在当前窗口）；N03旧数据共存改为按运行差值兼容（run总额-该run账本已计spent，不再“有任何账本即排除整行”）；按报告授权纠正R3 L03维护夹具为run与旧attempt同时置前日（docs原件冻结保留，生产口径不变）。先新archive+新PG复现N01-N03红/K03K04绿+原53保持再修；H03已关闭不重开；B01五路径禁触；真实contract待Owner三配置不标DONE不进018；Owner草稿“啊”非任务。上下文近70%：本轮完成冻结即安全点，供04 compact协调。
 返修依据docs/reviews/CODEX_REVIEW_TASK_017_REVIEW_4_2026-09-28.md、TASK_017_REVIEW_4_EVIDENCE_2026-09-28.json、task-017-review-4-evidence/README.md、t017r4-independent.test.ts及boundaries-valid.log/r4-observations.json。初次N02 daily100违反原max20属无效夹具，不计产品FAIL；修正daily20后有效，原件/probe-correction已留。
 仅TASK017原H04余项：N01/N02旧运行今日/本月恢复的usage=null预留0.009004，必须按本次claim窗口计入，再申请0.009004在额度.012下拒绝；不能所有reserved都按run.created_at挂旧日。N03旧AIRun已有actual=.000029、reserve=.009012、attemptCount=2，无账本行，首次恢复写入第3笔ledger后旧费用不得从统计消失；新actual=.007515后下一.009004预留在日限.022应拒绝。账本上线兼容完整且不重复计，保留原窗口，不增加业务规则或新框架。先新archive/新PG复现N01-N03红/K03K04绿，再最小修复并保持原53与非增量tsc0。R3 L03夹具可纠正为run和旧attempt同时设前日，保留原件说明差异，不为部分改时戳夹具牺牲真实口径。
@@ -25,18 +26,19 @@ Git本轮ls-remote main=d536f27、phase/05-ai=928304f、phase/04=77e1334，后�
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
   "stage": "06 分任务开发 · Phase5 AI网关返修",
   "current_task": "TASK-017",
-  "status": "进行中",
-  "last_completed": "T017R4独立FAIL：H03关闭；原53 PASS；H04未知预留跨窗与旧账本兼容仍FAIL，M01 BLOCKED",
-  "next_action": "Z02按T017R4-20260928-02返修H04（M01维持BLOCKED）：新archive+新PG复现N01-N03红/K03K4绿+原53保持再修，冻结候选交回04；真实contract待Owner三配置。",
-  "next_owner": "ZCode",
-  "next_prompt": "prompts/P08_FIX.md",
+  "status": "待审查",
+  "last_completed": "T017R4返修完成：N01-N03转绿5/5+K03K4、原53保持，业务提交340f8dc；M01维持BLOCKED",
+  "next_action": "Codex04独立复审928304f..新HEAD（业务340f8dc+管理冻结chore）：按R4关闭标准复验N01-N03/K03K4与原53；M01维持BLOCKED；真实contract待Owner三配置。",
+  "next_owner": "Codex04",
+  "next_prompt": "prompts/P07_CODE_REVIEW.md",
   "acceptance": "N01-N03关闭，K03/K04与原53保持、tsc0；实际tokenizer和真实固定模型contract独立通过才可017 DONE。",
   "blockers": "H04有效反例需普通授权返修；M01固定tokenizer与真实contract待实证/Owner本地配置（已问一次）。",
   "checkpoint": "NO",
-  "review": "TASK017 REVIEW4 FAIL（H04一HIGH/M01一MEDIUM BLOCKED）；Gate04 REVIEW6保持",
-  "updated_at": "2026-09-28T14:26:33+08:00",
-  "updated_by": "Z02 · T017R4-20260928-02 START接管与回执",
+  "review": "TASK017 REVIEW4 FAIL（1H+1M）→ 返修候选待REVIEW5；Gate04 REVIEW6保持",
+  "updated_at": "2026-09-28T14:33:05+08:00",
+  "updated_by": "Z02 · T017R4-20260928-02 返修完成与候选冻结",
   "evidence": [
+    "2026-09-28T14:33:05+08:00：T017R4冻结验证（新/tmp=/tmp/aiea-t017r4-20260928-z02，git archive HEAD+新原生PG17.11仅127.0.0.1:55513）：修复后R4探针N01/N02（前窗崩溃run+attempt1同置前日、当前恢复usage=null的0.009004留在今日窗口、下一任务0.018008>0.012被拒nextCalls=0）+N03（删账本模拟旧数据、恢复att3结算0.007515后legacy差值保旧actual0.000029+未决0.009012计入、合计0.025560>0.022被拒）+K03/K04全绿；R3探针4/4（L03维护夹具按REVIEW4授权补账本同置前日，docs原件冻结保留差异）；原53保持；unit72、integration232+1skip、g3聚合0、build0、tsc0。实现：spentSince账本全行按l.created_at（去掉reserved挂run.created_at的R3过渡口径）；legacy改按运行差值GREATEST(run总额-ledger已计,0)（去掉NOT EXISTS整行排除）。红基线N01-N03=3FAIL与REVIEW4一致（本环境先复现后修复，见obs文件）。E2E未重跑（无页面变化）。候选=业务340f8dc+管理冻结chore；B01五路径未触碰。",
     "2026-09-28T14:26:33+08:00：T017R4-20260928-02 START首次实际送达Z02（04独立T017R4-20260928-01 FAIL：原53产品场景全PASS保持、H03关闭、N01/N02/N03有效3FAIL、K03/K04 PASS、tsc0、SHA保持、PG54320已停）并接管唯一主线写入权，04转只读。接收实测：928304f（业务2a152e5）/phase/05-ai/main=d536f27。返修方案：ledger全行按l.created_at归属+N03按运行差值（run总额-ledger已计）兼容旧行+L03维护夹具按报告授权补ledger同时置前日。B01五路径禁触；上下文近70%，本轮冻结即安全点。",
     "2026-09-28T14:25:27+08:00：T017R4-20260928-01独立FAIL，928304f/2a152e5，范围340dedb..928304f。原53产品场景+缺配置1PASS/真实contract1SKIP；新N01-N03有效3FAIL/K03K04两PASS，tsc0。H03具体缺陷关闭，剩H04一HIGH/M01一MEDIUM BLOCKED。52件SHA正式核对，PG54320已停及本轮tmp清理；旧Gate04/T017R1R2R3/B01 SHA保持。三官方原始tokenizer源码归档SHA核对后旧临时目录清理，未执行。writer04，新T017R4-20260928-02仅准备待首次实际START。",
     "docs/reviews/CODEX_REVIEW_TASK_017_REVIEW_4_2026-09-28.md",
@@ -472,7 +474,7 @@ Git本轮ls-remote main=d536f27、phase/05-ai=928304f、phase/04=77e1334，后�
 | TASK-014 | 基础经营与广告指标 | DONE | TASK-013 | R6累计独立PASS；metrics金额数量/基准/广告及非法日期合同关闭。 |
 | TASK-015 | 退款与售后队列指标 | DONE | TASK-014 | R6累计独立PASS；退款/售后分渠道、成熟边界保持。 |
 | TASK-016 | 确定性异常规则与快照发布 | DONE | TASK-015 | R6独立PASS，77e1334；H07 V01/V02关闭，原48+W01/W02共50通过。 |
-| TASK-017 | 模型网关与结构化输出门禁 | IN_PROGRESS | TASK-004、TASK-016 | T017R4-20260928-02已2026-09-28T14:26:33实际START接管（H03关闭保持）：剩H04（N01/N02未知预留窗口归属、N03旧数据差值兼容）返修中，M01维持BLOCKED；真实contract待Owner本地配置，不标DONE不进018。 |
+| TASK-017 | 模型网关与结构化输出门禁 | IN_REVIEW | TASK-004、TASK-016 | T017R4-20260928-02已14:26:33实际START并于14:33:05完成返修冻结：N01-N03转绿5/5+K03K4、原53保持，业务340f8dc+管理冻结chore，待Codex04独立REVIEW5（928304f..新HEAD）；M01维持BLOCKED；真实contract待Owner本地配置，不标DONE不进018。 |
 | TASK-018 | VOC分类、人工标签优先与聚合 | TODO | TASK-017、TASK-012 | 未执行 |
 | TASK-019 | 有证据的运营建议 | TODO | TASK-018 | 未执行 |
 | TASK-020 | 固定日报调度与规则降级 | TODO | TASK-019 | 未执行 |

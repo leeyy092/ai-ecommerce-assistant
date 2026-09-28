@@ -6,9 +6,9 @@
   "start_received_at": "2026-09-28T14:26:33+08:00",
   "head_at_start": "928304f",
   "branch": "phase/05-ai",
-  "writer": "Z02",
+  "writer": "Codex04",
   "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
-  "writer_since": "2026-09-28T14:26:33+08:00",
+  "writer_since": "2026-09-28T14:33:05+08:00",
   "repair_scope": [
     "H04/N01-N02-unknown-reserve-window-by-claim-time",
     "H04/N03-legacy-delta-compat",
@@ -22,5 +22,15 @@
     "tests/unit/imports/preview/**",
     "src/app/settings/**"
   ],
-  "context_note": "reviewer read 69.8445%; freeze of this round = safe point for Codex04 compact coordination"
+  "context_note": "reviewer read 69.8445%; freeze of this round = safe point for Codex04 compact coordination",
+  "repair_frozen_at": "2026-09-28T14:33:05+08:00",
+  "repair_business_commit": "340f8dc",
+  "repair_review_range": "928304f..newHEAD",
+  "repair_green_results": "tsc0; R4 probes 5/5 (N01-N03+K03/K04); R3 probes 4/4 (L03 fixture corrected per permission); original 53 kept; unit 72/72; integration 232 pass + 1 skip; g3 aggregate 0; build 0",
+  "repair_remaining_gaps": [
+    "real contract pending Owner configs",
+    "M01 BLOCKED (tokenizer leads unverified)",
+    "E2E not rerun"
+  ],
+  "safe_point_note": "freeze reached at reviewer-read context ~69.8%; candidate frozen and writer returned — safe point for Codex04 compact coordination if needed"
 }

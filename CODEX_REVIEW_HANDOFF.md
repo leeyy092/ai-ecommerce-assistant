@@ -1,5 +1,6 @@
-# 当前交接 · T017R4-20260928-02 START已送达 · Z02返修H04
+# 当前交接 · T017R4-20260928-02 返修完成冻结 · 待REVIEW5（上下文安全点）
 
+2026-09-28T14:33:05+08:00 T017R4-20260928-02 返修完成并冻结单一候选，写入权交回Codex04：业务340f8dc（H04账本全行按claim时刻归属+N03按运行差值legacy兼容+L03维护夹具授权补正；R4探针三件入库）。独立验证（新/tmp+新PG17@55513）：N01-N03+K03K4=5/5、R3 4/4、原53保持、unit72/integration232+1skip/g3聚合0/build0/tsc0。复审范围928304f..新HEAD；M01维持BLOCKED；真实contract待Owner配置不标DONE；B01五路径未动。Z02冻结只读——审查读数69.8%背景下的安全冻结点。
 2026-09-28T14:26:33+08:00 T017R4-20260928-02 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，04自ACK起只读。接收实测phase/05-ai@928304f（业务2a152e5）、main=d536f27；已完整读P08首块与REVIEW4报告/索引/探针（N01-N03/K03/K04）。返修仅H04余项（M01维持BLOCKED）：N01/N02账本全部行（含usage未知reserved）一律按各自claim时刻l.created_at归属（不再挂run.created_at——恢复的新增预留留在当前窗口）；N03旧数据共存改为按运行差值兼容（run总额-该run账本已计spent，不再“有任何账本即排除整行”）；按报告授权纠正R3 L03维护夹具为run与旧attempt同时置前日（docs原件冻结保留，生产口径不变）。先新archive+新PG复现N01-N03红/K03K04绿+原53保持再修；H03已关闭不重开；B01五路径禁触；真实contract待Owner三配置不标DONE不进018；Owner草稿“啊”非任务。上下文近70%：本轮完成冻结即安全点，供04 compact协调。
 
 根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调迁移、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN和MVP计划顶部；按TASK017读原06/09合同。磁盘最新Owner答复、实际Git和唯一写入者优先。
