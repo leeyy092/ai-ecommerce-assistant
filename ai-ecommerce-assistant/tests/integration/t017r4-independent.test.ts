@@ -102,7 +102,7 @@ import { Prisma } from "@/generated/prisma/client";
 import rootGold from "./t017-root-fixture.json";
 const observations: Record<string, unknown> = {};
 const note = (id: string, x: unknown) => { observations[id] = x; console.log(id, JSON.stringify(x, (_k,v)=>typeof v==='bigint'?v.toString():v)); };
-afterAll(()=>writeFileSync(process.env.PROBE_OUTPUT!.replace('observations.json','r3-observations.json'),JSON.stringify(observations,(_k,v)=>typeof v==='bigint'?v.toString():v,2)));
+afterAll(()=>writeFileSync(process.env.PROBE_OUTPUT!.replace('observations.json','r4-observations.json'),JSON.stringify(observations,(_k,v)=>typeof v==='bigint'?v.toString():v,2)));
 const key=()=>randomUUID();
 const argsWith=(s:{orgId:string;storeId:string},p:unknown)=>baseArgs(s,key(),stubTransport([()=>ok(p)]));
 const vocArgs=(s:{orgId:string;storeId:string},span:unknown[],sentiment='neutral')=>{
@@ -114,12 +114,6 @@ const vocArgs=(s:{orgId:string;storeId:string},span:unknown[],sentiment='neutral
 import { spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 
-it('L01 failed schema is terminal for the same generation key',async()=>{
- const s=await newOrgStore();let calls=0;const a=baseArgs(s,key(),{call:async()=>{calls++;return badJson()}});
- const first=await runAiTask(a);expect(first.errorCode).toBe('SCHEMA_INVALID');const row1=await db.aIRun.findUniqueOrThrow({where:{id:first.runId}});
- const second=await runAiTask(a);const row2=await db.aIRun.findUniqueOrThrow({where:{id:first.runId}});
- note('L01',{calls,first,second,auditBefore:row1.attempts,auditAfter:row2.attempts});expect(calls).toBe(2);
-});
 async function crashRun(s:{orgId:string;storeId:string},callerKey:string,mode:string){
  const dir=mkdtempSync(join(tmpdir(),'t017r3-crash-'));const cfg=join(dir,'cfg.json');writeFileSync(cfg,JSON.stringify({dir,s,key:callerKey,mode}));
  const proc=spawn(process.execPath,['--import','tsx','tests/integration/t017r3-crash.ts',cfg],{cwd:process.cwd(),env:{...process.env,DATABASE_URL:testUrl},stdio:['ignore','pipe','pipe']});
@@ -128,26 +122,43 @@ async function crashRun(s:{orgId:string;storeId:string},callerKey:string,mode:st
  finally {proc.kill('SIGKILL');await done;}
  return db.aIRun.findFirstOrThrow({where:{orgId:s.orgId}});
 }
-it('L02 recovery preserves prior attempt audit and consumed format repair',async()=>{
- const s=await newOrgStore();const k=key();const before=await crashRun(s,k,'repair');expect(before.attemptCount).toBe(2);expect(JSON.stringify(before.attempts)).toContain('format_repair');
- let calls=2;const out=await runAiTask(baseArgs(s,k,{call:async()=>{calls++;return badJson()}}));const after=await db.aIRun.findUniqueOrThrow({where:{id:before.id}});
- note('L02',{calls,out,before:{attemptCount:before.attemptCount,attempts:before.attempts},after:{attemptCount:after.attemptCount,attempts:after.attempts}});
- expect((after.attempts as any[]).some(x=>x.attempt===1&&x.type==='format_repair')).toBe(true);
- expect((after.attempts as any[]).filter(x=>x.type==='format_repair')).toHaveLength(1);
+
+// Legal prior-window crash state: move BOTH run and original claim timestamps.
+async function pendingInPriorWindow(monthly: boolean) {
+ const s=await newOrgStore(monthly?{daily:'20',monthly:'0.012'}:{daily:'0.012',monthly:'100'});
+ const k=key();const before=await crashRun(s,k,'first');
+ const prior=new Date(Date.now()-(monthly?40:1)*86400000);
+ await db.aIRun.update({where:{id:before.id},data:{createdAt:prior}});
+ await db.aiAttemptLedger.updateMany({where:{runId:before.id},data:{createdAt:prior}});
+ let recoverCalls=0;
+ const recovered=await runAiTask(baseArgs(s,k,{call:async()=>{recoverCalls++;return {content:JSON.stringify(validLlmPayload()),usage:null}}}));
+ const ledger=await db.aiAttemptLedger.findMany({where:{runId:before.id},orderBy:{attemptNo:'asc'}});
+ let nextCalls=0;
+ const next=await runAiTask(baseArgs(s,key(),{call:async()=>{nextCalls++;return ok(validLlmPayload())}}));
+ const id=monthly?'N02':'N01';note(id,{recovered,recoverCalls,ledger,next,nextCalls});
+ expect(recovered.status).toBe('succeeded');expect(recoverCalls).toBe(1);
+ expect(next.status).toBe('skipped');expect(nextCalls).toBe(0);
+}
+it('N01 current-day unknown usage on recovered old run must retain current-day reservation',()=>pendingInPriorWindow(false),20000);
+it('N02 current-month unknown usage on recovered old run must retain current-month reservation',()=>pendingInPriorWindow(true),20000);
+it('N03 first post-upgrade ledger claim must not erase pre-ledger actual and unresolved costs',async()=>{
+ const s=await newOrgStore({daily:'0.022',monthly:'100'});const k=key();const before=await crashRun(s,k,'repair');
+ // Persisted pre-ledger R3 state: paid malformed attempt plus a crashed repair reserve.
+ // Removing only this test run ledger represents applying the new empty-table migration to an old row.
+ expect(before.attemptCount).toBe(2);expect(before.actualCost!.gt(0)).toBe(true);expect(before.reservedCost.gt(0)).toBe(true);
+ await db.aiAttemptLedger.deleteMany({where:{runId:before.id}});
+ const recovered=await runAiTask(baseArgs(s,k,{call:async()=>({content:JSON.stringify(validLlmPayload()),usage:{input_tokens:100,output_tokens:5000}})}));
+ const after=await db.aIRun.findUniqueOrThrow({where:{id:before.id}});const ledger=await db.aiAttemptLedger.findMany({where:{runId:before.id}});
+ let nextCalls=0;const next=await runAiTask(baseArgs(s,key(),{call:async()=>{nextCalls++;return ok(validLlmPayload())}}));
+ note('N03',{before:{actual:before.actualCost,reserved:before.reservedCost,attemptCount:before.attemptCount},recovered,after:{actual:after.actualCost,reserved:after.reservedCost},ledger,next,nextCalls});
+ expect(recovered.status).toBe('succeeded');expect(after.actualCost!.add(after.reservedCost).gt('0.012996')).toBe(true);expect(next.status).toBe('skipped');expect(nextCalls).toBe(0);
 },20000);
-it('L03 recovered prior-day run charges the current attempt to current daily window',async()=>{
- const s=await newOrgStore({daily:'0.012',monthly:'100'});const k=key();const before=await crashRun(s,k,'first');
- // Represents a queued task claimed before Shanghai midnight, then recovered today.
- const yesterday=new Date(Date.now()-86400000);await db.aIRun.update({where:{id:before.id},data:{createdAt:yesterday}});
- // R4授权夹具纠正：旧attempt的账本行与run同置前日（review4 N01口径：claim时刻即归属窗口）；docs冻结原件保留差异
- await db.aiAttemptLedger.updateMany({where:{runId:before.id},data:{createdAt:yesterday}});
- let calls=1;const out=await runAiTask(baseArgs(s,k,{call:async()=>{calls++;return {content:JSON.stringify(validLlmPayload()),usage:{input_tokens:100,output_tokens:5000}}}}));
- const after=await db.aIRun.findUniqueOrThrow({where:{id:before.id}});const next=await runAiTask(argsWith(s,validLlmPayload()));
- note('L03',{calls,out,next,createdAt:after.createdAt,actual:after.actualCost,reserved:after.reservedCost});expect(out.status).toBe('succeeded');expect(next.status).toBe('skipped');
-},20000);
-it('K02 three real processes preserve global concurrency two',async()=>{
- const stores=await Promise.all([newOrgStore(),newOrgStore(),newOrgStore()]);const dir=mkdtempSync(join(tmpdir(),'t017r3-parallel-'));const cfg=join(dir,'cfg.json');writeFileSync(cfg,JSON.stringify({dir,stores,payload:validLlmPayload()}));
- const procs=stores.map((_,i)=>spawn(process.execPath,['--import','tsx','tests/integration/t017r1-process.ts',cfg,String(i)],{cwd:process.cwd(),env:{...process.env,DATABASE_URL:testUrl},stdio:['ignore','pipe','pipe']}));
- const dones=procs.map(proc=>new Promise<{code:number|null;output:string}>(resolve=>{let output='';proc.stdout.on('data',b=>output+=b);proc.stderr.on('data',b=>output+=b);proc.on('close',code=>resolve({code,output}))}));
- try{const limit=Date.now()+10000;while(!stores.every((_,i)=>existsSync(join(dir,'ready-'+i)))){if(Date.now()>limit)throw Error('barrier timeout');await new Promise(r=>setTimeout(r,10));}writeFileSync(join(dir,'go'),'go');const exits=await Promise.all(dones);const events=readFileSync(join(dir,'events.jsonl'),'utf8').trim().split('\n').map(x=>JSON.parse(x));let active=0,max=0;for(const e of events){active+=e.event==='start'?1:-1;max=Math.max(max,active)}note('K02',{exits,events,max});expect(exits.every(x=>x.code===0)).toBe(true);expect(max).toBeLessThanOrEqual(2);expect(events).toHaveLength(6)}finally{for(const proc of procs)if(proc.exitCode===null)proc.kill('SIGKILL');await Promise.all(dones)}
-},20000);
+it('K03 old settled actual remains in its original window without blocking current day',async()=>{
+ const s=await newOrgStore({daily:'0.012',monthly:'100'});const first=await runAiTask(baseArgs(s,key(),{call:async()=>({content:JSON.stringify(validLlmPayload()),usage:{input_tokens:100,output_tokens:5000}})}));
+ const prior=new Date(Date.now()-86400000);await db.aIRun.update({where:{id:first.runId},data:{createdAt:prior}});await db.aiAttemptLedger.updateMany({where:{runId:first.runId},data:{createdAt:prior}});
+ const next=await runAiTask(argsWith(s,validLlmPayload()));note('K03',{first,next});expect(next.status).toBe('succeeded');
+});
+it('K04 current same-window null usage remains reserved and blocks new calls',async()=>{
+ const s=await newOrgStore({daily:'0.012',monthly:'100'});const first=await runAiTask(baseArgs(s,key(),{call:async()=>({content:JSON.stringify(validLlmPayload()),usage:null})}));
+ const next=await runAiTask(argsWith(s,validLlmPayload()));note('K04',{first,next});expect(next.status).toBe('skipped');
+});

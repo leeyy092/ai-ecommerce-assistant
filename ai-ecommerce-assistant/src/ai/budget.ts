@@ -45,23 +45,29 @@ export function orgExecutionLockKey(orgId: string): string {
 async function spentSince(tx: Tx, orgId: string, since: Date): Promise<Prisma.Decimal> {
   // H04/R3-L03：费用/预留按每次 attempt 的 claim 时刻归属预算窗口（逐attempt账本为主）；
   // 无账本行的历史/合成 ai_run 行回退整行口径（按 run.created_at），不双重计算。
-  // 归属口径（L03）：已结算/已释放按 attempt 发生时刻（l.created_at）归属；
-  // usage 未知的未决预留（超时/崩溃）挂任务原始预算日（run.created_at），
-  // 跨日恢复不把昨日未决预留搬入今日，也不把今日实际费用挂到昨日。
+  // 归属口径（R4-N01/N02）：所有账本行（含usage未知reserved）一律按各自 claim 时刻
+  // l.created_at 归属——恢复产生的新预留留在当前窗口，旧窗口未决不搬入当前窗口。
   const ledgerRows = await tx.$queryRaw<Array<{ spent: Prisma.Decimal | string | null }>>`
     SELECT COALESCE(SUM(
       CASE WHEN l.status = 'released' THEN COALESCE(l.actual_cost, 0)
            ELSE COALESCE(l.actual_cost, l.reserve_cost) END
     ), 0) AS spent
     FROM ai_attempt_ledger l
-    JOIN ai_run r ON r.id = l.run_id
-    WHERE l.org_id = ${orgId}
-      AND (CASE WHEN l.status = 'reserved' THEN r.created_at ELSE l.created_at END) >= ${since}::timestamptz`;
+    WHERE l.org_id = ${orgId} AND l.created_at >= ${since}::timestamptz`;
+  // R4-N03 旧数据差值兼容：账本上线前的运行按（run 总额 − 该 run 账本已计 spent）计入
+  // run 原始窗口——首次恢复新增账本行后旧 actual/未决 reserve 不消失、不重复计费。
   const legacyRows = await tx.$queryRaw<Array<{ spent: Prisma.Decimal | string | null }>>`
-    SELECT COALESCE(SUM(COALESCE(r.actual_cost, 0) + r.reserved_cost), 0) AS spent
+    SELECT COALESCE(SUM(GREATEST(COALESCE(r.actual_cost, 0) + r.reserved_cost - COALESCE(led.spent, 0), 0)), 0) AS spent
     FROM ai_run r
+    LEFT JOIN (
+      SELECT run_id, SUM(
+        CASE WHEN status = 'released' THEN COALESCE(actual_cost, 0)
+             ELSE COALESCE(actual_cost, reserve_cost) END
+      ) AS spent
+      FROM ai_attempt_ledger GROUP BY run_id
+    ) led ON led.run_id = r.id
     WHERE r.org_id = ${orgId} AND r.created_at >= ${since}::timestamptz
-      AND NOT EXISTS (SELECT 1 FROM ai_attempt_ledger l WHERE l.run_id = r.id)`;
+      AND COALESCE(r.actual_cost, 0) + r.reserved_cost > COALESCE(led.spent, 0)`;
   const a = ledgerRows[0]?.spent;
   const b = legacyRows[0]?.spent;
   return new Prisma.Decimal((a ?? 0).toString()).add(new Prisma.Decimal((b ?? 0).toString()));
