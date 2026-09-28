@@ -5,9 +5,9 @@
   "start_received_at": "2026-09-28T11:47:03+08:00",
   "head_at_start": "77e1334",
   "branch_at_start": "phase/04-metrics-alerts",
-  "writer": "Z02",
+  "writer": "Codex04",
   "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
-  "writer_since": "2026-09-28T11:47:03+08:00",
+  "writer_since": "2026-09-28T12:22:54+08:00",
   "gate04_final": "G4R6-20260928-01 PASS @77e1334 (business f5af2f4); 50 scenarios + tsc0",
   "phase_plan": [
     "close Phase4 git lifecycle (merge main, push, create phase/05-ai)",
@@ -22,5 +22,11 @@
     "tests/unit/imports/preview/**",
     "src/app/settings/**"
   ],
-  "owner_draft_note": "input-box draft 啊 kept by 04, not a task"
+  "owner_draft_note": "input-box draft 啊 kept by 04, not a task",
+  "task017_impl_frozen_at": "2026-09-28T12:22:54+08:00",
+  "task017_business_commit": "82856bc",
+  "verification": "tsc0; unit 72/72; integration 187 pass + 1 honest skip (real contract, configs empty); g3 aggregate 0; build 0; stub fault-injection 13 scenarios green",
+  "task017_done": false,
+  "done_blocker": "real model contract pending Owner-provided local configs (asked once)",
+  "repair_env": "/tmp/aiea-ph5-20260928-z02 + fresh PG17.11 127.0.0.1:55509 (socket outside repo)"
 }
