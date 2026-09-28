@@ -1,0 +1,27 @@
+{
+  "recorded_at": "2026-09-28T11:26:13+08:00",
+  "review": "G4R5-20260928-01",
+  "handoff": "G4R5-20260928-02",
+  "start_sent": true,
+  "start_received_at": "2026-09-28T11:26:13+08:00",
+  "head_at_start": "3c241cd",
+  "branch": "phase/04-metrics-alerts",
+  "writer": "Z02",
+  "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
+  "writer_since": "2026-09-28T11:26:13+08:00",
+  "base_candidate": "3c241cde044052ef635b1e207dc3b6e746e8ad87",
+  "business_head": "698c721",
+  "repair_scope": [
+    "H07-F09/V01-evidence-restore-no-carry",
+    "H07-F09/V02-same-evalAt-latest-published-predecessor"
+  ],
+  "probes": "docs/reviews/gate-04-review-5-evidence/g4r5-independent.test.ts (V01/V02 red, V03 green); keep original 45",
+  "b01_boundary": [
+    "src/features/settings/**",
+    "tests/unit/settings/**",
+    "src/features/imports/preview/**",
+    "tests/unit/imports/preview/**",
+    "src/app/settings/**"
+  ],
+  "owner_draft_note": "input-box draft 啊 kept by 04, not a task"
+}
