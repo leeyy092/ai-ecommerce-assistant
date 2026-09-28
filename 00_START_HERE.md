@@ -9,24 +9,24 @@
 | 当前阶段 | 06 分任务开发 · Phase5 AI网关返修 |
 | 当前任务 | TASK-017 |
 | 当前状态 | 待修复 |
-| 上一个完成项 | Phase4 REVIEW6独立PASS及Git收尾；TASK017冻结563a320独审完成FAIL（6HIGH/2MEDIUM） |
-| 下一步 | Z02按T017R1-20260928-02返修TASK017八组（H01-H06/M01-M02）：新archive+新PG复现26红2绿+原13绿再修，冻结候选交回04；真实contract仍待Owner三配置。 |
-| 交给谁 | ZCode |
+| 上一个完成项 | T017R1返修完成：28探针全绿（26红转绿+2对照保持）、原网关13保持，业务提交f308b47 |
+| 下一步 | Codex04独立复审563a320..新HEAD（业务f308b47+管理冻结chore）：按R1八组关闭标准复验28探针与原13绿；真实contract仍待Owner三配置，通过前不标017 DONE不进018。 |
+| 交给谁 | Codex04 |
 | 做到什么算完成 | 关闭TASK017 REVIEW1六HIGH/两MEDIUM，有效26反例与2对照及原网关13场景通过、非增量tsc0；固定真实模型contract独立通过。测试/独审/Owner验收分开。 |
 | 卡点 | 独审FAIL已给可复现原合同返修；原授权内可立即接续。真实模型contract待Owner本地配置（已请求一次）；不能以缺配置暂停可做的修复。B01五路径禁触。 |
 | 检查点 | NO |
-| 审查 | TASK017 REVIEW1 FAIL 6HIGH/2MEDIUM（非GATE05）；GATE04 REVIEW6 PASS保持；Owner产品验收另记 |
-| 进度最后更新 | 2026-09-28T12:53:16+08:00 |
+| 审查 | TASK017 REVIEW1 FAIL（6H/2M）→ 返修候选待REVIEW2；Gate04 REVIEW6/Gate02/03 PASS保持 |
+| 进度最后更新 | 2026-09-28T13:06:34+08:00 |
 
 项目绝对路径：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
 
-## 复制这一段，交给 ZCode
+## 复制这一段，交给 Codex04
 
 ```text
 当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
 产品目标：交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）
 当前任务：TASK-017
-本轮动作：Z02按T017R1-20260928-02返修TASK017八组（H01-H06/M01-M02）：新archive+新PG复现26红2绿+原13绿再修，冻结候选交回04；真实contract仍待Owner三配置。
+本轮动作：Codex04独立复审563a320..新HEAD（业务f308b47+管理冻结chore）：按R1八组关闭标准复验28探针与原13绿；真实contract仍待Owner三配置，通过前不标017 DONE不进018。
 
 根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN及MVP计划顶部；按当前TASK读原合同。磁盘最新Owner答复、Git、实际写入权优先。
 唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且2026-09-27 14:05:51已激活，沿用原codex-zcode。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
@@ -42,11 +42,11 @@ Owner已批MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；存在未提交或未跟踪内容。
-- 分支：phase/05-ai；版本：563a320b6587c6fb10f5986936a470be43c1dfc8。
+- 分支：phase/05-ai；版本：f308b477bd4abafb011216953b1a1910d4951a31。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
 - GitHub：已独立核验origin main=d536f27、phase/05-ai=563a320、phase/04-metrics-alerts=77e1334；本轮04未提交/推送/合并；最后核验：2026-09-28T12:44:48+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：docs/reviews/task-017-review-1-evidence/remote.txt。
 - 部署：未部署，未真实商家试用；后续AI/页面/注册/运维未完成；最后核验：从未核验；地址：未记录；证据：本轮仅TASK017独立实现审查与原合同返修准备，无部署或真实试用。。
 
-刷新前本地快照时间：2026-09-28T12:54:06+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-28T13:07:05+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)

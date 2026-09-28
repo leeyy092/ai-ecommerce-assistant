@@ -6,9 +6,9 @@
   "start_received_at": "2026-09-28T12:53:16+08:00",
   "head_at_start": "563a320",
   "branch": "phase/05-ai",
-  "writer": "Z02",
+  "writer": "Codex04",
   "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
-  "writer_since": "2026-09-28T12:53:16+08:00",
+  "writer_since": "2026-09-28T13:06:34+08:00",
   "review_range": "f8f6a99..563a320",
   "repair_scope": [
     "H01-cache-context-isolation",
@@ -28,5 +28,15 @@
     "tests/unit/imports/preview/**",
     "src/app/settings/**"
   ],
-  "real_contract": "still pending Owner configs; asked once; not DONE until independent PASS + real contract"
+  "real_contract": "still pending Owner configs; asked once; not DONE until independent PASS + real contract",
+  "repair_frozen_at": "2026-09-28T13:06:34+08:00",
+  "repair_business_commit": "f308b47",
+  "repair_review_range": "563a320..newHEAD",
+  "repair_red_baseline": "28 probes: 26 FAIL + 2 PASS (C01/C02) — matches REVIEW1",
+  "repair_green_results": "tsc0; 28/28 probes green; original gateway 13 + contract skip kept (41 combined); unit 72/72; integration 215 pass + 1 skip; g3 aggregate 0; build 0",
+  "repair_remaining_gaps": [
+    "real contract still pending Owner configs",
+    "E2E not rerun (no page changes)"
+  ],
+  "repair_env": "/tmp/aiea-t017r1-20260928-z02 + fresh PG17.11 127.0.0.1:55510 (socket outside repo)"
 }
