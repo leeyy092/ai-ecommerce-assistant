@@ -6,9 +6,9 @@
   "start_received_at": "2026-09-28T13:25:01+08:00",
   "head_at_start": "e280bc6",
   "branch": "phase/05-ai",
-  "writer": "Z02",
+  "writer": "Codex04",
   "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
-  "writer_since": "2026-09-28T13:25:01+08:00",
+  "writer_since": "2026-09-28T13:32:35+08:00",
   "repair_scope": [
     "H03/J01-global2-J02-crash-commit-J06-terminal-idempotent",
     "H04/J03-J04-J05-additive-spent",
@@ -22,5 +22,16 @@
     "src/features/imports/preview/**",
     "tests/unit/imports/preview/**",
     "src/app/settings/**"
+  ],
+  "repair_frozen_at": "2026-09-28T13:32:35+08:00",
+  "repair_business_commit": "3516e81",
+  "repair_review_range": "e280bc6..newHEAD",
+  "repair_red_baseline": "J01-J07: 7 FAIL; K01: 1 PASS — matches REVIEW2",
+  "repair_green_results": "tsc0; R2 probes 8/8; R1 28 + gateway 13 = 41 kept; unit 72/72; integration 223 pass + 1 skip; g3 aggregate 0; build 0",
+  "m01_status": "BLOCKED-honest: char-approx-v1 token counter (no offline qwen tokenizer evidence); minimal plan: calibrate with real usage after Owner config or vendor-matched offline tokenizer; 12k char gate enforced",
+  "repair_remaining_gaps": [
+    "real contract pending Owner configs",
+    "M01 real tokenizer BLOCKED with minimal plan",
+    "E2E not rerun"
   ]
 }
