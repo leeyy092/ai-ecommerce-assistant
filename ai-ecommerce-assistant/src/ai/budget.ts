@@ -44,14 +44,10 @@ export function orgExecutionLockKey(orgId: string): string {
 
 async function spentSince(tx: Tx, orgId: string, since: Date): Promise<Prisma.Decimal> {
   // spent = 已结算/已释放按 actual 计 + 未结算（reserved/unknown）按未决预留计（H04）
+  // H04/R2：任何状态均原子统计 已发生actual + 仍未决reserve（加法口径，不二选一）；
+  // released 已在放弃时扣减 reserved、actual（若有付费消耗）保留，不重复计算。
   const rows = await tx.$queryRaw<Array<{ spent: Prisma.Decimal | string | null }>>`
-    SELECT COALESCE(SUM(
-      CASE
-        WHEN billing_status IN ('settled') THEN actual_cost
-        WHEN billing_status = 'released' THEN COALESCE(actual_cost, 0)
-        ELSE reserved_cost
-      END
-    ), 0) AS spent
+    SELECT COALESCE(SUM(COALESCE(actual_cost, 0) + reserved_cost), 0) AS spent
     FROM ai_run
     WHERE org_id = ${orgId} AND created_at >= ${since}`;
   const v = rows[0]?.spent;

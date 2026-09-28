@@ -64,7 +64,7 @@ export function validateInsightSemantics(
   whitelist: ReferenceWhitelist,
 ): SemanticValidationError | null {
   const evidenceOk = (ids: string[] | undefined, where: string): SemanticValidationError | null => {
-    for (const id of ids ?? []) if (!whitelist.evidenceIds.has(id)) return new SemanticValidationError("UNKNOWN_REFERENCE", `${where} 引用未授权证据: ${id}`);
+    for (const id of ids ?? []) if (!whitelist.evidenceIds.has(id)) return new SemanticValidationError("UNKNOWN_REFERENCE", `${where} 存在未授权证据引用`);
     return null;
   };
   // 顶层证据引用闭合（B01）
@@ -93,17 +93,17 @@ export function validateInsightSemantics(
     const err = evidenceOk(action.evidence_ids, "action.evidence_ids");
     if (err) return err;
     for (const h of action.hypothesis_ids ?? []) {
-      if (!declaredHypotheses.has(h)) return new SemanticValidationError("UNKNOWN_REFERENCE", `action 引用未声明 hypothesis: ${h}`);
+      if (!declaredHypotheses.has(h)) return new SemanticValidationError("UNKNOWN_REFERENCE", `action 引用了未声明的 hypothesis`);
     }
     if (action.priority !== undefined && !allowedPriorities.has(action.priority)) {
-      return new SemanticValidationError("UNSUPPORTED_CLAIM", `不允许的优先级: ${action.priority}`);
+      return new SemanticValidationError("UNSUPPORTED_CLAIM", `action 存在不允许的优先级`);
     }
   }
   for (const sku of payload.related_skus ?? []) {
-    if (!whitelist.skuIds.has(sku)) return new SemanticValidationError("UNKNOWN_REFERENCE", `related_skus 引用未授权 SKU: ${sku}`);
+    if (!whitelist.skuIds.has(sku)) return new SemanticValidationError("UNKNOWN_REFERENCE", `related_skus 存在未授权 SKU 引用`);
   }
   for (const metric of payload.related_metrics ?? []) {
-    if (!whitelist.metricIds.has(metric)) return new SemanticValidationError("UNKNOWN_REFERENCE", `related_metrics 引用未授权指标: ${metric}`);
+    if (!whitelist.metricIds.has(metric)) return new SemanticValidationError("UNKNOWN_REFERENCE", `related_metrics 存在未授权指标引用`);
   }
   if (payload.estimated_impact !== undefined && payload.estimated_impact !== null) {
     return new SemanticValidationError("UNSUPPORTED_CLAIM", "P0 estimated_impact 必须为 null");
@@ -138,7 +138,7 @@ export function validateDailyConclusionSemantics(
   for (const [name, item] of items) {
     if (!item) continue;
     for (const id of item.evidence_ids ?? []) {
-      if (!whitelist.evidenceIds.has(id)) return new SemanticValidationError("UNKNOWN_REFERENCE", `${name} 引用未授权证据: ${id}`);
+      if (!whitelist.evidenceIds.has(id)) return new SemanticValidationError("UNKNOWN_REFERENCE", `${name} 存在未授权证据引用`);
     }
     if (typeof item.text === "string") {
       const err = scanTextSafety(item.text);
@@ -154,13 +154,13 @@ export function validateVocBatchSemantics(
   args: { batchMessageIds: Set<string>; normalizedTexts: Map<string, string>; taxonomyVersion: string },
 ): SemanticValidationError | null {
   if (payload.taxonomy_version !== args.taxonomyVersion) {
-    return new SemanticValidationError("TAXONOMY_MISMATCH", `taxonomy_version 必须为 ${args.taxonomyVersion}`);
+    return new SemanticValidationError("TAXONOMY_MISMATCH", `taxonomy_version 与本次任务字典版本不一致`);
   }
   const seen = new Set<string>();
   for (const r of payload.results ?? []) {
     const id = r.message_id ?? "";
-    if (!args.batchMessageIds.has(id)) return new SemanticValidationError("UNKNOWN_REFERENCE", `message_id 不属于本批: ${id}`);
-    if (seen.has(id)) return new SemanticValidationError("EVIDENCE_MISMATCH", `message_id 重复: ${id}`);
+    if (!args.batchMessageIds.has(id)) return new SemanticValidationError("UNKNOWN_REFERENCE", `message_id 存在不属于本批的引用`);
+    if (seen.has(id)) return new SemanticValidationError("EVIDENCE_MISMATCH", `message_id 存在重复`);
     seen.add(id);
     if (r.label !== "unknown" && (r.secondary_labels ?? []).includes(r.label ?? "")) {
       return new SemanticValidationError("EVIDENCE_MISMATCH", "主标签不得再次出现在 secondary_labels");
@@ -187,7 +187,7 @@ export function validateVocBatchSemantics(
     }
   }
   for (const id of args.batchMessageIds) {
-    if (!seen.has(id)) return new SemanticValidationError("EVIDENCE_MISMATCH", `批次缺少消息结果: ${id}`);
+    if (!seen.has(id)) return new SemanticValidationError("EVIDENCE_MISMATCH", `批次存在缺少结果的消息`);
   }
   return scanTextSafety(JSON.stringify(payload));
 }

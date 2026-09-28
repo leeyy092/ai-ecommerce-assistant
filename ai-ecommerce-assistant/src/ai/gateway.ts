@@ -1,33 +1,42 @@
 /**
- * TASK-017｜AI 调用唯一入口（网关编排；T017R1 H01/H03/H06/M01 修复版）。
+ * TASK-017｜AI 调用唯一入口（网关编排；T017R2 H03/H06 修复版）。
  *
- * - H01：缓存键由可信上下文派生（org/store/scope/dataset/ruleset/model/prompt/schema/inputHash），
- *   任一维度不匹配即不同运行，不复用旧 payload；
- * - H03：attempt 持久化于 ai_run.attempt_count（传输重试与格式修复共享总上限3，
- *   跨 Worker/重投递不重置）；同键在途等待复用；组织级 xact advisory lock 跨进程并发1；
- * - H04：每次 attempt 独立原子预留，有 usage 即结算实际并释放差额，超时保留未决预留；
- * - H06：失败只保存安全错误码/计量/脱敏摘要，不缓存不合法原文；修复请求只带错误码与
- *   原脱敏证据包，绝不回传原始模型输出；
- * - M01：每次请求（含修复）执行 12k 字符/16k 输入 token 先到者限制。
+ * - H03/J02：claim/预留/结算/审计全部为独立提交的短事务——网络调用前 claim 已落盘，
+ *   崩溃后 attemptCount 与未决 reserved 不回滚；恢复重投递不重置计数；
+ * - H03/J01/J06：跨进程执行闸（全局2/组织1，会话级 advisory lock，崩溃自动释放）；
+ *   不可重试错误（鉴权/未知模型/权限）终态幂等，重投递直接返回不再调用；
+ * - H04：每次 attempt 独立原子预留，有 usage 即结算实际；统计=Σactual+Σ未决reserve（budget.ts）；
+ * - H06：语义/Schema 错误摘要只含错误码与字段路径，不含任何未可信模型字段值；
+ *   修复请求仅错误码+原脱敏证据包；失败不缓存原文；
+ * - M01：输入预算 12k 字符先到者强制；token 计数为 char-approx 近似（无离线 qwen
+ *   tokenizer 证据，按合同如实 BLOCKED，见 12_PROGRESS 记录）。
  */
 import { createHash } from "node:crypto";
 import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import {
-  SCHEMA_VERSION, FIXED_MODEL_ID, PROMPT_VERSIONS, MAX_INPUT_TOKENS, MAX_OUTPUT_TOKENS,
+  SCHEMA_VERSION, FIXED_MODEL_ID, PROMPT_VERSIONS, MAX_INPUT_TOKENS,
   MAX_FORMAT_REPAIRS, BACKOFF_MS, REQUEST_TIMEOUT_MS, validatorForKind,
 } from "@/ai/schemas/validators";
 import {
   ModelTransportError, getModelTransport, type ModelRequest, type ModelTransport,
 } from "@/ai/providers/model-provider";
 import {
-  BudgetExceededError, createReservedRun, estimateReserveCost, claimAttempt, settleAttempt, releaseOutstanding, orgExecutionLockKey,
+  claimAttempt, settleAttempt, releaseOutstanding, createReservedRun,
 } from "@/ai/budget";
+import { acquireExecutionSlots } from "@/ai/slots";
 import {
   SemanticValidationError, validateInsightSemantics, validateVocBatchSemantics, validateDailyConclusionSemantics,
   type ReferenceWhitelist,
 } from "@/ai/semantic";
 
 export const AI_INPUT_MAX_CHARS = 12_000;
+/** M01：token 计数器版本——char-approx 为近似实现，真实 qwen tokenizer 待离线证据（BLOCKED 项） */
+export const TOKEN_COUNTER_VERSION = "char-approx-v1";
+
+/** H03/J06：不可重试传输错误——同任务保持终态，重投递不再调用 */
+const TERMINAL_TRANSPORT_CODES = new Set(["AUTH_ERROR", "UNKNOWN_MODEL", "PERMISSION_ERROR"]);
+/** H03/J02：在途等待上限——短等待后按崩溃恢复处理（claim 不重置计数） */
+const IN_FLIGHT_WAIT_MS = 3_000;
 
 export interface GatewayResult {
   runId: string;
@@ -48,7 +57,6 @@ export interface RunGatewayArgs {
   visibilityScope: "business" | "customer_service";
   systemPrompt: string;
   userPrompt: string;
-  /** 服务端可信语义上下文（所有 kind 强制；缺失即 fail-closed，B03） */
   semantic?: {
     whitelist?: ReferenceWhitelist;
     voc?: { batchMessageIds: Set<string>; normalizedTexts: Map<string, string>; taxonomyVersion: string };
@@ -58,7 +66,6 @@ export interface RunGatewayArgs {
   backoffMs?: number[];
   sleep?: (ms: number) => Promise<void>;
   now?: Date;
-  /** H03：在途等待上限（默认 70s ≈ 3×30s 超时） */
   inFlightWaitMs?: number;
 }
 
@@ -66,7 +73,7 @@ function hashInput(args: { systemPrompt: string; userPrompt: string }): string {
   return createHash("sha256").update(JSON.stringify([args.systemPrompt, args.userPrompt])).digest("hex");
 }
 
-/** H01：业务缓存键 = 调用者键 × 可信上下文全维度（org/store/scope/dataset/ruleset/model/prompt/schema/inputHash） */
+/** H01：业务缓存键 = 调用者键 × 可信上下文全维度 */
 function deriveContextKey(args: RunGatewayArgs, promptVersion: string, inputHash: string): string {
   return createHash("sha256").update(JSON.stringify([
     args.idempotencyKey, args.orgId, args.storeId, args.visibilityScope,
@@ -74,20 +81,18 @@ function deriveContextKey(args: RunGatewayArgs, promptVersion: string, inputHash
   ])).digest("hex").slice(0, 64);
 }
 
-/** 粗略 token 估算（预检；实际计费按 provider usage） */
+/** M01：字符预算强制；token 为保守近似（计数器版本见 TOKEN_COUNTER_VERSION） */
 function estimateTokens(text: string): number {
   const cjk = (text.match(/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/g) ?? []).length;
   const rest = text.length - cjk;
   return Math.ceil(cjk + rest / 3.2);
 }
-
-/** M01：每次请求（含修复）输入预算——12k 字符 / 16k 输入 token 先到者 */
 function inputWithinBudget(systemPrompt: string, userPrompt: string): boolean {
   const text = `${systemPrompt}\n${userPrompt}`;
   return text.length <= AI_INPUT_MAX_CHARS && estimateTokens(text) <= MAX_INPUT_TOKENS;
 }
 
-/** H06：修复提示只含错误码+安全摘要与原提示，绝不包含原始模型输出 */
+/** H06：修复提示只含错误码+安全摘要（来自可信校验器，不含模型输出值）与原提示 */
 function repairPrompt(original: ModelRequest, code: "SCHEMA_INVALID" | "SEMANTIC_INVALID", summary: string): ModelRequest {
   return {
     ...original,
@@ -95,24 +100,24 @@ function repairPrompt(original: ModelRequest, code: "SCHEMA_INVALID" | "SEMANTIC
   };
 }
 
+/** H06：兜底剥离任何 @ 形态（Ajv errorsText 不含实例值，防御性处理） */
+function safeSummary(summary: string): string {
+  return summary.replace(/[^\s]*@[^\s]*/g, "[redacted]");
+}
+
 function jitter(base: number): number {
   return Math.round(base * (0.8 + Math.random() * 0.4));
 }
 
 interface RunRow {
-  id: string; status: string; attemptCount: number;
-  requestContext: Prisma.JsonValue; errorCode: string | null; inputTokens: bigint | null; outputTokens: bigint | null;
+  id: string; status: string; attemptCount: number; errorCode: string | null;
+  requestContext: Prisma.JsonValue; reservedCost: Prisma.Decimal; actualCost: Prisma.Decimal | null;
 }
 
-async function waitForTerminal(db: PrismaClient, runId: string, waitMs: number): Promise<RunRow | null> {
-  const deadline = Date.now() + waitMs;
-  while (Date.now() < deadline) {
-    const row = await db.aIRun.findUnique({ where: { id: runId } }) as RunRow | null;
-    if (!row) return null;
-    if (["succeeded", "failed", "skipped", "superseded"].includes(row.status)) return row;
-    await new Promise((r) => setTimeout(r, 25));
-  }
-  return null;
+function isTerminal(row: RunRow): boolean {
+  if (row.status === "succeeded" || row.status === "skipped" || row.status === "superseded") return true;
+  if (row.status !== "failed") return false;
+  return row.attemptCount >= 3 || (row.errorCode != null && TERMINAL_TRANSPORT_CODES.has(row.errorCode));
 }
 
 export async function runAiTask(args: RunGatewayArgs): Promise<GatewayResult> {
@@ -124,13 +129,13 @@ export async function runAiTask(args: RunGatewayArgs): Promise<GatewayResult> {
   const timeoutMs = args.timeoutMs ?? REQUEST_TIMEOUT_MS;
   const backoff = args.backoffMs ?? BACKOFF_MS;
 
-  // H02/B03：所有 kind 强制语义上下文（缺失 fail-closed，不调用模型）
-  const semanticError = buildSemanticValidator(args);
-  if (typeof semanticError === "string") {
-    return { runId: "", status: "failed", payload: null, errorCode: semanticError, attempts: 0 };
+  // H02：所有 kind 强制语义上下文（缺失 fail-closed，不调用模型）
+  const semanticValidator = buildSemanticValidator(args);
+  if (typeof semanticValidator === "string") {
+    return { runId: "", status: "failed", payload: null, errorCode: semanticValidator, attempts: 0 };
   }
+  const runSemantic = semanticValidator as (parsed: unknown) => SemanticValidationError | null;
 
-  // H01：以派生键查找/建行（上下文任一维度不同 → 不同运行）
   const created = await createReservedRun(args.db, {
     orgId: args.orgId, storeId: args.storeId, kind: args.kind, idempotencyKey: derivedKey,
     datasetVersion: args.datasetVersion, rulesetVersion: args.rulesetVersion, visibilityScope: args.visibilityScope,
@@ -138,124 +143,125 @@ export async function runAiTask(args: RunGatewayArgs): Promise<GatewayResult> {
     requestContext: { caller_key: args.idempotencyKey }, now: args.now,
   });
   const runId = created.id;
-
   const readRow = (): Promise<RunRow | null> => args.db.aIRun.findUnique({ where: { id: runId } }) as Promise<RunRow | null>;
-  // 快路径：已成功 → 复用；已耗尽尝试的终态失败 → 直接返回（D02 不重置不重呼）
-  let row = created.reused ? await readRow() : null;
-  if (row && row.status === "succeeded") {
-    return { runId, status: "reused", payload: (row.requestContext as { cached_payload?: unknown }).cached_payload ?? null, errorCode: null, attempts: row.attemptCount };
-  }
-  if (row && ["failed", "skipped", "superseded"].includes(row.status) && row.attemptCount >= 3) {
-    return { runId, status: "failed", payload: null, errorCode: row.errorCode ?? "ATTEMPTS_EXHAUSTED", attempts: row.attemptCount };
-  }
-  if (row && row.status === "running") {
-    // H03/A04：同键在途 → 等待终态后复用结果
-    const terminal = await waitForTerminal(args.db, runId, args.inFlightWaitMs ?? 70_000);
-    if (terminal) {
-      if (terminal.status === "succeeded") {
-        return { runId, status: "reused", payload: (terminal.requestContext as { cached_payload?: unknown }).cached_payload ?? null, errorCode: null, attempts: terminal.attemptCount };
-      }
-      return { runId, status: "failed", payload: null, errorCode: terminal.errorCode ?? "PROVIDER_UNAVAILABLE", attempts: terminal.attemptCount };
+
+  // 快路径：终态（成功/尝试耗尽/不可重试错误）直接返回，重投递不再调用（J06/D02）
+  if (created.reused) {
+    const row = await readRow();
+    if (row && row.status === "succeeded") {
+      return { runId, status: "reused", payload: (row.requestContext as { cached_payload?: unknown }).cached_payload ?? null, errorCode: null, attempts: row.attemptCount };
     }
-    return { runId, status: "failed", payload: null, errorCode: "IN_FLIGHT_TIMEOUT", attempts: row.attemptCount };
+    if (row && isTerminal(row)) {
+      return { runId, status: "failed", payload: null, errorCode: row.errorCode ?? "ATTEMPTS_EXHAUSTED", attempts: row.attemptCount };
+    }
+    if (row && row.status === "running") {
+      // 在途短等待：正常并发下等到终态复用（A04）；等待超时按崩溃恢复走 claim（J02）
+      const deadline = Date.now() + (args.inFlightWaitMs ?? IN_FLIGHT_WAIT_MS);
+      while (Date.now() < deadline) {
+        const cur = await readRow();
+        if (!cur) break;
+        if (cur.status === "succeeded") return { runId, status: "reused", payload: (cur.requestContext as { cached_payload?: unknown }).cached_payload ?? null, errorCode: null, attempts: cur.attemptCount };
+        if (isTerminal(cur)) return { runId, status: "failed", payload: null, errorCode: cur.errorCode ?? "ATTEMPTS_EXHAUSTED", attempts: cur.attemptCount };
+        await new Promise((r) => setTimeout(r, 25));
+      }
+    }
   }
 
-  // H03/H01：组织级 xact 锁串行化整个执行（跨进程并发 1；同组织同键自然去重）
-  return args.db.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${orgExecutionLockKey(args.orgId)}))`;
-    // 锁内再看一次终态（前一持有者可能已完成）
-    const locked = await tx.aIRun.findUniqueOrThrow({ where: { id: runId } }) as RunRow;
-    if (locked.status === "succeeded") {
-      return { runId, status: "reused" as const, payload: (locked.requestContext as { cached_payload?: unknown }).cached_payload ?? null, errorCode: null, attempts: locked.attemptCount };
+  // H03：跨进程执行闸（全局2/组织1；会话锁崩溃自动释放）
+  const slots = await acquireExecutionSlots(args.orgId);
+  try {
+    // 锁内终态复核
+    const locked = await readRow();
+    if (locked && locked.status === "succeeded") {
+      return { runId, status: "reused", payload: (locked.requestContext as { cached_payload?: unknown }).cached_payload ?? null, errorCode: null, attempts: locked.attemptCount };
     }
-    if (["failed", "skipped", "superseded"].includes(locked.status) && locked.attemptCount >= 3) {
-      return { runId, status: "failed" as const, payload: null, errorCode: locked.errorCode ?? "ATTEMPTS_EXHAUSTED", attempts: locked.attemptCount };
+    if (locked && isTerminal(locked)) {
+      return { runId, status: "failed", payload: null, errorCode: locked.errorCode ?? "ATTEMPTS_EXHAUSTED", attempts: locked.attemptCount };
     }
 
     const validate = validatorForKind(args.kind);
     const attemptsLog: Array<Record<string, unknown>> = [];
     let request: ModelRequest = { systemPrompt: args.systemPrompt, userPrompt: args.userPrompt };
     let formatRepairs = 0;
-    let outstanding = new Prisma.Decimal(0);
     let lastErrorCode: string | null = null;
 
     const appendAttempt = async (entry: Record<string, unknown>): Promise<void> => {
       attemptsLog.push(entry);
-      await tx.aIRun.update({ where: { id: runId }, data: { attempts: attemptsLog as unknown as Prisma.InputJsonValue } });
+      await args.db.aIRun.update({ where: { id: runId }, data: { attempts: attemptsLog as unknown as Prisma.InputJsonValue } });
     };
+    /** 独立提交的终态写（H03/J02：崩溃安全） */
     const finalize = async (status: "succeeded" | "failed" | "skipped", errorCode: string | null, payload?: unknown): Promise<void> => {
-      const fresh = await tx.aIRun.findUniqueOrThrow({ where: { id: runId }, select: { reservedCost: true, actualCost: true } });
-      const hasOutstanding = fresh.reservedCost.gt(0);
-      const paid = (fresh.actualCost ?? new Prisma.Decimal(0)).gt(0);
-      await tx.aIRun.update({
+      const fresh = await readRow();
+      const outstanding = fresh?.reservedCost ?? new Prisma.Decimal(0);
+      const paid = (fresh?.actualCost ?? new Prisma.Decimal(0)).gt(0);
+      await args.db.aIRun.update({
         where: { id: runId },
         data: {
           status, errorCode, finishedAt: new Date(),
-          // 结算口径：成功或已产生实际消耗 → 计费保留（settled/unknown）；无消耗失败 → released
-          billingStatus: status === "succeeded" ? "settled" : hasOutstanding ? "unknown" : paid ? "settled" : "released",
+          // 未决预留存在（超时/usage未知）→ unknown；成功且无未决 → settled；有付费消耗 → settled；否则 released
+          billingStatus: outstanding.gt(0) ? "unknown" : status === "succeeded" || paid ? "settled" : "released",
           ...(payload !== undefined ? { requestContext: { caller_key: args.idempotencyKey, cached_payload: payload as Prisma.InputJsonValue } } : {}),
         },
       });
     };
 
     for (;;) {
-      // M01：每次请求（含修复）输入预算先到者；超限不发送
+      // M01：每次请求（含修复）字符/token 预算先到者；超限不发送
       if (!inputWithinBudget(request.systemPrompt, request.userPrompt)) {
         lastErrorCode = "INPUT_TOO_LARGE";
         await appendAttempt({ type: "input_too_large", at: attemptsLog.length + 1 });
         await finalize("failed", lastErrorCode);
         return { runId, status: "failed", payload: null, errorCode: lastErrorCode, attempts: attemptsLog.length };
       }
-      // H03/H04：claim 持久化尝试 + 本 attempt 独立预算预留
-      const claim = await claimAttempt(tx, { runId, orgId: args.orgId, inputTokens: estimateTokens(`${request.systemPrompt}\n${request.userPrompt}`), now: args.now });
-      // 累计未决预留来自超时未知usage的attempt：保持持有（unknown），不得释放绕过预算
+      // H03/J02：claim 独立提交（网络调用前落盘，崩溃不回滚）
+      const claim = await args.db.$transaction((tx) => claimAttempt(tx, { runId, orgId: args.orgId, inputTokens: estimateTokens(`${request.systemPrompt}\n${request.userPrompt}`), now: args.now }));
       if (claim.status === "attempts-exhausted") {
         lastErrorCode = lastErrorCode ?? "ATTEMPTS_EXHAUSTED";
+        await appendAttempt({ type: "attempts_exhausted" });
         await finalize("failed", lastErrorCode);
         return { runId, status: "failed", payload: null, errorCode: lastErrorCode, attempts: attemptsLog.length };
       }
       if (claim.status === "budget-exceeded") {
         lastErrorCode = `AI_${claim.window === "daily" ? "DAILY" : "MONTHLY"}_BUDGET_EXCEEDED`;
-        // 尚未发起过任何模型调用的运行：超额为 skipped（未执行）；已执行过的为 failed
         const outcome = attemptsLog.length === 0 ? "skipped" : "failed";
         await appendAttempt({ type: "budget_exceeded", window: claim.window });
         await finalize(outcome, lastErrorCode);
         return { runId, status: outcome, payload: null, errorCode: lastErrorCode, attempts: attemptsLog.length };
       }
-      outstanding = outstanding.add(claim.claim.reserveCost);
+      const reserve = claim.claim.reserveCost;
 
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
         const response = await transport.call(request, controller.signal);
-        // H04：有 usage 即结算实际并释放该次预留差额；token 累计（E04）
-        await settleAttempt(tx, { runId, usage: response.usage, reserveCost: claim.claim.reserveCost });
-        outstanding = outstanding.sub(claim.claim.reserveCost);
+        // H04：有 usage 即结算实际（独立提交）
+        await args.db.$transaction((tx) => settleAttempt(tx, { runId, usage: response.usage, reserveCost: reserve }));
         let parsed: unknown = null;
         try { parsed = JSON.parse(response.content); } catch { parsed = null; }
         const schemaOk = parsed !== null && validate(parsed);
         if (!schemaOk) {
-          const summary = parsed === null ? "输出不是合法JSON" : validate.errorsText();
+          const summary = safeSummary(parsed === null ? "输出不是合法JSON" : validate.errorsText());
           if (formatRepairs < MAX_FORMAT_REPAIRS) {
             formatRepairs += 1;
             await appendAttempt({ attempt: claim.claim.attemptNo, type: "format_repair", summary: summary.slice(0, 120) });
-            request = repairPrompt(request, "SCHEMA_INVALID", summary); // H06：不含原始输出
+            request = repairPrompt(request, "SCHEMA_INVALID", summary);
             continue;
           }
           await appendAttempt({ attempt: claim.claim.attemptNo, type: "schema_invalid", summary: summary.slice(0, 120) });
-          await finalize("failed", "SCHEMA_INVALID"); // H06：不缓存不合法原文
+          await finalize("failed", "SCHEMA_INVALID");
           return { runId, status: "failed", payload: null, errorCode: "SCHEMA_INVALID", attempts: claim.claim.attemptNo };
         }
-        // H02：强制语义校验（validator 已在入口保证存在）
-        const sem = (semanticError as (parsed: unknown) => SemanticValidationError | null)(parsed);
+        const sem = runSemantic(parsed);
         if (sem) {
+          // H06/J07：摘要只用错误码+安全摘要（semantic 消息不含未授权字段值）
+          const summary = safeSummary(sem.message);
           if (formatRepairs < MAX_FORMAT_REPAIRS) {
             formatRepairs += 1;
-            await appendAttempt({ attempt: claim.claim.attemptNo, type: "semantic_repair", summary: sem.message.slice(0, 120) });
-            request = repairPrompt(request, "SEMANTIC_INVALID", sem.message);
+            await appendAttempt({ attempt: claim.claim.attemptNo, type: "semantic_repair", summary: summary.slice(0, 120) });
+            request = repairPrompt(request, "SEMANTIC_INVALID", summary);
             continue;
           }
-          await appendAttempt({ attempt: claim.claim.attemptNo, type: "semantic_invalid", summary: sem.message.slice(0, 120) });
+          await appendAttempt({ attempt: claim.claim.attemptNo, type: "semantic_invalid", summary: summary.slice(0, 120) });
           await finalize("failed", "SEMANTIC_INVALID");
           return { runId, status: "failed", payload: null, errorCode: "SEMANTIC_INVALID", attempts: claim.claim.attemptNo };
         }
@@ -266,33 +272,32 @@ export async function runAiTask(args: RunGatewayArgs): Promise<GatewayResult> {
         if (error instanceof ModelTransportError) {
           await appendAttempt({ attempt: claim.claim.attemptNo, type: "transport", code: error.code, retryable: error.retryable });
           if (!error.retryable) {
-            // 已知终态失败：放弃本 attempt 未决预留（无消耗）；已付费消耗保留（H04）
-            await releaseOutstanding(tx, { runId, reserveCost: claim.claim.reserveCost });
-            outstanding = outstanding.sub(claim.claim.reserveCost);
+            // J06：不可重试错误同任务终态——放弃本 attempt 未决预留（无消耗），已付费消耗保留
+            await args.db.$transaction((tx) => releaseOutstanding(tx, { runId, reserveCost: reserve }));
             await finalize("failed", error.code);
             return { runId, status: "failed", payload: null, errorCode: error.code, attempts: claim.claim.attemptNo };
           }
-          // 可重试（超时/限流/5xx）：超时且 usage 未知 → 保留该次预留（unknown，E03）
           if (error.code !== "TIMEOUT") {
-            await releaseOutstanding(tx, { runId, reserveCost: claim.claim.reserveCost });
-            outstanding = outstanding.sub(claim.claim.reserveCost);
-          }
+            await args.db.$transaction((tx) => releaseOutstanding(tx, { runId, reserveCost: reserve }));
+          } // TIMEOUT：usage 未知保留未决预留（H04）
           lastErrorCode = error.code;
           await sleep(jitter(backoff[Math.min(claim.claim.attemptNo - 1, backoff.length - 1)]));
-          continue; // 下一次 attempt 重新 claim（总次数持久共享，D01/D02）
+          continue;
         }
         if ((error as { name?: string })?.name === "AbortError") {
           await appendAttempt({ attempt: claim.claim.attemptNo, type: "transport", code: "TIMEOUT", retryable: true });
           lastErrorCode = "TIMEOUT";
           await sleep(jitter(backoff[Math.min(claim.claim.attemptNo - 1, backoff.length - 1)]));
-          continue; // 保留未决预留（usage 未知）
+          continue;
         }
         throw error;
       } finally {
         clearTimeout(timer);
       }
     }
-  }, { timeout: (args.timeoutMs ?? REQUEST_TIMEOUT_MS) * 4 + 30_000 });
+  } finally {
+    await slots.release();
+  }
 }
 
 /** H02：构建语义校验闭包；返回 string = 上下文缺失错误码（fail-closed） */

@@ -30,7 +30,7 @@ importers:
         specifier: 16.3.5
         version: 16.3.5(@playwright/test@1.63.0)(@types/node@24.13.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       pg:
-        specifier: ^8.16.0
+        specifier: 8.23.0
         version: 8.23.0
       pg-boss:
         specifier: ^12.32.0
