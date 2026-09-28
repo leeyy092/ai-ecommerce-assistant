@@ -23,7 +23,7 @@ Owner已批MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
   "stage": "06 分任务开发 · Phase5 AI网关返修",
   "current_task": "TASK-017",
-  "status": "待修复",
+  "status": "待审查",
   "last_completed": "T017R1返修完成：28探针全绿（26红转绿+2对照保持）、原网关13保持，业务提交f308b47",
   "next_action": "Codex04独立复审563a320..新HEAD（业务f308b47+管理冻结chore）：按R1八组关闭标准复验28探针与原13绿；真实contract仍待Owner三配置，通过前不标017 DONE不进018。",
   "next_owner": "Codex04",
