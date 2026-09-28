@@ -6,9 +6,9 @@
   "start_received_at": "2026-09-28T13:46:10+08:00",
   "head_at_start": "340dedb",
   "branch": "phase/05-ai",
-  "writer": "Z02",
+  "writer": "Codex04",
   "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
-  "writer_since": "2026-09-28T13:46:10+08:00",
+  "writer_since": "2026-09-28T14:12:19+08:00",
   "repair_scope": [
     "H03/L01-failed-terminal-redelivery",
     "H03/L02-recovery-preserves-audit-and-repair-state",
@@ -31,5 +31,15 @@
     ],
     "sdk_commit": "2cd356a499e7d70dc28035b34fd9ee1ad2d12572",
     "status": "two unverified paths: get_tokenizer(qwen-*) shares resources/qwen.tiktoken (dispatch-only, no snapshot-vocab proof); Tokenization.call lacks qwen-flash in Models enum; M01 remains BLOCKED, no PASS"
-  }
+  },
+  "repair_frozen_at": "2026-09-28T14:12:19+08:00",
+  "repair_business_commit": "2a152e5",
+  "repair_review_range": "340dedb..newHEAD",
+  "repair_red_baseline": "L01/L02/L03: 3 FAIL; K02: 1 PASS — matches REVIEW3",
+  "repair_green_results": "tsc0; R3 probes 4/4; original 49 kept; unit 72/72; integration 227 pass + 1 skip; g3 aggregate 0; build 0",
+  "repair_remaining_gaps": [
+    "real contract pending Owner configs",
+    "M01 BLOCKED (tokenizer leads unverified)",
+    "E2E not rerun"
+  ]
 }

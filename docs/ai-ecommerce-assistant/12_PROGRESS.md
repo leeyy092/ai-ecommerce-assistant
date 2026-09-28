@@ -6,6 +6,7 @@
 
 根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调迁移、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN及MVP计划顶部；按TASK017读原06/09合同。磁盘最新Owner答复、实际Git和唯一写入者优先。
 唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb，MIGRATE-20260927-03 COMPLETE且2026-09-27 14:05:51已激活，沿用原codex-zcode。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
+2026-09-28T14:12:19+08:00 T017R3-20260928-02 返修完成并冻结单一候选：业务2a152e5（gateway终态/恢复审计+budget逐attempt账本+迁移20260928140000+R3探针三件维护副本+迁移计数16），管理冻结提交为本chore，写入权交回Codex04按340dedb..新HEAD独审。红基线（新/tmp=/tmp/aiea-t017r3-20260928-z02+新PG17@127.0.0.1:55512）修复前L01/L02/L03=3红+K02=1绿与REVIEW3独立结论一致；修复后L01-L03+K02=4/4全绿、原49（R1 28+网关13+R2 8）保持、unit72/72、integration227通过+1如实skip、g3四套聚合0、生产build0、非增量tsc0。M01维持BLOCKED（TOKENIZER-03线索已归档：官方SDK两路径均待验证）。真实contract仍待Owner三配置不标017 DONE不进018。Z02转只读；B01五路径未触碰。
 2026-09-28T14:02:15+08:00管理更正（T017R3-TOKENIZER-20260928-03）：T017R3-20260928-02 START已实际送达并由Z02接管返修中（回执13:46:10为本机date实测处理起始时刻，早于R3审查证据落盘13:51:39约5分29秒——同机时钟下二者先后无法独立核实，权威时序标记为包含回执的提交7d0c56e@13:54:51；不猜造精确到秒的送达时刻）。当前主线业务/管理/Git/sync唯一写入权Z02，04只读。旧R2/R1/PH5/G4/COORD均已完成，不重发。Owner草稿“啊”保留未提交。
 04完成T017R3-20260928-01独立FAIL，候选phase/05-ai@340dedb（业务3516e81），范围e280bc6..340dedb；剩H03/H04两组HIGH，M01一MEDIUM仍BLOCKED。原49产品场景PASS、缺配置断言1PASS、真实contract1SKIP；新增L01/L02/L03有效3FAIL，K02三真实进程并发max2 PASS；非增量tsc0。H06引用摘要具体缺陷关闭，R1 H01/H02/H05/M02保持，无新反例不重开。36件正式证据SHA核实，新PG17@50576停止、/tmp/aiea-t017r3-7ajqep2y清理；原Gate04六轮及TASK017 R1/R2、B01 45SHA保持。
 本轮唯一返修依据docs/reviews/CODEX_REVIEW_TASK_017_REVIEW_3_2026-09-28.md、TASK_017_REVIEW_3_EVIDENCE_2026-09-28.json、task-017-review-3-evidence/README.md、t017r3-independent.test.ts、t017r3-crash.ts、r3-observations.json及boundaries.log。新2026-09-28T13:46:10+08:00 T017R3-20260928-02 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，04自ACK起只读。接收实测phase/05-ai@340dedb（业务3516e81，1063ce6冻结+COORD-03管理）、main=d536f27；已完整读P08首块、REVIEW3报告/索引/探针（L01-L03/K02+t017r3-crash.ts）。返修仅H03/H04余项+M01澄清：H03（L01普通失败终态同键重投不得再调用；L02恢复保留历史attempts审计与已消费format_repair计数，不覆盖不重置）；H04（L03跨自然日恢复的每次attempt费用/预留按发生时刻归属预算窗口，新增ai_attempt_ledger逐attempt账本+无账本行回退ai_run，不把历史actual搬到新日重复计入）；M01维持BLOCKED并澄清来源（官方资料未取得匹配计数器来源/版本，最小后续=供应商计数接口或可验证匹配分词器）。先新archive+新PG复现L01-L03红/K02绿+原49保持再修；H06及已关闭项不重开；B01五路径禁触；真实contract待Owner三配置不标DONE不进018；Owner草稿“啊”非任务。
@@ -26,18 +27,19 @@ Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
   "stage": "06 分任务开发 · Phase5 AI网关返修",
   "current_task": "TASK-017",
-  "status": "进行中",
-  "last_completed": "T017R3独立复审完成：原49通过，H06关闭；剩H03/H04两HIGH、M01一MEDIUM受阻",
-  "next_action": "Z02按T017R3-20260928-02返修H03/H04（M01维持BLOCKED澄清来源）：新archive+新PG复现L01-L03红/K02绿+原49保持再修，冻结候选交回04；真实contract待Owner三配置。",
-  "next_owner": "ZCode",
-  "next_prompt": "prompts/P08_FIX.md",
+  "status": "待审查",
+  "last_completed": "T017R3返修完成：L01-L03转绿4/4+K02、原49保持，业务提交2a152e5；M01维持BLOCKED",
+  "next_action": "Codex04独立复审340dedb..新HEAD（业务2a152e5+管理冻结chore）：按R3关闭标准复验L01-L03/K02与原49；M01维持BLOCKED（TOKENIZER线索归档）；真实contract待Owner三配置。",
+  "next_owner": "Codex04",
+  "next_prompt": "prompts/P07_CODE_REVIEW.md",
   "acceptance": "L01/L02终态与恢复审计、L03跨日预算关闭，原49/K02保持、非增量tsc0；实际token计数与真实固定模型contract独立通过后才可017 DONE。",
   "blockers": "原H03/H04有有效反例可继续返修；M01匹配计数器来源未取得、真实contract待Owner三配置（已问一次）。B01五路径保护。",
   "checkpoint": "NO",
-  "review": "TASK017 REVIEW3 FAIL（2HIGH/1MEDIUM BLOCKED）；H06具体缺陷关闭，Phase4技术PASS保持",
-  "updated_at": "2026-09-28T13:46:10+08:00",
-  "updated_by": "Z02 · T017R3-20260928-02 START接管与回执",
+  "review": "TASK017 REVIEW3 FAIL（2H+1M）→ 返修候选待REVIEW4；Gate04 REVIEW6保持",
+  "updated_at": "2026-09-28T14:12:19+08:00",
+  "updated_by": "Z02 · T017R3-20260928-02 返修完成与候选冻结",
   "evidence": [
+    "2026-09-28T14:12:19+08:00：T017R3冻结验证（新/tmp=/tmp/aiea-t017r3-20260928-z02，git archive HEAD+新原生PG17.11仅127.0.0.1:55512，socket在repo外）：修复前红基线L01/L02/L03=3FAIL+K02=1PASS与REVIEW3独立结论一致；修复后4/4全绿（L01 failed终态同键重投不调用calls=2；L02崩溃后attempt1 format_repair审计保留且恢复不重置已消费修复状态；L03昨日未决预留不入今日窗口、今日actual+新预留0.0165>0.012正确拒绝next=skipped；K02三真实进程全局并发max2）、原49保持、unit72、integration227+1skip、g3聚合0、build0、tsc0。实现：isTerminal将failed一律终态；恢复初始化attemptsLog/formatRepairs自持久行、appendAttempt改重读追加式；新增ai_attempt_ledger（text键对齐领域约定，claim/settle/release同步，参数显式cast）；预算归属=settled/released按l.created_at+unknown预留按run.created_at+无账本行回退ai_run（E05兼容；期间发现并修复uuid/text列型不匹配：领域表org_id为text，ledger初版UUID列已改text）。M01维持BLOCKED（T017R3_TOKENIZER_LEAD归档，SDK commit 2cd356a4两路径均待验证）。E2E未重跑（无页面变化）。候选=业务2a152e5+管理冻结chore；B01五路径未触碰。",
     "2026-09-28T14:02:15+08:00：T017R3-TOKENIZER-20260928-03只读线索消费回执（非START）——Z02已读取并归档/var/folders/.../aiea-tokenizer-lead-k9p5rh1s的TOKENIZER_LEAD.md与sources.json至docs/reviews/T017R3_TOKENIZER_LEAD_2026-09-28_*（官方DashScope SDK commit 2cd356a4，三文件SHA=ddec2e06/bdcdcd0d/a0ee3d94前缀核对）。两条路径均待验证：get_tokenizer对qwen前缀共用resources/qwen.tiktoken（仅证明分派不证明快照词表一致）；Tokenization.call的Models枚举无qwen-flash且需真实配置验证；QwenTokenizer为NFC文本计数不含chat模板framing。M01维持BLOCKED不冒称PASS，不加Python服务/新框架；H03/H04返修继续。同时修正P08等首块残留writer04段为实际（Z02返修中、04只读），回执时间13:46:10为本机date实测处理起始、早于审查证据落盘13:51:39（先后不可独立核实，权威标记=回执提交7d0c56e@13:54:51，不猜造秒数）。Owner草稿“啊”非任务。",
     "2026-09-28T13:46:10+08:00：T017R3-20260928-02 START首次实际送达Z02（04独立T017R3-20260928-01 FAIL：原49全PASS保持、H06关闭、L01/L02/L03有效3FAIL、K02全局并发2 PASS、tsc0、SHA保持、PG50576已停）并接管唯一主线写入权，04转只读。接收实测：340dedb（业务3516e81）/phase/05-ai/main=d536f27。返修方案：H03 isTerminal把failed一律视为终态（L01同键重投SCHEMA_INVALID不再调用）+恢复时从row.attempts初始化attemptsLog与已消费format_repair计数（L02审计追加不覆盖）；H04新增ai_attempt_ledger逐attempt账本按claim时刻归属预算窗口、claim/settle/release同步写账本、无账本旧行回退ai_run口径（L03今日恢复actual+新预留正确拒绝，E05合成行回退兼容）。B01五路径禁触。",
     "2026-09-28T13:51:39+08:00：T017R3-20260928-01独立FAIL，冻结340dedb/业务3516e81，范围e280bc6..340dedb。原49产品场景+缺配置断言1PASS、真实contract1SKIP；新增L01/L02/L03三FAIL、K02三进程max2 PASS；非增量tsc0。H03失败终态自动再调用/恢复覆盖审计，H04跨日恢复当前费用按旧createdAt漏算；M01实际tokenizer仍BLOCKED。H06关闭、其余旧关闭项保持。36件正式SHA核实，新PG50576停止、本轮tmp清理；原Gate04/T017R1R2/B01 SHA保持。当前writer04，T017R3-20260928-02仅准备待实际桌面START；COORD03已消费不重排队。",
@@ -468,7 +470,7 @@ Owner批准MVP-CORE-20260928-01：老板三分钟四卡/同版证据/本人行�
 | TASK-014 | 基础经营与广告指标 | DONE | TASK-013 | R6累计独立PASS；metrics金额数量/基准/广告及非法日期合同关闭。 |
 | TASK-015 | 退款与售后队列指标 | DONE | TASK-014 | R6累计独立PASS；退款/售后分渠道、成熟边界保持。 |
 | TASK-016 | 确定性异常规则与快照发布 | DONE | TASK-015 | R6独立PASS，77e1334；H07 V01/V02关闭，原48+W01/W02共50通过。 |
-| TASK-017 | 模型网关与结构化输出门禁 | IN_PROGRESS | TASK-004、TASK-016 | T017R3-20260928-02已2026-09-28T13:46:10实际START接管（H06关闭保持）：剩H03（L01失败终态重投、L02恢复审计/修复状态保持）与H04（L03跨日attempt归属）返修中，M01维持BLOCKED；真实contract待Owner本地配置，不标DONE不进018。 |
+| TASK-017 | 模型网关与结构化输出门禁 | IN_REVIEW | TASK-004、TASK-016 | T017R3-20260928-02已13:46:10实际START（回执时序标注见协调JSON）并于14:12:19完成返修冻结：L01-L03转绿4/4+K02、原49保持，业务2a152e5+管理冻结chore，待Codex04独立REVIEW4（340dedb..新HEAD）；M01维持BLOCKED（TOKENIZER线索归档两路径待验证）；真实contract待Owner本地配置，不标DONE不进018。 |
 | TASK-018 | VOC分类、人工标签优先与聚合 | TODO | TASK-017、TASK-012 | 未执行 |
 | TASK-019 | 有证据的运营建议 | TODO | TASK-018 | 未执行 |
 | TASK-020 | 固定日报调度与规则降级 | TODO | TASK-019 | 未执行 |
