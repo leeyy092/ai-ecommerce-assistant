@@ -1003,7 +1003,7 @@ model RuleEvaluation {
   ruleConfig RuleConfig @relation(fields: [orgId, storeId, rulesetVersion, ruleId, ruleVersion], references: [orgId, storeId, rulesetVersion, ruleId, ruleVersion])
 
   @@unique([orgId, id])
-  @@unique([orgId, storeId, ruleId, ruleVersion, entityKey, subchannel, periodStart, periodEnd, datasetVersion, rulesetVersion])
+  @@unique([orgId, storeId, ruleId, ruleVersion, entityKey, subchannel, periodStart, periodEnd, datasetVersion, rulesetVersion, evaluationAt])
   @@index([orgId, storeId])
   @@index([orgId, storeId, datasetVersion, rulesetVersion, status])
   @@map("rule_evaluation")
@@ -1039,7 +1039,7 @@ model Alert {
   ruleConfig RuleConfig @relation(fields: [orgId, storeId, rulesetVersion, ruleId, ruleVersion], references: [orgId, storeId, rulesetVersion, ruleId, ruleVersion])
 
   @@unique([orgId, id])
-  @@unique([orgId, storeId, ruleId, entityKey, subchannel, periodStart, periodEnd, ruleVersion, datasetVersion, rulesetVersion])
+  @@unique([orgId, storeId, ruleId, entityKey, subchannel, periodStart, periodEnd, ruleVersion, datasetVersion, rulesetVersion, evaluationAt])
   @@index([orgId, storeId])
   @@index([orgId, storeId, severity])
   @@index([orgId, storeId, category])

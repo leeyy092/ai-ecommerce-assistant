@@ -329,6 +329,20 @@ async function publishSnapshot(db: PrismaClient, args: {
           evaluationAt: { not: store.currentSnapshotEvaluationAt },
         },
       });
+      await tx.ruleEvaluation.deleteMany({
+        where: {
+          orgId: args.orgId, storeId: args.storeId,
+          datasetVersion: args.datasetVersion, rulesetVersion: args.rulesetVersion,
+          evaluationAt: { not: store.currentSnapshotEvaluationAt },
+        },
+      });
+      await tx.alert.deleteMany({
+        where: {
+          orgId: args.orgId, storeId: args.storeId,
+          datasetVersion: args.datasetVersion, rulesetVersion: args.rulesetVersion,
+          evaluationAt: { not: store.currentSnapshotEvaluationAt },
+        },
+      });
       await tx.jobRun.update({
         where: { id: args.runId },
         data: { status: "succeeded", finishedAt: new Date(), updatedAt: new Date() },
@@ -355,9 +369,23 @@ async function publishSnapshot(db: PrismaClient, args: {
         },
       });
     }
-    // H01/C13：CAS 指针翻转成功后才清理同版本元组下非当前评估身份的行集；
-    // 清理放在发布短事务内，构建中/失败/待CAS期间旧发布行始终完整可读。
+    // H01/C13+T01：CAS 指针翻转成功后才清理同版本元组下非当前评估身份的行集
+    // （指标/规则/告警同口径）；清理放在发布短事务内，构建中/失败/待CAS期间旧发布行始终完整可读。
     await tx.dailyMetric.deleteMany({
+      where: {
+        orgId: args.orgId, storeId: args.storeId,
+        datasetVersion: args.datasetVersion, rulesetVersion: args.rulesetVersion,
+        evaluationAt: { not: args.evaluationAt },
+      },
+    });
+    await tx.ruleEvaluation.deleteMany({
+      where: {
+        orgId: args.orgId, storeId: args.storeId,
+        datasetVersion: args.datasetVersion, rulesetVersion: args.rulesetVersion,
+        evaluationAt: { not: args.evaluationAt },
+      },
+    });
+    await tx.alert.deleteMany({
       where: {
         orgId: args.orgId, storeId: args.storeId,
         datasetVersion: args.datasetVersion, rulesetVersion: args.rulesetVersion,

@@ -122,8 +122,15 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const storeId = url.searchParams.get("store_id") ?? "";
     const grain = url.searchParams.get("grain") ?? "day";
-    const from = parseLocalDate(url.searchParams.get("from"));
-    const to = parseLocalDate(url.searchParams.get("to"));
+    // M02/T05：显式传入的非法本地日期必须 422，不得静默替换为默认期间
+    const rawFrom = url.searchParams.get("from");
+    const rawTo = url.searchParams.get("to");
+    const badDate = [rawFrom, rawTo].find((v) => v !== null && parseLocalDate(v) === null);
+    if (badDate !== undefined) {
+      return fail(422, "from/to 必须是真实本地日历日（YYYY-MM-DD）", { code: "VALIDATION_ERROR", fieldErrors: { date: `非法日期 ${badDate}` } });
+    }
+    const from = parseLocalDate(rawFrom);
+    const to = parseLocalDate(rawTo);
     const metricIds = (url.searchParams.get("metric_ids") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
     if (!storeId) return fail(422, "缺少 store_id", { code: "VALIDATION_ERROR" });
     if (grain !== "day") return fail(422, "grain 仅支持 day", { code: "VALIDATION_ERROR" });

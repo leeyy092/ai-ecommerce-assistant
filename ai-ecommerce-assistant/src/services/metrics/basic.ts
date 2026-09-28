@@ -168,17 +168,17 @@ async function buildBasicMetrics(input: {
     });
   }
 
-  // ---- 广告：按 report_date×归因组（model/window）分列，禁止跨组合并 ----
+  // ---- 广告：按 report_date×campaign×归因组（model/window）分列，禁止跨组合并（07 R05/R12 T10）----
   const ads = await tx.adMetric.findMany({
     where: { orgId, storeId },
-    select: { reportDate: true, attributionModel: true, attributionWindowDays: true, spend: true, attributedSales: true, currency: true },
+    select: { reportDate: true, campaignId: true, attributionModel: true, attributionWindowDays: true, spend: true, attributedSales: true, currency: true },
   });
-  const adGroups = new Map<string, { day: string; model: string; window: number; spend: Prisma.Decimal; sales: Prisma.Decimal }>();
+  const adGroups = new Map<string, { day: string; campaign: string; model: string; window: number; spend: Prisma.Decimal; sales: Prisma.Decimal }>();
   for (const a of ads) {
     const day = a.reportDate.toISOString().slice(0, 10);
-    const key = `${day}\u0000${a.attributionModel}\u0000${a.attributionWindowDays}`;
+    const key = `${day}\u0000${a.campaignId}\u0000${a.attributionModel}\u0000${a.attributionWindowDays}`;
     const agg = adGroups.get(key) ?? {
-      day, model: a.attributionModel, window: a.attributionWindowDays,
+      day, campaign: a.campaignId, model: a.attributionModel, window: a.attributionWindowDays,
       spend: new Prisma.Decimal(0), sales: new Prisma.Decimal(0),
     };
     agg.spend = agg.spend.add(new Prisma.Decimal(a.spend.toString()));
@@ -199,12 +199,12 @@ async function buildBasicMetrics(input: {
       if (!seen.has(d)) { seen.add(d); declaredAdDays.set(d, new Set()); }
     }
   }
-  // 为声明日但无事实的日：沿用最近归因组的entityKey（或"ads:default"占位）——只对已有组生成零行
+  // 为声明日但无事实的日：只对已有 campaign×归因组 生成零行
   for (const g of adGroups.values()) {
     for (const [day] of declaredAdDays) {
-      const key = `${day}\u0000${g.model}\u0000${g.window}`;
+      const key = `${day}\u0000${g.campaign}\u0000${g.model}\u0000${g.window}`;
       if (!adGroups.has(key)) {
-        adGroups.set(key, { day, model: g.model, window: g.window, spend: new Prisma.Decimal(0), sales: new Prisma.Decimal(0) });
+        adGroups.set(key, { day, campaign: g.campaign, model: g.model, window: g.window, spend: new Prisma.Decimal(0), sales: new Prisma.Decimal(0) });
       }
     }
   }
@@ -216,7 +216,7 @@ async function buildBasicMetrics(input: {
       if (c === "complete") { coverage = "complete"; break; }
       if (c === "partial") coverage = "partial";
     }
-    const entityKey = `ads:${g.model}:${g.window}`;
+    const entityKey = `ads:${g.campaign}:${g.model}:${g.window}`;
     const spendOver = g.spend.gt(MAX_AMOUNT);
     const salesOver = g.sales.gt(MAX_AMOUNT);
     rows.push({

@@ -195,12 +195,12 @@ describe("TASK-014 基础经营与广告指标", () => {
     expect(gmv10.valueNumeric?.toString()).toBe("50");
 
     // 广告：09-01 ROAS=100/40=2.5（last_click:7 组）；09-02 真零花费 → ROAS null/zero_denominator、spend=0 可显示
-    const roas1 = await metricRow(s.storeId, "roas", "2026-09-01", "ads:last_click:7");
+    const roas1 = await metricRow(s.storeId, "roas", "2026-09-01", "ads:AD1:last_click:7");
     expect(roas1.valueNumeric?.toString()).toBe("2.5");
-    const spend2 = await metricRow(s.storeId, "ad_spend", "2026-09-02", "ads:last_click:7");
+    const spend2 = await metricRow(s.storeId, "ad_spend", "2026-09-02", "ads:AD1:last_click:7");
     expect(spend2.valueNumeric?.toString()).toBe("0");
     expect(spend2.status).toBe("available");
-    const roas2 = await metricRow(s.storeId, "roas", "2026-09-02", "ads:last_click:7");
+    const roas2 = await metricRow(s.storeId, "roas", "2026-09-02", "ads:AD1:last_click:7");
     expect(roas2.valueNumeric).toBeNull();
     expect(roas2.status).toBe("unavailable");
     expect(roas2.unavailableReason).toBe("zero_denominator");
@@ -235,11 +235,11 @@ describe("TASK-014 基础经营与广告指标", () => {
       adRow(s.sid, "AD", "2026-09-01", "11.000000", "35.000000", "last_click", 14),
     ], cov("ads"));
     await publishedRun(s.storeId);
-    const lc7 = await metricRow(s.storeId, "ad_spend", "2026-09-01", "ads:last_click:7");
+    const lc7 = await metricRow(s.storeId, "ad_spend", "2026-09-01", "ads:AD:last_click:7");
     expect(lc7.valueNumeric?.toString()).toBe("10");
-    const fc7 = await metricRow(s.storeId, "ad_spend", "2026-09-01", "ads:first_click:7");
+    const fc7 = await metricRow(s.storeId, "ad_spend", "2026-09-01", "ads:AD:first_click:7");
     expect(fc7.valueNumeric?.toString()).toBe("20");
-    const lc14 = await metricRow(s.storeId, "ad_spend", "2026-09-01", "ads:last_click:14");
+    const lc14 = await metricRow(s.storeId, "ad_spend", "2026-09-01", "ads:AD:last_click:14");
     expect(lc14.valueNumeric?.toString()).toBe("11");
   });
 

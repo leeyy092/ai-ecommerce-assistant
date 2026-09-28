@@ -147,6 +147,15 @@ function realBuilders() {
   registerRulesBuilder();
 }
 
+/** 直接补 customer_messages/default 完整覆盖声明（引擎 T08/T09 源覆盖门槛需要） */
+async function messageCoverage(s: Scope, days: string[], importTaskId: string): Promise<void> {
+  for (const d of days) {
+    await db.dataCoverage.create({
+      data: { orgId, storeId: s.storeId, dataSourceId: s.dataSourceId, sourceKind: "customer_messages", channel: "default_channel", coverageDate: new Date(`${d}T00:00:00Z`), status: "complete", explicitZero: false, recordCount: 0n, datasetVersion: 1n, importTaskId },
+    });
+  }
+}
+
 /** 直接造一条 CustomerMessage（真实导入链之外的最小落库；含必需 FK 字段） */
 async function message(s: Scope, at: string, opts: { sentiment?: "positive" | "neutral" | "negative" | "unknown"; isComplaint?: boolean | null; channel?: string; classificationVersion?: string; importTaskId: string }): Promise<void> {
   const t = randomUUID().slice(0, 8);
@@ -160,6 +169,17 @@ async function message(s: Scope, at: string, opts: { sentiment?: "positive" | "n
       classificationVersion: opts.classificationVersion ?? null,
     },
   });
+}
+
+/** 建一个指定角色的成员并返回其登录Cookie（权限负例用） */
+async function memberCookie(role: "operator" | "customer_service"): Promise<string> {
+  const t = randomUUID().slice(0, 8);
+  const email = `${role}-${t}@example.com`;
+  const created = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: role }, asResponse: false });
+  const user = await db.user.create({ data: { id: randomUUID(), authUserId: created.user.id, email, displayName: role } });
+  await db.membership.create({ data: { orgId, userId: user.id, role } });
+  const rr = await auth.api.signInEmail({ body: { email, password: PASSWORD }, asResponse: true });
+  return rr.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
 }
 
 describe("G4R2 修复场景", () => {
@@ -254,9 +274,9 @@ describe("G4R2 修复场景", () => {
     expect(Number(aov.value)).toBeCloseTo(10, 5); // 单日窗口：当日 3 单共 30 元 → Σ分子/Σ分母
     // 归因组实体分离：两组各自成行，不合并
     const spends = body.data.metrics.filter((m) => m.metric_id === "ad_spend");
-    expect(spends.map((m) => m.entity_key).sort()).toEqual(["ads:m14:14", "ads:m7:7"]);
+    expect(spends.map((m) => m.entity_key).sort()).toEqual(["ads:CAMP-1:m7:7", "ads:CAMP-2:m14:14"]);
     expect(body.data.series.length).toBeGreaterThan(0);
-    expect(body.data.series.some((r) => r.metric_id === "ad_spend" && r.entity_key === "ads:m7:7")).toBe(true);
+    expect(body.data.series.some((r) => r.metric_id === "ad_spend" && r.entity_key === "ads:CAMP-1:m7:7")).toBe(true);
 
     // grain 校验
     const badGrain = await GET(req(`/api/v1/metrics?store_id=${s.storeId}&from=2026-09-25&to=2026-09-26&grain=week`, {}, owner.cookie));
@@ -269,6 +289,7 @@ describe("G4R2 修复场景", () => {
     const taskId = await good(s, "products", [pRow(s.sid, "1")]);
     await dayOfSales(s, "2026-09-25", 1, 1, "10.000000");
     // 三天投诉计数构成基准；最新一天存在未标记消息 → marking coverage < 100%
+    await messageCoverage(s, ["2026-09-04", "2026-09-11", "2026-09-18", "2026-09-25"], taskId);
     for (const d of ["2026-09-04", "2026-09-11", "2026-09-18", "2026-09-25"]) {
       for (let i = 0; i < 3; i++) await message(s, `${d}T05:00:00Z`, { isComplaint: d === "2026-09-25" && i === 0 ? null : i === 0, importTaskId: taskId });
     }
@@ -284,6 +305,7 @@ describe("G4R2 修复场景", () => {
     const taskId = await good(s, "products", [pRow(s.sid, "1")]);
     await dayOfSales(s, "2026-09-25", 1, 1, "10.000000");
     // v1：三个同星期一（08-31/09-07/09-14）构成同星期基准，当日负面率升高 → triggered(warning)
+    await messageCoverage(s, ["2026-08-31", "2026-09-07", "2026-09-14", "2026-09-21"], taskId);
     for (const d of ["2026-08-31", "2026-09-07", "2026-09-14"]) {
       for (let i = 0; i < 31; i++) await message(s, `${d}T05:00:00Z`, { sentiment: i < 2 ? "negative" : "neutral", classificationVersion: "v1", importTaskId: taskId });
     }
@@ -317,11 +339,51 @@ describe("G4R2 修复场景", () => {
     expect(p5.status).toBe(200);
     await publish(s.storeId);
     const r12 = await db.ruleEvaluation.findFirst({ where: { storeId: s.storeId, ruleId: "R12" }, orderBy: { updatedAt: "desc" } });
-    expect(r12?.entityKey).toBe("ads:m7:7");
+    expect(r12?.entityKey).toBe("ads:CAMP-1:m7:7");
     expect(r12?.status).toBe("triggered");
     const r05 = await db.ruleEvaluation.findFirst({ where: { storeId: s.storeId, ruleId: "R05" }, orderBy: { updatedAt: "desc" } });
-    expect(r05?.entityKey).toBe("ads:m7:7");
+    expect(r05?.entityKey).toBe("ads:CAMP-1:m7:7");
     expect(r05?.status).toBe("suppressed");
     expect(r05?.reasonCode).toBe("insufficient_history");
+  });
+
+  it("H07 权限负例：Operator可读不可写、CustomerService读写均403", async () => {
+    realBuilders();
+    const s = await newScope();
+    await good(s, "products", [pRow(s.sid, "1")]);
+    await dayOfSales(s, "2026-09-25", 1, 1, "10.000000");
+    await publish(s.storeId);
+    const operator = await memberCookie("operator");
+    const cs = await memberCookie("customer_service");
+    const { GET } = await import("@/app/api/v1/alert-rules/route");
+    const { PATCH } = await import("@/app/api/v1/alert-rules/[rule_id]/route");
+    const patch = (cookie: string) => PATCH(req("/api/v1/alert-rules/R03", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ store_id: s.storeId, expected_version: 1, enabled: false }) }, cookie), { params: Promise.resolve({ rule_id: "R03" }) });
+    // Operator：读 200，写 403（manageSettings 仅 O/A）
+    const opRead = await GET(req(`/api/v1/alert-rules?store_id=${s.storeId}`, {}, operator));
+    expect(opRead.status).toBe(200);
+    expect((await patch(operator)).status).toBe(403);
+    // CustomerService：读写均 403（无 viewBusinessData）
+    expect((await GET(req(`/api/v1/alert-rules?store_id=${s.storeId}`, {}, cs))).status).toBe(403);
+    expect((await patch(cs)).status).toBe(403);
+    // 未改动：配置未被负例触碰
+    const cfgRow = await db.ruleConfig.findFirst({ where: { storeId: s.storeId, ruleId: "R03" }, orderBy: { ruleVersion: "desc" } });
+    expect(cfgRow?.enabled).not.toBe(false);
+  });
+
+  it("H07 config_version：跨修改单调递增、过期真实409（T02维护对照）", async () => {
+    realBuilders();
+    const s = await newScope();
+    await good(s, "products", [pRow(s.sid, "1")]);
+    await dayOfSales(s, "2026-09-25", 1, 1, "10.000000");
+    await publish(s.storeId);
+    const { GET } = await import("@/app/api/v1/alert-rules/route");
+    const { PATCH } = await import("@/app/api/v1/alert-rules/[rule_id]/route");
+    const read = async () => ((await (await GET(req(`/api/v1/alert-rules?store_id=${s.storeId}`, {}, owner.cookie))).json()) as { data: { items: Array<{ rule_id: string; config_version: number }> } }).data.items.find((x) => x.rule_id === "R03")!;
+    const patch = (v: number, enabled: boolean) => PATCH(req("/api/v1/alert-rules/R03", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ store_id: s.storeId, expected_version: v, enabled }) }, owner.cookie), { params: Promise.resolve({ rule_id: "R03" }) });
+    const v1 = (await read()).config_version;
+    expect((await patch(v1, false)).status).toBe(200);
+    const v2 = (await read()).config_version;
+    expect(v2).toBeGreaterThan(v1);
+    expect((await patch(v1, true)).status).toBe(409); // 旧页面拿 v1 再改 → 真实过期 409
   });
 });

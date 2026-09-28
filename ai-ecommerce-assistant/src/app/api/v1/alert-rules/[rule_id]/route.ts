@@ -102,7 +102,9 @@ export async function PATCH(
         await tx.ruleConfig.create({ data: { orgId: ctx.orgId, storeId: store.id, rulesetVersion: nextRuleset, ruleId: otherId, ruleVersion: latest.ruleVersion, enabled: latest.enabled, parameters: latest.parameters as Prisma.InputJsonValue } });
       }
       const created = await tx.ruleConfig.create({
-        data: { orgId: ctx.orgId, storeId: store.id, rulesetVersion: nextRuleset, ruleId, ruleVersion: (current?.ruleVersion ?? RULE_VERSION - 1) + 1, enabled: newEnabled, parameters: baseParams as Prisma.InputJsonValue },
+        // T02：config_version（rowVersion）跨修改单调递增——新行继承旧行版本+1，
+        // GET 返回最新行 rowVersion，过期版本真实 409
+        data: { orgId: ctx.orgId, storeId: store.id, rulesetVersion: nextRuleset, ruleId, ruleVersion: (current?.ruleVersion ?? RULE_VERSION - 1) + 1, enabled: newEnabled, parameters: baseParams as Prisma.InputJsonValue, rowVersion: (current?.rowVersion ?? 0) + 1 },
       });
       await tx.store.update({ where: { id: store.id }, data: { rulesetVersion: nextRuleset } });
       const evaluationAt = canonicalEvaluationAt(fresh.timezone, new Date());

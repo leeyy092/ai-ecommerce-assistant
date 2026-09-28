@@ -6,7 +6,8 @@
  */
 import { createHash } from "node:crypto";
 import { Prisma } from "@/generated/prisma/client";
-import { registerSnapshotBuilder, localDateOf } from "@/services/snapshot";
+import { registerSnapshotBuilder, localDateOf, localInstantOf } from "@/services/snapshot";
+import { writeAudit } from "@/services/audit";
 
 type Tx = Prisma.TransactionClient;
 export const RULE_VERSION = 1;
@@ -59,23 +60,55 @@ interface AlertInfo { severity: "info" | "warning" | "critical"; title: string; 
 async function writeEval(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date; ruleId: string; ruleVersion: number; entityKey: string; subchannel: string; periodStart: string; status: "triggered" | "not_triggered" | "suppressed"; reasonCode?: string | null; sampleSize: bigint; threshold: unknown; evidence: unknown; alert?: AlertInfo | null; }): Promise<void> {
   const pd = new Date(`${a.periodStart}T00:00:00Z`);
   const th = a.threshold as Prisma.InputJsonValue; const ev = a.evidence as Prisma.InputJsonValue;
-  const w = { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, ruleVersion: a.ruleVersion, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion };
+  // G4R3 H01/T01：唯一键含 evaluationAt——新评估写自己的行，不覆盖旧发布身份的规则/告警
+  const w = { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, ruleVersion: a.ruleVersion, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion, evaluationAt: a.evaluationAt };
   await tx.ruleEvaluation.upsert({
-    where: { orgId_storeId_ruleId_ruleVersion_entityKey_subchannel_periodStart_periodEnd_datasetVersion_rulesetVersion: w },
-    create: { ...w, status: a.status, reasonCode: a.reasonCode ?? null, sampleSize: a.sampleSize, threshold: th, evidence: ev, evaluationAt: a.evaluationAt },
-    update: { status: a.status, reasonCode: a.reasonCode ?? null, sampleSize: a.sampleSize, threshold: th, evidence: ev, evaluationAt: a.evaluationAt },
+    where: { orgId_storeId_ruleId_ruleVersion_entityKey_subchannel_periodStart_periodEnd_datasetVersion_rulesetVersion_evaluationAt: w },
+    create: { ...w, status: a.status, reasonCode: a.reasonCode ?? null, sampleSize: a.sampleSize, threshold: th, evidence: ev },
+    update: { status: a.status, reasonCode: a.reasonCode ?? null, sampleSize: a.sampleSize, threshold: th, evidence: ev },
   });
   if (a.status === "triggered" && a.alert) {
-    await tx.alert.upsert({
-      where: { orgId_storeId_ruleId_entityKey_subchannel_periodStart_periodEnd_ruleVersion_datasetVersion_rulesetVersion: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, ruleVersion: a.ruleVersion, datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion } },
-      create: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, ruleVersion: a.ruleVersion, rulesetVersion: a.rulesetVersion, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, severity: a.alert.severity, title: a.alert.title, category: a.alert.category, evidence: ev, evidenceFingerprint: fp(a.evidence), datasetVersion: a.datasetVersion, evaluationAt: a.evaluationAt },
-      update: { severity: a.alert.severity, title: a.alert.title, evidence: ev, evidenceFingerprint: fp(a.evidence), evaluationAt: a.evaluationAt },
+    // G4R3 H07/T11 F09保守延续：同规则/对象/子通道/期间 + 同参数 + 同等级 + 规范化业务证据（指纹）
+    // 完全相同时延续既有 acknowledged/ignored 并记来源审计；证据/参数/等级/期间变化或 resolved 不延续。
+    const priorEval = await tx.ruleEvaluation.findFirst({
+      where: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, ruleVersion: a.ruleVersion, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, evaluationAt: { lt: a.evaluationAt } },
+      orderBy: { evaluationAt: "desc" },
+      select: { threshold: true },
     });
+    const paramsUnchanged = !priorEval || JSON.stringify(priorEval.threshold) === JSON.stringify(th);
+    const prior = paramsUnchanged
+      ? await tx.alert.findFirst({
+          where: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, severity: a.alert.severity, evidenceFingerprint: fp(a.evidence), ruleVersion: a.ruleVersion, status: { in: ["acknowledged", "ignored"] } },
+          orderBy: { evaluationAt: "desc" },
+        })
+      : null;
+    await tx.alert.upsert({
+      where: { orgId_storeId_ruleId_entityKey_subchannel_periodStart_periodEnd_ruleVersion_datasetVersion_rulesetVersion_evaluationAt: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, ruleVersion: a.ruleVersion, datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion, evaluationAt: a.evaluationAt } },
+      create: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, ruleVersion: a.ruleVersion, rulesetVersion: a.rulesetVersion, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, severity: a.alert.severity, title: a.alert.title, category: a.alert.category, status: prior?.status ?? ("open" as const), carriedFromAlertId: prior?.id ?? null, evidence: ev, evidenceFingerprint: fp(a.evidence), datasetVersion: a.datasetVersion, evaluationAt: a.evaluationAt },
+      update: { severity: a.alert.severity, title: a.alert.title, evidence: ev, evidenceFingerprint: fp(a.evidence) },
+    });
+    if (prior) {
+      await writeAudit(tx, {
+        orgId: a.orgId, storeId: a.storeId, actorType: "system",
+        action: "alert_status_carried", entityType: "alert", entityId: prior.id,
+        beforeSummary: { status: prior.status, rule_id: a.ruleId, entity_key: a.entityKey, subchannel: a.subchannel },
+        afterSummary: { continued_status: prior.status, carried_from_alert_id: prior.id, evidence_fingerprint_unchanged: true, params_unchanged: true },
+      });
+    }
   }
 }
 
-async function mSeries(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string }, metricId: string, entityKey = "store"): Promise<Array<{ date: string; value: Prisma.Decimal; sampleSize: bigint; coverage: string; maturity: string; status: string; numerator: Prisma.Decimal | null }>> {
-  const rows = await tx.dailyMetric.findMany({ where: { orgId: a.orgId, storeId: a.storeId, metricId, entityKey, datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion }, orderBy: { periodStart: "asc" } });
+async function mSeries(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt?: Date }, metricId: string, entityKey = "store"): Promise<Array<{ date: string; value: Prisma.Decimal; sampleSize: bigint; coverage: string; maturity: string; status: string; numerator: Prisma.Decimal | null }>> {
+  // G4R3 H01/T06：构建读取限定本次 evaluationAt，杜绝 E1/E2 行混读混计。
+  // 本次评估完全无行时（如仅直接调用规则构建器、指标构建器未跑），
+  // 回退读"最近一次有行的评估"的整组行——不与本次部分行混合，仍不跨评估混计。
+  const scope = { orgId: a.orgId, storeId: a.storeId, metricId, entityKey, datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion };
+  const read = async (extra: Record<string, unknown>) => tx.dailyMetric.findMany({ where: { ...scope, ...extra }, orderBy: { periodStart: "asc" } });
+  let rows = a.evaluationAt ? await read({ evaluationAt: a.evaluationAt }) : await read({});
+  if (rows.length === 0 && a.evaluationAt) {
+    const prev = await tx.dailyMetric.findFirst({ where: { ...scope, evaluationAt: { lte: a.evaluationAt } }, orderBy: { evaluationAt: "desc" }, select: { evaluationAt: true } });
+    if (prev) rows = await read({ evaluationAt: prev.evaluationAt });
+  }
   return rows.map((r) => ({ date: r.periodStart.toISOString().slice(0, 10), value: r.valueNumeric ?? new Prisma.Decimal(0), sampleSize: r.sampleSize, coverage: r.coverageStatus, maturity: r.maturity, status: r.status, numerator: r.numerator }));
 }
 
@@ -134,21 +167,23 @@ async function evalSku(tx: Tx, a: { orgId: string; storeId: string; datasetVersi
     const days = [...byDay.entries()].sort(([x], [y]) => x.localeCompare(y)); const latest = days.at(-1); if (!latest) continue;
     const [ld, la] = latest;
     const entityKey = `sku:${sku.externalSkuId}`;
+    // T03：历史基准日同样要求 orders+order_items 覆盖 complete——partial 历史日不进基准
+    const historyDays = days.map(([d]) => d).filter((d) => d < ld);
+    const covRows = await tx.dataCoverage.findMany({
+      where: { orgId: a.orgId, storeId: a.storeId, sourceKind: { in: ["orders", "order_items"] }, channel: "default_channel", coverageDate: { in: [...historyDays, ld].map((d) => new Date(`${d}T00:00:00Z`)) } },
+      orderBy: { datasetVersion: "desc" }, select: { sourceKind: true, coverageDate: true, status: true },
+    });
+    const covOk = new Map<string, boolean>();
+    for (const c of covRows) { const k = `${c.sourceKind}|${c.coverageDate.toISOString().slice(0, 10)}`; if (!covOk.has(k)) covOk.set(k, c.status === "complete"); }
+    const dayFullyCovered = (d: string) => covOk.get(`orders|${d}`) === true && covOk.get(`order_items|${d}`) === true;
     // S01：目标日 orders+order_items 覆盖必须complete（任一partial/missing → suppressed，不触发）
-    let sawPartial = false;
-    let sawMissing = false;
-    for (const kind of ["orders", "order_items"] as const) {
-      const c = await tx.dataCoverage.findFirst({ where: { orgId: a.orgId, storeId: a.storeId, sourceKind: kind, channel: "default_channel", coverageDate: new Date(`${ld}T00:00:00Z`) }, orderBy: { datasetVersion: "desc" }, select: { status: true } });
-      if (c?.status === "complete") continue;
-      if (c?.status === "partial") sawPartial = true; else sawMissing = true;
-    }
-    const currentCoverage: "complete" | "partial" | "missing" = sawMissing ? "missing" : sawPartial ? "partial" : "complete";
-    if (currentCoverage !== "complete") { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "current_coverage_incomplete", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId, coverage: currentCoverage, day: ld } }); continue; }
-    // S01：目标日须为已结束的完整自然日（店铺时区次日零点 ≤ 评估时点）
-    const dayEnd = new Date(Date.parse(`${ld}T00:00:00Z`) + 86400000);
+    if (!dayFullyCovered(ld)) { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "current_coverage_incomplete", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId, day: ld } }); continue; }
+    // T04：完整自然日按店铺时区次日零点判定（此前误用UTC次日零点）
+    const dayEnd = localInstantOf(st.timezone, addDay(ld, 1));
     if (a.evaluationAt.getTime() < dayEnd.getTime()) { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "natural_day_incomplete", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId, day: ld } }); continue; }
-    const uS = days.map(([d, v]) => ({ date: d, value: new Prisma.Decimal(v.units.toString()) }));
-    const aS = days.map(([d, v]) => ({ date: d, value: v.amount }));
+    const baselineDays = days.filter(([d]) => d < ld && dayFullyCovered(d));
+    const uS = [...baselineDays, [ld, la] as [string, { units: bigint; amount: Prisma.Decimal }]].map(([d, v]) => ({ date: d, value: new Prisma.Decimal(v.units.toString()) }));
+    const aS = [...baselineDays, [ld, la] as [string, { units: bigint; amount: Prisma.Decimal }]].map(([d, v]) => ({ date: d, value: v.amount }));
     const { baseline: ub } = medianBaseline(uS, ld); const { baseline: ab } = medianBaseline(aS, ld);
     if (ub === null || ab === null) { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "suppressed", reasonCode: "insufficient_history", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId } }); continue; }
     if (ub.lt(new Prisma.Decimal(num(p, "min_baseline_units", 10)))) { await writeEval(tx, { ...a, ruleId: "R07", ruleVersion: cfg.ruleVersion, entityKey, subchannel: "default", periodStart: ld, status: "not_triggered", reasonCode: "baseline_below_min", sampleSize: la.units, threshold: p, evidence: { sku: sku.externalSkuId, baseline_units: ub.toString() } }); continue; }
@@ -206,8 +241,8 @@ async function evalRefund(tx: Tx, a: { orgId: string; storeId: string; datasetVe
     if (!c10.enabled) {
       await writeEval(tx, { ...a, ruleId: "R10", ruleVersion: c10.ruleVersion, entityKey: "store", subchannel: "default", periodStart: await fallbackPeriod(tx, a), status: "suppressed", reasonCode: "disabled_by_config", sampleSize: 0n, threshold: p, evidence: { note: "规则被配置禁用" } });
     } else {
-      // H06/S02：逐实体评估（sku:* 逐SKU + store 聚合），不再只读店铺聚合
-      const entityRows = await tx.dailyMetric.findMany({ where: { orgId: a.orgId, storeId: a.storeId, metricId: "sku_refund_rate_d7", datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion }, select: { entityKey: true }, distinct: ["entityKey"] });
+      // H06/S02：逐实体评估（sku:* 逐SKU + store 聚合），不再只读店铺聚合；读取限定本次评估（T06）
+      const entityRows = await tx.dailyMetric.findMany({ where: { orgId: a.orgId, storeId: a.storeId, metricId: "sku_refund_rate_d7", datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion, evaluationAt: a.evaluationAt }, select: { entityKey: true }, distinct: ["entityKey"] });
       for (const e of entityRows) {
         const ms = (await mSeries(tx, a, "sku_refund_rate_d7", e.entityKey)).filter((s) => s.maturity === "mature" && s.coverage === "complete");
         const ls = ms.at(-1);
@@ -236,7 +271,7 @@ async function evalRefund(tx: Tx, a: { orgId: string; storeId: string; datasetVe
 
 /** 无可用业务序列时给suppressed行一个稳定的期间（最近units_sold日，否则评估日前一日） */
 async function fallbackPeriod(tx: Tx, a: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date }): Promise<string> {
-  const ls = await tx.dailyMetric.findFirst({ where: { orgId: a.orgId, storeId: a.storeId, metricId: "units_sold", datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion }, orderBy: { periodStart: "desc" }, select: { periodStart: true } });
+  const ls = await tx.dailyMetric.findFirst({ where: { orgId: a.orgId, storeId: a.storeId, metricId: "units_sold", datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion, evaluationAt: a.evaluationAt }, orderBy: { periodStart: "desc" }, select: { periodStart: true } });
   if (ls) return ls.periodStart.toISOString().slice(0, 10);
   return addDay(localDateOf("UTC", a.evaluationAt), -1);
 }
@@ -264,7 +299,8 @@ async function evalAfterSales(tx: Tx, a: { orgId: string; storeId: string; datas
       await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "case", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: BigInt(cnt), threshold: p, evidence: { current: cnt, baseline: baseline.toString(), subchannel: "case" }, alert: trig ? { severity: crit ? "critical" : "warning", title: `售后case增加：${cnt}条`, category: "after_sales" } : null });
     }
   }
-  // 投诉子通道：显式 is_complaint=true 的消息计数；参与当前/基准的每一天 is_complaint 标记覆盖均须 100%
+  // 投诉子通道：显式 is_complaint=true 的消息计数；当前/基准日 is_complaint 标记覆盖 100%
+  // 且 customer_messages 源覆盖（default通道）完整，否则 suppressed（07 R08/T08/T09口径）
   const msgs = await tx.customerMessage.findMany({ where: { orgId: a.orgId, storeId: a.storeId }, select: { messageAt: true, isComplaint: true } });
   const byDay = new Map<string, { complaints: number; total: number; unmarked: number }>();
   for (const m of msgs) {
@@ -282,16 +318,25 @@ async function evalAfterSales(tx: Tx, a: { orgId: string; storeId: string; datas
     const { baseline, samples } = medianBaseline(series, ld);
     if (baseline === null) { await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "complaint_message", periodStart: ld, status: "suppressed", reasonCode: "insufficient_history", sampleSize: BigInt(agg.total), threshold: p, evidence: { subchannel: "complaint_message" } }); }
     else {
-      // 当前日与基准样本日的 is_complaint 标记覆盖必须 100%，否则该子通道 suppressed（07 R08）
+      // 当前日与基准样本日：is_complaint 标记覆盖 100% 且消息源覆盖 complete
       const sampleDates = new Set([ld, ...samples.map((s) => s.date)]);
       const unmarkedDays: Array<{ day: string; unmarked: number; total: number }> = [];
       for (const [d, g] of byDay) if (sampleDates.has(d) && g.unmarked > 0) unmarkedDays.push({ day: d, unmarked: g.unmarked, total: g.total });
+      const uncoveredDays: string[] = [];
+      for (const d of sampleDates) {
+        const c = await tx.dataCoverage.findFirst({ where: { orgId: a.orgId, storeId: a.storeId, sourceKind: "customer_messages", channel: "default_channel", coverageDate: new Date(`${d}T00:00:00Z`) }, orderBy: { datasetVersion: "desc" }, select: { status: true } });
+        if (c?.status !== "complete") uncoveredDays.push(d);
+      }
       if (unmarkedDays.length > 0) {
         await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "complaint_message", periodStart: ld, status: "suppressed", reasonCode: "complaint_marking_incomplete", sampleSize: BigInt(agg.total), threshold: p, evidence: { subchannel: "complaint_message", unmarked_days: unmarkedDays } });
+      } else if (uncoveredDays.length > 0) {
+        await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "complaint_message", periodStart: ld, status: "suppressed", reasonCode: "source_coverage_incomplete", sampleSize: BigInt(agg.total), threshold: p, evidence: { subchannel: "complaint_message", uncovered_days: uncoveredDays } });
       } else {
         const cnt = agg.complaints;
+        // T07：投诉子通道同样有 critical 等级（≥critical_count 且增幅达 critical_ratio）
+        const crit = cnt >= num(p, "critical_count", 30) && (baseline.isZero() ? cnt >= num(p, "critical_count", 30) : cnt / baseline.toNumber() >= 1 + num(p, "critical_ratio", 2.0));
         const trig = cnt >= num(p, "min_count", 10) && new Prisma.Decimal(cnt).sub(baseline).gte(new Prisma.Decimal(num(p, "rise_abs", 5))) && (baseline.isZero() ? cnt >= num(p, "min_count", 10) : cnt / baseline.toNumber() >= 1 + num(p, "rise_ratio", 1.0));
-        await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "complaint_message", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: BigInt(cnt), threshold: p, evidence: { current: cnt, baseline: baseline.toString(), subchannel: "complaint_message", marking_coverage: 1 }, alert: trig ? { severity: "warning", title: `投诉消息增加：${cnt}条`, category: "customer_service" } : null });
+        await writeEval(tx, { ...a, ruleId: "R08", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: "complaint_message", periodStart: ld, status: trig ? "triggered" : "not_triggered", sampleSize: BigInt(cnt), threshold: p, evidence: { current: cnt, baseline: baseline.toString(), subchannel: "complaint_message", marking_coverage: 1 }, alert: trig ? { severity: crit ? "critical" : "warning", title: `投诉消息增加：${cnt}条`, category: "customer_service" } : null });
       }
     }
   }
@@ -331,6 +376,17 @@ async function evalVoc(tx: Tx, a: { orgId: string; storeId: string; datasetVersi
     const version = key.split("|")[1] || null;
     // 子通道编码 渠道+分类版本：不同版本是独立评估行（唯一键隔离），版本变化不共用行
     const sub = (version ? `${channel}|${version}` : channel).slice(0, 32);
+    // T09：数据源覆盖（customer_messages/default）完整是分类覆盖之外的前置门槛——
+    // 标记/分类覆盖率再高，源 partial 也不得评估业务规则
+    const uncoveredDays: string[] = [];
+    for (const [d] of days) {
+      const c = await tx.dataCoverage.findFirst({ where: { orgId: a.orgId, storeId: a.storeId, sourceKind: "customer_messages", channel: "default_channel", coverageDate: new Date(`${d}T00:00:00Z`) }, orderBy: { datasetVersion: "desc" }, select: { status: true } });
+      if (c?.status !== "complete") uncoveredDays.push(d);
+    }
+    if (uncoveredDays.length > 0) {
+      await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: sub, periodStart: ld, status: "suppressed", reasonCode: "source_coverage_incomplete", sampleSize: BigInt(agg.total), threshold: p, evidence: { channel, classification_version: version, uncovered_days: uncoveredDays } });
+      continue;
+    }
     const cov = agg.total > 0 ? agg.known / agg.total : 0;
     if (agg.known < minKnown || cov < minCoverage) {
       await writeEval(tx, { ...a, ruleId: "R09", ruleVersion: cfg.ruleVersion, entityKey: "store", subchannel: sub, periodStart: ld, status: "suppressed", reasonCode: "insufficient_sentiment_coverage", sampleSize: BigInt(agg.total), threshold: p, evidence: { channel, classification_version: version, known: agg.known, total: agg.total, coverage: cov } });
@@ -358,7 +414,8 @@ async function evalAds(tx: Tx, a: { orgId: string; storeId: string; datasetVersi
   const st = await tx.store.findUniqueOrThrow({ where: { id: a.storeId }, select: { currency: true } });
   const c5 = cfgs.get("R05");
   const c12 = cfgs.get("R12");
-  const adEntities = await tx.dailyMetric.findMany({ where: { orgId: a.orgId, storeId: a.storeId, metricId: "ad_spend", datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion }, select: { entityKey: true }, distinct: ["entityKey"] });
+  // T10：逐 campaign+归因组实体（ads:{campaign}:{model}:{window}）——不同 campaign 变化不得互相抵消
+  const adEntities = await tx.dailyMetric.findMany({ where: { orgId: a.orgId, storeId: a.storeId, metricId: "ad_spend", datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion, evaluationAt: a.evaluationAt }, select: { entityKey: true }, distinct: ["entityKey"] });
   const fallbackDate = await fallbackPeriod(tx, a);
   const absOf = (p: Record<string, unknown>): number | null => {
     if (typeof p.abs_amount === "number") return p.abs_amount;
@@ -380,8 +437,9 @@ async function evalAds(tx: Tx, a: { orgId: string; storeId: string; datasetVersi
   }
   for (const e of adEntities) {
     const entityKey = e.entityKey;
-    // 归因组窗口：entityKey = ads:{model}:{window}；报告日+window 未到评估时点 → 归因窗未结束
-    const windowDays = Number.parseInt(entityKey.split(":")[2] ?? "7", 10);
+    // 归因组窗口：entityKey = ads:{campaign}:{model}:{window}（旧3段格式兼容末段）；报告日+window 未到评估时点 → 归因窗未结束
+    const parts = entityKey.split(":");
+    const windowDays = Number.parseInt(parts[3] ?? parts[2] ?? "7", 10);
     const as_ = await mSeries(tx, a, "ad_spend", entityKey);
     const ld = as_.at(-1)?.date;
     const windowOpen = ld ? Date.parse(`${ld}T00:00:00Z`) + (Number.isNaN(windowDays) ? 7 : windowDays) * 86400000 > a.evaluationAt.getTime() : false;
@@ -437,6 +495,15 @@ async function evalCoverage(tx: Tx, a: { orgId: string; storeId: string; dataset
 export async function buildRulesSnapshot(input: { orgId: string; storeId: string; datasetVersion: bigint; rulesetVersion: string; evaluationAt: Date; tx: Tx }): Promise<void> {
   const { orgId, storeId, datasetVersion, rulesetVersion, evaluationAt, tx } = input;
   const a = { orgId, storeId, datasetVersion, rulesetVersion, evaluationAt };
+  // G4R3 H01/T01：构建期只清理同元组"非已发布身份"的更旧规则/告警行——
+  // 已发布身份的行在发布 CAS 成功前完整保留（E2 待发布时 E1 的 rules/alerts 不动）；
+  // 未发布过（无指针）时清掉更旧行保持单活跃集合，保证最新评估可确定读取。
+  const published = await tx.store.findUnique({ where: { id: storeId }, select: { currentSnapshotVersion: true, currentSnapshotRulesetVersion: true, currentSnapshotEvaluationAt: true } });
+  const publishedIsThisTuple = published?.currentSnapshotVersion === datasetVersion && published?.currentSnapshotRulesetVersion === rulesetVersion;
+  const keepAt = publishedIsThisTuple ? published?.currentSnapshotEvaluationAt ?? null : null;
+  const olderWhere = { orgId, storeId, datasetVersion, rulesetVersion, evaluationAt: keepAt ? { lt: evaluationAt, not: keepAt } : { lt: evaluationAt } };
+  await tx.ruleEvaluation.deleteMany({ where: olderWhere });
+  await tx.alert.deleteMany({ where: olderWhere });
   const configs = await getConfigs(tx, orgId, storeId, rulesetVersion);
   await evalUnits(tx, a, configs, "R01");
   await evalUnits(tx, a, configs, "R02");
