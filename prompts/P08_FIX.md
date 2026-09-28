@@ -1,12 +1,12 @@
-# P08 · G4R3-20260928-02 START received / Z02 repairing
+# P08 · G4R3-20260928-02 repair frozen / handed to Codex04
 
 ```text
-协调状态（2026-09-28T10:05:28+08:00）：G4R3-20260928-02 START已首次实际送达最新Z02并接管唯一主线写入权（业务/管理/Git/sync），Codex04转只读至下一次显式冻结；返修按本合同013→014→015→016一次一项，先新/tmp+新PG17复现T01–T11红基线（K01/K02保持）再修复，B01四目录不动；完成后冻结单一候选6cfa36d..新HEAD交回Codex04独审。以下为返修合同原文。
+协调状态（2026-09-28T10:30:28+08:00）：G4R3-20260928-02返修已完成并冻结单一候选（业务ee72fe0+管理冻结chore），写入权交回Codex04独立复审6cfa36d..新HEAD；Z02转只读待下一编号。红基线（新/tmp+新PG17@55506）11FAIL/2PASS与REVIEW3一致，修复后T01–T11+K01/K02全绿、原19保持、场景7/7、unit72/integration196/g3聚合0/build0/tsc0；E2E未重跑（无页面变化）如实。B01四目录全程未触碰。本块以下为返修合同原文，仅作历史依据，不需重新ACK/START。
 
 根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调迁移、CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN及原MVP计划顶部；以磁盘实际Git、最新Owner授权及写入者为准。
 唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已激活，原codex-zcode ACTIVE每10分钟仍目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
 G4R2-20260928-02 START已07:53:23实际送达并由Z02在08:31:01完成冻结、交回写入权。候选phase/04-metrics-alerts@6cfa36d（业务899bf43），main2d7ceaf。Codex04独立G4R3-20260928-01 FAIL，3HIGH H01/H06/H07、1MEDIUM M02；原19及候选5场景全绿，新增有效T01–T11失败、K01/K02通过。原R1 60/R2 40证据SHA保持。报告docs/reviews/CODEX_REVIEW_GATE_04_REVIEW_3_2026-09-28.md及GATE_04_REVIEW_3_EVIDENCE_2026-09-28.json、gate-04-review-3-evidence/。
-主线写入权已按顶部2026-09-28T10:05:28+08:00协调状态转Z02（业务/管理/Git/sync）；Codex04只读，待Z02显式冻结6cfa36d..新HEAD后回收写入权并独立复审。
+主线写入权已于2026-09-28T10:30:28+08:00随G4R3返修候选冻结交回Codex04（独立复审6cfa36d..新HEAD）；Z02只读待REVIEW4结论后新编号。
 B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec三切片均冻结。设置28/28、预览51/51、数据源47/47及各自tsc0限定组件PASS，35源/测试SHA保持；第三批与只读接线方案已正式归档docs/reviews/B01_DATASOURCE_REVIEW_1_2026-09-28.md、B01_INTEGRATION_READONLY_2026-09-28.md及b01-datasource-review-1-evidence/。未真实API/路由/存储联调，026/027未完成，无集成START。Z02不得修改/暂存/提交src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**（均在应用下）。A01保持分析协调，无写入权/自动化转接。
 Owner已批准MVP-CORE-20260928-01首批与余项并行：老板三分钟四卡、同版证据、本人行动、019–020日报服务必须首批，历史阅读等页面后置。原完整P0与质量不减，9/30受控MVP、10/5冻结、10/8完整开发验收为目标非保证。原合同普通返修及同一冲刺独立PASS后普通接续无需重复Owner批准；一次一TASK按依赖。031先补合同并确认重要新规则；采购部署/敏感权限/新重大范围变化仍单独批准。技术PASS不等于Owner产品验收。
 双方70%实际压缩规则保持：Codex180880阈值配置/加载已核实，258400窗口变化须重算；本轮实际系统压缩后可靠同窗接续，阈值因果未核实。Z02之前官方/compact 719449→20795/1000000并ACK可靠；原生自动阈值未配置。实际达到70%先保现场、在安全点用已验证入口；执行中先协调冻结，不盲点Stop。锁屏时新占用未知，不猜测。压缩可靠留同窗，确有接续损坏/污染才按STATE_PROTOCOL迁移；不按占比自动换窗，不fork/建worktree/重复自动化。
