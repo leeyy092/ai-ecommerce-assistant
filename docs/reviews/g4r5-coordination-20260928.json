@@ -6,9 +6,9 @@
   "start_received_at": "2026-09-28T11:26:13+08:00",
   "head_at_start": "3c241cd",
   "branch": "phase/04-metrics-alerts",
-  "writer": "Z02",
+  "writer": "Codex04",
   "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
-  "writer_since": "2026-09-28T11:26:13+08:00",
+  "writer_since": "2026-09-28T11:32:21+08:00",
   "base_candidate": "3c241cde044052ef635b1e207dc3b6e746e8ad87",
   "business_head": "698c721",
   "repair_scope": [
@@ -23,5 +23,14 @@
     "tests/unit/imports/preview/**",
     "src/app/settings/**"
   ],
-  "owner_draft_note": "input-box draft 啊 kept by 04, not a task"
+  "owner_draft_note": "input-box draft 啊 kept by 04, not a task",
+  "repair_frozen_at": "2026-09-28T11:32:21+08:00",
+  "repair_business_commit": "f5af2f4",
+  "repair_review_range": "3c241cd..newHEAD",
+  "repair_red_baseline": "V01/V02: 2 FAIL; V03: 1 PASS — matches REVIEW5",
+  "repair_green_results": "tsc0; g4r5 probes 3/3; 45+V03 regression green; unit 72/72; integration 205/205; g3 aggregate 0; build 0",
+  "repair_remaining_gaps": [
+    "E2E not rerun (no page changes)"
+  ],
+  "repair_env": "/tmp/aiea-g4r5-20260928-z02 + fresh PG17.11 127.0.0.1:55508 (socket outside repo)"
 }

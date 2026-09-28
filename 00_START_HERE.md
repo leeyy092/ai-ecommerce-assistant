@@ -8,25 +8,25 @@
 | 最终目标 | 交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐） |
 | 当前阶段 | 08 原合同返修 · Phase4 |
 | 当前任务 | TASK-016 |
-| 当前状态 | 进行中 |
-| 上一个完成项 | G4R5独立审查：45原回归与V03通过，H06及R09覆盖关闭；B01设置真实接入限定PASS（78回归/18浏览器/build0/tsc0） |
-| 下一步 | Z02按G4R5-20260928-02仅修H07/F09前驱选择：新/tmp+新PG17复现V01/V02红与V03绿再修，保留原45与T11/U02/K05，冻结单一候选3c241cd..新HEAD交回Codex04独审。 |
-| 交给谁 | ZCode |
+| 当前状态 | 待审查 |
+| 上一个完成项 | G4R5-20260928-02返修完成：V01/V02转绿（open且无carried来源）、V03与原45保持，业务提交f5af2f4 |
+| 下一步 | Codex04独立复审3c241cd..新HEAD（业务f5af2f4+管理冻结chore）：按R5关闭标准复验V01/V02/V03与原45；通过后沿MVP-CORE-20260928-01已授权首批接续。 |
+| 交给谁 | Codex04 |
 | 做到什么算完成 | V01/V02新告警open且carriedFromAlertId=null；原45及V03保持，合法同证据延续/审计/幂等不回退；冻结新候选供04按差异复审。 |
 | 卡点 | 原合同H07仍有2个有效反例；普通返修已授权，无需Owner重批。新START尚未实际发送。 |
 | 检查点 | YES |
-| 审查 | GATE04 REVIEW5 FAIL（1HIGH H07）；B01设置接入仅限定切片PASS；Gate02/03 PASS保持 |
-| 进度最后更新 | 2026-09-28T11:26:13+08:00 |
+| 审查 | GATE04 REVIEW5 FAIL（1HIGH）→ 本轮返修候选待REVIEW6；Gate02/03 PASS保持 |
+| 进度最后更新 | 2026-09-28T11:32:21+08:00 |
 
 项目绝对路径：`/Users/yuyuyu/Documents/ChatGPT/产品-开发`
 
-## 复制这一段，交给 ZCode
+## 复制这一段，交给 Codex04
 
 ```text
 当前项目：/Users/yuyuyu/Documents/ChatGPT/产品-开发
 产品目标：交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）
 当前任务：TASK-016
-本轮动作：Z02按G4R5-20260928-02仅修H07/F09前驱选择：新/tmp+新PG17复现V01/V02红与V03绿再修，保留原45与T11/U02/K05，冻结单一候选3c241cd..新HEAD交回Codex04独审。
+本轮动作：Codex04独立复审3c241cd..新HEAD（业务f5af2f4+管理冻结chore）：按R5关闭标准复验V01/V02/V03与原45；通过后沿MVP-CORE-20260928-01已授权首批接续。
 
 根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调、CODEX_REVIEW_HANDOFF、FINAL_DECISIONS/PHASE_PLAN与MVP计划顶部。磁盘最新Owner答复、Git及实际写入者优先。
 唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已实际激活，原codex-zcode目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4，ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出，不派发不写回。
@@ -36,21 +36,17 @@ B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8
 B01继续冻结只读；Z02不得改动/暂存/提交应用下src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**、src/app/settings/**，不得把未跟踪B01候选或历史编号副本一并纳入。B01不写后端/共享/管理/Git/sync。04协调独审、Z02后端、B01前端、A01分析；既有B01日报id21每日21:00 Asia/Shanghai，不重复创建。
 Owner批准MVP-CORE-20260928-01首批及余项并行：老板三分钟四卡/同版证据/本人行动/019–020日报服务首批，历史阅读页面后置；原完整P0及质量不减。9/30受控MVP、10/5冻结、10/8完整P0验收是目标非保证。普通原合同返修及同冲刺独立PASS后接续已授权，一次一TASK，不重复等Owner；031重要开户新规则、采购部署/敏感权限/新重大范围变化仍具体批准。技术测试、独立PASS、Owner产品验收、GitHub、部署、真实试用分开。
 双方70%规则保持：Codex阈值180880/有效258400的配置/加载已验证，系统实际压缩后同窗可靠，触发因果未核实。Z02此前官方/compact719449→20795/1000000可靠；最新438534/1000000约43.9%，无新压缩、原生阈值未配置。≥70%先保现场、安全点用真实入口；执行中先协调冻结，不盲点Stop。压缩可靠同窗；只有接续受损/可举证污染确需迁移才按STATE_PROTOCOL，不fork/建worktree/重复自动化。无新候选不重测、无变化不刷时间、不例行催问。
-新返修G4R5-20260928-02：仅原TASK016 H07/F09；此文件不是START。实际收到04同编号START后，先回执实际HEAD/分支/写入边界并落盘，然后开始。
-完整读REVIEW5报告与gate-04-review-5-evidence/g4r5-independent.test.ts、r5-boundaries-valid.log、probe-correction.md及FINAL_DECISIONS F09和R4 U02原关闭标准。V01：E1 ignored→证据更正E2 open→E2 resolved→证据恢复E3应open/null；V02：同合法evaluation_at连续无关规则更改发布，E2 resolved后E3应open/null。当前两项均错误指向E1 ignored。
-同一根因一次收口：先从实际已发布身份和顺序确定同规则/对象/子通道/期间最近合法前驱，再检查参数/等级/业务指纹/可延续状态；不能先筛相同指纹/状态跳过更近resolved/open。eval时间并列不等于发布顺序相同；不以随机ID/任意findFirst选前驱。不改变F09业务规则、不增基础设施、不抢017/024 UI。
-新/tmp精确archive+本轮新PG17先复现V01/V02红与V03绿，再修根因，保留原45、R3 T11合法延续审计、R4 U02/K05及幂等/未发布不继承。只跑改动相关必要检查；其他Gate已关闭项无新反例不重开。
-B01全部45件继续冻结未Git集成，五路径严禁改动/暂存/提交。保留历史编号副本和管理在途；Git仅本轮文件。管理写回须让12_PROGRESS导航/任务表/状态/新记录、CODEX_REVIEW_HANDOFF、COORD/P08/P07/P13首块当前writer和START一致，旧块标历史，不能只改旧历史段。sync后读回项目md/html与总控PROJECTS/index；自测不等于独立PASS。冻结精确新候选3c241cd..新HEAD并显式交回04写入权，列实测/未测/环境清理。
+新候选显式冻结后用本轮新/tmp+PG17按差异独审；当前R5已完成不得重跑旧候选。
 ```
 
 ## 技术状态（各自独立）
 
 - Git：已建立本地 Git；存在未提交或未跟踪内容。
-- 分支：phase/04-metrics-alerts；版本：3c241cde044052ef635b1e207dc3b6e746e8ad87。
+- 分支：phase/04-metrics-alerts；版本：f5af2f438a6db3e4f266c289bb6ca0de55bce752。
 - origin：ssh://github.com/leeyy092/ai-ecommerce-assistant.git（仅配置，不能证明已推送）。
 - GitHub：历史核验：phase/04=c629145、main=2d7ceaf（00:33）；当前本地6cfa36d及R3写回未重新核验远端；最后核验：2026-09-28T00:33:56+08:00；地址：https://github.com/leeyy092/ai-ecommerce-assistant；证据：本轮实际git ls-remote: docs/reviews/gate-04-review-2-evidence/remote.txt；verified_at按归档文件时间记录。
 - 部署：未部署，无真实客户试用；GATE04 FAIL，原完整P0/独立注册/后续页面与运维未完成；最后核验：从未核验；地址：未记录；证据：本轮GATE04 REVIEW3 FAIL，未执行部署或真实客户试用；TASK031合同/后续页面与运维尚未完成。
 
-刷新前本地快照时间：2026-09-28T11:26:59+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
+刷新前本地快照时间：2026-09-28T11:33:08+08:00。远端与部署是最后核验的记录，未由此次刷新联网重验。
 
 [进度主记录](docs/ai-ecommerce-assistant/12_PROGRESS.md) · [完整提示词库](prompts/README.md) · [返回总控](../../AI-Workspace/00_CONTROL_CENTER/index.html)
