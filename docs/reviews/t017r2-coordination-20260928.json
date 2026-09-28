@@ -1,0 +1,26 @@
+{
+  "recorded_at": "2026-09-28T13:25:01+08:00",
+  "review": "T017R2-20260928-01",
+  "handoff": "T017R2-20260928-02",
+  "start_sent": true,
+  "start_received_at": "2026-09-28T13:25:01+08:00",
+  "head_at_start": "e280bc6",
+  "branch": "phase/05-ai",
+  "writer": "Z02",
+  "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
+  "writer_since": "2026-09-28T13:25:01+08:00",
+  "repair_scope": [
+    "H03/J01-global2-J02-crash-commit-J06-terminal-idempotent",
+    "H04/J03-J04-J05-additive-spent",
+    "H06/J07-no-untrusted-values-in-summaries",
+    "M01/honest-BLOCKED-tokenizer"
+  ],
+  "probes": "docs/reviews/task-017-review-2-evidence: t017r2-independent.test.ts + t017r2-crash.ts + t017-root-fixture.json; red 7 / green 1 (K01); keep 41 + contract skip",
+  "b01_boundary": [
+    "src/features/settings/**",
+    "tests/unit/settings/**",
+    "src/features/imports/preview/**",
+    "tests/unit/imports/preview/**",
+    "src/app/settings/**"
+  ]
+}
