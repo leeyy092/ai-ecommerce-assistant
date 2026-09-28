@@ -1,0 +1,21 @@
+{
+  "retrieved_at": "2026-09-28T13:57:56.196819+08:00",
+  "commit": "2cd356a499e7d70dc28035b34fd9ee1ad2d12572",
+  "files": [
+    {
+      "file": "tokenizer.py",
+      "url": "https://raw.githubusercontent.com/dashscope/dashscope-sdk-python/2cd356a499e7d70dc28035b34fd9ee1ad2d12572/dashscope/tokenizers/tokenizer.py",
+      "sha256": "ddec2e0608d539d6d612354c0091fce6395cd9eeb556d036481409309407dc53"
+    },
+    {
+      "file": "tokenization.py",
+      "url": "https://raw.githubusercontent.com/dashscope/dashscope-sdk-python/2cd356a499e7d70dc28035b34fd9ee1ad2d12572/dashscope/tokenizers/tokenization.py",
+      "sha256": "bdcdcd0d4f861dd89ce060cc337910adc1477944432bbe6c748b15e662714845"
+    },
+    {
+      "file": "qwen_tokenizer.py",
+      "url": "https://raw.githubusercontent.com/dashscope/dashscope-sdk-python/2cd356a499e7d70dc28035b34fd9ee1ad2d12572/dashscope/tokenizers/qwen_tokenizer.py",
+      "sha256": "a0ee3d948526834e906354652506719a08d2c266de056fa532195ae7705fa3f5"
+    }
+  ]
+}

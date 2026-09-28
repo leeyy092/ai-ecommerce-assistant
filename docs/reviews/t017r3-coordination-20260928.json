@@ -22,5 +22,14 @@
     "src/features/imports/preview/**",
     "tests/unit/imports/preview/**",
     "src/app/settings/**"
-  ]
+  ],
+  "receipt_time_note": "13:46:10 = local `date` at start of processing the START message (not fabricated); precedes R3 review evidence writeback 13:51:39 by ~5m29s; exact delivery second not independently verifiable; authoritative sequence marker = receipt commit 7d0c56e@13:54:51",
+  "tokenizer_lead_20260928_03": {
+    "archived": [
+      "docs/reviews/T017R3_TOKENIZER_LEAD_2026-09-28_TOKENIZER_LEAD.md",
+      "docs/reviews/T017R3_TOKENIZER_LEAD_2026-09-28_sources.json"
+    ],
+    "sdk_commit": "2cd356a499e7d70dc28035b34fd9ee1ad2d12572",
+    "status": "two unverified paths: get_tokenizer(qwen-*) shares resources/qwen.tiktoken (dispatch-only, no snapshot-vocab proof); Tokenization.call lacks qwen-flash in Models enum; M01 remains BLOCKED, no PASS"
+  }
 }
