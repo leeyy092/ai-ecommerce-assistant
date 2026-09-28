@@ -68,20 +68,36 @@ async function writeEval(tx: Tx, a: { orgId: string; storeId: string; datasetVer
     update: { status: a.status, reasonCode: a.reasonCode ?? null, sampleSize: a.sampleSize, threshold: th, evidence: ev },
   });
   if (a.status === "triggered" && a.alert) {
-    // G4R3 H07/T11+G4R4 U02 F09保守延续：先取同对象（规则/实体/子通道/期间+同等级+同指纹+同规则版本）
-    // 的【最近一条】告警作为合法前驱，再判断其状态是否 acknowledged/ignored——
-    // 最新为 resolved（或 open）时不向更早的 ack/ignored 回溯；参数变化（K05）同样不延续。
-    const priorEval = await tx.ruleEvaluation.findFirst({
-      where: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, ruleVersion: a.ruleVersion, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, evaluationAt: { lt: a.evaluationAt } },
-      orderBy: { evaluationAt: "desc" },
-      select: { threshold: true },
+    // G4R5 H07/F09（V01/V02/U02/K05/T11统一口径）：前驱=同对象（规则/实体/子通道/期间）在
+    // Store【当前已发布指针元组】(dataset/ruleset/evaluation_at)上的告警行——先定位最近合法已发布
+    // 前驱，再核对参数（前驱评估threshold）/等级/指纹/规则版本与acknowledged-ignored状态；
+    // 不得先筛同指纹或可延续状态而越过更新的open/resolved（V01证据恢复、V02同evaluation_at）。
+    // 自身元组重跑不查前驱（幂等由upsert update保持行内状态）；未发布候选不可作继承来源。
+    const published = await tx.store.findUnique({
+      where: { id: a.storeId },
+      select: { currentSnapshotVersion: true, currentSnapshotRulesetVersion: true, currentSnapshotEvaluationAt: true },
     });
-    const paramsUnchanged = !priorEval || JSON.stringify(priorEval.threshold) === JSON.stringify(th);
-    const latestSameAlert = await tx.alert.findFirst({
-      where: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, severity: a.alert.severity, evidenceFingerprint: fp(a.evidence), ruleVersion: a.ruleVersion },
-      orderBy: { evaluationAt: "desc" },
-    });
-    const prior = paramsUnchanged && (latestSameAlert?.status === "acknowledged" || latestSameAlert?.status === "ignored") ? latestSameAlert : null;
+    const selfTuple = published?.currentSnapshotVersion === a.datasetVersion
+      && published?.currentSnapshotRulesetVersion === a.rulesetVersion
+      && published?.currentSnapshotEvaluationAt?.getTime() === a.evaluationAt.getTime();
+    let prior: { id: string; status: "acknowledged" | "ignored" } | null = null;
+    if (!selfTuple && published?.currentSnapshotVersion != null && published.currentSnapshotRulesetVersion && published.currentSnapshotEvaluationAt) {
+      const priorEval = await tx.ruleEvaluation.findFirst({
+        where: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, ruleVersion: a.ruleVersion, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, datasetVersion: published.currentSnapshotVersion, rulesetVersion: published.currentSnapshotRulesetVersion, evaluationAt: published.currentSnapshotEvaluationAt },
+        select: { threshold: true },
+      });
+      const paramsUnchanged = !priorEval || JSON.stringify(priorEval.threshold) === JSON.stringify(th);
+      const predecessor = await tx.alert.findFirst({
+        where: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, datasetVersion: published.currentSnapshotVersion, rulesetVersion: published.currentSnapshotRulesetVersion, evaluationAt: published.currentSnapshotEvaluationAt },
+      });
+      prior = paramsUnchanged && predecessor
+        && (predecessor.status === "acknowledged" || predecessor.status === "ignored")
+        && predecessor.severity === a.alert.severity
+        && predecessor.evidenceFingerprint === fp(a.evidence)
+        && predecessor.ruleVersion === a.ruleVersion
+        ? { id: predecessor.id, status: predecessor.status as "acknowledged" | "ignored" }
+        : null;
+    }
     await tx.alert.upsert({
       where: { orgId_storeId_ruleId_entityKey_subchannel_periodStart_periodEnd_ruleVersion_datasetVersion_rulesetVersion_evaluationAt: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, ruleVersion: a.ruleVersion, datasetVersion: a.datasetVersion, rulesetVersion: a.rulesetVersion, evaluationAt: a.evaluationAt } },
       create: { orgId: a.orgId, storeId: a.storeId, ruleId: a.ruleId, ruleVersion: a.ruleVersion, rulesetVersion: a.rulesetVersion, entityKey: a.entityKey, subchannel: a.subchannel, periodStart: pd, periodEnd: pd, severity: a.alert.severity, title: a.alert.title, category: a.alert.category, status: prior?.status ?? ("open" as const), carriedFromAlertId: prior?.id ?? null, evidence: ev, evidenceFingerprint: fp(a.evidence), datasetVersion: a.datasetVersion, evaluationAt: a.evaluationAt },
