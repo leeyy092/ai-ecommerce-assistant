@@ -7,6 +7,7 @@
 根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。以磁盘最新Owner决定、Git与12_PROGRESS唯一状态为准。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、当前导航/状态块/最新协调迁移、CODEX_REVIEW_HANDOFF及MVP计划顶部。
 唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已实际激活，原codex-zcode ACTIVE目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
 G4R3-20260928-02 START已10:05:28实际接管并在10:30:28冻结b15251a（业务ee72fe0）；10:37 OWNER-COORD-20260928-01管理收尾cd27bac后Z02再次明确只读。04独立G4R4-20260928-01 FAIL：剩2组HIGH H06/H07，U01/U02/U03/K04有效失败；原19+候选7+T01–T11/K01K02共39/39独立通过，新增K03/K05通过。原H01/M02具体缺陷关闭，不重开已过项。证据docs/reviews/gate-04-review-4-evidence，报告CODEX_REVIEW_GATE_04_REVIEW_4_2026-09-28.md。
+2026-09-28T11:01:49+08:00 G4R4-20260928-02 返修完成并冻结单一候选：业务698c721（engine.ts F09最近状态+R09候选窗口、alert-rules PATCH rowVersion携带+P2002/P2034→409、g4r4两份探针维护副本），管理冻结提交为本chore，写入权交回Codex04独立复审b15251a..新HEAD。红基线（新/tmp=/tmp/aiea-g4r4-20260928-z02+新PG17@127.0.0.1:55507）修复前U01/U02/U03/K04=4FAIL+K03/K05=2PASS与REVIEW4独立结论一致；修复后g4r4探针6/6全绿、39回归（原19+场景7+R3 T/K 13）保持、unit72/72、integration202/202（含g4r4探针6）、g3四套聚合0、生产build0、非增量tsc0。Z02转只读待下一编号；B01五路径（原四目录+src/app/settings/**）全程未触碰，在途管理与编号副本保留。
 2026-09-28T10:52:50+08:00 G4R4-20260928-02 START首次实际送达本Z02并接管：主线业务/管理/Git/sync唯一写入权转Z02，Codex04自本次实际接管起只读。接收实测phase/04-metrics-alerts@cd27bac（业务等同b15251a/ee72fe0，cd27bac仅管理变化）、main=2d7ceaf；B01已于10:39实际START设置接入，src/app/settings/与tests/unit/settings/在途（Z02禁触原四目录+src/app/settings/**，不暂存提交B01在途文件；Owner输入框草稿“啊”由04保留非任务）。已完整读P08新首块、REVIEW4报告及gate-04-review-4-evidence两份g4r4测试/日志。本轮仅TASK016 H06/H07余项：U01（跨规则复制保留config版本）、K04（真实并发唯一键冲突503→409原子化）、U02（F09先取同对象最近状态，resolved阻断更早ignored回溯）、U03（R09源覆盖门槛限当前期+原28日同星期/7日回退基准窗口）。先新/tmp+新PG17复现四反例红基线（39回归与K03/K05须保持）再修；冻结单一候选b15251a..新HEAD交回Codex04独审。原013–015已关闭项无新差异不重开；无017/031/main合并/部署。
 B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec已于10:39收到B01-SETTINGS-INTEGRATION-20260928-01首次实际START并ACK开工（实际cd27bac，35原SHA一致）。正式合同docs/reviews/B01_SETTINGS_INTEGRATION_20260928-01.md，SHA256 6cd310b347e2fdfe19dbd8c4e45239568bc4db384a85172f111d808708f4f670。只准10新建+4源最小修改，其他原31件保持；固定6cfa36d archive+组件+本切片独立PG/Web/真实Cookie。Z02不得修改/暂存/提交原四目录src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**及新增src/app/settings/**（均在应用下）。B01不写后端/共享/管理/Git/sync。026/027/021整体未完成，后续04安排一致快照集成。
 Owner已批准MVP-CORE-20260928-01首批与余项并行：老板三分钟四卡/同版证据/本人行动/019–020服务必须首批，历史阅读页面后置，完整P0与质量不减。9/30受控MVP、10/5冻结、10/8完整开发验收是目标非保证；普通原合同返修及独立PASS后同冲刺接续已授权，不重复等Owner。031重要新规则、采购部署/敏感权限/新重大范围变化另行具体批准。04协调独审、Z02后端、B01前端、A01分析；既有B01日报id21负责每日21:00 Asia/Shanghai，不重复创建。
@@ -20,18 +21,19 @@ Owner已批准MVP-CORE-20260928-01首批与余项并行：老板三分钟四卡/
   "goal": "交付原完整 P0 电商运营中台：六类 CSV、经营/商品/广告/售后/VOC、告警、AI 日报与行动；满足线上独立注册使用要求（新增开户合同待补齐）",
   "stage": "08 原合同返修 · Phase4",
   "current_task": "TASK-016",
-  "status": "进行中",
-  "last_completed": "G4R4独立复审：39回归通过，H01/M02具体缺陷关闭；剩H06/H07两组HIGH，B01设置接入已实际START",
-  "next_action": "Z02按G4R4-20260928-02仅修TASK016 U01/U02/U03/K04：新/tmp+新PG17复现红基线（39回归与K03/K05保持）再修，冻结单一候选b15251a..新HEAD交回Codex04独审。",
-  "next_owner": "ZCode",
-  "next_prompt": "prompts/P08_FIX.md",
-  "acceptance": "新/tmp+新PG17复现4个有效失败并修复；跨规则配置版本/并发409/F09最近状态/R09限定基准覆盖关闭，39及K03/K05保持；新候选独审。",
-  "blockers": "无新Owner待批；GATE04 REVIEW4剩H06/H07，普通原合同返修可直接接续。",
+  "status": "待审查",
+  "last_completed": "G4R4-20260928-02返修完成：U01/U02/U03/K04全部转绿、K03/K05与39回归保持，业务提交698c721",
+  "next_action": "Codex04独立复审b15251a..新HEAD（业务698c721+管理冻结chore）：按R4原关闭标准复验U/K探针与39回归；通过后沿MVP-CORE-20260928-01已授权首批接续。",
+  "next_owner": "Codex04",
+  "next_prompt": "prompts/P07_CODE_REVIEW.md",
+  "acceptance": "复审范围b15251a..新HEAD：U01/U02/U03/K04保持转绿、K03/K05与39回归不回退；E2E未重跑（无页面变化）如实不计独立通过；B01五路径禁触保持。",
+  "blockers": "无新阻塞；写入权已交回Codex04，Z02冻结只读待下一编号。",
   "checkpoint": "YES",
-  "review": "GATE04 REVIEW4 FAIL（2组HIGH/4有效失败）；Gate02/03 PASS保持",
-  "updated_at": "2026-09-28T10:52:50+08:00",
-  "updated_by": "Z02 · G4R4-20260928-02 START接管与回执",
+  "review": "GATE04 REVIEW4 FAIL（2HIGH）→ 本轮返修候选待REVIEW5；Gate02/03 PASS保持",
+  "updated_at": "2026-09-28T11:01:49+08:00",
+  "updated_by": "Z02 · G4R4-20260928-02 返修完成与候选冻结",
   "evidence": [
+    "2026-09-28T11:01:49+08:00：G4R4-20260928-02冻结验证（新/tmp=/tmp/aiea-g4r4-20260928-z02，git archive HEAD+新原生PG17.11仅127.0.0.1:55507，socket在repo外）：修复前红基线U01/U02/U03/K04=4FAIL+K03/K05=2PASS与REVIEW4独立结论一致；修复后非增量tsc0、g4r4探针6/6全绿（U01跨规则复制保留rowVersion：改R07后R03 config_version仍为2、持旧1重启409；K04同版本真实并发[200,409]单赢家原子；U02 E1 ignored→E2延续→E2 resolved→E3 open且无carried；U03 7/1窗口外partial不影响9/26 triggered）、39回归保持（原C/S 19+场景7+R3 T/K 13）、unit72/72、integration202/202（196+g4r4探针6）、g3四套分项0聚合0、生产build exit0。实现：RuleConfig复制携带源rowVersion；PATCH路由P2002/P2034→409 VERSION_CONFLICT；F09 carry先取同对象最近一条（任意状态）再判acknowledged/ignored（resolved/open阻断回溯，K05参数变更不延续保持）；R09覆盖检查限定当前期+同星期28日≤4+前7日回退候选窗口、候选不完整剔除按历史不足、窗口外日期不参与。未重跑E2E（无页面变化）。候选=业务698c721+管理冻结chore，复审范围b15251a..新HEAD；B01五路径未触碰。",
     "2026-09-28T10:52:50+08:00：G4R4-20260928-02 START首次实际送达Z02（04核对独立R4 FAIL已归档：39/39独立通过、U01/U02/U03/K04有效失败、K03/K05通过、013–015具体缺陷关闭）并接管唯一主线写入权，Codex04转只读。接收实测：cd27bac（业务等同b15251a/ee72fe0）；B01设置接入10:39实际START（src/app/settings/在途，Z02禁触五路径不暂存提交）；Owner草稿“啊”非任务已备注。本轮仅TASK016 H06/H07：U01跨规则复制保留rowVersion、K04并发P2002→409原子化、U02 carry先取同对象最近状态（resolved阻断更早ignored回溯）、U03 R09源覆盖检查限当前期+同星期28日/7日回退候选窗口。先复现红基线再修；冻结b15251a..新HEAD交04独审；无017/031/main合并/部署。",
     "2026-09-28T10:46:14+08:00：G4R4-20260928-01独立FAIL，b15251a/ee72fe0，新PG17@64808/精确archive；14迁移/tsc0/39回归PASS；U01/U02/U03/K04 FAIL，K03/K05 PASS；原R1 60/R2 40/R3 54 SHA保持。PG已停止并归档。B01同哈希合同实际10:39 START并ACK（35SHA一致），Z02边界已确认；下一G4R4-02尚待实际桌面发送。",
     "2026-09-28T10:33:40+08:00：OWNER-COORD-20260928-01回执——确认并归档B01新路径隔离：docs/reviews/B01_SETTINGS_INTEGRATION_20260928-01.md（与/tmp/aiea-b01-settings-integration-cdjv1ais原件逐字节一致，SHA256=6cd310b347e2fdfe19dbd8c4e45539568bc4db384a85172f111d808708f4f670）。Z02实测：src/app/settings/尚无B01文件（未开始或未落盘），tests/unit/settings/为未跟踪在途（不动）；Z02扩展禁触=原四目录+src/app/settings/**+tests/unit/settings/integration/**；回执后04向B01发送B01-SETTINGS-INTEGRATION-20260928-01 START。本条为管理性写入（业务零改动），完成后Z02回到冻结只读。",

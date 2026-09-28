@@ -4,9 +4,9 @@
   "handoff": "G4R4-20260928-02",
   "start_sent": true,
   "start_received_at": "2026-09-28T10:52:50+08:00",
-  "writer": "Z02",
+  "writer": "Codex04",
   "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
-  "writer_since": "2026-09-28T10:52:50+08:00",
+  "writer_since": "2026-09-28T11:01:49+08:00",
   "base_candidate": "b15251a2f160783bca2e29b1bd6127e698896519",
   "business_head": "ee72fe0",
   "head_at_start": "cd27bac (management-only)",
@@ -26,5 +26,14 @@
     "src/features/imports/preview/**",
     "tests/unit/imports/preview/**",
     "src/app/settings/**"
-  ]
+  ],
+  "repair_frozen_at": "2026-09-28T11:01:49+08:00",
+  "repair_business_commit": "698c721",
+  "repair_review_range": "b15251a..newHEAD",
+  "repair_red_baseline": "U01/U02/U03/K04: 4 FAIL; K03/K05: 2 PASS — matches REVIEW4",
+  "repair_green_results": "tsc0; g4r4 probes 6/6; 39 regression green; unit 72/72; integration 202/202; g3 aggregate 0; build 0",
+  "repair_remaining_gaps": [
+    "E2E not rerun (no page changes)"
+  ],
+  "repair_env": "/tmp/aiea-g4r4-20260928-z02 + fresh PG17.11 127.0.0.1:55507 (socket outside repo)"
 }
