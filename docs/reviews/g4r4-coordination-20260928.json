@@ -1,0 +1,30 @@
+{
+  "recorded_at": "2026-09-28T10:52:50+08:00",
+  "review": "G4R4-20260928-01",
+  "handoff": "G4R4-20260928-02",
+  "start_sent": true,
+  "start_received_at": "2026-09-28T10:52:50+08:00",
+  "writer": "Z02",
+  "writer_session": "sess_bc9ea3f4-180b-493b-81c0-8d91565029d4",
+  "writer_since": "2026-09-28T10:52:50+08:00",
+  "base_candidate": "b15251a2f160783bca2e29b1bd6127e698896519",
+  "business_head": "ee72fe0",
+  "head_at_start": "cd27bac (management-only)",
+  "repair_scope": [
+    "H07/U01-cross-rule-rowVersion-carry",
+    "H07/K04-concurrent-P2002-to-409",
+    "H07/U02-latest-status-first-resolved-blocks-carry",
+    "H06/U03-R09-coverage-window-scoped"
+  ],
+  "repair_order": [
+    "TASK-016 only"
+  ],
+  "probes": "docs/reviews/gate-04-review-4-evidence: g4r4-independent (U01-U03), g4r4-controls (K03/K04/K05); keep 39 regression",
+  "b01_boundary": [
+    "src/features/settings/**",
+    "tests/unit/settings/**",
+    "src/features/imports/preview/**",
+    "tests/unit/imports/preview/**",
+    "src/app/settings/**"
+  ]
+}

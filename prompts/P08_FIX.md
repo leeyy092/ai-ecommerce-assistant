@@ -1,24 +1,20 @@
-# P08 · G4R3-20260928-02 repair frozen / handed to Codex04
+# P08 · G4R4-20260928-02 START received / Z02 repairing
 
 ```text
-协调状态（2026-09-28T10:30:28+08:00）：G4R3-20260928-02返修已完成并冻结单一候选（业务ee72fe0+管理冻结chore），写入权交回Codex04独立复审6cfa36d..新HEAD；Z02转只读待下一编号。红基线（新/tmp+新PG17@55506）11FAIL/2PASS与REVIEW3一致，修复后T01–T11+K01/K02全绿、原19保持、场景7/7、unit72/integration196/g3聚合0/build0/tsc0；E2E未重跑（无页面变化）如实。B01四目录全程未触碰。本块以下为返修合同原文，仅作历史依据，不需重新ACK/START。
+协调状态（2026-09-28T10:52:50+08:00）：G4R4-20260928-02 START已首次实际送达最新Z02并接管唯一主线写入权（业务/管理/Git/sync），Codex04自本次实际接管起只读；本轮仅TASK016 H06/H07（U01/U02/U03/K04），先新/tmp+新PG17复现红基线（39回归与K03/K05保持）再修；B01五路径禁触（原四目录+src/app/settings/**）；完成后冻结单一候选b15251a..新HEAD交回Codex04独审。以下为返修合同原文。
+根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。以磁盘最新Owner决定、Git与12_PROGRESS唯一状态为准。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、当前导航/状态块/最新协调迁移、CODEX_REVIEW_HANDOFF及MVP计划顶部。
+唯一协调Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已实际激活，原codex-zcode ACTIVE目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
+G4R3-20260928-02 START已10:05:28实际接管并在10:30:28冻结b15251a（业务ee72fe0）；10:37 OWNER-COORD-20260928-01管理收尾cd27bac后Z02再次明确只读。04独立G4R4-20260928-01 FAIL：剩2组HIGH H06/H07，U01/U02/U03/K04有效失败；原19+候选7+T01–T11/K01K02共39/39独立通过，新增K03/K05通过。原H01/M02具体缺陷关闭，不重开已过项。证据docs/reviews/gate-04-review-4-evidence，报告CODEX_REVIEW_GATE_04_REVIEW_4_2026-09-28.md。
+主线写入权已于2026-09-28T10:52:50+08:00随G4R4-20260928-02实际START转Z02；Codex04只读，待Z02显式冻结b15251a..新HEAD后回收写入权并独立复审。仅TASK016 H06/H07原合同余项：跨规则复制保留配置版本、真实并发409、F09不跳过最新resolved回溯旧ignored、R09覆盖门槛限当前和原基准窗口。无017/031/main合并/部署。
+B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec已于10:39收到B01-SETTINGS-INTEGRATION-20260928-01首次实际START并ACK开工（实际cd27bac，35原SHA一致）。正式合同docs/reviews/B01_SETTINGS_INTEGRATION_20260928-01.md，SHA256 6cd310b347e2fdfe19dbd8c4e45239568bc4db384a85172f111d808708f4f670。只准10新建+4源最小修改，其他原31件保持；固定6cfa36d archive+组件+本切片独立PG/Web/真实Cookie。Z02不得修改/暂存/提交原四目录src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**及新增src/app/settings/**（均在应用下）。B01不写后端/共享/管理/Git/sync。026/027/021整体未完成，后续04安排一致快照集成。
+Owner已批准MVP-CORE-20260928-01首批与余项并行：老板三分钟四卡/同版证据/本人行动/019–020服务必须首批，历史阅读页面后置，完整P0与质量不减。9/30受控MVP、10/5冻结、10/8完整开发验收是目标非保证；普通原合同返修及独立PASS后同冲刺接续已授权，不重复等Owner。031重要新规则、采购部署/敏感权限/新重大范围变化另行具体批准。04协调独审、Z02后端、B01前端、A01分析；既有B01日报id21负责每日21:00 Asia/Shanghai，不重复创建。
+双方70%真实压缩规则保持：Codex180880阈值配置/加载已核验（258400窗口变化重算），实际系统压缩后可靠同窗接续，因果未核实。Z02此前官方/compact719449→20795/1000000可靠；最新实际401235/1000000约40.1%，本轮无新压缩，原生阈值未配置。到70%先存现场在安全点用真实入口，不盲点Stop；压缩可靠同窗，确需迁移才按STATE_PROTOCOL；不fork/建worktree/重复自动化。
 
-根目录/Users/yuyuyu/Documents/ChatGPT/产品-开发，应用ai-ecommerce-assistant。先读AGENTS/.product-os.json/STATE_PROTOCOL/00_START_HERE、12_PROGRESS当前导航/唯一状态/最新协调迁移、CODEX_REVIEW_HANDOFF/FINAL_DECISIONS/PHASE_PLAN及原MVP计划顶部；以磁盘实际Git、最新Owner授权及写入者为准。
-唯一Codex04【最新04】电商中台｜P0开发与独立审查 / 01a0e16d-be56-7741-bced-49133cdcafeb；MIGRATE-20260927-03 COMPLETE且14:05:51已激活，原codex-zcode ACTIVE每10分钟仍目标04。唯一Z02【最新Z02】电商中台｜Phase3返修与交接 / sess_bc9ea3f4-180b-493b-81c0-8d91565029d4；ZCODE-MIGRATE-20260927-01 COMPLETE。旧窗口/PREPARING只读退出。
-G4R2-20260928-02 START已07:53:23实际送达并由Z02在08:31:01完成冻结、交回写入权。候选phase/04-metrics-alerts@6cfa36d（业务899bf43），main2d7ceaf。Codex04独立G4R3-20260928-01 FAIL，3HIGH H01/H06/H07、1MEDIUM M02；原19及候选5场景全绿，新增有效T01–T11失败、K01/K02通过。原R1 60/R2 40证据SHA保持。报告docs/reviews/CODEX_REVIEW_GATE_04_REVIEW_3_2026-09-28.md及GATE_04_REVIEW_3_EVIDENCE_2026-09-28.json、gate-04-review-3-evidence/。
-主线写入权已于2026-09-28T10:30:28+08:00随G4R3返修候选冻结交回Codex04（独立复审6cfa36d..新HEAD）；Z02只读待REVIEW4结论后新编号。
-B01【开发B01】电商中台｜剩余功能并行开发 / 01a0e39e-a19b-7461-8f2e-8ecc9a6c55ec三切片均冻结。设置28/28、预览51/51、数据源47/47及各自tsc0限定组件PASS，35源/测试SHA保持；第三批与只读接线方案已正式归档docs/reviews/B01_DATASOURCE_REVIEW_1_2026-09-28.md、B01_INTEGRATION_READONLY_2026-09-28.md及b01-datasource-review-1-evidence/。2026-09-28T10:33:40+08:00 OWNER-COORD-20260928-01回执：B01-SETTINGS-INTEGRATION-20260928-01接入合同已由Z02确认并归档docs/reviews/B01_SETTINGS_INTEGRATION_20260928-01.md（与/tmp原件SHA256一致=6cd310b347e2fdfe19dbd8c4e45239568bc4db384a85172f111d808708f4f670）；本回执后04向B01实际发送同编号START。Z02禁触清单相应扩展：原四目录（src/features/settings/**、tests/unit/settings/**、src/features/imports/preview/**、tests/unit/imports/preview/**）＋B01新增src/app/settings/**路由目录与tests/unit/settings/integration/**证据目录；Z02不修改/暂存/提交任何B01在途文件；B01如遇真实API缺口由04协调Z02在其TASK处理，B01不写后端。026/027整体仍未完成，该切片不标整体完成。A01保持分析协调，无写入权/自动化转接。
-Owner已批准MVP-CORE-20260928-01首批与余项并行：老板三分钟四卡、同版证据、本人行动、019–020日报服务必须首批，历史阅读等页面后置。原完整P0与质量不减，9/30受控MVP、10/5冻结、10/8完整开发验收为目标非保证。原合同普通返修及同一冲刺独立PASS后普通接续无需重复Owner批准；一次一TASK按依赖。031先补合同并确认重要新规则；采购部署/敏感权限/新重大范围变化仍单独批准。技术PASS不等于Owner产品验收。
-双方70%实际压缩规则保持：Codex180880阈值配置/加载已核实，258400窗口变化须重算；本轮实际系统压缩后可靠同窗接续，阈值因果未核实。Z02之前官方/compact 719449→20795/1000000并ACK可靠；原生自动阈值未配置。实际达到70%先保现场、在安全点用已验证入口；执行中先协调冻结，不盲点Stop。锁屏时新占用未知，不猜测。压缩可靠留同窗，确有接续损坏/污染才按STATE_PROTOCOL迁移；不按占比自动换窗，不fork/建worktree/重复自动化。
-
-G4R3-20260928-02返修合同（实际收到本编号START后执行）：
-1. 完整读R3报告、原R1/R2关闭标准与07_ALERT_RULES、08_API_SPEC、04_DATA_MODEL/F08/F09及013–016验收；按013→014→015→016一次一项。
-2. H01：保留待CAS/失败时旧发布指标、规则、告警；所有构建读取限定本次evaluationAt，避免E1/E2历史样本混计。T01旧32/11/2变32/0/0、T06真实60被计120均需关闭。
-3. H06：R07基准排除partial并用店铺自然日，R08/R09数据源覆盖与标记/分类覆盖都满足，投诉critical等级，R05/R12按campaign+归因组防抵消。按原规则逐条验证三态、归因窗与零基准，不后移范围。
-4. H07：真实config_version修改后必须变化，过期/并发写409；F09同证据同参数同等级同期间acknowledged/ignored保守延续并留来源审计，证据/日期变或resolved不延续。权限矩阵有效负例补齐。
-5. M02：显式非法from/to返回422，未传才默认；保留白名单/双结构/基线/Σ分子Σ分母与实体分离。
-6. 在本轮新/tmp+新PG17复现红基线，冻结原探针不改。原19+候选5保持，R3 T01–T11转绿、K01/K02保持；根据修复差异补有效对照，禁止只修旧断言或把执行者自测称独立PASS。
-7. B01四目录全冻且禁止修改/暂存/提交。接收START先记录真实时间、接管主线业务/管理/Git/sync并更新原进度/交接/首块、sync读回；完成新feat+管理冻结单一候选，交回04独审6cfa36d..新HEAD。Gate04独立PASS前不017/031/main合并/部署。若未实际收到START继续冻结。
+本轮返修G4R4-20260928-02：仅原TASK016。完整读R4报告和gate-04-review-4-evidence两份g4r4测试及日志，再读07_ALERT_RULES共同基准/R09、FINAL_DECISIONS F09、08配置版本/权限合同。
+H07/U01：R03真实版本1→禁用后2→改R07不应回1；持最初1重启R03须409。复制未改规则时保留有效版本，不能只修被修改那条。K04：真实同一版本并发仅一个200，其余409；当前唯一键冲突503须正确原子化处理，验证同/不同规则竞争及无半配置。
+H07/U02：E1 ignored→改别规则发布E2正确延续→E2 resolved→再改别规则发布E3须open且无carried来源。先取正确最近状态/合法前驱再判断，不能在所有历史先过滤ack/ignored捞到更早旧状态。相同证据/参数/等级/期间可延续；参数/日期/证据变化和resolved不延续，来源审计保持；K05必须仍通过。
+H06/U03：9/26当前及9/5、12、19三个完整同星期基准都满足时，7/1无关partial不应令R09 suppressed。按原28日同星期/7日回退和样本门槛选完整源基准；当前partial仍暂停，不把分类覆盖当源完整，不放宽质量。
+先新/tmp+新PG17复现U01/U02/U03/K04红；修后保持39回归、K03精确Fiji身份/K05参数变更控制。按修复差异补必要用例；不重复不变全套，不以改断言掩盖缺陷。冻结单一候选b15251a..新HEAD，给真实命令/退出码/残余项/证据/环境清理，交04独审。B01白名单避让，无017/031/合并main/部署；不得把本文当实际START。
 ```
 
 ## 历史首块（2026-09-27T16:40:55+08:00前，非当前指令）
